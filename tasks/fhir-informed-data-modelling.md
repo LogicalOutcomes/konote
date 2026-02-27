@@ -60,70 +60,52 @@ ProgressNote captures `author` but not the author's role at time of service. If 
 1. **"Borrow concepts, don't comply" is the right approach.** FHIR's data relationships are valuable; FHIR's compliance overhead is not.
 2. **ServiceEpisode is the highest-priority change.** It solves the most pressing reporting problems and is the foundation for other improvements.
 3. **Achievement status should be derived, not entered.** Map from existing progress_descriptor (qualitative) or compute from metric trajectory (quantitative). Zero new data entry.
-4. **The unified domain taxonomy should be designed before CIDS Phase 1.** One vocabulary serving three purposes (CIDS export, FHIR-informed tracking, internal reporting).
+4. **KoNote should not impose its own internal taxonomy.** Every funder, partner, and collaboration uses a different outcome classification system. A hardcoded 14-value taxonomy will fail the same way every sector attempt at standardisation has failed. Keep `category` (7 values) for UI grouping; handle external taxonomies via a mapping layer (see Taxonomy Panel addendum 2026-02-27).
 5. **Presenting issues should be computed from existing data**, not a new data entry requirement.
 6. **Episode type should be auto-derived from history**, not worker-entered.
 7. **Discharge reason is the one new question workers answer.** A single question ("Why is this person leaving?") with 5-6 radio buttons.
 
 ### Priority order (expert consensus):
 
-ServiceEpisode ≫ Unified Domain Taxonomy ≫ Goal Achievement Status ≫ Encounter Role > Presenting Issues (computed) > Referral Tracking > Care Team
+ServiceEpisode ≫ Goal Achievement Status ≫ Encounter Role > Presenting Issues (computed) > Referral Tracking > Care Team
 
 ---
 
 ## Implementation Phases
 
-### Phase F0: Unified Outcome Domain Taxonomy (foundation for both FHIR and CIDS)
+### ~~Phase F0: Unified Outcome Domain Taxonomy~~ — REMOVED (2026-02-27)
 
-**Do this before CIDS Phase 1.** Both CIDS themes and FHIR Goal categories need a shared domain vocabulary. Design it once, use it everywhere.
+> **Taxonomy Panel decision (2026-02-27):** A 4-expert panel (Nonprofit Evaluation Specialist, Data Interoperability Specialist, Product Designer, Systems Architect) reviewed GK's feedback that every funder, partner, and collaboration uses a different outcome taxonomy. The panel unanimously recommended **removing the hardcoded 14-value `outcome_domain` taxonomy** from the plan. See `tasks/design-rationale/fhir-informed-modelling.md` for the full panel record.
 
-#### New code list: `OutcomeDomain` (stored in CidsCodeList)
+**What was planned:** Replace `MetricDefinition.category` (7 values) with `outcome_domain` (14 values). Add `outcome_domain` to Program and PlanTarget. Use as a Rosetta Stone for mapping to external taxonomies.
 
-| Domain Code | Display Label (EN) | Display Label (FR) | CIDS IRISImpactTheme | Gravity SDOH Category | Current MetricDef Category |
-|---|---|---|---|---|---|
-| `housing` | Housing & Shelter | Logement et hébergement | IRIS Housing | Housing Instability | `housing` |
-| `employment` | Employment & Income | Emploi et revenu | IRIS Employment | Employment Status | `employment` |
-| `mental_health` | Mental Health & Wellbeing | Santé mentale et bien-être | IRIS Health | — | `mental_health` |
-| `substance_use` | Substance Use | Consommation de substances | IRIS Health | — | `substance_use` |
-| `food_security` | Food Security | Sécurité alimentaire | IRIS Basic Needs | Food Insecurity | — |
-| `education` | Education & Training | Éducation et formation | IRIS Education | Education Access | — |
-| `social_connection` | Social Connection | Liens sociaux | IRIS Community | Social Isolation | — |
-| `financial` | Financial Stability | Stabilité financière | IRIS Financial | Financial Strain | — |
-| `safety` | Safety & Protection | Sécurité et protection | — | Intimate Partner Violence | — |
-| `youth` | Youth Development | Développement des jeunes | IRIS Youth | — | `youth` |
-| `transportation` | Transportation | Transport | — | Transportation Insecurity | — |
-| `legal` | Legal & Justice | Justice et droit | — | — | — |
-| `health` | Physical Health | Santé physique | IRIS Health | — | — |
-| `custom` | Other | Autre | — | — | `custom`, `general` |
+**Why it was removed:**
 
-#### Changes to existing models
+1. **Every funder has a different taxonomy.** United Way, PHAC, provincial ministries, and sector collaborations all classify outcomes differently. A single internal taxonomy cannot map to all of them without `custom` becoming the default.
+2. **One metric, many indicators.** A PHQ-9 score maps to PHAC's "mental health," United Way's "individual wellbeing," CIDS's IRIS Health theme, and SDG Goal 3 — simultaneously. A single CharField cannot represent this.
+3. **The sector has tried and failed.** Canadian nonprofits have attempted taxonomy standardisation for years. No consensus exists, and KoNote should not pretend to solve this.
+4. **`category` already works for its purpose.** The existing 7-value `category` field is used for admin UI grouping. It's not a reporting field or a standards alignment field. It should stay unchanged.
 
-**MetricDefinition:** Replace `category` (CharField with 7 choices) with `outcome_domain` (CharField referencing OutcomeDomain codes). Data migration maps existing values:
-- `mental_health` → `mental_health`
-- `housing` → `housing`
-- `employment` → `employment`
-- `substance_use` → `substance_use`
-- `youth` → `youth`
-- `general` → `custom` (review individually during migration)
-- `custom` → `custom`
+**What replaces it:**
 
-**Program:** Add `outcome_domain` (CharField, blank=True). What domain does this program primarily serve? Auto-derived from the program's most common metric domains if not set.
+- **Keep `MetricDefinition.category` as-is** (7 values, admin UI grouping only)
+- **Do NOT add `outcome_domain` to MetricDefinition, Program, or PlanTarget**
+- **Do NOT create a data migration mapping `category` → `outcome_domain`**
+- **CIDS metadata fields proceed as planned** (iris_metric_code, sdg_goals, etc.) — these are direct identifiers, not a taxonomy
+- **Taxonomy mapping layer arrives in CIDS Phase 2** (alongside code list import) — designed for multiple external taxonomies from the start
 
-**PlanTarget:** Add `outcome_domain` (CharField, blank=True). Inherited from the plan section's program domain or from the target's metrics. Can be overridden.
+#### CIDS Theme derivation (revised — two tiers instead of three)
 
-#### CIDS Theme derivation (three-tier approach — revised per review panel)
-
-The original plan proposed replacing `cids_theme` with `outcome_domain`. The review panel identified this as lossy — IRIS Impact Theme has 25+ values, `outcome_domain` has 14, and the mapping is many-to-many.
-
-**Revised approach:** Neither a dedicated `cids_theme` field nor `outcome_domain` alone is needed. Instead, CIDS Theme is derived at export time via three tiers:
+Since `outcome_domain` is removed, the middle tier of the original three-tier derivation is no longer available. CIDS Theme derivation at export time now uses two tiers:
 
 1. **Primary:** `iris_metric_code` (from CIDS Phase 1b) → look up in `CidsCodeList` → get the parent IRIS Impact Theme. This is precise and spec-compliant.
-2. **Fallback:** `outcome_domain` → default mapping table (one domain maps to one theme). Coarser, but better than nothing for metrics that don't have an `iris_metric_code`.
-3. **Admin override:** `cids_theme_override` (new CharField on MetricDefinition, blank=True) — admin correction for edge cases where neither derivation is right.
+2. **Admin override:** `cids_theme_override` (new CharField on MetricDefinition, blank=True) — admin correction for metrics without an `iris_metric_code` or where the auto-derived theme is wrong.
 
-**New field on MetricDefinition:** `cids_theme_override` (CharField, max_length=50, blank=True). Only used when the auto-derived theme is wrong.
+When the taxonomy mapping layer arrives (CIDS Phase 2), a third tier can be inserted between these two: explicit CIDS taxonomy mapping from the mapping table.
 
-**Impact on CIDS Phase 1:** Phase 1b retains all originally planned fields (`cids_indicator_uri`, `iris_metric_code`, `sdg_goals`, `cids_unit_description`, `cids_defined_by`, `cids_has_baseline`) and adds `cids_theme_override`. The originally proposed `cids_theme` and `cids_impact_theme` fields are unnecessary — the export layer derives themes from `iris_metric_code` and `outcome_domain`.
+**New field on MetricDefinition:** `cids_theme_override` (CharField, max_length=50, blank=True). Only used when the auto-derived theme is wrong or when a metric has no `iris_metric_code`.
+
+**Impact on CIDS Phase 1:** Phase 1b retains all originally planned fields (`cids_indicator_uri`, `iris_metric_code`, `sdg_goals`, `cids_unit_description`, `cids_defined_by`, `cids_has_baseline`) and adds `cids_theme_override`. The originally proposed `cids_theme` and `cids_impact_theme` fields are unnecessary — the export layer derives themes from `iris_metric_code` and taxonomy mappings.
 
 ---
 
@@ -403,9 +385,9 @@ Map from the existing ProgressNoteTarget.progress_descriptor:
 #### Reporting queries enabled
 
 ```python
-# "Percentage of clients showing improvement on housing goals"
-housing_goals = PlanTarget.objects.filter(
-    outcome_domain="housing",
+# "Percentage of clients showing improvement in a specific program"
+program_goals = PlanTarget.objects.filter(
+    plan_section__program=program,
     status="default",  # active goals
     achievement_status="improving"
 )
@@ -458,9 +440,9 @@ sustaining = PlanTarget.objects.filter(
 
 **Not a new model.** Presenting issues are computed from existing data:
 
-1. **From program enrolment:** Client enrolled in a housing program (program.outcome_domain = `housing`) → presenting issue: `housing`
-2. **From plan targets:** Client has a goal in the `employment` domain → presenting issue: `employment`
-3. **From metrics:** Client has MetricValues for a `substance_use` metric → presenting issue: `substance_use`
+1. **From program enrolment:** Client enrolled in a housing program → presenting issue derived from that program's category/taxonomy mappings
+2. **From plan targets:** Client has goals with metrics in specific categories → presenting issues derived from metric categories
+3. **From metrics:** Client has MetricValues for metrics tagged with specific taxonomy codes → presenting issues from those codes
 
 #### Implementation
 
@@ -468,27 +450,30 @@ A Django model manager method or queryset annotation that computes presenting is
 
 ```python
 def get_presenting_issues(client_file):
-    """Compute presenting issues from program, goal, and metric domains."""
-    domains = set()
+    """Compute presenting issues from program enrolment and metric categories."""
+    categories = set()
 
-    # From active episodes
+    # From active episodes — use program's metrics' categories
     for ep in client_file.service_episodes.filter(status="active"):
-        if ep.program.outcome_domain:
-            domains.add(ep.program.outcome_domain)
+        for metric in ep.program.metric_definitions.all():
+            if metric.category:
+                categories.add(metric.category)
 
-    # From active plan targets
+    # From active plan targets — use the target's metric category
     for target in client_file.plan_targets.filter(status="default"):
-        if target.outcome_domain:
-            domains.add(target.outcome_domain)
+        if target.metric_definition and target.metric_definition.category:
+            categories.add(target.metric_definition.category)
 
-    return sorted(domains)
+    return sorted(categories)
 ```
+
+**Note:** When the taxonomy mapping layer arrives (CIDS Phase 2), this function can also pull from taxonomy mappings for richer, funder-specific presenting issue classifications.
 
 #### Reporting queries enabled
 
-- "How many clients present with housing needs?" → Count clients with `housing` in their computed presenting issues
-- "Outcomes for clients who present with multiple needs" → Filter by clients with 2+ domains
-- "Cross-domain analysis: do clients with substance use needs show different housing outcomes?" → Compare achievement_status by presenting issue combination
+- "How many clients present with housing needs?" → Count clients enrolled in programs with housing-category metrics
+- "Outcomes for clients who present with multiple needs" → Filter by clients with metrics across 2+ categories
+- "Cross-domain analysis" → Compare achievement_status by metric category combinations
 
 #### When to add explicit tagging
 
@@ -533,9 +518,9 @@ For now, `ServiceEpisode.primary_worker` covers the 80% case.
 
 | Order | Phase | What | Effort | Value | Why this order |
 |---|---|---|---|---|---|
-| **1** | **F0 + CIDS 1** | Unified Outcome Domain taxonomy + CIDS metadata fields + OrganizationProfile | Medium | Very High | Combined because F0 and CIDS 1 both add fields to MetricDefinition. Do them together to avoid two migration rounds. |
-| **2** | **CIDS 2** | Import CIDS code lists + admin UI dropdowns | Medium | High | Needed for three-tier theme derivation — `iris_metric_code` looks up its theme in CidsCodeList. |
-| **3** | **CIDS 2.5** | CIDS-enriched CSV/PDF reports | Low | High | **Quick win for funders.** Uses outcome_domain + iris_metric_code derivation. No ServiceEpisode needed yet. |
+| **1** | **CIDS 1** | CIDS metadata fields + OrganizationProfile (no taxonomy change) | Low–Medium | High | Adds CIDS identifiers to MetricDefinition, Program, PlanTarget. No `category` change, no data migration. |
+| **2** | **CIDS 2** | Import CIDS code lists + taxonomy mapping layer + admin UI | Medium | High | Needed for theme derivation — `iris_metric_code` looks up its theme in CidsCodeList. Taxonomy mapping model supports multiple external taxonomies per metric. |
+| **3** | **CIDS 2.5** | CIDS-enriched CSV/PDF reports | Low | High | **Quick win for funders.** Uses iris_metric_code + taxonomy mappings. No ServiceEpisode needed yet. |
 | **4** | **F1** | ServiceEpisode (extend ClientProgramEnrolment) + StatusChange | Medium | Very High | Now has CIDS foundation in place. Solves reporting headaches. |
 | **5** | **F2** | Goal Achievement Status on PlanTarget | Low | High | Adds `achievement_status` + `first_achieved_at`. Enriches both internal reports and CIDS export. |
 | **6** | **F3** | Encounter Participant Role on ProgressNote | Very Low | Medium | Auto-filled, no workflow change. |
@@ -548,12 +533,13 @@ For now, `ServiceEpisode.primary_worker` covers the 80% case.
 
 ### What changes in the CIDS plan
 
-1. **`cids_theme` on MetricDefinition** (Phase 1b) → **removed.** Theme is derived at export time via three-tier derivation: `iris_metric_code` → CidsCodeList lookup (primary), `outcome_domain` → default mapping (fallback), `cids_theme_override` (admin correction).
+1. **`cids_theme` on MetricDefinition** (Phase 1b) → **removed.** Theme is derived at export time: `iris_metric_code` → CidsCodeList lookup (primary), taxonomy mapping (when available from Phase 2), `cids_theme_override` (admin correction).
 2. **`cids_impact_theme` on PlanTarget** (Phase 1d) → **removed.** Derived from the target's metric's theme at export time.
 3. **New field added:** `cids_theme_override` on MetricDefinition (blank CharField for admin edge-case correction).
-4. **`cids:Activity` computation** (Phase 3) → enhanced by ServiceEpisode. Encounter counts scoped to episodes, not just date ranges.
-5. **`cids:BeneficialStakeholder` cohort definition** (Phase 3) → enriched by episode_type and end_reason. Can define cohorts as "new intakes" vs. "re-enrolments" vs. "all active."
-6. **`cids:ImpactDepth` computation** (Phase 4) → enriched by achievement_status and `first_achieved_at` for time-to-achievement and nuanced depth reporting.
+4. **`outcome_domain` on MetricDefinition, Program, PlanTarget** → **removed.** `MetricDefinition.category` (7 values) retained unchanged for UI grouping only. External taxonomy mappings handled by taxonomy mapping layer in Phase 2.
+5. **`cids:Activity` computation** (Phase 3) → enhanced by ServiceEpisode. Encounter counts scoped to episodes, not just date ranges.
+6. **`cids:BeneficialStakeholder` cohort definition** (Phase 3) → enriched by episode_type and end_reason. Can define cohorts as "new intakes" vs. "re-enrolments" vs. "all active."
+7. **`cids:ImpactDepth` computation** (Phase 4) → enriched by achievement_status and `first_achieved_at` for time-to-achievement and nuanced depth reporting.
 
 All other CIDS plan elements are unchanged.
 
@@ -567,9 +553,7 @@ All other CIDS plan elements are unchanged.
 | Workers don't fill in discharge reason | Medium | Medium | Required radio buttons in discharge modal, not optional text |
 | Achievement status computation produces misleading results | Medium | Medium | "Auto" badge; worker override; 3-point trend; documented sparse data rules |
 | `not_attainable` auto-computed inappropriately | None | High | Never auto-computed — always requires deliberate worker action |
-| Unified domain taxonomy doesn't cover all programs | Low | Low | Include `custom` domain; agencies can request additions |
-| Over-engineering: models nobody uses | Medium | Low | Build F0+F1+F2 only; defer F4-F6 until triggered |
-| CIDS Phase 1 conflict if taxonomy not settled first | None | Medium | F0 and CIDS 1 are now combined — done in same migration |
+| Over-engineering: models nobody uses | Medium | Low | Build F1+F2 only; defer F4-F6 until triggered |
 | ServiceEpisode adds complexity to existing queries | Very Low | Low | Extend-in-place with class alias — all existing references continue working unchanged |
 | Three-tier theme derivation has gaps | Low | Low | `cids_theme_override` provides admin escape hatch for any metric that maps incorrectly |
 
@@ -582,7 +566,7 @@ All other CIDS plan elements are unchanged.
 | **Caseworkers** | Discharge modal has a "Why?" question (5-6 radio buttons) | Minimal — one new question |
 | **Caseworkers** | Achievement status shown on plan view with "(auto)" badge | No action required — informational |
 | **Program Managers** | New reporting filters: episode type, end reason, achievement status | Positive — better data |
-| **Admins** | Outcome domain dropdown on program and metric forms | Minimal — one new field |
+| **Admins** | CIDS metadata visible in admin settings (auto-populated from config templates) | Minimal — no action required |
 | **Everyone else** | Nothing | No change |
 
 ---
@@ -594,7 +578,7 @@ All other CIDS plan elements are unchanged.
 - **No new data entry for frontline staff** (except the discharge reason question).
 - **No breaking changes to existing views.** ServiceEpisode extends ClientProgramEnrolment in place with a class alias — all existing code continues working.
 - **No external dependencies.** No new Python packages.
-- **No changes to existing ProgressNote, MetricValue, or MetricDefinition models** (except adding `outcome_domain` to MetricDefinition and `achievement_status` to PlanTarget).
+- **No changes to existing ProgressNote, MetricValue, or MetricDefinition models** (except adding CIDS metadata fields to MetricDefinition and `achievement_status` to PlanTarget). `MetricDefinition.category` is unchanged.
 
 ---
 
