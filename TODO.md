@@ -129,7 +129,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
 - [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
 - [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — GO with corrections, all decisions resolved 2026-02-25 (see tasks/cids-plan-validation.md) — 2026-02-25 (CIDS-APPROVE1)
-- [x] Deploy and test config-aware demo data engine on Azure client instance — wrote Prosper Canada profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
+- [x] Deploy and test config-aware demo data engine on Azure client instance — wrote agency profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
 - [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
 - [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
 - [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)

@@ -58,10 +58,10 @@ Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Progra
 
 ## Starting from a Template
 
-If the agency belongs to an umbrella organisation (like [funder partner]), start from the umbrella's configuration template instead of answering every question from scratch.
+If the agency belongs to an umbrella organisation (like a partner agency), start from the umbrella's configuration template instead of answering every question from scratch.
 
 Available templates:
-- **[funder partner]** — financial coaching agencies ([see example](examples/prosper-canada/))
+- **[partner agency]** — financial coaching agencies ([see example](examples/financial-coaching/))
 
 With a template, the conversation changes from "answer all 50 decisions" to "here are the standard answers — what's different for your agency?" This typically cuts setup time from 3-6 weeks to 1-2 weeks.
 
@@ -93,11 +93,11 @@ These provide deeper context when needed:
 
 | Document | What it covers |
 |----------|---------------|
-| [Deployment Protocol](../../tasks/prosper-canada/deployment-protocol.md) | Full 5-phase deployment process with interview scripts and worksheets |
+| [Deployment Protocol](../../tasks/deployment-protocol.md) | Full 5-phase deployment process with interview scripts and worksheets |
 | [Permissions Interview](../../tasks/agency-permissions-interview.md) | Detailed guided interview for all access and privacy decisions |
 | [Admin Documentation](../admin/index.md) | Feature-by-feature admin guide |
 | [Deploying KoNote](../deploying-konote.md) | Platform comparison and technical deployment steps |
-| [Config Template Design](../../tasks/prosper-canada/config-template-design.md) | How umbrella templates work |
+| [Config Template Design](../../tasks/config-template-design.md) | How umbrella templates work |
 | [Security Architecture](../security-architecture.md) | Encryption, audit logging, privacy compliance |
 
 ## Status
