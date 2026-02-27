@@ -69,7 +69,13 @@ A single folder per client with program subfolders would require per-folder perm
 
 **Why:** If a client is in two programs (Employment Readiness and Financial Literacy), they may have two different Google Drive folders with different resource kits. One link per enrolment keeps it clean. The portal shows the link for each active program, labelled by program name.
 
-### 5. Link-broker only — no API/OAuth integration
+### 5. Google Drive URL is not encrypted
+
+**Decided:** The Google Drive folder URL is stored as a plain `URLField`, not an encrypted BinaryField. GK approved 2026-02-27.
+
+**Why:** The URL (`https://drive.google.com/drive/folders/1aBcDeFg...`) is an opaque identifier that reveals nothing about the client or program. The enrolment record itself is already access-controlled by RBAC. Encryption would prevent useful SQL queries (e.g., "how many enrolments have documents configured?") and add complexity without meaningful security benefit. Anyone who obtains the URL still needs Google Drive permissions to access the folder. Expert panel (4 of 4) agreed encryption is unnecessary.
+
+### 6. Link-broker only — no API/OAuth integration
 
 **Decided:** KoNote stores folder URLs and generates links. It does not authenticate to SharePoint or Google Drive, does not create folders, does not upload or download files.
 
