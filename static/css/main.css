@@ -4451,7 +4451,7 @@ article[aria-label="notification"].fading-out {
 }
 .goal-card.selected {
     border-color: var(--kn-primary);
-    background: rgba(13, 115, 119, 0.08);
+    background: rgba(49, 118, 170, 0.08);
 }
 
 /* Goal name autocomplete dropdown */
@@ -4478,7 +4478,7 @@ article[aria-label="notification"].fading-out {
 }
 #goal-suggestions-list [role="option"]:hover,
 #goal-suggestions-list [role="option"][aria-selected="true"] {
-    background: rgba(13, 115, 119, 0.1);
+    background: rgba(49, 118, 170, 0.1);
 }
 
 /* Universal metric cards (Tier 1) */

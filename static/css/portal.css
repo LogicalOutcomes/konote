@@ -200,7 +200,7 @@ a.portal-card {
 a.portal-card:hover,
 a.portal-card:focus-visible {
     border-color: #3176aa;
-    box-shadow: 0 2px 8px rgba(13, 115, 119, 0.12);
+    box-shadow: 0 2px 8px rgba(49, 118, 170, 0.12);
 }
 a.portal-card article {
     padding: 1.5rem;
