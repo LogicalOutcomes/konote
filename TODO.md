@@ -54,15 +54,20 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
-### Phase: CIDS Compliance (Common Approach Data Standard) — targeting FullTier, pinned to CIDS v3.2.0 (see tasks/cids-json-ld-export.md, tasks/cids-plan-validation.md)
+### Phase: FHIR-Informed Data Foundations + CIDS Compliance — build FHIR foundations first, then CIDS on top (see tasks/fhir-informed-data-modelling.md, tasks/cids-json-ld-export.md, tasks/design-rationale/fhir-informed-modelling.md)
 
-- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — auto-populated when staff create targets/metrics, invisible to frontline staff (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
+- [ ] Define unified Outcome Domain taxonomy — replaces MetricDefinition.category, serves CIDS themes + FHIR goal categories + internal reporting (Phase F0) — GK reviews taxonomy (FHIR-DOMAIN1)
+- [ ] Build ServiceEpisode model to replace ClientProgramEnrolment — status lifecycle (planned/waitlist/active/on_hold/finished/cancelled), status history, episode type (auto-derived), discharge reason, primary worker, referral source (Phase F1) — GK reviews data model (FHIR-EPISODE1)
+- [ ] Migrate existing ClientProgramEnrolment data to ServiceEpisode — all current enrolments become episodes, new fields nullable for historical data (Phase F1) — (FHIR-MIGRATE1)
+- [ ] Add achievement_status to PlanTarget — auto-computed from metric trajectory or progress_descriptor, with worker override (Phase F2) — GK reviews methodology (FHIR-ACHIEVE1)
+- [ ] Add author_role to ProgressNote — auto-filled from UserProgramRole at note creation, no UI change (Phase F3) — (FHIR-ROLE1)
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — auto-populated, invisible to frontline staff. Note: cids_theme replaced by outcome_domain from FHIR-DOMAIN1 (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
 - [ ] Create OrganizationProfile model for CIDS org metadata — legal name, sector, address, province (Phase 1) — (CIDS-ORG1)
 - [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — (CIDS-CODES1)
 - [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates so agencies are CIDS-ready out of the box (Phase 2) — (CIDS-ADMIN1)
 - [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — (CIDS-ENRICH1)
 - [ ] Build full JSON-LD export with SHACL validation — FullTier compliance, new format option alongside CSV/PDF, aggregate only (Phase 3) — (CIDS-EXPORT1)
-- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
+- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — enriched by achievement_status, no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
 ### Phase: Offline Field Collection (if requested by client)
