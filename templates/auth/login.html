@@ -87,7 +87,7 @@
             {% if demo_users %}
             <div class="demo-grid">
                 {% for u in demo_users %}
-                <form method="post" action="/auth/demo-login/{{ u.pk }}/">{% csrf_token %}<button type="submit" class="demo-btn">{{ u.display_name }}</button></form>
+                <form method="post" action="/auth/demo-login/{{ u.username }}/">{% csrf_token %}<button type="submit" class="demo-btn">{{ u.display_name }}</button></form>
                 {% endfor %}
             </div>
             {% else %}
