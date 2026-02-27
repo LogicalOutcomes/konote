@@ -416,7 +416,7 @@ class ServiceEpisode(models.Model):
     )
     started_at = models.DateTimeField(
         null=True, blank=True,
-        help_text=_("When active service began."),
+        help_text=_("When active service began. Auto-set to enrolled_at on creation if blank."),
     )
     ended_at = models.DateTimeField(
         null=True, blank=True,
@@ -473,7 +473,9 @@ class ServiceEpisode(models.Model):
         is_new = self.pk is None
         if is_new and not self.episode_type:
             self.episode_type = self.derive_episode_type()
-        # Set started_at from enrolled_at if not set
+        # Set started_at from enrolled_at if not set.
+        # For new records, started_at ≈ enrolled_at — they diverge when
+        # a client is enrolled in advance but service starts later.
         if is_new and not self.started_at:
             self.started_at = self.enrolled_at or timezone.now()
         super().save(*args, **kwargs)
