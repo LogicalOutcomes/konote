@@ -1529,6 +1529,7 @@ details.search-filters-panel[open] summary {
     text-decoration: none;
     transition: border-color var(--kn-transition), color var(--kn-transition), background var(--kn-transition);
     cursor: pointer;
+    margin-bottom: 0;
 }
 .demo-btn:hover {
     color: var(--kn-text);
