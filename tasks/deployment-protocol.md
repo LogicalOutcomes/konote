@@ -195,6 +195,13 @@ During the permissions interview, also confirm:
 - [ ] Confirm export notification recipients — this should include whoever handles PIPEDA access requests at the organisation.
 - [ ] If the organisation serves community partners, discuss whether each partner needs their own permissions interview (they likely do).
 
+**Data handling acknowledgement (discuss in Session 2 — Safety section):**
+- [ ] Explain the plaintext export option and when agencies use it (key-loss insurance backup)
+- [ ] Ask: "Would your organisation like to receive periodic plaintext backups of your data as insurance against encryption key loss? If so, we'll need you to sign a data handling acknowledgement before go-live."
+- [ ] If yes: identify the **designated contact person** who will receive backup reminders and be responsible for secure storage. Record their name, title, and email.
+- [ ] If no: note the decision — the agency can always opt in later. Remind them that encrypted offboarding exports and individual client exports don't require the acknowledgement.
+- [ ] Provide the [data handling acknowledgement template](../docs/data-handling-acknowledgement.md) for review. It does not need to be signed until Phase 4.
+
 ---
 
 ### Outputs
@@ -691,6 +698,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 - [ ] Roles and access are correct
 - [ ] Workflow configuration matches their needs
 - [ ] Staff know how to log in
+- [ ] Data handling acknowledgement signed (if opting in to plaintext backups — see [template](../docs/data-handling-acknowledgement.md))
 - [ ] Ready to begin entering real participant data
 
 **Disable demo mode?** Discuss with the client:
@@ -769,6 +777,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 | Deploying KoNote (all platforms) | [docs/deploying-konote.md](../docs/deploying-konote.md) | Phase 2, 4 |
 | Administering KoNote | [docs/administering-konote.md](../docs/administering-konote.md) | Phase 3, 4 |
 | Data Offboarding | [tasks/agency-data-offboarding.md](agency-data-offboarding.md) | Post-deployment (if needed) |
+| Data Handling Acknowledgement | [docs/data-handling-acknowledgement.md](../docs/data-handling-acknowledgement.md) | Phase 1 (discuss), Phase 4 (sign) |
 | Deployment Workflow Design | [docs/plans/2026-02-05-deployment-workflow-design.md](../docs/plans/2026-02-05-deployment-workflow-design.md) | Background (Assessment → Customisation → Production phases) |
 
 ## Appendix B: Timeline Template
