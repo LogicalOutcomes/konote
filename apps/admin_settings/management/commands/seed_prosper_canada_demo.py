@@ -1993,7 +1993,7 @@ class Command(BaseCommand):
                 user.save()
                 self.stdout.write(f"  Created staff: {s['display_name']}")
             else:
-                # Always sync is_demo and display_name, even on existing users
+                # Always sync key fields, even on existing users
                 update_fields = []
                 if not user.is_demo:
                     user.is_demo = True
@@ -2001,6 +2001,12 @@ class Command(BaseCommand):
                 if user.display_name != s["display_name"]:
                     user.display_name = s["display_name"]
                     update_fields.append("display_name")
+                if user.is_admin != s["is_admin"]:
+                    user.is_admin = s["is_admin"]
+                    update_fields.append("is_admin")
+                if user.is_staff != s["is_admin"]:
+                    user.is_staff = s["is_admin"]
+                    update_fields.append("is_staff")
                 if update_fields:
                     user.save(update_fields=update_fields)
                 self.stdout.write(f"  Staff exists: {s['display_name']}")
@@ -2044,7 +2050,11 @@ class Command(BaseCommand):
         Returns {record_id: ClientFile}.
         """
         # Ensure all staff have roles on this program
+        # Skip admin users — they have system-wide access without a program role
+        PROGRAM_ROLES = {"receptionist", "staff", "program_manager", "executive"}
         for s in STAFF:
+            if s["role"] not in PROGRAM_ROLES:
+                continue
             user = staff[s["username"]]
             UserProgramRole.objects.get_or_create(
                 user=user,
