@@ -13,13 +13,28 @@
     <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="theme-color" content="#3176aa">
+    <meta name="theme-color" content="{{ site.brand_color|default:'#3176aa' }}">
 
     <!-- Pico CSS — classless, accessible defaults -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 
     <!-- Theme (brand identity — swappable per agency) -->
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+
+    {% if site.brand_color %}
+    <!-- Agency brand colour override -->
+    <style>
+    :root {
+        --kn-primary: {{ site.brand_color }};
+        --kn-primary-hover: {{ site.brand_color_hover|default:site.brand_color }};
+        --kn-primary-focus: {{ site.brand_color_focus|default:"rgba(49, 118, 170, 0.25)" }};
+        --kn-primary-subtle: {{ site.brand_color_subtle|default:"rgba(49, 118, 170, 0.08)" }};
+        --pico-primary: var(--kn-primary);
+        --pico-primary-hover: var(--kn-primary-hover);
+        --pico-primary-focus: var(--kn-primary-focus);
+    }
+    </style>
+    {% endif %}
 
     <!-- App structure styles -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
