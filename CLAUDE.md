@@ -27,9 +27,11 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 ## Git Workflow
 
+**Pull main before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin main`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
+
 **Branch before working.** `main` has branch protection — never commit directly to it.
 
-1. **At the start of every task**, check the current branch with `git branch --show-current`
+1. **At the start of every task**, run `git pull origin main`, then check the current branch with `git branch --show-current`
 2. If on `main`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
 3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
 4. Commit frequently on the feature branch
