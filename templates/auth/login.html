@@ -91,12 +91,6 @@
                 <form method="post" action="/auth/demo-login/worker-2/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Direct Service" %} — Noor</button></form>
                 <form method="post" action="/auth/demo-login/executive/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Executive" %} — Eva</button></form>
                 <form method="post" action="/auth/demo-login/admin/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Administrator" %} — Alex</button></form>
-            </div>
-
-            <hr class="demo-divider" style="margin: 1.5rem 0 1rem;">
-            <p class="demo-heading">{% trans "Participant Portal" %}</p>
-            <p class="demo-subtext">{% trans "See what participants see when they check their goals and progress (if this is enabled)" %}</p>
-            <div class="demo-grid">
                 <form method="post" action="/auth/demo-portal-login/">{% csrf_token %}<button type="submit" class="demo-btn demo-btn-portal">{% trans "Participant" %} — Jordan</button></form>
             </div>
         </section>

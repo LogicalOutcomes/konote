@@ -16,7 +16,6 @@
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
-- [ ] Fix demo login section layout — compress demo user buttons (remove blank space between boxes), centre the Participant portal button — PB (UI1)
 
 ## Do Occasionally
 
@@ -123,6 +122,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
 - [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
 - [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — GO with corrections, all decisions resolved 2026-02-25 (see tasks/cids-plan-validation.md) — 2026-02-25 (CIDS-APPROVE1)
 - [x] Deploy and test config-aware demo data engine on Azure client instance — wrote Prosper Canada profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
