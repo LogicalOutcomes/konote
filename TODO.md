@@ -56,8 +56,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: FHIR-Informed Data Foundations + CIDS Compliance — interleaved sequence, quick win for funders before heavier model work (see tasks/fhir-informed-data-modelling.md, tasks/cids-json-ld-export.md, tasks/design-rationale/fhir-informed-modelling.md)
 
-- [ ] Define unified Outcome Domain taxonomy + CIDS metadata fields + OrganizationProfile — combined step: outcome_domain replaces MetricDefinition.category, CIDS fields (iris_metric_code, sdg_goals, etc.) added in same migration, cids_theme_override for admin edge cases (F0 + CIDS Phase 1) — GK reviews taxonomy (FHIR-DOMAIN1 + CIDS-META1 + CIDS-ORG1)
-- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking — needed for three-tier theme derivation (CIDS Phase 2) — (CIDS-CODES1)
+- [ ] Add CIDS metadata fields + OrganizationProfile — CIDS fields (iris_metric_code, sdg_goals, cids_theme_override, etc.) on MetricDefinition/Program/PlanTarget + singleton OrganizationProfile. MetricDefinition.category unchanged (see tasks/phase-fhir-cids-prompt.md Session 1) — GK reviews metadata fields (CIDS-META1 + CIDS-ORG1)
+- [ ] Import CIDS code lists (17 lists) + build TaxonomyMapping model for multi-funder taxonomy support — management command from codelist.commonapproach.org, TaxonomyMapping enables one metric → multiple external taxonomies with optional funder context (CIDS Phase 2) — (CIDS-CODES1)
 - [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates (CIDS Phase 2) — (CIDS-ADMIN1)
 - [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix — quick win for funders, no ServiceEpisode needed yet (CIDS Phase 2.5) — (CIDS-ENRICH1)
 - [ ] Extend ClientProgramEnrolment into ServiceEpisode — add status lifecycle, status history, episode type (auto-derived), discharge reason, primary worker, referral source. Extend in place with class alias, no table rename (Phase F1) — GK reviews data model (FHIR-EPISODE1)
