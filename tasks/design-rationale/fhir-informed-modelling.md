@@ -2,6 +2,7 @@
 
 **Created:** 2026-02-27
 **Expert panel:** 5 experts, 3 rounds, consensus reached
+**Review panel:** 4 experts, 3 rounds — 5 revisions incorporated 2026-02-27
 **Implementation plan:** tasks/fhir-informed-data-modelling.md
 
 ---
@@ -93,10 +94,11 @@
 ## Decided Trade-offs
 
 ### Replace vs. extend ClientProgramEnrolment
-- **Chosen:** Replace with ServiceEpisode via data migration
-- **Trade-off:** Migration risk; all queries touching ClientProgramEnrolment need updating
-- **Reason:** ServiceEpisode is a strict superset. Maintaining both creates divergence and confusion about which is authoritative.
-- **Mitigation:** Keep old table for one release cycle; thorough search-and-replace; dry-run migration on staging
+- **Chosen (revised):** Extend in place — keep `db_table`, add fields, alias old class name
+- **Trade-off:** Old class name persists as alias (minor naming clutter)
+- **Reason:** Eliminates the mass query rewrite risk entirely. All existing imports, foreign keys, and queries continue working. ServiceEpisode is the new class name; `ClientProgramEnrolment = ServiceEpisode` is the alias.
+- **Mitigation:** Dry-run migrations on staging. The alias can be removed in a future cleanup pass once all references are updated.
+- **Why the original approach (full replacement) was rejected:** The review panel identified that touching every view, template, and query that references ClientProgramEnrolment is a large blast radius for a team doing AI-assisted development. Extend-in-place achieves the same data model with near-zero disruption.
 - **Domains:** Architecture, Migration
 
 ### Single achievement_status field vs. separate lifecycle + achievement
@@ -113,10 +115,10 @@
 - **Domains:** Data Quality, UX, Reporting
 
 ### Unified domain taxonomy vs. separate CIDS themes and FHIR categories
-- **Chosen:** One taxonomy (`outcome_domain`) serving CIDS export, FHIR-informed tracking, and internal reporting
-- **Trade-off:** Some loss of granularity (CIDS IRIS Impact Theme has 25+ categories; our taxonomy has 14)
-- **Reason:** Two overlapping taxonomies that don't quite map creates confusion. One field that maps to both standards is cleaner.
-- **Mitigation:** The CIDS export layer can map `outcome_domain` to the nearest IRIS Impact Theme code; `custom` domain catches anything that doesn't fit
+- **Chosen (revised):** `outcome_domain` (14 values) for internal use and FHIR tracking. CIDS Theme derived at export time via three-tier approach, not stored as a separate field.
+- **Trade-off:** Theme derivation adds export-time complexity; `cids_theme_override` field needed for edge cases
+- **Reason:** The original plan proposed replacing `cids_theme` with `outcome_domain`, but the review panel identified this as lossy — IRIS Impact Theme has 25+ values and the mapping is many-to-many. Neither a dedicated `cids_theme` field nor `outcome_domain` alone is sufficient.
+- **Three-tier derivation:** (1) `iris_metric_code` → CidsCodeList lookup → parent theme (precise); (2) `outcome_domain` → default mapping (fallback); (3) `cids_theme_override` (admin correction)
 - **Domains:** Standards, Data Model
 
 ### Discharge reason as required vs. optional
@@ -135,6 +137,8 @@
 | Workers choose the first discharge reason without thinking | Medium | Medium | Check distribution — if >80% are "completed," the data is suspect | Review discharge reason distribution quarterly; add "Are you sure?" confirmation for "completed" if the client has no achieved goals |
 | Achievement status auto-computation creates false confidence | Medium | Medium | Compare auto-computed vs. worker-overridden achievement status rates | Log overrides; if >20% are overridden, the algorithm needs tuning |
 | Episode history gets complex for long-term clients | Low | Low | Monitor clients with >3 episodes | Acceptable complexity — these are the exact clients funders ask about |
+| Achievement status unreliable with sparse data (1-2 points) | Medium | Low | Track percentage of goals with <3 data points | Document in reporting: "based on limited data" badge for goals with <3 points; full trend requires 3+ |
+| `not_attainable` misused by workers | Low | Medium | Monitor frequency and review with PM | Never auto-computed; requires deliberate worker action; review in supervision |
 | Unified domain taxonomy is too coarse for some programs | Low | Low | Track how often `custom` domain is selected | Add new domains as patterns emerge; keep the list under 20 |
 
 ---

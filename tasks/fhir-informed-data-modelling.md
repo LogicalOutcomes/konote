@@ -3,7 +3,8 @@
 **Task ID:** FHIR-DATA1
 **Created:** 2026-02-27
 **Status:** Draft — awaiting GK review
-**Depends on:** Should be built BEFORE CIDS Phase 1 (see Sequencing section)
+**Depends on:** Interleaved with CIDS phases (see Sequencing section)
+**Reviewed by:** Second expert panel (4 experts, 3 rounds) — 5 revisions incorporated 2026-02-27
 **Expert panel:** 5-expert panel (Social Services Data Architect, Health Informatics Specialist, Nonprofit Technology Strategist, Evaluation & Measurement Specialist, Systems Architect) — consensus reached 2026-02-27
 
 ---
@@ -110,19 +111,43 @@ ServiceEpisode ≫ Unified Domain Taxonomy ≫ Goal Achievement Status ≫ Encou
 
 **PlanTarget:** Add `outcome_domain` (CharField, blank=True). Inherited from the plan section's program domain or from the target's metrics. Can be overridden.
 
-**Why this replaces `cids_theme` on MetricDefinition:** The CIDS plan (Phase 1b) proposed a separate `cids_theme` field. With the unified taxonomy, `outcome_domain` serves that purpose — the CIDS export maps `outcome_domain` to the corresponding IRIS Impact Theme code. One field, not two.
+#### CIDS Theme derivation (three-tier approach — revised per review panel)
 
-**Impact on CIDS Phase 1:** The `cids_theme` field in Phase 1b becomes unnecessary. Instead, Phase 1b adds the other CIDS-specific fields (`cids_indicator_uri`, `iris_metric_code`, `sdg_goals`, `cids_unit_description`, `cids_defined_by`, `cids_has_baseline`) and relies on `outcome_domain` for theme mapping. Similarly, `cids_impact_theme` on PlanTarget (Phase 1d) is replaced by `outcome_domain`.
+The original plan proposed replacing `cids_theme` with `outcome_domain`. The review panel identified this as lossy — IRIS Impact Theme has 25+ values, `outcome_domain` has 14, and the mapping is many-to-many.
+
+**Revised approach:** Neither a dedicated `cids_theme` field nor `outcome_domain` alone is needed. Instead, CIDS Theme is derived at export time via three tiers:
+
+1. **Primary:** `iris_metric_code` (from CIDS Phase 1b) → look up in `CidsCodeList` → get the parent IRIS Impact Theme. This is precise and spec-compliant.
+2. **Fallback:** `outcome_domain` → default mapping table (one domain maps to one theme). Coarser, but better than nothing for metrics that don't have an `iris_metric_code`.
+3. **Admin override:** `cids_theme_override` (new CharField on MetricDefinition, blank=True) — admin correction for edge cases where neither derivation is right.
+
+**New field on MetricDefinition:** `cids_theme_override` (CharField, max_length=50, blank=True). Only used when the auto-derived theme is wrong.
+
+**Impact on CIDS Phase 1:** Phase 1b retains all originally planned fields (`cids_indicator_uri`, `iris_metric_code`, `sdg_goals`, `cids_unit_description`, `cids_defined_by`, `cids_has_baseline`) and adds `cids_theme_override`. The originally proposed `cids_theme` and `cids_impact_theme` fields are unnecessary — the export layer derives themes from `iris_metric_code` and `outcome_domain`.
 
 ---
 
-### Phase F1: ServiceEpisode (replaces ClientProgramEnrolment)
+### Phase F1: ServiceEpisode (extends ClientProgramEnrolment in place)
 
 **FHIR source:** EpisodeOfCare resource (status state machine + statusHistory pattern)
 
-#### New model: `ServiceEpisode`
+**Migration strategy (revised per review panel):** Extend ClientProgramEnrolment in place rather than replacing it. Keep the same `db_table`, add new fields, create a `ServiceEpisode` class alias for new code. This eliminates the mass query rewrite risk — all existing references to `ClientProgramEnrolment` continue working unchanged.
 
-**Where it lives:** `apps/clients/models.py` (alongside existing ClientFile)
+```python
+# In apps/clients/models.py
+class ServiceEpisode(models.Model):
+    """Extended from ClientProgramEnrolment with FHIR-informed fields."""
+    class Meta:
+        db_table = "clients_clientprogramenrolment"  # Keep existing table
+    # ... all new fields below ...
+
+# Backwards compatibility alias
+ClientProgramEnrolment = ServiceEpisode
+```
+
+#### Model: `ServiceEpisode` (extends existing table)
+
+**Where it lives:** `apps/clients/models.py` (replaces ClientProgramEnrolment class definition)
 
 | Field | Type | FHIR Concept | Notes |
 |---|---|---|---|
@@ -207,28 +232,28 @@ Append-only status history for reporting queries.
 
 **Write pattern:** Every time `ServiceEpisode.status` changes, a `ServiceEpisodeStatusChange` row is appended. This happens in the model's `save()` method (track dirty status field) or via a `post_save` signal. Also write to AuditLog for compliance trail.
 
-#### Data migration from ClientProgramEnrolment
+#### Data migration (in-place field population)
+
+Since we extend the existing table, migration is simpler — no data copying:
 
 ```
-For each ClientProgramEnrolment:
-  → Create ServiceEpisode:
-      client_file = enrolment.client_file
-      program = enrolment.program
-      status = "active" if enrolment.status == "enrolled" else "finished"
-      started_at = enrolment.enrolled_at
-      ended_at = enrolment.unenrolled_at (if unenrolled)
-      episode_type = "" (unknown for historical data)
-      end_reason = "" (unknown for historical data)
-      enrolled_at = enrolment.enrolled_at
-  → Create initial ServiceEpisodeStatusChange:
-      status = episode.status
-      reason = "Migrated from ClientProgramEnrolment"
-      changed_at = enrolment.enrolled_at
+Django migration:
+  1. Add new fields (all nullable) to clients_clientprogramenrolment table
+  2. Run data migration:
+     For each existing row:
+       → Set started_at = enrolled_at
+       → Set new status: "active" if old status == "enrolled", else "finished"
+       → Set ended_at = unenrolled_at (if unenrolled)
+       → Leave episode_type, end_reason, referral_source blank (unknown for historical data)
+  3. Create initial ServiceEpisodeStatusChange for each row:
+       status = new status value
+       reason = "Migrated from ClientProgramEnrolment"
+       changed_at = enrolled_at
 ```
 
 **All new fields are nullable/optional.** Historical data gets enriched opportunistically; going forward, the system captures complete data.
 
-**Migration safety:** Keep the `ClientProgramEnrolment` table for one release cycle. Add a deprecation warning to any code that queries it directly. Remove in the following release.
+**Migration safety:** The `ClientProgramEnrolment` class name is aliased to `ServiceEpisode`, so all existing imports and queries continue working. No table rename, no foreign key changes, no mass query rewrite. Dry-run on staging database before production.
 
 #### UI changes (minimal)
 
@@ -287,13 +312,14 @@ ServiceEpisode.objects.filter(program=program, status="on_hold").select_related(
 
 **FHIR source:** Goal.achievementStatus vocabulary
 
-#### New field on `PlanTarget`
+#### New fields on `PlanTarget`
 
 | Field | Type | Notes |
 |---|---|---|
 | `achievement_status` | CharField(max_length=20, blank=True) | Derived or worker-assessed |
 | `achievement_status_source` | CharField(max_length=20, blank=True) | `auto_computed` or `worker_assessed` |
 | `achievement_status_updated_at` | DateTimeField(null=True) | When last computed/assessed |
+| `first_achieved_at` | DateTimeField(null=True, blank=True) | Timestamp when achievement_status first became `achieved`. Enables "time to achievement" reporting and `sustaining` detection. Never cleared once set. |
 
 **Achievement status choices** (from FHIR Goal.achievementStatus, adapted):
 
@@ -332,6 +358,24 @@ Map from the existing ProgressNoteTarget.progress_descriptor:
 | `good_place` (In a good place) | `achieved` (first time) or `sustaining` (if previously achieved) |
 
 **Fallback:** If no metrics and no progress_descriptor recorded, leave as `in_progress`.
+
+#### Edge cases (revised per review panel)
+
+**Sparse data rules:**
+
+| Data Points | Behaviour |
+|---|---|
+| 0 points | `in_progress` — no data to compute from |
+| 1 point | `in_progress` — insufficient data for trend. If this single point meets the target, set `achieved`. |
+| 2 points | Compare the two: improving if 2nd > 1st, worsening if 2nd < 1st, no_change if equal. Less reliable than 3-point but better than nothing. |
+| 3+ points | Full 3-point trend analysis (2 of last 3 show improvement → `improving`, etc.) |
+
+**`achieved` trigger mechanism:**
+- When the latest metric value meets or exceeds the target threshold, set `achievement_status = "achieved"` and record `first_achieved_at` (if not already set).
+- If `first_achieved_at` is already set and the latest value still meets threshold → `sustaining`.
+- If `first_achieved_at` is set but latest value drops below threshold → `worsening` (not back to `in_progress` — the client did achieve once).
+
+**`not_attainable` — never auto-computed.** This is always a deliberate worker or program manager decision. It means the goal needs revision, not that the client failed. Auto-computing it would be clinically inappropriate.
 
 **Computation trigger:** Recalculate when a ProgressNote is saved that includes a ProgressNoteTarget for this goal. Store the result on PlanTarget so reports can query it directly without recomputing.
 
@@ -464,37 +508,33 @@ For now, `ServiceEpisode.primary_worker` covers the 80% case.
 
 ## Sequencing with CIDS Implementation Plan
 
-The expert panel recommended building FHIR-informed foundations *before* CIDS Phase 1, because:
+**Revised per review panel:** Interleave FHIR and CIDS phases instead of doing all FHIR first. This delivers a CIDS quick win (enriched reports) to funders earlier, before the heavier ServiceEpisode work.
 
-1. CIDS Phase 1 adds `cids_theme` to MetricDefinition — with the unified domain taxonomy, this becomes `outcome_domain` instead (one field, not two)
-2. CIDS Phase 2.5 (enriched reports) produces better output with ServiceEpisode in place
-3. CIDS Phase 3 (JSON-LD export) needs `cids:Activity` counts scoped to reporting periods — ServiceEpisode makes these precise
+### Interleaved sequence (revised)
 
-### Revised combined sequence
-
-| Order | Phase | What | Effort | Value |
-|---|---|---|---|---|
-| **1** | **F0** | Unified Outcome Domain taxonomy | Low | High — foundation for everything |
-| **2** | **F1** | ServiceEpisode + StatusChange (replaces ClientProgramEnrolment) | Medium | Very High — solves reporting headaches |
-| **3** | **CIDS 1** | Metadata fields on MetricDefinition, Program, PlanTarget + OrganizationProfile | Medium | High — CIDS foundation |
-| **4** | **F2** | Goal Achievement Status on PlanTarget | Low | High — nuanced outcome reporting |
-| **5** | **F3** | Encounter Participant Role on ProgressNote | Very Low | Medium — auto-filled, no workflow change |
-| **6** | **CIDS 2** | Import CIDS code lists + admin UI dropdowns | Medium | High |
-| **7** | **CIDS 2.5** | CIDS-enriched CSV/PDF reports | Low | High — immediate funder value |
-| **8** | **CIDS 3** | JSON-LD export with SHACL validation | High | Very High — the differentiator |
-| **9** | **CIDS 4** | Computed impact dimensions | Medium | High |
-| **10** | **CIDS 5** | Conformance badge + validation reporting | Low | Medium |
-| — | **F4** | Presenting Issues (computed view) | Low | Medium — build when a funder asks |
-| — | **F5** | Service Referrals | Medium | Medium — build at multi-agency phase |
-| — | **F6** | Care Team | Medium | Low (now) — build at multi-agency phase |
+| Order | Phase | What | Effort | Value | Why this order |
+|---|---|---|---|---|---|
+| **1** | **F0 + CIDS 1** | Unified Outcome Domain taxonomy + CIDS metadata fields + OrganizationProfile | Medium | Very High | Combined because F0 and CIDS 1 both add fields to MetricDefinition. Do them together to avoid two migration rounds. |
+| **2** | **CIDS 2** | Import CIDS code lists + admin UI dropdowns | Medium | High | Needed for three-tier theme derivation — `iris_metric_code` looks up its theme in CidsCodeList. |
+| **3** | **CIDS 2.5** | CIDS-enriched CSV/PDF reports | Low | High | **Quick win for funders.** Uses outcome_domain + iris_metric_code derivation. No ServiceEpisode needed yet. |
+| **4** | **F1** | ServiceEpisode (extend ClientProgramEnrolment) + StatusChange | Medium | Very High | Now has CIDS foundation in place. Solves reporting headaches. |
+| **5** | **F2** | Goal Achievement Status on PlanTarget | Low | High | Adds `achievement_status` + `first_achieved_at`. Enriches both internal reports and CIDS export. |
+| **6** | **F3** | Encounter Participant Role on ProgressNote | Very Low | Medium | Auto-filled, no workflow change. |
+| **7** | **CIDS 3** | JSON-LD export with SHACL validation | High | Very High | Benefits from all FHIR work — episode scoping, achievement_status, theme derivation. |
+| **8** | **CIDS 4** | Computed impact dimensions | Medium | High | Enriched by achievement_status for nuanced depth. |
+| **9** | **CIDS 5** | Conformance badge + validation reporting | Low | Medium | |
+| — | **F4** | Presenting Issues (computed view) | Low | Medium | Build when a funder asks. |
+| — | **F5** | Service Referrals | Medium | Medium | Build at multi-agency phase. |
+| — | **F6** | Care Team | Medium | Low (now) | Build at multi-agency phase. |
 
 ### What changes in the CIDS plan
 
-1. **`cids_theme` on MetricDefinition** (Phase 1b) → replaced by `outcome_domain` from Phase F0. The CIDS export layer maps `outcome_domain` to the corresponding IRIS Impact Theme code.
-2. **`cids_impact_theme` on PlanTarget** (Phase 1d) → replaced by `outcome_domain` from Phase F0.
-3. **`cids:Activity` computation** (Phase 3) → enhanced by ServiceEpisode. Encounter counts scoped to episodes, not just date ranges.
-4. **`cids:BeneficialStakeholder` cohort definition** (Phase 3) → enriched by episode_type and end_reason. Can define cohorts as "new intakes" vs. "re-enrolments" vs. "all active."
-5. **`cids:ImpactDepth` computation** (Phase 4) → enriched by achievement_status for nuanced depth beyond simple "met target" percentage.
+1. **`cids_theme` on MetricDefinition** (Phase 1b) → **removed.** Theme is derived at export time via three-tier derivation: `iris_metric_code` → CidsCodeList lookup (primary), `outcome_domain` → default mapping (fallback), `cids_theme_override` (admin correction).
+2. **`cids_impact_theme` on PlanTarget** (Phase 1d) → **removed.** Derived from the target's metric's theme at export time.
+3. **New field added:** `cids_theme_override` on MetricDefinition (blank CharField for admin edge-case correction).
+4. **`cids:Activity` computation** (Phase 3) → enhanced by ServiceEpisode. Encounter counts scoped to episodes, not just date ranges.
+5. **`cids:BeneficialStakeholder` cohort definition** (Phase 3) → enriched by episode_type and end_reason. Can define cohorts as "new intakes" vs. "re-enrolments" vs. "all active."
+6. **`cids:ImpactDepth` computation** (Phase 4) → enriched by achievement_status and `first_achieved_at` for time-to-achievement and nuanced depth reporting.
 
 All other CIDS plan elements are unchanged.
 
@@ -504,13 +544,15 @@ All other CIDS plan elements are unchanged.
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| Migration corrupts enrolment data | Low | High | Dry-run on staging database; keep old table for one release cycle |
+| Migration corrupts enrolment data | Very Low | High | Extend-in-place means no data copying — just adding nullable columns. Dry-run on staging. |
 | Workers don't fill in discharge reason | Medium | Medium | Required radio buttons in discharge modal, not optional text |
-| Achievement status computation produces misleading results | Medium | Medium | "Auto" badge; worker override; 3-point trend (not single-point) |
+| Achievement status computation produces misleading results | Medium | Medium | "Auto" badge; worker override; 3-point trend; documented sparse data rules |
+| `not_attainable` auto-computed inappropriately | None | High | Never auto-computed — always requires deliberate worker action |
 | Unified domain taxonomy doesn't cover all programs | Low | Low | Include `custom` domain; agencies can request additions |
 | Over-engineering: models nobody uses | Medium | Low | Build F0+F1+F2 only; defer F4-F6 until triggered |
-| CIDS Phase 1 conflict if taxonomy not settled first | Medium | Medium | Resolve taxonomy (F0) before starting CIDS-META1 |
-| ServiceEpisode adds complexity to existing queries | Low | Medium | Provide compatibility helpers; all existing ClientProgramEnrolment queries map 1:1 |
+| CIDS Phase 1 conflict if taxonomy not settled first | None | Medium | F0 and CIDS 1 are now combined — done in same migration |
+| ServiceEpisode adds complexity to existing queries | Very Low | Low | Extend-in-place with class alias — all existing references continue working unchanged |
+| Three-tier theme derivation has gaps | Low | Low | `cids_theme_override` provides admin escape hatch for any metric that maps incorrectly |
 
 ---
 
@@ -531,7 +573,7 @@ All other CIDS plan elements are unchanged.
 - **No FHIR server or FHIR API.** Plain Django models.
 - **No FHIR validation or SHACL shapes.** No terminology bindings.
 - **No new data entry for frontline staff** (except the discharge reason question).
-- **No breaking changes to existing views.** ServiceEpisode is a superset of ClientProgramEnrolment.
+- **No breaking changes to existing views.** ServiceEpisode extends ClientProgramEnrolment in place with a class alias — all existing code continues working.
 - **No external dependencies.** No new Python packages.
 - **No changes to existing ProgressNote, MetricValue, or MetricDefinition models** (except adding `outcome_domain` to MetricDefinition and `achievement_status` to PlanTarget).
 
