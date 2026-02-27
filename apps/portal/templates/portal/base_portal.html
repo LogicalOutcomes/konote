@@ -40,6 +40,12 @@
         --pico-primary-focus: var(--kn-primary-focus);
         --pico-primary-inverse: var(--kn-text-on-primary);
     }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --kn-primary-active: {{ site.brand_color_light|default:site.brand_color }};
+            --kn-primary-subtle: {{ site.brand_color_focus|default:"rgba(49, 118, 170, 0.25)" }};
+        }
+    }
     </style>
     {% endif %}
 

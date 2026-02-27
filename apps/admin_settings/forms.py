@@ -255,7 +255,8 @@ class InstanceSettingsForm(forms.Form):
         else:
             # Clear derived values when brand colour is removed
             for dk in ("brand_color_hover", "brand_color_focus",
-                       "brand_color_subtle", "brand_color_text"):
+                       "brand_color_subtle", "brand_color_light",
+                       "brand_color_text"):
                 InstanceSetting.objects.filter(setting_key=dk).delete()
 
 
@@ -277,6 +278,13 @@ def _derive_brand_colours(hex_color):
     # Subtle background: 8% opacity
     subtle = f"rgba({r}, {g}, {b}, 0.08)"
 
+    # Light variant for dark mode (blend 40% toward white)
+    light = "#{:02x}{:02x}{:02x}".format(
+        min(255, int(r + (255 - r) * 0.4)),
+        min(255, int(g + (255 - g) * 0.4)),
+        min(255, int(b + (255 - b) * 0.4)),
+    )
+
     # Text on primary: white or dark based on relative luminance
     # Using simplified sRGB luminance
     def to_linear(c):
@@ -290,6 +298,7 @@ def _derive_brand_colours(hex_color):
         "brand_color_hover": hover,
         "brand_color_focus": focus,
         "brand_color_subtle": subtle,
+        "brand_color_light": light,
         "brand_color_text": text_color,
     }
 
