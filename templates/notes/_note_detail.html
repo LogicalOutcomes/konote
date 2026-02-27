@@ -41,7 +41,7 @@
         {% if entry.progress_descriptor %}<p><span class="badge badge-neutral">{{ entry.get_progress_descriptor_display }}</span></p>{% endif %}
         {% if entry.notes %}<p>{{ entry.notes }}</p>{% endif %}
         {% if entry.metric_values.all %}
-        <table>
+        <table class="metric-values-table">
             <thead><tr><th scope="col">{{ term.metric|default:"Metric" }}</th><th scope="col">{% trans "Value" %}</th></tr></thead>
             <tbody>
             {% for mv in entry.metric_values.all %}
