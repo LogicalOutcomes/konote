@@ -1482,10 +1482,19 @@ details.search-filters-panel[open] summary {
     grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
 }
+.demo-grid form {
+    margin-bottom: 0;
+}
+.demo-grid form:only-child {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+}
 .demo-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
     min-height: 44px;
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;
