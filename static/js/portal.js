@@ -17,7 +17,7 @@ function quickExit() {
     navigator.sendBeacon('/my/emergency-logout/', payload);
     // Read configurable exit URL from button data attribute (set by admin)
     var btn = document.getElementById('quick-exit');
-    var exitUrl = (btn && btn.dataset.exitUrl) || 'https://www.theweathernetwork.com';
+    var exitUrl = (btn && btn.dataset.exitUrl) || 'https://www.google.ca';
     // Replace current history entry so back button doesn't return here
     window.location.replace(exitUrl);
 }
