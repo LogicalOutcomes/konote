@@ -163,29 +163,47 @@ class MetricDefinitionForm(forms.ModelForm):
         self._populate_cids_choices()
 
     def _populate_cids_choices(self):
-        """Populate CIDS dropdown fields from CidsCodeList entries."""
+        """Populate CIDS dropdown fields from CidsCodeList entries.
+
+        Gracefully handles missing table (e.g. during early migrations)
+        by falling back to static choices.
+        """
+        from django.db.utils import OperationalError, ProgrammingError
         from apps.admin_settings.models import CidsCodeList
 
-        # iris_metric_code → Select from IrisMetric53
-        iris_choices = [("", _("— None —"))]
-        iris_entries = CidsCodeList.objects.filter(
-            list_name="IrisMetric53",
-        ).order_by("code")
-        iris_choices += [(e.code, f"{e.code} — {e.label}") for e in iris_entries]
-        self.fields["iris_metric_code"].widget = forms.Select(choices=iris_choices)
+        try:
+            # iris_metric_code → Select from IrisMetric53
+            iris_choices = [("", _("— None —"))]
+            iris_entries = CidsCodeList.objects.filter(
+                list_name="IrisMetric53",
+            ).order_by("code")
+            iris_choices += [(e.code, f"{e.code} — {e.label}") for e in iris_entries]
+            self.fields["iris_metric_code"].widget = forms.Select(choices=iris_choices)
 
-        # sdg_goals → SelectMultiple from SDGImpacts
-        sdg_choices = []
-        sdg_entries = CidsCodeList.objects.filter(
-            list_name="SDGImpacts",
-        ).order_by("code")
-        if sdg_entries.exists():
-            sdg_choices = [(e.code, f"SDG {e.code}: {e.label}") for e in sdg_entries]
-        else:
-            # Fallback: SDG goals 1-17
+            # sdg_goals → Replace JSONField form field with MultipleChoiceField
+            # so CheckboxSelectMultiple works correctly (JSONField expects a JSON
+            # string but checkboxes submit a list of values).
+            sdg_choices = []
+            sdg_entries = CidsCodeList.objects.filter(
+                list_name="SDGImpacts",
+            ).order_by("code")
+            if sdg_entries.exists():
+                sdg_choices = [(e.code, f"SDG {e.code}: {e.label}") for e in sdg_entries]
+            else:
+                sdg_choices = [(str(i), f"SDG {i}") for i in range(1, 18)]
+        except (OperationalError, ProgrammingError):
+            # Table doesn't exist yet (early migration or fresh test DB)
+            self.fields["iris_metric_code"].widget = forms.Select(
+                choices=[("", _("— None —"))],
+            )
             sdg_choices = [(str(i), f"SDG {i}") for i in range(1, 18)]
-        self.fields["sdg_goals"].widget = forms.CheckboxSelectMultiple(
+
+        self.fields["sdg_goals"] = forms.TypedMultipleChoiceField(
             choices=sdg_choices,
+            widget=forms.CheckboxSelectMultiple,
+            required=False,
+            coerce=str,
+            label=_("SDG Goals"),
         )
         # Set initial value: convert ints to strings for the widget
         if self.instance and self.instance.pk and self.instance.sdg_goals:
