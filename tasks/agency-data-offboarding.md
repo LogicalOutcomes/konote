@@ -35,7 +35,7 @@ For PIPEDA data access requests, program transfers, or giving a client their own
 
 - Staff initiates from the client profile ("Export Client Data" action)
 - Delivered via **SecureExportLink** — time-limited HTTPS download (24h expiry, logged, revocable)
-- **No file-level encryption** — the secure transport is the protection. One person's data has a limited blast radius compared to an agency-wide export.
+- **No file-level encryption** — the secure transport is the protection. One person's data has a limited blast radius compared to an agency-wide export. This is consistent with how healthcare portals deliver patient records (e.g., time-limited HTTPS download links).
 - Staff chooses format:
   - **PDF** — human-readable, printable. Covers core stable models: profile, program enrolments, plan goals, progress notes, metric history. Footer states: *"For a complete export including all modules, use the JSON format."*
   - **JSON** — machine-readable, nested client-centric structure. Always complete (automatic model discovery via relationship walking from ClientFile). For importing into another CMS or giving to a service provider.
@@ -179,6 +179,7 @@ export-[agency]-[date]/
 - **JSON, not CSV.** Clinical notes contain newlines, commas, quotes, and long narrative text. CSV is fragile — one encoding error and rows misalign. JSON handles arbitrary text safely.
 - **No CSV option.** The risk of data corruption in CSV for clinical notes outweighs the convenience of spreadsheet compatibility.
 - **Human-readable labels** included alongside raw values in both flat and nested files.
+- **Encoding:** All JSON files are UTF-8 encoded without BOM.
 
 ## Command Interface
 
@@ -192,6 +193,12 @@ python manage.py export_agency_data \
     --plaintext \
     --output /secure/path/backup.zip
 
+# Single client export — operator convenience for SaaS PIPEDA requests
+python manage.py export_agency_data \
+    --client-id 42 \
+    --plaintext \
+    --output /secure/path/client_42.zip
+
 # Dry run (shows row counts, coverage, no file written)
 python manage.py export_agency_data --dry-run
 ```
@@ -199,7 +206,7 @@ python manage.py export_agency_data --dry-run
 **Notes:**
 - Default mode is encrypted. `--plaintext` must be explicitly specified.
 - Plaintext mode shows a PII warning and requires the operator to type `CONFIRM PLAINTEXT`.
-- For individual client exports (PIPEDA, program transfers), use Tier 1 from the client profile — not this command.
+- `--client-id` is for SaaS operators handling PIPEDA requests on behalf of agencies that can't access the web UI. Agency staff should use Tier 1 from the client profile when possible.
 
 ## Security Controls
 
