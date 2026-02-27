@@ -16902,14 +16902,20 @@ msgid "%(resource_term)s for %(program_name)s"
 msgstr "%(resource_term)s pour %(program_name)s"
 
 #. blocktrans — portal/staff_program_resources.html
-msgid "These %(resource_term)s will be visible to all participants enrolled in this program."
-msgstr "Ces %(resource_term)s seront visibles par tous les participants inscrits à ce programme."
+msgid ""
+"These %(resource_term)s will be visible to all participants enrolled in this"
+" program."
+msgstr ""
+"Ces %(resource_term)s seront visibles par tous les participants inscrits à "
+"ce programme."
 
-#. blocktrans — portal/staff_program_resources.html, staff_client_resources.html
+#. blocktrans — portal/staff_program_resources.html,
+#. staff_client_resources.html
 msgid "Add %(resource_term)s"
 msgstr "Ajouter %(resource_term)s"
 
-#. blocktrans — portal/staff_program_resources.html, staff_client_resources.html
+#. blocktrans — portal/staff_program_resources.html,
+#. staff_client_resources.html
 msgid "Current %(resource_term)s"
 msgstr "%(resource_term)s actuelles"
 
@@ -16922,8 +16928,12 @@ msgid "%(resource_term)s for this participant"
 msgstr "%(resource_term)s pour ce participant"
 
 #. blocktrans — portal/staff_client_resources.html
-msgid "Add helpful website links that only this participant will see in their portal."
-msgstr "Ajoutez des liens utiles vers des sites Web que seul ce participant verra dans son portail."
+msgid ""
+"Add helpful website links that only this participant will see in their "
+"portal."
+msgstr ""
+"Ajoutez des liens utiles vers des sites Web que seul ce participant verra "
+"dans son portail."
 
 #. blocktrans — portal/staff_client_resources.html
 msgid "No %(resource_term)s added for this participant yet."
@@ -16932,3 +16942,14 @@ msgstr "Aucune %(resource_term)s ajoutée pour ce participant pour le moment."
 #. blocktrans — portal/staff_program_resource_edit.html
 msgid "Edit %(resource_term)s"
 msgstr "Modifier %(resource_term)s"
+
+msgid "Added for you"
+msgstr "Ajoutés pour vous"
+
+#, python-format
+msgid "Manage portal %(resource_term)s"
+msgstr "Gérer %(resource_term)s du portail"
+
+#, python-format
+msgid "Manage %(resource_term)s"
+msgstr "Gérer %(resource_term)s"
