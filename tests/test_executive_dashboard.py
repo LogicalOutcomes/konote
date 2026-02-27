@@ -328,7 +328,7 @@ class ProgramLearningCardTest(TestCase):
         """Create an active client enrolled in self.program."""
         cf = ClientFile.objects.create(record_id=record_id, status="active")
         ClientProgramEnrolment.objects.create(
-            client_file=cf, program=self.program, status="enrolled",
+            client_file=cf, program=self.program, status="active",
         )
         return cf
 

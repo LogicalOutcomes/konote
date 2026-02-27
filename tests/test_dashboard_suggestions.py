@@ -45,11 +45,11 @@ class BatchSuggestionCountsTest(TestCase):
 
         self.client1 = ClientFile.objects.create(record_id="SUGG-001")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client1, program=self.program1, status="enrolled",
+            client_file=self.client1, program=self.program1, status="active",
         )
         self.client2 = ClientFile.objects.create(record_id="SUGG-002")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client2, program=self.program2, status="enrolled",
+            client_file=self.client2, program=self.program2, status="active",
         )
 
     def _create_note(self, client, program, priority):
@@ -242,7 +242,7 @@ class ExecutiveDashboardSuggestionViewTest(TestCase):
 
         self.client_file = ClientFile.objects.create(record_id="EXEC-001")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
     def test_dashboard_shows_suggestion_card_when_important(self):

@@ -17,7 +17,7 @@ def _get_accessible_client_ids(user):
 
     Security: Superuser/admin status does NOT grant automatic access.
     User must have an active UserProgramRole for each program.
-    Filters by current enrolments only (status="enrolled").
+    Filters by current enrolments only (status="active").
     """
     user_program_ids = set(
         UserProgramRole.objects.filter(user=user, status="active")
@@ -27,7 +27,7 @@ def _get_accessible_client_ids(user):
         return set()
     return set(
         ClientProgramEnrolment.objects.filter(
-            program_id__in=user_program_ids, status="enrolled",
+            program_id__in=user_program_ids, status="active",
         ).values_list("client_file_id", flat=True)
     )
 

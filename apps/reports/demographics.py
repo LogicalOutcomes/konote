@@ -359,7 +359,7 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     # Small programs: grouping is unsafe (k-anonymity)
     if program:
         enrolled_count = ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
         ).count()
         if enrolled_count < 50:
             return choices

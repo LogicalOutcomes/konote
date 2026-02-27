@@ -119,7 +119,7 @@ def _batch_alerts_by_program(filtered_program_ids, base_client_ids):
 
     enrolments = ClientProgramEnrolment.objects.filter(
         program_id__in=filtered_program_ids,
-        status="enrolled",
+        status="active",
         client_file_id__in=base_client_ids,
     ).values_list("program_id", "client_file_id")
 
@@ -258,7 +258,7 @@ def _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start):
     enrolments = (
         ClientProgramEnrolment.objects.filter(
             program_id__in=filtered_program_ids,
-            status="enrolled",
+            status="active",
             client_file_id__in=base_client_ids,
         )
         .values_list(
@@ -708,7 +708,7 @@ def _batch_metric_insights(filtered_program_ids, date_from, date_to):
     enrolled_rows = (
         ClientProgramEnrolment.objects.filter(
             program_id__in=filtered_program_ids,
-            status="enrolled",
+            status="active",
         )
         .values("program_id")
         .annotate(cnt=Count("client_file_id", distinct=True))
@@ -928,7 +928,7 @@ def _get_executive_inline_data(user, program_ids, base_client_ids):
     from apps.clients.models import ClientFile
     all_enrolled_ids = set(
         ClientProgramEnrolment.objects.filter(
-            program_id__in=filtered_program_ids, status="enrolled",
+            program_id__in=filtered_program_ids, status="active",
             client_file_id__in=base_client_ids,
         ).values_list("client_file_id", flat=True)
     )
@@ -1073,7 +1073,7 @@ def executive_dashboard(request):
     # Collect all active client IDs across filtered programs (for top-line cards)
     all_enrolled_ids = set(
         ClientProgramEnrolment.objects.filter(
-            program__in=filtered_programs, status="enrolled"
+            program__in=filtered_programs, status="active"
         ).values_list("client_file_id", flat=True)
     )
     all_active_ids = set(

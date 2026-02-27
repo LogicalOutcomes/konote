@@ -424,13 +424,13 @@ def export_form(request):
         accessible_programs = get_manageable_programs(request.user)
         _has_confidential_program = accessible_programs.filter(is_confidential=True).exists()
         client_ids = ClientProgramEnrolment.objects.filter(
-            program__in=accessible_programs, status="enrolled",
+            program__in=accessible_programs, status="active",
             client_file_id__in=accessible_client_ids,
         ).values_list("client_file_id", flat=True).distinct()
     else:
         _has_confidential_program = program.is_confidential
         client_ids = ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
             client_file_id__in=accessible_client_ids,
         ).values_list("client_file_id", flat=True)
 

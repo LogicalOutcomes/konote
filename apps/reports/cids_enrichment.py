@@ -67,7 +67,7 @@ def get_standards_alignment_data(program, metric_definitions=None):
 
         enrolled_ids = list(
             ClientProgramEnrolment.objects.filter(
-                program=program, status="enrolled",
+                program=program, status="active",
             ).values_list("client_file_id", flat=True)
         )
         metric_ids = set(

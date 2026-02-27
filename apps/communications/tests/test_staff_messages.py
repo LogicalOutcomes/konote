@@ -40,7 +40,7 @@ class StaffMessagePermissionTests(TestCase):
         self.program = Program.objects.create(name="Test Program")
         self.client_file = ClientFile.objects.create(first_name="Test", last_name="Client")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         # Receptionist

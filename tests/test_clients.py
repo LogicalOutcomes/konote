@@ -229,7 +229,7 @@ class ClientViewsTest(TestCase):
         # Verify new enrollment created
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -245,7 +245,7 @@ class ClientViewsTest(TestCase):
         enrolment = ClientProgramEnrolment.objects.get(
             client_file=cf, program=self.prog_b,
         )
-        self.assertEqual(enrolment.status, "unenrolled")
+        self.assertEqual(enrolment.status, "finished")
 
     def test_receptionist_cannot_transfer(self):
         """Receptionists have client.transfer DENY — get 403."""
@@ -287,7 +287,7 @@ class ClientViewsTest(TestCase):
         # Confidential enrollment should still be enrolled
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=conf_prog, status="enrolled",
+                client_file=cf, program=conf_prog, status="active",
             ).exists()
         )
 
@@ -310,7 +310,7 @@ class ClientViewsTest(TestCase):
         # Should still only be enrolled in prog_a — edit doesn't touch enrolments
         self.assertFalse(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -325,7 +325,7 @@ class ClientViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -1220,7 +1220,7 @@ class BulkOperationsTest(TestCase):
         for pk in [c1.pk, c2.pk, c3.pk]:
             self.assertTrue(
                 ClientProgramEnrolment.objects.filter(
-                    client_file_id=pk, program=self.prog_b, status="enrolled",
+                    client_file_id=pk, program=self.prog_b, status="active",
                 ).exists()
             )
 

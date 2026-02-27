@@ -170,10 +170,10 @@ class CrossProgramConsentTest(TestCase):
             is_demo=False, status="active",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_a, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_a, status="active",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_b, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_b, status="active",
         )
 
         # Notes in each program
@@ -479,10 +479,10 @@ class SearchConsentTest(TestCase):
         # Client enrolled in both programs
         cls.shared_client = ClientFile.objects.create(is_demo=False, status="active")
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_a, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_a, status="active",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_b, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_b, status="active",
         )
 
         # Note in Program A with searchable term
@@ -599,10 +599,10 @@ class QualitativeSummaryConsentTest(TestCase):
         # Client enrolled in both programs
         cls.shared_client = ClientFile.objects.create(is_demo=False, status="active")
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_a, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_a, status="active",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=cls.shared_client, program=cls.program_b, status="enrolled",
+            client_file=cls.shared_client, program=cls.program_b, status="active",
         )
 
         # Plan target for the client

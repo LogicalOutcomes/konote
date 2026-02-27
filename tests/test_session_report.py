@@ -123,7 +123,7 @@ class SessionReportAggregationTest(TestCase):
         self.client_a.status = "active"
         self.client_a.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_a, program=self.program, status="enrolled",
+            client_file=self.client_a, program=self.program, status="active",
         )
 
         self.client_b = ClientFile()
@@ -132,7 +132,7 @@ class SessionReportAggregationTest(TestCase):
         self.client_b.status = "active"
         self.client_b.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_b, program=self.program, status="enrolled",
+            client_file=self.client_b, program=self.program, status="active",
         )
 
         # Create notes for Alice (3 sessions)
@@ -295,7 +295,7 @@ class SessionReportCSVTest(TestCase):
         self.client_a.status = "active"
         self.client_a.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_a, program=self.program, status="enrolled",
+            client_file=self.client_a, program=self.program, status="active",
         )
 
         base_date = timezone.make_aware(
@@ -378,7 +378,7 @@ class SessionReportCSVTest(TestCase):
         bad_client.status = "active"
         bad_client.save()
         ClientProgramEnrolment.objects.create(
-            client_file=bad_client, program=self.program, status="enrolled",
+            client_file=bad_client, program=self.program, status="active",
         )
         ProgressNote.objects.create(
             client_file=bad_client,
@@ -482,7 +482,7 @@ class SessionReportCrossProgramTest(TestCase):
         self.client_a.status = "active"
         self.client_a.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_a, program=self.prog_a, status="enrolled",
+            client_file=self.client_a, program=self.prog_a, status="active",
         )
 
         # Client enrolled in program B only
@@ -492,7 +492,7 @@ class SessionReportCrossProgramTest(TestCase):
         self.client_b.status = "active"
         self.client_b.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_b, program=self.prog_b, status="enrolled",
+            client_file=self.client_b, program=self.prog_b, status="active",
         )
 
         # Notes for each client
@@ -548,7 +548,7 @@ class SessionReportAuditLogTest(TestCase):
         self.client_file.status = "active"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
         ProgressNote.objects.create(
             client_file=self.client_file, note_type="quick",

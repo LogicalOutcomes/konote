@@ -43,7 +43,7 @@ class HomeDashboardPermissionsTest(TestCase):
             is_demo=False,
         )
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         # Create clinical data
@@ -191,7 +191,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             is_demo=False,
         )
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program_a, status="enrolled"
+            client_file=self.client_file, program=self.program_a, status="active"
         )
 
     def test_pm_sees_program_summary(self):

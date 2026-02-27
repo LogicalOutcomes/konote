@@ -130,7 +130,7 @@ def get_required_programs(client_file):
     """Return list of programs that need PM approval for this client.
 
     Logic (never returns empty):
-    1. Active enrolments (status="enrolled")
+    1. Active enrolments (status="active")
     2. If empty: historical enrolments (any status)
     3. If still empty: all active programs (any PM can approve)
     """
@@ -141,7 +141,7 @@ def get_required_programs(client_file):
     # 1. Active enrolments
     active_program_ids = list(
         ClientProgramEnrolment.objects.filter(
-            client_file=client_file, status="enrolled",
+            client_file=client_file, status="active",
         ).values_list("program_id", flat=True).distinct()
     )
     if active_program_ids:

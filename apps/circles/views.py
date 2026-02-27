@@ -70,7 +70,7 @@ def _get_accessible_clients_for_search(user):
     program_ids = get_user_program_ids(user)
     enrolled_ids = set(
         ClientProgramEnrolment.objects.filter(
-            program_id__in=program_ids, status="enrolled"
+            program_id__in=program_ids, status="active"
         ).values_list("client_file_id", flat=True)
     )
     # DV safety: exclude blocked clients

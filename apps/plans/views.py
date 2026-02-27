@@ -78,7 +78,7 @@ def _can_edit_plan(user, client_file):
 
     enrolled_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client_file, status="enrolled"
+            client_file=client_file, status="active"
         ).values_list("program_id", flat=True)
     )
     return UserProgramRole.objects.filter(
@@ -489,7 +489,7 @@ def goal_create(request, client_id):
 
     # Get program from enrolment (for new section creation)
     enrolment = (
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
+        ClientProgramEnrolment.objects.filter(client_file=client, status="active")
         .select_related("program")
         .first()
     )

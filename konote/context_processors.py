@@ -337,7 +337,7 @@ def unread_messages(request):
         accessible_client_ids = set(
             ClientProgramEnrolment.objects.filter(
                 program_id__in=user_program_ids,
-                status="enrolled",
+                status="active",
             ).values_list("client_file_id", flat=True)
         )
 

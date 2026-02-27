@@ -134,7 +134,7 @@ def get_new_clients_count(
     """
     return ClientProgramEnrolment.objects.filter(
         program=program,
-        status="enrolled",
+        status="active",
         enrolled_at__date__gte=date_from,
         enrolled_at__date__lte=date_to,
     ).count()
@@ -276,7 +276,7 @@ def generate_funder_report_data(
     enrolled_client_ids = list(
         ClientProgramEnrolment.objects.filter(
             program=program,
-            status="enrolled",
+            status="active",
         ).values_list("client_file_id", flat=True)
     )
 

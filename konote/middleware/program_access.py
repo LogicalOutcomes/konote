@@ -239,7 +239,7 @@ class ProgramAccessMiddleware:
 
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="enrolled"
+                client_file_id=client_id, status="active"
             ).values_list("program_id", flat=True)
         )
         return bool(user_program_ids & client_program_ids)
@@ -251,7 +251,7 @@ class ProgramAccessMiddleware:
 
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="enrolled"
+                client_file_id=client_id, status="active"
             ).values_list("program_id", flat=True)
         )
         roles = UserProgramRole.objects.filter(

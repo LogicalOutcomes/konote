@@ -39,7 +39,7 @@ class PlanPermissionHelperTest(TestCase):
         # Enrol client in program
         from apps.clients.models import ClientProgramEnrolment
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
         # PM role
         UserProgramRole.objects.create(
@@ -97,7 +97,7 @@ class SectionCreatePermissionTest(TestCase):
         self.client_file.save()
         from apps.clients.models import ClientProgramEnrolment
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program, role="staff", status="active"
@@ -140,7 +140,7 @@ class TargetEditRevisionTest(TestCase):
         self.client_file.save()
         from apps.clients.models import ClientProgramEnrolment
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program, role="staff", status="active"

@@ -463,12 +463,12 @@ class Command(BaseCommand):
                 client.save()
                 # Primary program enrolment
                 ClientProgramEnrolment.objects.create(
-                    client_file=client, program=primary_program, status="enrolled",
+                    client_file=client, program=primary_program, status="active",
                 )
                 # Cross-enrolments (e.g., also in Community Kitchen)
                 for extra in extra_programs:
                     ClientProgramEnrolment.objects.create(
-                        client_file=client, program=extra, status="enrolled",
+                        client_file=client, program=extra, status="active",
                     )
 
         self._seed_demo_reporting_template(all_programs)

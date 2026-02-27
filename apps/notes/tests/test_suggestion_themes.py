@@ -171,7 +171,7 @@ class SuggestionThemeLinkingTests(TestCase):
         # Create some notes with suggestions
         self.client_file = ClientFile.objects.create(record_id="LINK-001")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
         self.note1 = ProgressNote.objects.create(
             client_file=self.client_file, author=self.pm,

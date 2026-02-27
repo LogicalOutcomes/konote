@@ -693,7 +693,7 @@ def demo_directory(request):
     # Attach program enrolments to each demo client
     enrolments = {}
     for enrol in ClientProgramEnrolment.objects.filter(
-        client_file__is_demo=True, status="enrolled"
+        client_file__is_demo=True, status="active"
     ).select_related("program"):
         enrolments.setdefault(enrol.client_file_id, []).append(enrol.program.name)
 

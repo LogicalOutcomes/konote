@@ -70,7 +70,7 @@ def _get_accessible_clients(user, active_program_ids=None):
     else:
         program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
-        program_id__in=program_ids, status="enrolled"
+        program_id__in=program_ids, status="active"
     ).values_list("client_file_id", flat=True)
     # Filter by demo status using the helper function
     base_queryset = get_client_queryset(user)
@@ -285,7 +285,7 @@ def client_list(request):
         # Prevents leaking confidential program names.
         programs = [
             e.program for e in client.enrolments.all()
-            if e.status == "enrolled" and e.program_id in user_program_ids
+            if e.status == "active" and e.program_id in user_program_ids
         ]
 
         # Apply program filter
@@ -419,7 +419,7 @@ def client_create(request):
                 # Enrol in selected programs
                 for program in form.cleaned_data["programs"]:
                     ClientProgramEnrolment.objects.create(
-                        client_file=client, program=program, status="enrolled",
+                        client_file=client, program=program, status="active",
                     )
                 # Circle linking/creation (when circles feature is on)
                 existing_circle_id = form.cleaned_data.get("existing_circle", "")
@@ -560,7 +560,7 @@ def client_transfer(request, client_id):
     available_programs = _get_accessible_programs(request.user)
     current_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled",
+            client_file=client, status="active",
         ).values_list("program_id", flat=True)
     )
     if request.method == "POST":
@@ -572,11 +572,11 @@ def client_transfer(request, client_id):
             removed = []
             # Unenrol removed programs (only within user's accessible programs)
             for enrolment in ClientProgramEnrolment.objects.filter(
-                client_file=client, status="enrolled",
+                client_file=client, status="active",
                 program_id__in=accessible_program_ids,
             ):
                 if enrolment.program_id not in selected_ids:
-                    enrolment.status = "unenrolled"
+                    enrolment.status = "finished"
                     enrolment.unenrolled_at = timezone.now()
                     enrolment.save()
                     removed.append(enrolment.program_id)
@@ -585,7 +585,7 @@ def client_transfer(request, client_id):
                 if program_id not in current_program_ids:
                     ClientProgramEnrolment.objects.update_or_create(
                         client_file=client, program_id=program_id,
-                        defaults={"status": "enrolled", "unenrolled_at": None},
+                        defaults={"status": "active", "unenrolled_at": None},
                     )
                     added.append(program_id)
             # Update cross-program sharing preference
@@ -639,7 +639,7 @@ def client_transfer(request, client_id):
         "client": client,
         "breadcrumbs": breadcrumbs,
         "current_enrolments": ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled",
+            client_file=client, status="active",
         ).select_related("program"),
     })
 
@@ -744,11 +744,11 @@ def client_detail(request, client_id):
     # Prevents leaking confidential program names.
     user_program_ids = _get_user_program_ids(request.user)
     enrolments = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="enrolled", program_id__in=user_program_ids,
+        client_file=client, status="active", program_id__in=user_program_ids,
     ).select_related("program")
     # IMPROVE-5: Check if client has programs hidden from this user
     all_enrolled_count = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="enrolled",
+        client_file=client, status="active",
     ).count()
     visible_count = enrolments.count()
     has_hidden_programs = all_enrolled_count > visible_count
@@ -1201,7 +1201,7 @@ def client_search(request):
         if date_to_parsed and client.created_at.date() > date_to_parsed:
             continue
 
-        programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
+        programs = [e.program for e in client.enrolments.all() if e.status == "active"]
 
         # Apply program filter
         if program_filter:
@@ -1569,12 +1569,12 @@ def bulk_transfer(request):
                 if add_program:
                     enrolment, created = ClientProgramEnrolment.objects.get_or_create(
                         client_file=client_obj, program=add_program,
-                        defaults={"status": "enrolled"},
+                        defaults={"status": "active"},
                     )
                     if created:
                         added.append(add_program.pk)
-                    elif enrolment.status != "enrolled":
-                        enrolment.status = "enrolled"
+                    elif enrolment.status != "active":
+                        enrolment.status = "active"
                         enrolment.unenrolled_at = None
                         enrolment.save()
                         added.append(add_program.pk)
@@ -1584,8 +1584,8 @@ def bulk_transfer(request):
                     updated = ClientProgramEnrolment.objects.filter(
                         client_file=client_obj,
                         program=remove_program,
-                        status="enrolled",
-                    ).update(status="unenrolled", unenrolled_at=timezone.now())
+                        status="active",
+                    ).update(status="finished", unenrolled_at=timezone.now())
                     if updated:
                         removed.append(remove_program.pk)
 

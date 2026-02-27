@@ -19,7 +19,7 @@
         {% for c in selected_clients %}
         <li>{{ c.display_name }} {{ c.last_name }}
             {% for e in c.enrolments.all %}
-                {% if e.status == "enrolled" %}
+                {% if e.status == "active" %}
                 <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}{% if not forloop.last %}, {% endif %}
                 {% endif %}
             {% endfor %}
