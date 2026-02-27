@@ -605,3 +605,101 @@ class StaffAssistedLoginToken(models.Model):
     @property
     def is_valid(self):
         return timezone.now() < self.expires_at
+
+
+# ---------------------------------------------------------------------------
+# H) PortalResourceLink — program-level resource links for the portal
+# ---------------------------------------------------------------------------
+
+
+class PortalResourceLink(models.Model):
+    """A helpful website link configured at the program level.
+
+    These are "template" resources — set by staff or managers for a program,
+    visible to all participants enrolled in that program. Bilingual titles
+    and descriptions are supported since they're shared across participants.
+    """
+
+    program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.CASCADE,
+        related_name="portal_resource_links",
+    )
+    title = models.CharField(max_length=255)
+    title_fr = models.CharField(max_length=255, blank=True, default="")
+    url = models.URLField()
+    description = models.TextField(blank=True, default="")
+    description_fr = models.TextField(blank=True, default="")
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_resource_links"
+        ordering = ["display_order", "title"]
+        verbose_name = _("portal resource link")
+        verbose_name_plural = _("portal resource links")
+
+    def __str__(self):
+        return f"{self.title} ({self.program})"
+
+    def get_title(self, lang="en"):
+        """Return the title in the requested language, falling back to English."""
+        if lang.startswith("fr") and self.title_fr:
+            return self.title_fr
+        return self.title
+
+    def get_description(self, lang="en"):
+        """Return the description in the requested language, falling back to English."""
+        if lang.startswith("fr") and self.description_fr:
+            return self.description_fr
+        return self.description
+
+
+# ---------------------------------------------------------------------------
+# I) ClientResourceLink — per-client resource links added by staff
+# ---------------------------------------------------------------------------
+
+
+class ClientResourceLink(models.Model):
+    """A helpful website link added by staff for a specific participant.
+
+    Unlike PortalResourceLink (program-level), these are personalised per
+    client. Not bilingual — staff writes in their language, same as
+    StaffPortalNote.
+    """
+
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        related_name="portal_client_resource_links",
+    )
+    title = models.CharField(max_length=255)
+    url = models.URLField()
+    description = models.TextField(blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_client_resource_links"
+        ordering = ["-created_at"]
+        verbose_name = _("client resource link")
+        verbose_name_plural = _("client resource links")
+
+    def __str__(self):
+        return f"{self.title} (for {self.client_file})"
