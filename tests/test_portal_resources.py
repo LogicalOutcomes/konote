@@ -273,11 +273,18 @@ class StaffClientResourceTests(TestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        from apps.programs.models import UserProgramRole
+
         self.staff = User.objects.create_user(
             username="cli_staff", password="testpass123",
             display_name="CLI Staff", is_admin=True,
         )
         self.program = Program.objects.create(name="Client Prog")
+        # Admin needs a program role to pass @requires_permission("note.create")
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program,
+            role="program_manager", status="active",
+        )
         self.client_file = ClientFile.objects.create(
             record_id="CLI-001", status="active",
         )
@@ -299,14 +306,14 @@ class StaffClientResourceTests(TestCase):
     def test_staff_can_view_client_resources(self):
         """Staff can access the client resources management page."""
         self.client.login(username="cli_staff", password="testpass123")
-        response = self.client.get(f"/clients/{self.client_file.pk}/resources/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/resources/")
         self.assertEqual(response.status_code, 200)
 
     def test_staff_can_create_client_resource(self):
         """Staff can create a client resource link."""
         self.client.login(username="cli_staff", password="testpass123")
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/resources/",
+            f"/participants/{self.client_file.pk}/resources/",
             {
                 "title": "Local Food Bank",
                 "url": "https://foodbank.example.com",
@@ -330,7 +337,7 @@ class StaffClientResourceTests(TestCase):
         )
         self.client.login(username="cli_staff", password="testpass123")
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/resources/{resource.pk}/deactivate/",
+            f"/participants/{self.client_file.pk}/resources/{resource.pk}/deactivate/",
         )
         self.assertEqual(response.status_code, 302)
         resource.refresh_from_db()

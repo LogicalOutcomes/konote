@@ -307,7 +307,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
 
         program = Program.objects.create(name="Test Prog")
         UserProgramRole.objects.create(
-            user=self.admin, program=program, role="worker", status="active"
+            user=self.admin, program=program, role="program_manager", status="active"
         )
         client_file = ClientFile.objects.create(
             record_id="REC-2024-042", status="active"
@@ -320,7 +320,9 @@ class DocumentStorageAdminIntegrationTests(TestCase):
         )
 
         self.client.login(username="sec_admin", password="testpass123")
-        resp = self.client.get(f"/clients/{client_file.pk}/")
+        resp = self.client.get(
+            f"/participants/{client_file.pk}/", follow=True
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Documents")
         self.assertContains(
@@ -336,7 +338,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
 
         program = Program.objects.create(name="Test Prog")
         UserProgramRole.objects.create(
-            user=self.admin, program=program, role="worker", status="active"
+            user=self.admin, program=program, role="program_manager", status="active"
         )
         client_file = ClientFile.objects.create(
             record_id="REC-2024-042", status="active"
@@ -349,6 +351,8 @@ class DocumentStorageAdminIntegrationTests(TestCase):
         )
 
         self.client.login(username="sec_admin", password="testpass123")
-        resp = self.client.get(f"/clients/{client_file.pk}/")
+        resp = self.client.get(
+            f"/participants/{client_file.pk}/", follow=True
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, 'rel="noopener noreferrer"')
