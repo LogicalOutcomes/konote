@@ -4,6 +4,7 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
+- [ ] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — PB, SG (DOC-INTEG1)
 
 ## Active Work
 
