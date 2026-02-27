@@ -91,6 +91,10 @@
 
 *Azure Canada Central (Toronto) satisfies most Canadian requirements. Flag anything unusual for review.*
 
+**0.2.6** "Where do you currently store client documents — consent forms, assessments, referral letters? SharePoint, Google Drive, a shared network drive, paper?"
+
+*This determines whether to enable the document folder integration. If they use Microsoft 365/SharePoint, the IT contact will set up document libraries during Phase 2 (alongside Azure AD). If they use Google Drive and plan to enable the participant portal, they'll set up shared folders later. If paper only, skip document integration for now.*
+
 ---
 
 ### 0.3 Timeline & Stakeholders
@@ -142,6 +146,7 @@ After the Discovery Call, create:
 > **IT contact:** ___ (name, email)
 > **Custom domain:** ___
 > **Data residency requirements:** Standard PIPEDA / Additional: ___
+> **Document storage:** SharePoint / Google Drive / Network drive / Paper / Other: ___
 >
 > **Target go-live:** ___
 > **Replacing existing system:** Yes (___) / No
@@ -680,6 +685,13 @@ Walk through the configured system together. This builds confidence that everyth
 - [ ] Audit log captured all the test actions
 - [ ] Check the access log — verify it shows who viewed what
 
+**Document storage verification** (if enabled — see [Document Integration DRR](design-rationale/document-integration.md)):
+
+- [ ] SharePoint: document folder button opens the correct library for each program
+- [ ] SharePoint: permissions are set — staff can access their program's library but not others
+- [ ] Google Drive (portal): participant document link appears in portal for active enrolments
+- [ ] If document storage not enabled, confirm decision to defer (record in worksheet)
+
 ---
 
 ### Step 4: Sign-Off
@@ -694,11 +706,17 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 - [ ] Security checks passing (`python manage.py check --deploy`)
 - [ ] Audit database locked down
 
+**Data handling acknowledgement** (see [template](../docs/data-handling-acknowledgement.md)):
+
+- [ ] Walk through data responsibilities with the client — encryption key custody, document storage, exports, staff departures
+- [ ] Confirm designated contacts are named for each responsibility area
+- [ ] Signed Data Handling Acknowledgement received
+
 **Client confirms:**
 - [ ] Roles and access are correct
 - [ ] Workflow configuration matches their needs
 - [ ] Staff know how to log in
-- [ ] Data handling acknowledgement signed (if opting in to plaintext backups — see [template](../docs/data-handling-acknowledgement.md))
+- [ ] Data handling responsibilities understood and acknowledged
 - [ ] Ready to begin entering real participant data
 
 **Disable demo mode?** Discuss with the client:
@@ -713,6 +731,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 - [ ] Fully configured production instance
 - [ ] All staff accounts created and access verified
 - [ ] Signed go-live confirmation from client
+- [ ] Signed Data Handling Acknowledgement from client
 - [ ] "Before You Enter Real Data" checklist completed
 - [ ] 30-day check-in scheduled
 
@@ -747,6 +766,18 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 - [ ] How is funder reporting working — does the export output match what they need?
 - [ ] Are coaches finding the system easy to use, or are there friction points?
 
+**Document storage** (if enabled):
+- [ ] Are staff using the document folder button? Any issues with broken links or permissions?
+- [ ] SharePoint: have Tier 2 IT tasks been completed? (Power Automate flow, metadata columns)
+- [ ] Google Drive (portal): have workers been creating folders correctly? Any ownership issues?
+- [ ] If document storage was deferred at go-live: revisit — is the agency ready now?
+
+**Data handling:**
+- [ ] Are the designated contacts in the Data Handling Acknowledgement still current? (key custodian, privacy officer, SharePoint manager)
+- [ ] Has the export log been reviewed since go-live?
+- [ ] If plaintext backups were opted in: has the first backup been produced and stored?
+- [ ] Any staff departures since go-live? Were KoNote + SharePoint + Google Drive access all revoked?
+
 **Technical:**
 - [ ] Any performance issues or errors reported?
 - [ ] Are database backups running successfully?
@@ -754,7 +785,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 - [ ] Verify email notifications are still working
 
 **Future features:**
-- [ ] Revisit any "Later" decisions from Phase 3 (portal, registration forms, SMS)
+- [ ] Revisit any "Later" decisions from Phase 3 (portal, registration forms, SMS, document storage)
 - [ ] Discuss training needs for new staff
 - [ ] Any interest in features they've seen in the demo but haven't enabled?
 
@@ -772,6 +803,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 
 | Document | Location | Used in |
 |----------|----------|---------|
+| Document Integration Design | [tasks/design-rationale/document-integration.md](design-rationale/document-integration.md) | Phase 0, 3, 4 |
 | Permissions Interview | [tasks/agency-permissions-interview.md](agency-permissions-interview.md) | Phase 1 |
 | Azure Deployment Guide | [docs/archive/deploy-azure.md](../docs/archive/deploy-azure.md) | Phase 2 |
 | Deploying KoNote (all platforms) | [docs/deploying-konote.md](../docs/deploying-konote.md) | Phase 2, 4 |
