@@ -1,8 +1,13 @@
-"""Tests for CIDS metadata fields and OrganizationProfile (Session 1)."""
+"""Tests for CIDS metadata fields, code lists, taxonomy, and reports."""
+from unittest.mock import patch, MagicMock
+
+from django.core.exceptions import ValidationError
 from django.test import TestCase, Client, override_settings
 from cryptography.fernet import Fernet
 
-from apps.admin_settings.models import OrganizationProfile
+from apps.admin_settings.models import (
+    CidsCodeList, OrganizationProfile, TaxonomyMapping,
+)
 from apps.auth_app.models import User
 from apps.plans.models import MetricDefinition, PlanTarget, PlanSection
 from apps.programs.models import Program
@@ -297,3 +302,339 @@ class OrganizationProfileViewTest(TestCase):
         resp = self.http_client.get("/admin/settings/organization/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("login", resp.url)
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Session 2 Tests
+# ══════════════════════════════════════════════════════════════════════
+
+
+# ── CidsCodeList model ───────────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class CidsCodeListTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_create_code_list_entry(self):
+        entry = CidsCodeList.objects.create(
+            list_name="ICNPOsector",
+            code="ICNPO-7",
+            label="Health",
+        )
+        self.assertEqual(entry.list_name, "ICNPOsector")
+        self.assertEqual(entry.code, "ICNPO-7")
+        self.assertEqual(entry.label, "Health")
+
+    def test_unique_together_constraint(self):
+        CidsCodeList.objects.create(
+            list_name="ICNPOsector", code="ICNPO-7", label="Health",
+        )
+        with self.assertRaises(Exception):
+            CidsCodeList.objects.create(
+                list_name="ICNPOsector", code="ICNPO-7", label="Duplicate",
+            )
+
+    def test_same_code_different_list_allowed(self):
+        CidsCodeList.objects.create(
+            list_name="ICNPOsector", code="1", label="Sector 1",
+        )
+        entry2 = CidsCodeList.objects.create(
+            list_name="SDGImpacts", code="1", label="No Poverty",
+        )
+        self.assertEqual(CidsCodeList.objects.count(), 2)
+        self.assertEqual(entry2.label, "No Poverty")
+
+    def test_optional_fields_default_blank(self):
+        entry = CidsCodeList.objects.create(
+            list_name="Test", code="T1", label="Test",
+        )
+        self.assertEqual(entry.label_fr, "")
+        self.assertEqual(entry.description, "")
+        self.assertEqual(entry.specification_uri, "")
+        self.assertEqual(entry.defined_by_name, "")
+        self.assertEqual(entry.defined_by_uri, "")
+        self.assertEqual(entry.source_url, "")
+        self.assertIsNone(entry.version_date)
+
+    def test_str_representation(self):
+        entry = CidsCodeList.objects.create(
+            list_name="SDGImpacts", code="1", label="No Poverty",
+        )
+        self.assertEqual(str(entry), "SDGImpacts: 1 — No Poverty")
+
+    def test_bilingual_labels(self):
+        entry = CidsCodeList.objects.create(
+            list_name="ICNPOsector", code="ICNPO-7",
+            label="Health", label_fr="Santé",
+        )
+        entry.refresh_from_db()
+        self.assertEqual(entry.label, "Health")
+        self.assertEqual(entry.label_fr, "Santé")
+
+
+# ── TaxonomyMapping model ───────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TaxonomyMappingTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+        self.metric = MetricDefinition.objects.create(
+            name="Test Metric", definition="Test",
+        )
+        self.program = Program.objects.create(name="Test Program")
+
+    def test_create_metric_mapping(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            taxonomy_label="Housing Stability",
+        )
+        self.assertEqual(mapping.taxonomy_system, "cids_iris")
+        self.assertEqual(mapping.taxonomy_code, "PI2061")
+        self.assertEqual(mapping.metric_definition, self.metric)
+
+    def test_create_program_mapping(self):
+        mapping = TaxonomyMapping.objects.create(
+            program=self.program,
+            taxonomy_system="united_way",
+            taxonomy_code="UW-HOUSING",
+        )
+        self.assertEqual(mapping.program, self.program)
+
+    def test_clean_rejects_no_fk(self):
+        mapping = TaxonomyMapping(
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_clean_rejects_multiple_fks(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            program=self.program,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_clean_accepts_single_fk(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        mapping.clean()  # Should not raise
+
+    def test_multiple_mappings_per_metric(self):
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="united_way",
+            taxonomy_code="UW-HST",
+        )
+        self.assertEqual(self.metric.taxonomy_mappings.count(), 2)
+
+    def test_funder_context_scoping(self):
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="provincial",
+            taxonomy_code="ON-HST",
+            funder_context="Ontario MOHLTC",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="provincial",
+            taxonomy_code="QC-HAB",
+            funder_context="Quebec MSSS",
+        )
+        on_mapping = self.metric.taxonomy_mappings.filter(
+            funder_context="Ontario MOHLTC",
+        ).first()
+        self.assertEqual(on_mapping.taxonomy_code, "ON-HST")
+
+    def test_str_representation(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        self.assertIn("cids_iris:PI2061", str(mapping))
+
+
+# ── import_cids_codelists management command ─────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ImportCidsCodelistsTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+
+    @patch("apps.admin_settings.management.commands.import_cids_codelists.fetch_code_list")
+    def test_import_creates_entries(self, mock_fetch):
+        mock_fetch.return_value = (
+            [
+                {"code": "1", "label": "No Poverty", "label_fr": "Pas de pauvreté", "description": ""},
+                {"code": "2", "label": "Zero Hunger", "label_fr": "Faim zéro", "description": ""},
+            ],
+            "2026-01-15",
+            "https://example.com/spec",
+        )
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command(
+            "import_cids_codelists",
+            "--lists", "SDGImpacts",
+            stdout=out,
+        )
+        self.assertEqual(CidsCodeList.objects.filter(list_name="SDGImpacts").count(), 2)
+        entry = CidsCodeList.objects.get(list_name="SDGImpacts", code="1")
+        self.assertEqual(entry.label, "No Poverty")
+        self.assertEqual(entry.label_fr, "Pas de pauvreté")
+
+    @patch("apps.admin_settings.management.commands.import_cids_codelists.fetch_code_list")
+    def test_import_upserts_existing(self, mock_fetch):
+        CidsCodeList.objects.create(
+            list_name="SDGImpacts", code="1", label="Old Label",
+        )
+        mock_fetch.return_value = (
+            [{"code": "1", "label": "No Poverty", "label_fr": "", "description": ""}],
+            None,
+            "",
+        )
+        from django.core.management import call_command
+        from io import StringIO
+        call_command(
+            "import_cids_codelists",
+            "--lists", "SDGImpacts",
+            "--force",
+            stdout=StringIO(),
+        )
+        entry = CidsCodeList.objects.get(list_name="SDGImpacts", code="1")
+        self.assertEqual(entry.label, "No Poverty")
+
+    @patch("apps.admin_settings.management.commands.import_cids_codelists.fetch_code_list")
+    def test_dry_run_does_not_write(self, mock_fetch):
+        mock_fetch.return_value = (
+            [{"code": "1", "label": "Test", "label_fr": "", "description": ""}],
+            None,
+            "",
+        )
+        from django.core.management import call_command
+        from io import StringIO
+        call_command(
+            "import_cids_codelists",
+            "--lists", "SDGImpacts",
+            "--dry-run",
+            stdout=StringIO(),
+        )
+        self.assertEqual(CidsCodeList.objects.count(), 0)
+
+    @patch("apps.admin_settings.management.commands.import_cids_codelists.fetch_code_list")
+    def test_connection_error_handled(self, mock_fetch):
+        mock_fetch.side_effect = ConnectionError("Network error")
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        err = StringIO()
+        call_command(
+            "import_cids_codelists",
+            "--lists", "SDGImpacts",
+            stdout=out,
+            stderr=err,
+        )
+        self.assertIn("FAILED", err.getvalue())
+
+
+# ── CIDS theme derivation ────────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class CidsThemeDerivationTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_admin_override_takes_precedence(self):
+        from apps.reports.cids_enrichment import derive_cids_theme
+        metric = MetricDefinition.objects.create(
+            name="Test", definition="Test",
+            iris_metric_code="PI2061",
+            cids_theme_override="housing",
+        )
+        theme, source = derive_cids_theme(metric)
+        self.assertEqual(theme, "housing")
+        self.assertEqual(source, "override")
+
+    def test_iris_lookup_works(self):
+        from apps.reports.cids_enrichment import derive_cids_theme
+        CidsCodeList.objects.create(
+            list_name="IRISImpactTheme",
+            code="PI2061",
+            label="Basic Needs",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Housing", definition="Test",
+            iris_metric_code="PI2061",
+        )
+        theme, source = derive_cids_theme(metric)
+        self.assertEqual(theme, "Basic Needs")
+        self.assertEqual(source, "iris_lookup")
+
+    def test_no_theme_when_no_data(self):
+        from apps.reports.cids_enrichment import derive_cids_theme
+        metric = MetricDefinition.objects.create(
+            name="Plain", definition="Test",
+        )
+        theme, source = derive_cids_theme(metric)
+        self.assertIsNone(theme)
+        self.assertIsNone(source)
+
+
+# ── Standards alignment data ─────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StandardsAlignmentDataTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(
+            name="Housing First",
+            cids_sector_code="ICNPO-7",
+            funder_program_code="HF-2026",
+        )
+
+    def test_alignment_data_structure(self):
+        from apps.reports.cids_enrichment import get_standards_alignment_data
+        metrics = MetricDefinition.objects.filter(pk__in=[])  # empty queryset
+        data = get_standards_alignment_data(self.program, metric_definitions=metrics)
+        self.assertEqual(data["cids_version"], "3.2.0")
+        self.assertEqual(data["program_cids"]["sector_code"], "ICNPO-7")
+        self.assertEqual(data["program_cids"]["funder_code"], "HF-2026")
+        self.assertEqual(data["metrics"], [])
+        self.assertEqual(data["mapped_count"], 0)
+        self.assertEqual(data["total_count"], 0)
+
+    def test_alignment_counts_mapped_metrics(self):
+        from apps.reports.cids_enrichment import get_standards_alignment_data
+        MetricDefinition.objects.create(
+            name="Mapped", definition="Test",
+            iris_metric_code="PI2061", sdg_goals=[1, 11],
+        )
+        MetricDefinition.objects.create(
+            name="Unmapped", definition="Test",
+        )
+        metrics = MetricDefinition.objects.all()
+        data = get_standards_alignment_data(self.program, metric_definitions=metrics)
+        self.assertEqual(data["total_count"], 2)
+        self.assertEqual(data["mapped_count"], 1)
+        self.assertEqual(data["sdg_summary"], {1: 1, 11: 1})
