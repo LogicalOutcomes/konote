@@ -339,8 +339,15 @@ def demo_login(request, role):
         except User.DoesNotExist:
             from django.http import Http404
             raise Http404
+    elif role.isdigit():
+        # Numeric pk — used by dynamic demo buttons to avoid @ in URLs
+        try:
+            user = User.objects.get(pk=int(role), is_demo=True, is_active=True)
+        except User.DoesNotExist:
+            from django.http import Http404
+            raise Http404
     else:
-        # Try dynamic is_demo=True lookup by username
+        # Try dynamic is_demo=True lookup by username (fallback)
         try:
             user = User.objects.get(username=role, is_demo=True, is_active=True)
         except User.DoesNotExist:
