@@ -23,6 +23,7 @@ A KoNote instance is ready for real data when all of these are in place:
 7. **Reports** — funder reporting requirements are mapped to KoNote's export formats
 8. **Users** — staff accounts created with correct roles and program access
 9. **Verification** — everything has been tested and signed off
+10. **Data responsibilities** — the agency has acknowledged their responsibilities for data outside KoNote (encryption key, document storage, exports, staff departures)
 
 ## Order of Operations
 
@@ -38,9 +39,10 @@ Step 6: Plan & Note Templates (depends on Programs + Metrics)
 Step 7: Reports              (depends on Metrics + Programs)
 Step 8: Users                (depends on Roles + Programs)
 Step 9: Verification         (depends on everything above)
+Step 10: Data Responsibilities (depends on Features + Programs; signed at go-live)
 ```
 
-Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Programs exist.
+Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Programs exist. Step 10 can be discussed alongside other steps but is signed last.
 
 ## Decision Documents
 
@@ -55,13 +57,14 @@ Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Progra
 | [07](07-reports.md) | Reports | Funder reporting requirements, export formats, demographic breakdowns | Report schema choices |
 | [08](08-users.md) | Users & Authentication | Staff accounts, authentication method (SSO vs local), initial invitations | Per-user setup |
 | [09](09-verification.md) | Verification | Testing checklist, role verification, sign-off | Pass/fail checks |
+| [10](10-data-responsibilities.md) | Data Responsibilities | Encryption key custody, document storage, exports, plaintext backups, staff departures | Signed acknowledgement |
 
 ## Starting from a Template
 
-If the agency belongs to an umbrella organisation (like [funder partner]), start from the umbrella's configuration template instead of answering every question from scratch.
+If the agency belongs to an umbrella organisation (like a partner agency), start from the umbrella's configuration template instead of answering every question from scratch.
 
 Available templates:
-- **[funder partner]** — financial coaching agencies ([see example](examples/prosper-canada/))
+- **[partner agency]** — financial coaching agencies ([see example](examples/financial-coaching/))
 
 With a template, the conversation changes from "answer all 50 decisions" to "here are the standard answers — what's different for your agency?" This typically cuts setup time from 3-6 weeks to 1-2 weeks.
 
@@ -93,11 +96,11 @@ These provide deeper context when needed:
 
 | Document | What it covers |
 |----------|---------------|
-| [Deployment Protocol](../../tasks/prosper-canada/deployment-protocol.md) | Full 5-phase deployment process with interview scripts and worksheets |
+| [Deployment Protocol](../../tasks/deployment-protocol.md) | Full 5-phase deployment process with interview scripts and worksheets |
 | [Permissions Interview](../../tasks/agency-permissions-interview.md) | Detailed guided interview for all access and privacy decisions |
 | [Admin Documentation](../admin/index.md) | Feature-by-feature admin guide |
 | [Deploying KoNote](../deploying-konote.md) | Platform comparison and technical deployment steps |
-| [Config Template Design](../../tasks/prosper-canada/config-template-design.md) | How umbrella templates work |
+| [Config Template Design](../../tasks/config-template-design.md) | How umbrella templates work |
 | [Security Architecture](../security-architecture.md) | Encryption, audit logging, privacy compliance |
 
 ## Status
@@ -114,4 +117,5 @@ These provide deeper context when needed:
 | 07 Reports | To do | New — needs funder reporting requirements |
 | 08 Users | To do | Reformat from deployment-protocol.md Phase 2, 4 |
 | 09 Verification | To do | Reformat from deployment-protocol.md Phase 4 |
+| 10 Data Responsibilities | Done | Feeds into signed Data Handling Acknowledgement |
 | [funder partner] example | Partial | Config templates exist in config_templates/ |

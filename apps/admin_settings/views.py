@@ -6,8 +6,14 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required
 
-from .forms import DemoDataForm, FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
-from .models import DEFAULT_TERMS, TERM_HELP_TEXT, FeatureToggle, InstanceSetting, TerminologyOverride
+from .forms import (
+    DemoDataForm, FeatureToggleForm, InstanceSettingsForm,
+    MessagingSettingsForm, OrganizationProfileForm, TerminologyForm,
+)
+from .models import (
+    DEFAULT_TERMS, TERM_HELP_TEXT,
+    FeatureToggle, InstanceSetting, OrganizationProfile, TerminologyOverride,
+)
 
 
 # --- Dashboard ---
@@ -687,7 +693,7 @@ def demo_directory(request):
     # Attach program enrolments to each demo client
     enrolments = {}
     for enrol in ClientProgramEnrolment.objects.filter(
-        client_file__is_demo=True, status="enrolled"
+        client_file__is_demo=True, status="active"
     ).select_related("program"):
         enrolments.setdefault(enrol.client_file_id, []).append(enrol.program.name)
 
@@ -797,4 +803,27 @@ def demo_data_management(request):
         "demo_note_count": demo_note_count,
         "active_program_count": active_program_count,
         "last_generated": last_generated,
+    })
+
+
+# --- Organisation Profile (CIDS) ---
+
+@login_required
+@admin_required
+def organization_profile(request):
+    """Edit the singleton organisation profile for CIDS exports."""
+    profile = OrganizationProfile.get_solo()
+
+    if request.method == "POST":
+        form = OrganizationProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Organisation profile updated."))
+            return redirect("admin_settings:organization_profile")
+    else:
+        form = OrganizationProfileForm(instance=profile)
+
+    return render(request, "admin_settings/organization_profile.html", {
+        "form": form,
+        "profile": profile,
     })

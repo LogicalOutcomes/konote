@@ -119,7 +119,7 @@ def generate_narrative_view(request):
     values = (
         MetricValue.objects.filter(
             progress_note_target__progress_note__client_file__enrolments__program=program,
-            progress_note_target__progress_note__client_file__enrolments__status="enrolled",
+            progress_note_target__progress_note__client_file__enrolments__status="active",
             created_at__date__gte=date_from,
             created_at__date__lte=date_to,
         )
@@ -363,7 +363,7 @@ def outcome_insights_view(request):
         # Collect known names from clients in this program
         from apps.clients.models import ClientFile, ClientProgramEnrolment
         client_ids = (
-            ClientProgramEnrolment.objects.filter(program=program, status="enrolled")
+            ClientProgramEnrolment.objects.filter(program=program, status="active")
             .values_list("client_file_id", flat=True)
         )
         known_names = set()
@@ -476,7 +476,7 @@ def _get_goal_builder_context(client_file):
 
     # Get program from client's active enrolment
     enrolment = (
-        ClientProgramEnrolment.objects.filter(client_file=client_file, status="enrolled")
+        ClientProgramEnrolment.objects.filter(client_file=client_file, status="active")
         .select_related("program")
         .first()
     )
@@ -654,7 +654,7 @@ def goal_builder_save(request, client_id):
 
     # Get program from enrolment
     enrolment = (
-        ClientProgramEnrolment.objects.filter(client_file=client_file, status="enrolled")
+        ClientProgramEnrolment.objects.filter(client_file=client_file, status="active")
         .select_related("program")
         .first()
     )

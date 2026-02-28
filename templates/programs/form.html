@@ -11,9 +11,9 @@
 <form method="post">
     {% csrf_token %}
 
-    {# Render all fields except is_confidential and service_model in the standard loop #}
+    {# Render core fields (skip special-handled and CIDS fields) #}
     {% for field in form %}
-    {% if field.name != "is_confidential" and field.name != "service_model" %}
+    {% if field.name != "is_confidential" and field.name != "service_model" and field.name != "cids_sector_code" and field.name != "population_served_codes" and field.name != "description_fr" and field.name != "funder_program_code" %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
         {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
@@ -48,6 +48,23 @@
         <small class="badge badge-danger">{{ form.service_model.errors.0 }}</small>
         {% endif %}
     </fieldset>
+
+    {# CIDS Standards Metadata — collapsible #}
+    <details>
+        <summary>{% trans "CIDS Standards Metadata" %}</summary>
+        <fieldset>
+            {% for field in form %}
+            {% if field.name == "cids_sector_code" or field.name == "population_served_codes" or field.name == "description_fr" or field.name == "funder_program_code" %}
+            <div>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}<small class="badge badge-danger">{{ field.errors.0 }}</small>{% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </fieldset>
+    </details>
 
     {# Confidential program section — dedicated fieldset #}
     <fieldset>

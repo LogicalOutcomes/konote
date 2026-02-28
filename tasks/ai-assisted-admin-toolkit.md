@@ -22,7 +22,7 @@ We're not starting from scratch. These assets already capture most of the deploy
 
 | Asset | Location | What it covers |
 |-------|----------|---------------|
-| Deployment Protocol | [tasks/prosper-canada/deployment-protocol.md](prosper-canada/deployment-protocol.md) | Full 5-phase onboarding process with interview scripts |
+| Deployment Protocol | [tasks/deployment-protocol.md](deployment-protocol.md) | Full 5-phase onboarding process with interview scripts |
 | Config Templates | [config_templates/](../config_templates/) | Pre-built configuration for financial coaching agencies |
 | Permissions Interview | [tasks/agency-permissions-interview.md](agency-permissions-interview.md) | Guided interview for roles and access decisions |
 | Admin Docs | [docs/admin/](../docs/admin/) | Feature-by-feature admin documentation |

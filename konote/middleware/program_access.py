@@ -222,7 +222,7 @@ class ProgramAccessMiddleware:
             False — no overlap (user lacks access)
             None  — client does not exist (caller should 404, not 403)
         """
-        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.clients.models import ClientFile, ClientProgramEnrolment, ServiceEpisode
         from apps.programs.models import UserProgramRole
 
         # Check client exists before checking program overlap.
@@ -239,19 +239,19 @@ class ProgramAccessMiddleware:
 
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="enrolled"
+                client_file_id=client_id, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
             ).values_list("program_id", flat=True)
         )
         return bool(user_program_ids & client_program_ids)
 
     def _get_role_for_client(self, user, client_id):
         """Return the user's highest role across programs shared with this client."""
-        from apps.clients.models import ClientProgramEnrolment
+        from apps.clients.models import ClientProgramEnrolment, ServiceEpisode
         from apps.programs.models import UserProgramRole
 
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="enrolled"
+                client_file_id=client_id, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
             ).values_list("program_id", flat=True)
         )
         roles = UserProgramRole.objects.filter(

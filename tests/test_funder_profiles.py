@@ -207,7 +207,7 @@ class DemographicBlocklistsTest(TestCase):
                 record_id=f"R{i:04d}",
             )
             ClientProgramEnrolment.objects.create(
-                client_file=cf, program=self.program, status="enrolled",
+                client_file=cf, program=self.program, status="active",
             )
         choices = get_demographic_field_choices(program=self.program)
         choice_labels = [c[1] for c in choices]
@@ -240,7 +240,7 @@ class DemographicBlocklistsTest(TestCase):
                 record_id=f"TX{i:04d}",
             )
             ClientProgramEnrolment.objects.create(
-                client_file=cf, program=self.program, status="enrolled",
+                client_file=cf, program=self.program, status="active",
             )
         choices = get_demographic_field_choices(program=self.program)
         choice_labels = [c[1] for c in choices]
@@ -265,7 +265,7 @@ class DemographicBlocklistsTest(TestCase):
                 record_id=f"BL{i:04d}",
             )
             ClientProgramEnrolment.objects.create(
-                client_file=cf, program=self.program, status="enrolled",
+                client_file=cf, program=self.program, status="active",
             )
         choices = get_demographic_field_choices(program=self.program)
         choice_labels = [c[1] for c in choices]

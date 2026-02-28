@@ -51,7 +51,7 @@ def _get_program_names(client):
     return list(
         ClientProgramEnrolment.objects.filter(
             client_file=client,
-            status="enrolled",
+            status="active",
             program__is_confidential=False,
         ).select_related("program")
         .values_list("program__name", flat=True)
@@ -258,12 +258,12 @@ def build_comparison(client_a, client_b):
     # Enrolment overlaps
     enrolments_a = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client_a, status="enrolled",
+            client_file=client_a, status="active",
         ).values_list("program_id", flat=True)
     )
     enrolments_b = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client_b, status="enrolled",
+            client_file=client_b, status="active",
         ).values_list("program_id", flat=True)
     )
     overlapping_program_ids = enrolments_a & enrolments_b
@@ -418,7 +418,7 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
                 ClientProgramEnrolment.objects.filter(
                     pk=kept_enrolment.pk,
                 ).update(enrolled_at=enrolment.enrolled_at)
-            enrolment.status = "unenrolled"
+            enrolment.status = "finished"
             enrolment.unenrolled_at = timezone.now()
             enrolment.client_file = kept
             enrolment.save(update_fields=["status", "unenrolled_at", "client_file"])

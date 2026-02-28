@@ -229,7 +229,7 @@ class ClientViewsTest(TestCase):
         # Verify new enrollment created
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -245,7 +245,7 @@ class ClientViewsTest(TestCase):
         enrolment = ClientProgramEnrolment.objects.get(
             client_file=cf, program=self.prog_b,
         )
-        self.assertEqual(enrolment.status, "unenrolled")
+        self.assertEqual(enrolment.status, "finished")
 
     def test_receptionist_cannot_transfer(self):
         """Receptionists have client.transfer DENY — get 403."""
@@ -287,7 +287,7 @@ class ClientViewsTest(TestCase):
         # Confidential enrollment should still be enrolled
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=conf_prog, status="enrolled",
+                client_file=cf, program=conf_prog, status="active",
             ).exists()
         )
 
@@ -310,7 +310,7 @@ class ClientViewsTest(TestCase):
         # Should still only be enrolled in prog_a — edit doesn't touch enrolments
         self.assertFalse(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -325,7 +325,7 @@ class ClientViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(
             ClientProgramEnrolment.objects.filter(
-                client_file=cf, program=self.prog_b, status="enrolled",
+                client_file=cf, program=self.prog_b, status="active",
             ).exists()
         )
 
@@ -401,6 +401,23 @@ class ClientViewsTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Discharged Client")
         self.assertNotContains(resp, "Active Client")
+
+    def test_on_hold_client_visible_in_list(self):
+        """On-hold clients must remain visible in client list (regression)."""
+        active = self._create_client("Active", "Client", [self.prog_a])
+        on_hold = self._create_client("OnHold", "Client", [self.prog_a])
+        # Put the enrolment on hold
+        ep = ClientProgramEnrolment.objects.get(
+            client_file=on_hold, program=self.prog_a,
+        )
+        ep.status = "on_hold"
+        ep.save()
+
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Active Client")
+        self.assertContains(resp, "OnHold Client")
 
     def test_filter_by_program(self):
         """Filter clients by program enrolment."""
@@ -1220,7 +1237,7 @@ class BulkOperationsTest(TestCase):
         for pk in [c1.pk, c2.pk, c3.pk]:
             self.assertTrue(
                 ClientProgramEnrolment.objects.filter(
-                    client_file_id=pk, program=self.prog_b, status="enrolled",
+                    client_file_id=pk, program=self.prog_b, status="active",
                 ).exists()
             )
 

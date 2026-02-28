@@ -30,7 +30,7 @@ class LastContactHelperTests(TestCase):
         self.client2 = ClientFile.objects.create(first_name="Bob", last_name="B")
         self.client3 = ClientFile.objects.create(first_name="Carol", last_name="C")
         for c in [self.client1, self.client2, self.client3]:
-            ClientProgramEnrolment.objects.create(client_file=c, program=self.program, status="enrolled")
+            ClientProgramEnrolment.objects.create(client_file=c, program=self.program, status="active")
 
         self.template = ProgressNoteTemplate.objects.create(name="T", owning_program=self.program)
 
@@ -137,7 +137,7 @@ class ClientListLastContactTests(TestCase):
         self.client1 = ClientFile.objects.create(first_name="Alice", last_name="A")
         self.client2 = ClientFile.objects.create(first_name="Bob", last_name="B")
         for c in [self.client1, self.client2]:
-            ClientProgramEnrolment.objects.create(client_file=c, program=self.program, status="enrolled")
+            ClientProgramEnrolment.objects.create(client_file=c, program=self.program, status="active")
 
         self.template = ProgressNoteTemplate.objects.create(name="T", owning_program=self.program)
         self.test_client = TestClient()

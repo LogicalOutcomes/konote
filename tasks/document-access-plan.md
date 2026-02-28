@@ -1,6 +1,8 @@
 # Document Access Feature — Design Plan
 
-**Status:** Draft for review
+> **SUPERSEDED 2026-02-27:** This document describes an earlier, simpler design (single `Clients/` folder, instance-level URL template). It has been superseded by [design-rationale/document-integration.md](design-rationale/document-integration.md), which specifies the authoritative program-centric architecture (one document library per program, per-program URL templates, Google Drive per-enrolment for portal). The expert panel findings and folder button concept from this document remain valid — only the folder structure and data model have changed.
+
+**Status:** Superseded — see note above
 **Created:** 2026-02-03
 **Purpose:** Enable staff to access client documents stored in external systems (SharePoint, Google Drive) from within KoNote
 

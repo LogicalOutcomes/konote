@@ -58,7 +58,7 @@ def client_progress_pdf(request, client_id):
 
     # Program enrolments
     enrolments = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="enrolled"
+        client_file=client, status="active"
     ).select_related("program")
 
     # Plan sections and targets

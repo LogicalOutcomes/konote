@@ -99,7 +99,7 @@ class MergeCandidatesTest(TestCase):
         c2 = self._make_client("Janet", "Doe", phone="(613) 555-8888", program=self.prog_b)
         # Also give c2 a HISTORICAL confidential enrolment (unenrolled)
         ClientProgramEnrolment.objects.create(
-            client_file=c2, program=self.conf_prog, status="unenrolled",
+            client_file=c2, program=self.conf_prog, status="finished",
         )
         results = find_merge_candidates(self.admin)
         # c2 should be excluded due to historical confidential enrolment
@@ -262,8 +262,8 @@ class MergeExecutionTest(TestCase):
         )
         # One enrolled (kept's), one unenrolled (archived's, preserved)
         self.assertEqual(enrolments.count(), 2)
-        self.assertEqual(enrolments.filter(status="enrolled").count(), 1)
-        self.assertEqual(enrolments.filter(status="unenrolled").count(), 1)
+        self.assertEqual(enrolments.filter(status="active").count(), 1)
+        self.assertEqual(enrolments.filter(status="finished").count(), 1)
 
     def test_handles_custom_field_conflicts(self):
         """Admin's choice resolves custom field conflicts without IntegrityError."""
@@ -394,7 +394,7 @@ class MergeSecurityTest(TestCase):
     def test_rejects_historically_confidential_clients(self):
         """Cannot merge even if confidential enrolment is historical (unenrolled)."""
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_b, program=self.conf_prog, status="unenrolled",
+            client_file=self.client_b, program=self.conf_prog, status="finished",
         )
         errors = _validate_merge_preconditions(self.client_a, self.client_b)
         self.assertTrue(any("confidential" in e.lower() for e in errors))

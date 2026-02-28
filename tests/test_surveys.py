@@ -1604,7 +1604,7 @@ class StaffDataEntryConditionTests(TestCase):
         # Ensure staff can access this client via program role
         self.program = Program.objects.create(name="SDE Program")
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_obj, program=self.program, status="enrolled",
+            client_file=self.client_obj, program=self.program, status="active",
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program, role="staff", status="active",

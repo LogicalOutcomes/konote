@@ -227,7 +227,7 @@ def program_audit_log(request, program_id):
 
     # Get client IDs enrolled in this program
     client_ids = list(ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled",
+        program=program, status="active",
     ).values_list("client_file_id", flat=True))
 
     # Query audit log for entries related to these clients

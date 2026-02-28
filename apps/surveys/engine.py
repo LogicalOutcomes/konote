@@ -189,7 +189,7 @@ def _evaluate_single_rule(rule, client_file, participant_user):
         is_enrolled = ClientProgramEnrolment.objects.filter(
             client_file=client_file,
             program=rule.program,
-            status="enrolled",
+            status="active",
         ).exists()
         if not is_enrolled:
             return None
@@ -245,7 +245,7 @@ def _repeat_policy_allows(rule, participant_user, client_file):
             enrolment = ClientProgramEnrolment.objects.filter(
                 client_file=client_file,
                 program=rule.program,
-                status="enrolled",
+                status="active",
             ).order_by("-enrolled_at").first()
             if enrolment:
                 return not existing.filter(
@@ -303,7 +303,7 @@ def _get_enrolment_date(client_file, program):
     enrolment = ClientProgramEnrolment.objects.filter(
         client_file=client_file,
         program=program,
-        status="enrolled",
+        status="active",
     ).order_by("-enrolled_at").first()
     if enrolment:
         return enrolment.enrolled_at

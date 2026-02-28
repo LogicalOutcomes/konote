@@ -76,10 +76,10 @@ class ProgramFilteringTestBase(TestCase):
         self.client_file.consent_type = "written"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.prog_a, status="enrolled"
+            client_file=self.client_file, program=self.prog_a, status="active"
         )
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.prog_b, status="enrolled"
+            client_file=self.client_file, program=self.prog_b, status="active"
         )
 
         # Plan sections — one per program + one with no program

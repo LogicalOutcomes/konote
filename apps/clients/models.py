@@ -331,19 +331,101 @@ class ClientFile(models.Model):
         return visible
 
 
-class ClientProgramEnrolment(models.Model):
-    """Links a client to a program."""
+class ServiceEpisode(models.Model):
+    """A service episode linking a client to a program.
+
+    Extended from the original ClientProgramEnrolment with FHIR-informed
+    fields for richer lifecycle tracking. Keeps the same database table.
+    """
 
     STATUS_CHOICES = [
-        ("enrolled", _("Enrolled")),
-        ("unenrolled", _("Unenrolled")),
+        ("planned", _("Planned")),
+        ("waitlist", _("Waitlisted")),
+        ("active", _("Active")),
+        ("on_hold", _("On Hold")),
+        ("finished", _("Finished")),
+        ("cancelled", _("Cancelled")),
     ]
 
+    # Statuses that grant staff access to the client file.
+    # Used by middleware, access.py, client list, and search.
+    # Update this ONE place when adding new accessible statuses.
+    ACCESSIBLE_STATUSES = ["active", "on_hold"]
+
+    EPISODE_TYPE_CHOICES = [
+        ("new_intake", _("New Intake")),
+        ("re_enrolment", _("Re-enrolment")),
+        ("transfer_in", _("Transfer In")),
+        ("crisis", _("Crisis")),
+        ("short_term", _("Short-term")),
+    ]
+
+    REFERRAL_SOURCE_CHOICES = [
+        ("", _("— Not specified —")),
+        ("self", _("Self")),
+        ("family", _("Family")),
+        ("agency_internal", _("Agency (internal)")),
+        ("agency_external", _("Agency (external)")),
+        ("healthcare", _("Healthcare")),
+        ("school", _("School")),
+        ("court", _("Court")),
+        ("shelter", _("Shelter")),
+        ("community", _("Community")),
+        ("other", _("Other")),
+    ]
+
+    END_REASON_CHOICES = [
+        ("", _("— Not specified —")),
+        ("completed", _("Completed")),
+        ("goals_met", _("Goals Met")),
+        ("withdrew", _("Withdrew")),
+        ("transferred", _("Transferred")),
+        ("referred_out", _("Referred Out")),
+        ("lost_contact", _("Lost Contact")),
+        ("moved", _("Moved")),
+        ("ineligible", _("Ineligible")),
+        ("deceased", _("Deceased")),
+        ("other", _("Other")),
+    ]
+
+    # --- Original fields (preserved) ---
     client_file = models.ForeignKey(ClientFile, on_delete=models.CASCADE, related_name="enrolments")
     program = models.ForeignKey("programs.Program", on_delete=models.CASCADE, related_name="client_enrolments")
-    status = models.CharField(max_length=20, default="enrolled", choices=STATUS_CHOICES)
+    status = models.CharField(max_length=20, default="active", choices=STATUS_CHOICES)
     enrolled_at = models.DateTimeField(auto_now_add=True)
     unenrolled_at = models.DateTimeField(null=True, blank=True)
+
+    # --- New FHIR-informed fields ---
+    status_reason = models.TextField(
+        blank=True, default="",
+        help_text=_("Why the status changed."),
+    )
+    episode_type = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=EPISODE_TYPE_CHOICES,
+        help_text=_("Auto-derived from enrolment history. Do not set manually."),
+    )
+    primary_worker = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="primary_episodes",
+        help_text=_("Assigned case worker."),
+    )
+    referral_source = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=REFERRAL_SOURCE_CHOICES,
+    )
+    started_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When active service began. Auto-set to enrolled_at on creation if blank."),
+    )
+    ended_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When service ended."),
+    )
+    end_reason = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=END_REASON_CHOICES,
+    )
 
     class Meta:
         app_label = "clients"
@@ -351,6 +433,93 @@ class ClientProgramEnrolment(models.Model):
 
     def __str__(self):
         return f"{self.client_file} → {self.program}"
+
+    def derive_episode_type(self):
+        """Auto-derive episode_type from enrolment history.
+
+        Rules:
+        - No prior episodes for this client × program → new_intake
+        - Has a prior finished episode in this program → re_enrolment
+        - Has a prior episode that ended with transferred from another program → transfer_in
+        - crisis and short_term are set explicitly by admin (not auto-derived)
+        """
+        # Don't override admin-set types
+        if self.episode_type in ("crisis", "short_term"):
+            return self.episode_type
+
+        prior_same_program = ServiceEpisode.objects.filter(
+            client_file=self.client_file,
+            program=self.program,
+            status="finished",
+        ).exclude(pk=self.pk)
+
+        if prior_same_program.exists():
+            return "re_enrolment"
+
+        # Check for transfer_in: prior episode in ANY program ended with transferred
+        prior_transferred = ServiceEpisode.objects.filter(
+            client_file=self.client_file,
+            end_reason="transferred",
+            status="finished",
+        ).exclude(program=self.program).exclude(pk=self.pk)
+
+        if prior_transferred.exists():
+            return "transfer_in"
+
+        return "new_intake"
+
+    def save(self, *args, **kwargs):
+        # Auto-derive episode_type on first save if not explicitly set
+        is_new = self.pk is None
+        if is_new and not self.episode_type:
+            self.episode_type = self.derive_episode_type()
+        # Set started_at from enrolled_at if not set.
+        # For new records, started_at ≈ enrolled_at — they diverge when
+        # a client is enrolled in advance but service starts later.
+        if is_new and not self.started_at:
+            self.started_at = self.enrolled_at or timezone.now()
+        super().save(*args, **kwargs)
+
+
+# Backwards compatibility — all existing imports continue working
+ClientProgramEnrolment = ServiceEpisode
+
+
+class ServiceEpisodeStatusChange(models.Model):
+    """Append-only history of status changes for a service episode.
+
+    Every time ServiceEpisode.status changes, a row is appended here.
+    Also written to AuditLog for the separate compliance trail.
+    """
+
+    episode = models.ForeignKey(
+        ServiceEpisode, on_delete=models.CASCADE,
+        related_name="status_changes",
+    )
+    status = models.CharField(
+        max_length=20,
+        help_text="The new status value.",
+    )
+    reason = models.TextField(
+        blank=True, default="",
+        help_text="Why the status changed.",
+    )
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "service_episode_status_changes"
+        ordering = ["changed_at"]
+        indexes = [
+            models.Index(fields=["episode", "changed_at"]),
+        ]
+
+    def __str__(self):
+        return f"Episode #{self.episode_id} → {self.status}"
 
 
 class ClientAccessBlock(models.Model):

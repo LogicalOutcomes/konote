@@ -112,6 +112,14 @@
     {% include "programs/_role_list.html" %}
 </div>
 
+{% if features.participant_portal and is_admin %}
+<hr>
+<section aria-labelledby="resources-heading">
+    <h2 id="resources-heading">{{ term.resource_plural }}</h2>
+    <p><a href="{% url 'programs:program_resources' program_id=program.pk %}" role="button" class="outline">{% blocktrans with resource_term=term.resource_plural|lower %}Manage {{ resource_term }}{% endblocktrans %}</a></p>
+</section>
+{% endif %}
+
 {% if groups != None %}
 <hr>
 <section aria-labelledby="groups-heading">

@@ -148,7 +148,7 @@ class EffectiveDateInsightsTest(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         self.section = PlanSection.objects.create(
             client_file=self.client_file,
@@ -250,7 +250,7 @@ class DemoModeQuotesTest(TestCase):
             ClientProgramEnrolment.objects.create(
                 client_file=client,
                 program=self.program,
-                status="enrolled",
+                status="active",
             )
             self.clients.append(client)
 

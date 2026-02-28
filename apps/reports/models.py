@@ -218,6 +218,7 @@ class ReportSection(models.Model):
         ("narrative", _("Narrative / Written Section")),
         ("chart", _("Chart / Visualisation")),
         ("service_stats", _("Service Statistics")),
+        ("standards_alignment", _("Standards Alignment (CIDS)")),
     ]
 
     report_template = models.ForeignKey(

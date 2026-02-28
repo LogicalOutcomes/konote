@@ -3,6 +3,7 @@
 **Created:** 2026-02-27
 **Expert panel:** 5 experts, 3 rounds, consensus reached
 **Review panel:** 4 experts, 3 rounds — 5 revisions incorporated 2026-02-27
+**Taxonomy panel:** 4 experts, 3 rounds — outcome_domain removed 2026-02-27
 **Implementation plan:** tasks/fhir-informed-data-modelling.md
 
 ---
@@ -89,6 +90,31 @@
 
 **Instead:** Auto-derive from episode history. Display on the client profile as informational ("Re-enrolment — previously served Jan-Aug 2024").
 
+### DO NOT hardcode an internal outcome taxonomy (added 2026-02-27)
+
+**Why it seems like a good idea:** "If every metric and program has a domain (housing, employment, mental_health…), we can group outcomes, derive CIDS themes, and compute presenting issues automatically."
+
+**Why it was rejected:**
+
+1. **Every funder has a different taxonomy.** United Way uses "Poverty to Possibility" domains. PHAC uses population health categories. Provincial ministries use program-area codes. A housing stability program might report under "housing" to one funder, "poverty reduction" to another, and "community safety" to a third.
+
+2. **It's not just funders.** Partners, collaborations, and sector networks all use different classification systems. A single internal taxonomy cannot serve as a Rosetta Stone.
+
+3. **One metric maps to many indicators.** A PHQ-9 score maps simultaneously to PHAC's "mental health," United Way's "individual wellbeing," CIDS's IRIS Health theme, and SDG Goal 3. A single CharField cannot represent this.
+
+4. **The sector has tried and failed.** Canadian nonprofits have attempted taxonomy standardisation for years. No consensus exists, and building a system that assumes one will emerge is a design error.
+
+5. **`custom` becomes the default.** Any hardcoded taxonomy will be too coarse for most programs, causing agencies to select "custom/other" for 80%+ of their metrics — rendering the taxonomy useless for reporting.
+
+**Expert panel:** 4 experts (Nonprofit Evaluation Specialist, Data Interoperability Specialist, Product Designer, Systems Architect), 3 rounds, unanimous consensus. GK (nonprofit evaluation consultant) confirmed: "every single funder has a different taxonomy. We have tried for years to get people in the non-profit sector to settle on a taxonomy, and it's not possible."
+
+**Instead:**
+- **Keep `MetricDefinition.category`** (7 values) for internal admin UI grouping — it works, nobody cares about it beyond filtering
+- **Use `TaxonomyMapping` model** for external taxonomy compliance — a metric can have multiple mappings to different external taxonomies (CIDS IRIS, United Way, PHAC, etc.), each optionally scoped to a funder/partner relationship
+- **Populate via config templates** — per-funder templates pre-map metrics to that funder's taxonomy during onboarding
+
+**When to reconsider:** Never. This is a fundamental reality of the Canadian nonprofit sector, not a temporary coordination problem.
+
 ---
 
 ## Decided Trade-offs
@@ -114,12 +140,12 @@
 - **Mitigation:** 3-point trend analysis (not single-point); "(auto)" badge; worker override with `achievement_status_source` tracking
 - **Domains:** Data Quality, UX, Reporting
 
-### Unified domain taxonomy vs. separate CIDS themes and FHIR categories
-- **Chosen (revised):** `outcome_domain` (14 values) for internal use and FHIR tracking. CIDS Theme derived at export time via three-tier approach, not stored as a separate field.
-- **Trade-off:** Theme derivation adds export-time complexity; `cids_theme_override` field needed for edge cases
-- **Reason:** The original plan proposed replacing `cids_theme` with `outcome_domain`, but the review panel identified this as lossy — IRIS Impact Theme has 25+ values and the mapping is many-to-many. Neither a dedicated `cids_theme` field nor `outcome_domain` alone is sufficient.
-- **Three-tier derivation:** (1) `iris_metric_code` → CidsCodeList lookup → parent theme (precise); (2) `outcome_domain` → default mapping (fallback); (3) `cids_theme_override` (admin correction)
-- **Domains:** Standards, Data Model
+### ~~Unified domain taxonomy~~ → Taxonomy-neutral platform with mapping layer (revised 2026-02-27)
+- **Original (review panel):** `outcome_domain` (14 values) for internal use. CIDS Theme derived at export time via three-tier approach.
+- **Revised (taxonomy panel):** **Remove `outcome_domain` entirely.** Keep `MetricDefinition.category` (7 values) for UI grouping only. Add `TaxonomyMapping` model for external taxonomy compliance. CIDS Theme derived via: (1) `iris_metric_code` → CidsCodeList lookup (precise); (2) explicit taxonomy mapping (when available); (3) `cids_theme_override` (admin override).
+- **Why the revision:** GK (nonprofit evaluation consultant) identified that every funder, partner, and collaboration uses a different taxonomy. A 4-expert taxonomy panel confirmed this is unfixable — the sector has tried for years. A hardcoded internal taxonomy would result in 80%+ "custom" selections, rendering it useless.
+- **Trade-off:** No internal domain vocabulary means presenting issues (Phase F4) must be computed from program enrolment and metric categories rather than domain codes. This is less precise but avoids false precision.
+- **Domains:** Standards, Data Model, Evaluation
 
 ### Discharge reason as required vs. optional
 - **Chosen:** Required (radio buttons in discharge modal)
@@ -139,22 +165,23 @@
 | Episode history gets complex for long-term clients | Low | Low | Monitor clients with >3 episodes | Acceptable complexity — these are the exact clients funders ask about |
 | Achievement status unreliable with sparse data (1-2 points) | Medium | Low | Track percentage of goals with <3 data points | Document in reporting: "based on limited data" badge for goals with <3 points; full trend requires 3+ |
 | `not_attainable` misused by workers | Low | Medium | Monitor frequency and review with PM | Never auto-computed; requires deliberate worker action; review in supervision |
-| Unified domain taxonomy is too coarse for some programs | Low | Low | Track how often `custom` domain is selected | Add new domains as patterns emerge; keep the list under 20 |
+| Taxonomy mapping layer adds complexity to config templates | Low | Low | Monitor how many mappings per template | Config templates handle bulk mapping; admin UI provides override |
 
 ---
 
 ## Graduated Complexity Path
 
 ### Phase 1 (current plan): Core models
+- CIDS metadata fields + OrganizationProfile
+- Taxonomy mapping layer (multi-funder, multi-taxonomy)
 - ServiceEpisode with statusHistory
-- Unified Outcome Domain taxonomy
 - Goal Achievement Status (auto-computed)
 - Encounter Participant Role (auto-filled)
 
 ### Phase 2 (triggered by need): Referrals and computed presenting issues
 - **Trigger:** A funder asks "how many referrals?" or "outcomes by presenting issue"
 - ServiceReferral model
-- Computed presenting issues view (from domains)
+- Computed presenting issues view (from program enrolment + metric categories)
 
 ### Phase 3 (triggered by multi-agency): Teams and explicit presenting issues
 - **Trigger:** Multi-tenancy phase or multi-disciplinary team requirement

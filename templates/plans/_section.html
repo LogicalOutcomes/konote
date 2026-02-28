@@ -45,6 +45,7 @@
         <tr>
             <th scope="col">{{ term.target|default:"Target" }}</th>
             <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Progress" %}</th>
             <th scope="col">{{ term.metric_plural|default:"Metrics" }}</th>
             {% if can_edit %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
         </tr>

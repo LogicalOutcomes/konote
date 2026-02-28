@@ -1,13 +1,38 @@
 """Forms for admin settings views."""
 import re
+from urllib.parse import urlparse
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from .models import (
     ACCESS_TIER_CHOICES, ACCESS_TIER_DESCRIPTIONS,
-    DEFAULT_TERMS, TerminologyOverride,
+    DEFAULT_TERMS, OrganizationProfile, TerminologyOverride,
 )
+
+
+class OrganizationProfileForm(forms.ModelForm):
+    """Form for editing the singleton OrganizationProfile."""
+
+    class Meta:
+        model = OrganizationProfile
+        fields = [
+            "legal_name", "operating_name",
+            "description", "description_fr",
+            "legal_status", "sector_codes",
+            "street_address", "city", "province",
+            "postal_code", "country", "website",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "description_fr": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["legal_name"].widget.attrs["placeholder"] = _("e.g., Example Community Services Inc.")
+        self.fields["operating_name"].widget.attrs["placeholder"] = _("e.g., Example Community Services")
+        self.fields["postal_code"].widget.attrs["placeholder"] = "A1A 1A1"
 
 
 class FeatureToggleForm(forms.Form):
@@ -78,6 +103,12 @@ DOCUMENT_STORAGE_CHOICES = [
     ("none", _("Not configured")),
     ("sharepoint", _("SharePoint / OneDrive")),
     ("google_drive", _("Google Drive")),
+]
+
+ALLOWED_DOCUMENT_DOMAINS = [
+    "sharepoint.com",
+    "drive.google.com",
+    "onedrive.live.com",
 ]
 
 
@@ -170,9 +201,10 @@ class InstanceSettingsForm(forms.Form):
     portal_safe_exit_url = forms.URLField(
         required=False, label=_("Leave Quickly Destination URL"),
         help_text=_("Where the 'Leave quickly' button sends participants. "
-                     "Choose something that looks normal in browser history "
-                     "(e.g. a weather or news site). Default: theweathernetwork.com"),
-        widget=forms.URLInput(attrs={"placeholder": "https://www.theweathernetwork.com"}),
+                     "Must be a site with no cookie popups, no ads, and no login walls. "
+                     "Recommended: google.ca, en.wikipedia.org, canada.ca. "
+                     "Default: google.ca"),
+        widget=forms.URLInput(attrs={"placeholder": "https://www.google.ca"}),
     )
 
     # Meeting scheduling settings
@@ -227,6 +259,58 @@ class InstanceSettingsForm(forms.Form):
         for key in self.SETTING_KEYS:
             if key in current_settings:
                 self.fields[key].initial = current_settings[key]
+
+    def clean(self):
+        cleaned = super().clean()
+        provider = cleaned.get("document_storage_provider", "none")
+        template = cleaned.get("document_storage_url_template", "").strip()
+
+        if provider != "none" and template:
+            # Must use HTTPS
+            if not template.startswith("https://"):
+                self.add_error(
+                    "document_storage_url_template",
+                    _("URL template must use HTTPS."),
+                )
+                return cleaned
+
+            # Block dangerous protocols
+            lower = template.lower()
+            for proto in ("javascript:", "data:", "vbscript:"):
+                if proto in lower:
+                    self.add_error(
+                        "document_storage_url_template",
+                        _("URL template contains a disallowed protocol."),
+                    )
+                    return cleaned
+
+            # Domain must be in allowlist
+            parsed = urlparse(template)
+            if not any(
+                parsed.netloc == domain or parsed.netloc.endswith("." + domain)
+                for domain in ALLOWED_DOCUMENT_DOMAINS
+            ):
+                self.add_error(
+                    "document_storage_url_template",
+                    _("Domain must be one of: %(domains)s")
+                    % {"domains": ", ".join(ALLOWED_DOCUMENT_DOMAINS)},
+                )
+                return cleaned
+
+            # Must contain {record_id} placeholder
+            if "{record_id}" not in template:
+                self.add_error(
+                    "document_storage_url_template",
+                    _("URL template must contain {record_id} placeholder."),
+                )
+
+        elif provider != "none" and not template:
+            self.add_error(
+                "document_storage_url_template",
+                _("URL template is required when a provider is selected."),
+            )
+
+        return cleaned
 
     def save(self):
         from .models import InstanceSetting

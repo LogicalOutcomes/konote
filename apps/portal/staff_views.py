@@ -306,6 +306,19 @@ def program_resources_manage(request, program_id):
             resource.program = program
             resource.created_by = request.user
             resource.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="create",
+                resource_type="portal_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "program_id": program.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
             return redirect("programs:program_resources", program_id=program.pk)
     else:
         form = ProgramResourceForm()
@@ -335,6 +348,19 @@ def program_resource_edit(request, program_id, resource_id):
         form = ProgramResourceForm(request.POST, instance=resource)
         if form.is_valid():
             form.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="update",
+                resource_type="portal_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "program_id": program.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
             return redirect("programs:program_resources", program_id=program.pk)
     else:
         form = ProgramResourceForm(instance=resource)
@@ -360,6 +386,18 @@ def program_resource_deactivate(request, program_id, resource_id):
     )
     resource.is_active = False
     resource.save(update_fields=["is_active", "updated_at"])
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="delete",
+        resource_type="portal_resource_link",
+        resource_id=resource.pk,
+        metadata={
+            "program_id": program.pk,
+            "title": resource.title,
+        },
+    )
 
     return redirect("programs:program_resources", program_id=program.pk)
 
@@ -383,6 +421,19 @@ def client_resources_manage(request, client_id):
             resource.client_file = client_file
             resource.created_by = request.user
             resource.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="create",
+                resource_type="client_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "client_file_id": client_file.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
             return redirect("clients:client_resources", client_id=client_file.pk)
     else:
         form = ClientResourceForm()
@@ -412,5 +463,17 @@ def client_resource_deactivate(request, client_id, resource_id):
     )
     resource.is_active = False
     resource.save(update_fields=["is_active"])
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="delete",
+        resource_type="client_resource_link",
+        resource_id=resource.pk,
+        metadata={
+            "client_file_id": client_file.pk,
+            "title": resource.title,
+        },
+    )
 
     return redirect("clients:client_resources", client_id=client_file.pk)

@@ -156,7 +156,7 @@ def compute_template_metrics(
     # Get enrolled client IDs
     enrolled_client_ids = set(
         ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
         ).values_list("client_file_id", flat=True)
     )
 

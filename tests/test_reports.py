@@ -366,7 +366,7 @@ class GetClientAchievementRateTest(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         # Create plan structure
         self.section = PlanSection.objects.create(
@@ -504,7 +504,7 @@ class GetProgramAchievementRateTest(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=client,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         section = PlanSection.objects.create(
             client_file=client,
@@ -636,7 +636,7 @@ class GetAchievementSummaryTest(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=client,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         section = PlanSection.objects.create(
             client_file=client,
@@ -1529,7 +1529,7 @@ class GenerateFunderReportDataTests(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=client,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
 
         # Create a progress note in the fiscal year
@@ -2274,12 +2274,12 @@ class DemoRealExportSeparationTests(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.demo_client,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         ClientProgramEnrolment.objects.create(
             client_file=self.real_client,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
 
         # Create progress notes for both clients (for metric export testing)
@@ -2516,7 +2516,7 @@ class ExportWarningDialogTests(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
         # Create metric value data so metric export can produce a CSV
         section = PlanSection.objects.create(
@@ -2670,7 +2670,7 @@ class IndividualClientExportViewTests(TestCase):
         self.client_file.save()
 
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
@@ -3009,7 +3009,7 @@ class CsvInjectionIntegrationTests(TestCase):
         self.client_file.save()
 
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
@@ -3068,7 +3068,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
         self.client_file.save()
 
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"

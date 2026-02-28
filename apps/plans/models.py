@@ -124,6 +124,36 @@ class MetricDefinition(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # ── CIDS metadata fields (Phase 1) ────────────────────────────────
+    cids_indicator_uri = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_("CIDS indicator @id — CharField not URLField (URIs may use urn: schemes)."),
+    )
+    iris_metric_code = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_("IRIS+ metric code from IrisMetric53 code list (e.g., 'PI2061')."),
+    )
+    sdg_goals = models.JSONField(
+        default=list, blank=True,
+        help_text=_("List of SDG goal numbers [1–17]."),
+    )
+    cids_unit_description = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("Human-readable unit label for CIDS export (maps to cids:unitDescription)."),
+    )
+    cids_defined_by = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_("URI of the organisation that defined this indicator (e.g., GIIN for IRIS+)."),
+    )
+    cids_has_baseline = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("Human-readable baseline description (e.g., 'Average score 3.2 at intake'). NOT a boolean."),
+    )
+    cids_theme_override = models.CharField(
+        max_length=50, blank=True, default="",
+        help_text=_("Admin override for CIDS theme derivation when auto-derivation is wrong."),
+    )
+
     def clean(self):
         super().clean()
         if self.threshold_low is not None and self.threshold_high is not None:
@@ -229,6 +259,42 @@ class PlanTarget(models.Model):
     sort_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # ── CIDS metadata (Phase 1) ───────────────────────────────────────
+    cids_outcome_uri = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_("CIDS outcome @id."),
+    )
+
+    # ── Achievement status (Phase F2) ──────────────────────────────────
+    ACHIEVEMENT_STATUS_CHOICES = [
+        ("in_progress", _("In progress")),
+        ("improving", _("Improving")),
+        ("worsening", _("Worsening")),
+        ("no_change", _("No change")),
+        ("achieved", _("Achieved")),
+        ("sustaining", _("Sustaining")),
+        ("not_achieved", _("Not achieved")),
+        ("not_attainable", _("Not attainable")),
+    ]
+    ACHIEVEMENT_SOURCE_CHOICES = [
+        ("auto_computed", _("Auto-computed")),
+        ("worker_assessed", _("Worker assessed")),
+    ]
+
+    achievement_status = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=ACHIEVEMENT_STATUS_CHOICES,
+    )
+    achievement_status_source = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=ACHIEVEMENT_SOURCE_CHOICES,
+    )
+    achievement_status_updated_at = models.DateTimeField(null=True, blank=True)
+    first_achieved_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When first achieved. Never cleared once set."),
+    )
 
     @property
     def name(self):

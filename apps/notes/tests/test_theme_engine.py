@@ -29,7 +29,7 @@ def _create_participants(program, count):
             _first_name_encrypted=b"", _last_name_encrypted=b"",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=cf, program=program, status="enrolled",
+            client_file=cf, program=program, status="active",
         )
 
 

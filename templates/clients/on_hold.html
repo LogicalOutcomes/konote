@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Put on Hold" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% blocktrans with first=client.display_name last=client.last_name %}Put {{ first }} {{ last }} on Hold{% endblocktrans %}</h1>
+    <p>{% trans "Temporarily pause service for this participant. They can be resumed later." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.program_id }}
+
+    {% include "includes/_form_errors.html" %}
+
+    <div>
+        <label for="id_status_reason">{{ form.status_reason.label }}</label>
+        {{ form.status_reason }}
+    </div>
+
+    <div role="group" style="margin-top: var(--kn-space-base);">
+        <button type="submit">{% trans "Put on Hold" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

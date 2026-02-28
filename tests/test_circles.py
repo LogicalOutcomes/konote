@@ -243,7 +243,7 @@ class CircleCRUDTest(TestCase):
         self.client_file.last_name = "Doe"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
     def tearDown(self):
@@ -322,7 +322,7 @@ class CircleCRUDTest(TestCase):
         client2.last_name = "Doe"
         client2.save()
         ClientProgramEnrolment.objects.create(
-            client_file=client2, program=self.program, status="enrolled",
+            client_file=client2, program=self.program, status="active",
         )
         resp = self.http.post(f"/circles/{circle.pk}/member/add/", {
             "client_file": client2.pk,
@@ -369,7 +369,7 @@ class CirclePrivacyTest(TestCase):
         self.client_a.last_name = "A"
         self.client_a.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_a, program=self.program1, status="enrolled",
+            client_file=self.client_a, program=self.program1, status="active",
         )
         # Client B in program2 only (NOT accessible to staff1)
         self.client_b = ClientFile(is_demo=False)
@@ -377,7 +377,7 @@ class CirclePrivacyTest(TestCase):
         self.client_b.last_name = "B"
         self.client_b.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_b, program=self.program2, status="enrolled",
+            client_file=self.client_b, program=self.program2, status="active",
         )
         # Circle with both clients
         self.circle = Circle(is_demo=False, created_by=self.staff)
@@ -469,7 +469,7 @@ class CirclePrivacyTest(TestCase):
         c.last_name = "X"
         c.save()
         ClientProgramEnrolment.objects.create(
-            client_file=c, program=self.program1, status="enrolled",
+            client_file=c, program=self.program1, status="active",
         )
         CircleMembership.objects.create(
             circle=self.circle, client_file=c,
@@ -512,7 +512,7 @@ class CircleIntakeTest(TestCase):
         c.last_name = "Member"
         c.save()
         ClientProgramEnrolment.objects.create(
-            client_file=c, program=self.program, status="enrolled",
+            client_file=c, program=self.program, status="active",
         )
         CircleMembership.objects.create(circle=self.circle, client_file=c)
 
@@ -601,7 +601,7 @@ class CircleNoteFormTest(TestCase):
         self.client_file.last_name = "Doe"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled",
+            client_file=self.client_file, program=self.program, status="active",
         )
 
     def tearDown(self):

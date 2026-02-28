@@ -204,7 +204,7 @@ def get_program_achievement_rate(
     """
     # Get clients enrolled in the program
     client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled"
+        program=program, status="active"
     ).values_list("client_file_id", flat=True)
 
     # Build note filter with date range
@@ -309,7 +309,7 @@ def get_achievement_summary(
     """
     # Get clients enrolled in the program
     client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled"
+        program=program, status="active"
     ).values_list("client_file_id", flat=True)
 
     # Build note filter with date range

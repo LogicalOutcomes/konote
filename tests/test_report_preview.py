@@ -61,7 +61,7 @@ def _create_test_data():
     ClientProgramEnrolment.objects.create(
         client_file=client_file,
         program=program,
-        status="enrolled",
+        status="active",
     )
     plan_section = PlanSection.objects.create(
         client_file=client_file,
