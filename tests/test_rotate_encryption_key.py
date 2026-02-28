@@ -171,10 +171,12 @@ class RotateEncryptionKeyInvalidKeyTest(TestCase):
     def test_invalid_new_key_raises_error(self):
         valid_key = Fernet.generate_key().decode()
         with self.assertRaises(CommandError) as ctx:
+            # Use --flag=value syntax so argparse never confuses a base64 key
+            # that starts with '-' for a flag name.
             call_command(
                 "rotate_encryption_key",
-                old_key=valid_key,
-                new_key="also-not-valid!!!",
+                f"--old-key={valid_key}",
+                "--new-key=also-not-valid!!!",
             )
         self.assertIn("invalid", str(ctx.exception).lower())
 
