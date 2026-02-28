@@ -10,6 +10,7 @@
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
+- [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
@@ -17,6 +18,7 @@
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — GK (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
+- [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — GK (LEGAL-SaaS1)
 
 ## Do Occasionally
 
@@ -129,6 +131,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
 - [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
 - [x] Resolve SEC3-Q1: who runs the export command — tiered model: self-hosted self-serve, SaaS via KoNote with SLA. Expert panel. Design unblocked — 2026-02-27 (SEC3-Q1)
 - [x] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — 2026-02-27 (DOC-INTEG1)

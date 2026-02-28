@@ -23,6 +23,7 @@ A KoNote instance is ready for real data when all of these are in place:
 7. **Reports** — funder reporting requirements are mapped to KoNote's export formats
 8. **Users** — staff accounts created with correct roles and program access
 9. **Verification** — everything has been tested and signed off
+10. **Data responsibilities** — the agency has acknowledged their responsibilities for data outside KoNote (encryption key, document storage, exports, staff departures)
 
 ## Order of Operations
 
@@ -38,9 +39,10 @@ Step 6: Plan & Note Templates (depends on Programs + Metrics)
 Step 7: Reports              (depends on Metrics + Programs)
 Step 8: Users                (depends on Roles + Programs)
 Step 9: Verification         (depends on everything above)
+Step 10: Data Responsibilities (depends on Features + Programs; signed at go-live)
 ```
 
-Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Programs exist.
+Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Programs exist. Step 10 can be discussed alongside other steps but is signed last.
 
 ## Decision Documents
 
@@ -55,6 +57,7 @@ Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Progra
 | [07](07-reports.md) | Reports | Funder reporting requirements, export formats, demographic breakdowns | Report schema choices |
 | [08](08-users.md) | Users & Authentication | Staff accounts, authentication method (SSO vs local), initial invitations | Per-user setup |
 | [09](09-verification.md) | Verification | Testing checklist, role verification, sign-off | Pass/fail checks |
+| [10](10-data-responsibilities.md) | Data Responsibilities | Encryption key custody, document storage, exports, plaintext backups, staff departures | Signed acknowledgement |
 
 ## Starting from a Template
 
@@ -114,4 +117,5 @@ These provide deeper context when needed:
 | 07 Reports | To do | New — needs funder reporting requirements |
 | 08 Users | To do | Reformat from deployment-protocol.md Phase 2, 4 |
 | 09 Verification | To do | Reformat from deployment-protocol.md Phase 4 |
+| 10 Data Responsibilities | Done | Feeds into signed Data Handling Acknowledgement |
 | [funder partner] example | Partial | Config templates exist in config_templates/ |
