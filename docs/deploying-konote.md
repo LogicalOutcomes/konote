@@ -629,9 +629,17 @@ az acr create \
 
 ### Step 4: Build and Push Docker Image
 
+**Automated (recommended):** Every merge to `main` on GitHub automatically builds and pushes the image to `konoteregistry.azurecr.io/konote:latest` via the CI/CD pipeline. You do not need to build or push manually after initial setup.
+
+The pipeline tags each image with two labels:
+- `konoteregistry.azurecr.io/konote:latest` — always points to the newest build
+- `konoteregistry.azurecr.io/konote:<git-sha>` — the exact commit, useful for rollbacks
+
+**Manual (first-time setup or troubleshooting):** If you need to push an image manually before the first merge:
+
 ```bash
 docker build -t konote:latest .
-az acr login --name konoteregistry 
+az acr login --name konoteregistry
 docker tag konote:latest konoteregistry.azurecr.io/konote:latest
 docker push konoteregistry.azurecr.io/konote:latest
 ```
