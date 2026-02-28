@@ -19,6 +19,7 @@ urlpatterns = [
     path("instance/", views.instance_settings, name="instance_settings"),
     path("organization/", views.organization_profile, name="organization_profile"),
     path("messaging/", views.messaging_settings, name="messaging_settings"),
+    path("backup/", views.backup_settings, name="backup_settings"),
     path("field-access/", field_access_views.field_access, name="field_access"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),

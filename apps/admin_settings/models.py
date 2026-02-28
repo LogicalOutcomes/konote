@@ -417,6 +417,31 @@ class OrganizationProfile(models.Model):
     country = models.CharField(max_length=2, default="CA")
     website = models.URLField(blank=True, default="")
 
+    # Backup reminder settings
+    backup_reminder_enabled = models.BooleanField(
+        default=False,
+        help_text=_lazy("Send periodic reminders when a backup export is due."),
+    )
+    backup_reminder_frequency_days = models.IntegerField(
+        default=90,
+        help_text=_lazy("How often to send backup reminders (in days)."),
+    )
+    backup_reminder_contact_email = models.EmailField(
+        blank=True,
+        default="",
+        help_text=_lazy("Email address to send backup reminders to."),
+    )
+    backup_reminder_last_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_lazy("When the last backup reminder was sent."),
+    )
+    backup_last_exported_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_lazy("When the last backup export was completed."),
+    )
+
     class Meta:
         app_label = "admin_settings"
         db_table = "organization_profiles"

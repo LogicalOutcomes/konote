@@ -556,3 +556,38 @@ class SetupWizardInstanceSettingsForm(forms.Form):
         required=False,
         label=_("Access tier"),
     )
+
+
+BACKUP_FREQUENCY_CHOICES = [
+    (30, _("Monthly (30 days)")),
+    (60, _("Every 2 months (60 days)")),
+    (90, _("Quarterly (90 days)")),
+    (180, _("Every 6 months (180 days)")),
+    (365, _("Annually (365 days)")),
+]
+
+
+class BackupReminderForm(forms.ModelForm):
+    """Form for backup reminder settings on OrganizationProfile."""
+
+    backup_reminder_frequency_days = forms.TypedChoiceField(
+        choices=BACKUP_FREQUENCY_CHOICES,
+        coerce=int,
+        initial=90,
+        label=_("Reminder Frequency"),
+        help_text=_("How often to send backup reminders."),
+    )
+
+    class Meta:
+        model = OrganizationProfile
+        fields = [
+            "backup_reminder_enabled",
+            "backup_reminder_frequency_days",
+            "backup_reminder_contact_email",
+        ]
+
+    def clean_backup_reminder_frequency_days(self):
+        value = self.cleaned_data["backup_reminder_frequency_days"]
+        if value <= 0:
+            raise forms.ValidationError(_("Frequency must be a positive number."))
+        return value

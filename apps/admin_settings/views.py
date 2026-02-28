@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from apps.auth_app.decorators import admin_required
 
 from .forms import (
-    DemoDataForm, FeatureToggleForm, InstanceSettingsForm,
+    BackupReminderForm, DemoDataForm, FeatureToggleForm, InstanceSettingsForm,
     MessagingSettingsForm, OrganizationProfileForm, TerminologyForm,
 )
 from .models import (
@@ -824,6 +824,31 @@ def organization_profile(request):
         form = OrganizationProfileForm(instance=profile)
 
     return render(request, "admin_settings/organization_profile.html", {
+        "form": form,
+        "profile": profile,
+    })
+
+
+# --- Backup & Export Settings ---
+
+@login_required
+@admin_required
+def backup_settings(request):
+    """Configure backup reminder settings on OrganizationProfile."""
+    from .forms import BackupReminderForm
+
+    profile = OrganizationProfile.get_solo()
+
+    if request.method == "POST":
+        form = BackupReminderForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Backup reminder settings updated."))
+            return redirect("admin_settings:backup_settings")
+    else:
+        form = BackupReminderForm(instance=profile)
+
+    return render(request, "admin_settings/backup_settings.html", {
         "form": form,
         "profile": profile,
     })
