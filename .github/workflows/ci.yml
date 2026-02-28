@@ -38,6 +38,6 @@ jobs:
         env:
           DJANGO_SETTINGS_MODULE: konote.settings.test
           SECRET_KEY: ci-secret-key-not-for-production
-          DATABASE_URL: sqlite://:memory:
-          AUDIT_DATABASE_URL: sqlite://:memory:
+          DATABASE_URL: "sqlite://:memory:"
+          AUDIT_DATABASE_URL: "sqlite://:memory:"
           FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
