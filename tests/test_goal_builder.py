@@ -77,7 +77,7 @@ class GoalBuilderBaseTest(TestCase):
         self.client_file.status = "active"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         # Enable AI

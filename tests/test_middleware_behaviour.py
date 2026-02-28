@@ -37,7 +37,7 @@ def _setup_staff_with_client(test_case):
     client_file.last_name = "Client"
     client_file.save()
     ClientProgramEnrolment.objects.create(
-        client_file=client_file, program=program, status="enrolled",
+        client_file=client_file, program=program, status="active",
     )
     return user, client_file, program
 

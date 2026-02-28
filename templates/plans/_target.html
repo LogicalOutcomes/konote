@@ -20,6 +20,24 @@
     {% endif %}
 </td>
 <td>
+    {% if target.achievement_status %}
+        {% if target.achievement_status == "achieved" or target.achievement_status == "sustaining" %}
+            <span class="badge badge-success">{{ target.get_achievement_status_display }}</span>
+        {% elif target.achievement_status == "improving" %}
+            <span class="badge badge-info">{{ target.get_achievement_status_display }}</span>
+        {% elif target.achievement_status == "worsening" or target.achievement_status == "not_attainable" %}
+            <span class="badge badge-warning">{{ target.get_achievement_status_display }}</span>
+        {% else %}
+            <span class="badge badge-neutral">{{ target.get_achievement_status_display }}</span>
+        {% endif %}
+        {% if target.achievement_status_source == "auto_computed" %}
+            <small class="secondary">{% trans "(auto)" %}</small>
+        {% endif %}
+    {% else %}
+        <small class="secondary">—</small>
+    {% endif %}
+</td>
+<td>
     {% for metric in target.metrics.all %}
         <span class="badge badge-neutral" title="{{ metric.translated_definition|truncatewords:10 }}">{{ metric.translated_name }}</span>
     {% empty %}

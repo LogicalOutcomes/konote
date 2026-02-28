@@ -27,7 +27,7 @@ def _make_client_in_program(first, last, program):
     cf.last_name = last
     cf.status = "active"
     cf.save()
-    ClientProgramEnrolment.objects.create(client_file=cf, program=program, status="enrolled")
+    ClientProgramEnrolment.objects.create(client_file=cf, program=program, status="active")
     return cf
 
 

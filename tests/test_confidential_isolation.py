@@ -162,7 +162,7 @@ class ConfidentialIsolationTest(TestCase):
         conf_enrolment = ClientProgramEnrolment.objects.get(
             client_file=self.dual_client, program=self.confidential_prog,
         )
-        self.assertEqual(conf_enrolment.status, "enrolled")
+        self.assertEqual(conf_enrolment.status, "active")
 
     # ---- is_confidential one-way rule ----
 

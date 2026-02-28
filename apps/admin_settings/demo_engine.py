@@ -696,7 +696,7 @@ class DemoDataEngine:
                 client.save()
 
                 ClientProgramEnrolment.objects.create(
-                    client_file=client, program=prog, status="enrolled",
+                    client_file=client, program=prog, status="active",
                 )
 
                 client_assignments.append((client, prog, trend, worker, goal))

@@ -175,6 +175,53 @@ class ClientFileForm(forms.Form):
         return phone
 
 
+class DischargeForm(forms.Form):
+    """Form for discharging a client from a specific program.
+
+    Captures the required end_reason and optional status_reason.
+    Used in the discharge modal on the client profile.
+    """
+
+    end_reason = forms.ChoiceField(
+        choices=[
+            ("completed", _("Completed")),
+            ("goals_met", _("Goals Met")),
+            ("withdrew", _("Withdrew")),
+            ("transferred", _("Transferred")),
+            ("referred_out", _("Referred Out")),
+            ("lost_contact", _("Lost Contact")),
+            ("moved", _("Moved")),
+            ("ineligible", _("Ineligible")),
+            ("deceased", _("Deceased")),
+            ("other", _("Other")),
+        ],
+        widget=forms.RadioSelect,
+        label=_("Why is this person leaving?"),
+    )
+
+    status_reason = forms.CharField(
+        required=False,
+        label=_("Additional details (optional)"),
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+    program_id = forms.IntegerField(widget=forms.HiddenInput)
+
+
+class OnHoldForm(forms.Form):
+    """Form for putting a client's service episode on hold."""
+
+    status_reason = forms.CharField(
+        label=_("Reason for putting on hold"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Why is service being paused?"),
+        }),
+    )
+
+    program_id = forms.IntegerField(widget=forms.HiddenInput)
+
+
 class ClientTransferForm(forms.Form):
     """Form for transferring a client between programs.
 

@@ -71,7 +71,7 @@ class TeamMeetingViewContentTests(TestCase):
         UserProgramRole.objects.create(user=self.staff2, program=self.program, role="staff", status="active")
 
         self.client_file = ClientFile.objects.create(first_name="Test", last_name="Client")
-        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.program, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.program, status="active")
 
         self.template = ProgressNoteTemplate.objects.create(name="Test Template", owning_program=self.program)
 

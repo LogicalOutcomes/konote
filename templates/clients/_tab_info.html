@@ -31,7 +31,12 @@
             <dt>{{ term.program_plural|default:"Programs" }}</dt>
             <dd>
                 {% for e in enrolments %}
-                <span class="program-indicator"><span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}</span>{% if not forloop.last %} · {% endif %}
+                <span class="program-indicator">
+                    <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>
+                    {{ e.program.translated_name }}
+                    {% if e.status == "on_hold" %}<span class="badge badge-warning" style="font-size: 0.65rem; margin-left: 0.25rem;">{% trans "On Hold" %}</span>{% endif %}
+                    {% if e.episode_type %}<small class="secondary"> — {{ e.get_episode_type_display }}</small>{% endif %}
+                </span>{% if not forloop.last %} · {% endif %}
                 {% endfor %}
             </dd>
         </div>

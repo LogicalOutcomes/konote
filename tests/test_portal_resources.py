@@ -42,7 +42,7 @@ class PortalResourcesViewTests(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program_a,
-            status="enrolled",
+            status="active",
         )
 
         self.participant = ParticipantUser.objects.create_participant(
@@ -295,7 +295,7 @@ class StaffClientResourceTests(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
 
         # Staff needs a program role to access client-scoped views

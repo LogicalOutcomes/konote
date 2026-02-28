@@ -33,7 +33,7 @@ def _iter_matchable_clients(user, exclude_client_id=None):
     confidential_client_ids = set(
         ClientProgramEnrolment.objects.filter(
             program__is_confidential=True,
-            status="enrolled",
+            status="active",
         ).values_list("client_file_id", flat=True)
     )
 
@@ -48,7 +48,7 @@ def _get_program_names(client):
     return list(
         ClientProgramEnrolment.objects.filter(
             client_file=client,
-            status="enrolled",
+            status="active",
             program__is_confidential=False,
         ).select_related("program")
         .values_list("program__name", flat=True)

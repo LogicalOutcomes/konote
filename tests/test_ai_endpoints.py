@@ -196,7 +196,7 @@ class SuggestNoteStructureViewTest(AIEndpointBaseTest):
         self.client_file.last_name = "Doe"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         self.section = PlanSection.objects.create(
@@ -269,7 +269,7 @@ class SuggestTargetViewTest(AIEndpointBaseTest):
         self.client_file.last_name = "Martinez"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         self.section = PlanSection.objects.create(
