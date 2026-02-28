@@ -3634,6 +3634,22 @@ msgstr "Fournisseur de stockage de documents"
 msgid "URL Template"
 msgstr "Modèle d'URL"
 
+# admin_settings/forms.py — Document storage URL template validation
+msgid "URL template must use HTTPS."
+msgstr "Le modèle d'URL doit utiliser HTTPS."
+
+msgid "URL template contains a disallowed protocol."
+msgstr "Le modèle d'URL contient un protocole non autorisé."
+
+msgid "Domain must be one of: %(domains)s"
+msgstr "Le domaine doit être l'un des suivants\\u00a0: %(domains)s"
+
+msgid "URL template must contain {record_id} placeholder."
+msgstr "Le modèle d'URL doit contenir l'espace réservé {record_id}."
+
+msgid "URL template is required when a provider is selected."
+msgstr "Le modèle d'URL est requis lorsqu'un fournisseur est sélectionné."
+
 msgid "Privacy Officer Name"
 msgstr "Nom du responsable de la protection de la vie privée"
 
@@ -16953,3 +16969,85 @@ msgstr "Gérer %(resource_term)s du portail"
 #, python-format
 msgid "Manage %(resource_term)s"
 msgstr "Gérer %(resource_term)s"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid ""
+"Admin override for CIDS theme derivation when auto-derivation is wrong."
+msgstr "Remplacement administrateur pour la dérivation de thème CIDS lorsque la dérivation automatique est incorrecte."
+
+msgid ""
+"CIDS indicator @id — CharField not URLField (URIs may use urn: schemes)."
+msgstr "Identifiant @id d'indicateur CIDS — CharField et non URLField (les URI peuvent utiliser des schémas urn:)."
+
+msgid "CIDS outcome @id."
+msgstr "Identifiant @id de résultat CIDS."
+
+msgid "CIDS sector code from ICNPOsector or ESDCSector code list."
+msgstr "Code de secteur CIDS de la liste de codes ICNPOsector ou ESDCSector."
+
+msgid "City"
+msgstr "Ville"
+
+msgid "Country"
+msgstr "Pays"
+
+msgid "French description for bilingual CIDS exports."
+msgstr "Description en français pour les exportations CIDS bilingues."
+
+msgid "Funder-assigned program identifier."
+msgstr "Identifiant de programme attribué par le bailleur de fonds."
+
+msgid ""
+"Human-readable baseline description (e.g., 'Average score 3.2 at intake"
+msgstr "Description de référence lisible (p. ex., « Score moyen 3,2 à l'admission »). PAS une valeur booléenne."
+
+msgid ""
+"Human-readable unit label for CIDS export (maps to cids:unitDescription)."
+msgstr "Libellé d'unité lisible pour l'exportation CIDS (correspond à cids:unitDescription)."
+
+msgid "IRIS+ metric code from IrisMetric53 code list (e.g., 'PI2061"
+msgstr "Code de métrique IRIS+ de la liste de codes IrisMetric53 (p. ex., « PI2061 »)."
+
+msgid "Identity"
+msgstr "Identité"
+
+msgid ""
+"Identity information used in CIDS exports and standards compliance "
+"reporting."
+msgstr "Informations d'identité utilisées dans les exportations CIDS et les rapports de conformité aux normes."
+
+msgid "List of SDG goal numbers [1–17]."
+msgstr "Liste de numéros d'objectifs de développement durable [1–17]."
+
+msgid "Mission / Description"
+msgstr "Mission / Description"
+
+msgid "Organisation Profile"
+msgstr "Profil de l'organisme"
+
+msgid "Organisation profile updated."
+msgstr "Profil de l'organisme mis à jour."
+
+msgid "Population served codes from PopulationServed code list."
+msgstr "Codes de population desservie de la liste de codes PopulationServed."
+
+msgid "Postal Code"
+msgstr "Code postal"
+
+msgid "Province / Territory"
+msgstr "Province / Territoire"
+
+msgid "Street Address"
+msgstr "Adresse municipale"
+
+msgid ""
+"URI of the organisation that defined this indicator (e.g., GIIN for IRIS+)."
+msgstr "URI de l'organisme qui a défini cet indicateur (p. ex., GIIN pour IRIS+)."
+
+msgid "e.g., Example Community Services"
+msgstr "p. ex., Services communautaires Exemple"
+
+msgid "e.g., Example Community Services Inc."
+msgstr "p. ex., Services communautaires Exemple inc."
