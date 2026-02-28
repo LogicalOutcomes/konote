@@ -249,12 +249,21 @@ All three commands should be scheduled in production:
 
 Prerequisites: `az` CLI authenticated, correct subscription set, image already pushed to ACR.
 
+> **Important:** Container Apps Jobs do **not** inherit secrets from the Container App. You must pass all secrets explicitly via `--secrets` and reference them in `--env-vars`. The commands below include the full set required. Also note: `--trigger-type` cannot be changed after creation — to change a schedule, delete and recreate the job.
+
 ```bash
-# Variables — adjust to match your deployment
+# Variables (Prosper Canada production — verified 2026-02-28)
 RESOURCE_GROUP="KoNote-prod"
-ENVIRONMENT="<your-container-apps-environment-name>"   # run: az containerapp env list -g KoNote-prod
+ENVIRONMENT="konote-env"
 IMAGE="konoteregistry.azurecr.io/konote:latest"
 REGISTRY="konoteregistry"
+ACR_PASSWORD="<get from: az rest --method post --uri 'https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/resourceGroups/KoNote-prod/providers/Microsoft.App/containerApps/konote-web/listSecrets?api-version=2023-05-01' --query 'value[?name==\`konoteregistryazurecrio-konoteregistry\`].value' -o tsv>"
+
+SECRETS="database-url=<DB_URL> audit-database-url=<AUDIT_DB_URL> secret-key=<SECRET_KEY> field-encryption-key=<FIELD_ENC_KEY> email-host-password=<EMAIL_PWD>"
+# Retrieve actual values with:
+# az rest --method post --uri "https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/resourceGroups/KoNote-prod/providers/Microsoft.App/containerApps/konote-web/listSecrets?api-version=2023-05-01" --query "value[].{name:name,value:value}" -o table
+
+ENV_VARS="DATABASE_URL=secretref:database-url AUDIT_DATABASE_URL=secretref:audit-database-url SECRET_KEY=secretref:secret-key FIELD_ENCRYPTION_KEY=secretref:field-encryption-key EMAIL_HOST_PASSWORD=secretref:email-host-password KONOTE_MODE=production AUTH_MODE=local EMAIL_HOST=smtp.resend.com EMAIL_PORT=465 EMAIL_USE_SSL=True EMAIL_HOST_USER=resend DEFAULT_FROM_EMAIL=noreply@ai.logicaloutcomes.net"
 
 # 1. Daily cleanup job (3 AM UTC)
 az containerapp job create \
@@ -265,11 +274,16 @@ az containerapp job create \
   --cron-expression "0 3 * * *" \
   --image "$IMAGE" \
   --registry-server "${REGISTRY}.azurecr.io" \
-  --registry-identity system \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
   --command "python" "manage.py" "cleanup_expired_exports" \
   --cpu 0.25 --memory 0.5Gi \
   --replica-timeout 300 \
-  --replica-retry-limit 1
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
 
 # 2. Daily deadline reminder job (7 AM UTC)
 az containerapp job create \
@@ -280,11 +294,16 @@ az containerapp job create \
   --cron-expression "0 7 * * *" \
   --image "$IMAGE" \
   --registry-server "${REGISTRY}.azurecr.io" \
-  --registry-identity system \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
   --command "python" "manage.py" "check_report_deadlines" \
   --cpu 0.25 --memory 0.5Gi \
   --replica-timeout 300 \
-  --replica-retry-limit 1
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
 
 # 3. Weekly export summary job (Monday 8 AM UTC)
 az containerapp job create \
@@ -295,14 +314,17 @@ az containerapp job create \
   --cron-expression "0 8 * * 1" \
   --image "$IMAGE" \
   --registry-server "${REGISTRY}.azurecr.io" \
-  --registry-identity system \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
   --command "python" "manage.py" "send_export_summary" \
   --cpu 0.25 --memory 0.5Gi \
   --replica-timeout 300 \
-  --replica-retry-limit 1
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
 ```
-
-> **Note:** Container Apps Jobs inherit environment variables from the managed environment, but you may need to copy secrets (e.g., `DATABASE_URL`, `FIELD_ENCRYPTION_KEY`, `EXPORT_NOTIFICATION_EMAILS`) explicitly if they are not shared at the environment level. Use `--env-vars` or `--secrets` flags as needed.
 
 **Verify a job is configured:**
 ```bash
