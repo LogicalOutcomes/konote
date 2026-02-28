@@ -938,6 +938,8 @@ class ClientProgressPdfPermissionTest(TestCase):
     users without program roles are blocked by _get_client_or_403().
     """
 
+    databases = ["default", "audit"]  # PDF export writes to the audit log
+
     def setUp(self):
         enc_module._fernet = None
         self.http_client = Client()

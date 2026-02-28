@@ -87,6 +87,269 @@ Add a one-off service or use the host machine's cron to run:
 docker compose exec web python manage.py cleanup_expired_exports
 ```
 
+### Weekly Export Activity Summary
+
+Run this command weekly to email admins a summary of all export activity in the past 7 days:
+
+```
+python manage.py send_export_summary
+```
+
+**What it does:**
+
+1. Queries all `SecureExportLink` records created in the last 7 days
+2. Produces a breakdown by export type (Participant Data, Metric Report, Funder Report)
+3. Reports counts for: total exports, elevated exports, downloads, pending (not yet downloaded), and revoked links
+4. Lists the top 5 exporters by display name
+5. Emails the summary to recipients in `EXPORT_NOTIFICATION_EMAILS`, or to all active admin users if that variable is not set
+
+**Preview mode** — print the summary to the console without sending email:
+
+```
+python manage.py send_export_summary --dry-run
+```
+
+**Custom lookback window** — e.g., look back 14 days instead of 7:
+
+```
+python manage.py send_export_summary --days 14
+```
+
+**Environment variables used by this command:**
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `EXPORT_NOTIFICATION_EMAILS` | No | All active admin users | Comma-separated email addresses to receive the summary (e.g. `privacy@agency.ca,ed@agency.ca`). If not set, the summary goes to every active, non-demo admin user. |
+| `EMAIL_BACKEND` | Yes (production) | Console backend | Must be `django.core.mail.backends.smtp.EmailBackend` in production. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Yes (production) | (empty) | SMTP credentials. See the email settings table above. |
+
+**Setting up the weekly cron job:**
+
+*On Railway:* Create a separate Railway service (cron service) or use an external scheduler (GitHub Actions scheduled workflow, cron-job.org) to invoke this command once per week.
+
+*On a Linux server:*
+
+```cron
+# Send weekly export summary every Monday at 8 AM
+0 8 * * 1 cd /path/to/konote-web && python manage.py send_export_summary >> /var/log/konote_export_summary.log 2>&1
+```
+
+*On Docker Compose:*
+
+```
+docker compose exec web python manage.py send_export_summary
+```
+
+**Note:** The command is stateless and idempotent — running it multiple times in the same week will send duplicate emails, but will not corrupt any data. Stick to once per week unless you have a specific need for more frequent summaries.
+
+---
+
+### Daily Report Deadline Reminders
+
+Run this command daily to check report schedules and send reminder emails when a deadline is approaching:
+
+```
+python manage.py check_report_deadlines
+```
+
+**What it does:**
+
+1. Fetches all active `ReportSchedule` records (configured in Admin > Reports > Report Schedules)
+2. For each schedule, calculates how many days remain until the `due_date`
+3. If the schedule is within its `reminder_days_before` window (default: 14 days):
+   - Sets `banner_shown_at` — a dashboard banner will appear for all admins
+   - Sends one reminder email to the schedule's `notify_users` (or all admins if none are set)
+4. Each email is sent only once per schedule cycle (`email_sent_at` is set after sending, and is cleared when `advance_due_date()` is called after report generation)
+
+**Preview mode** — show what would happen without making any changes:
+
+```
+python manage.py check_report_deadlines --dry-run
+```
+
+**Report schedule types supported:**
+
+| Type | Description |
+|---|---|
+| `oversight` | Safety Oversight Report |
+| `funder_report` | Funder Report |
+
+**Frequencies supported:** monthly, quarterly, annually. The schedule advances automatically (`advance_due_date()`) each time a report is generated.
+
+**Environment variables used by this command:**
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `EMAIL_BACKEND` | Yes (production) | Console backend | Must be `django.core.mail.backends.smtp.EmailBackend` in production. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Yes (production) | (empty) | SMTP credentials. See the email settings table above. |
+
+*Note:* This command does not use `EXPORT_NOTIFICATION_EMAILS`. Recipients are taken from each schedule's `notify_users` field, falling back to all active admins.
+
+**Setting up the daily cron job:**
+
+*On Railway:* Create a Railway cron service or use an external scheduler to invoke this command once per day.
+
+*On a Linux server:*
+
+```cron
+# Check report deadlines daily at 7 AM
+0 7 * * * cd /path/to/konote-web && python manage.py check_report_deadlines >> /var/log/konote_deadlines.log 2>&1
+```
+
+*On Docker Compose:*
+
+```
+docker compose exec web python manage.py check_report_deadlines
+```
+
+**Configuring report schedules:**
+
+Report schedules are managed through the Django admin:
+
+1. Go to Admin → Reports → Report Schedules
+2. Create a new schedule with:
+   - **Name** — descriptive name (e.g. "Q1 Funder Report – United Way")
+   - **Report type** — Funder Report or Safety Oversight Report
+   - **Frequency** — monthly, quarterly, or annually
+   - **Due date** — the next upcoming deadline
+   - **Reminder days before** — how many days ahead to start showing the banner and sending reminders (default: 14)
+   - **Notify users** — specific staff to email; leave blank to notify all admins
+3. Enable the schedule (`is_active = True`)
+
+---
+
+### Complete Scheduled Task Reference
+
+All three commands should be scheduled in production:
+
+| Command | Frequency | Purpose |
+|---|---|---|
+| `cleanup_expired_exports` | Daily (e.g., 3 AM) | Delete expired download links and files from disk |
+| `check_report_deadlines` | Daily (e.g., 7 AM) | Send deadline reminders and set dashboard banners |
+| `send_export_summary` | Weekly (e.g., Monday 8 AM) | Email admins a summary of recent export activity |
+
+**Sample crontab (Linux/Docker host):**
+
+```cron
+# KoNote scheduled tasks
+0 3 * * *   cd /path/to/konote-web && python manage.py cleanup_expired_exports >> /var/log/konote_cleanup.log 2>&1
+0 7 * * *   cd /path/to/konote-web && python manage.py check_report_deadlines >> /var/log/konote_deadlines.log 2>&1
+0 8 * * 1   cd /path/to/konote-web && python manage.py send_export_summary >> /var/log/konote_export_summary.log 2>&1
+```
+
+**On Railway with Docker Compose**, run these from the host machine's crontab using `docker compose exec`:
+
+```cron
+0 3 * * *   docker compose -f /path/to/docker-compose.yml exec -T web python manage.py cleanup_expired_exports
+0 7 * * *   docker compose -f /path/to/docker-compose.yml exec -T web python manage.py check_report_deadlines
+0 8 * * 1   docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_export_summary
+```
+
+**On Azure Container Apps** (e.g., Prosper Canada production), use [Azure Container Apps Jobs](https://learn.microsoft.com/en-us/azure/container-apps/jobs) with a schedule trigger. Each job runs the same container image as the web app and inherits its environment variables from the Container Apps environment.
+
+Prerequisites: `az` CLI authenticated, correct subscription set, image already pushed to ACR.
+
+> **Important:** Container Apps Jobs do **not** inherit secrets from the Container App. You must pass all secrets explicitly via `--secrets` and reference them in `--env-vars`. The commands below include the full set required. Also note: `--trigger-type` cannot be changed after creation — to change a schedule, delete and recreate the job.
+
+```bash
+# Variables (Prosper Canada production — verified 2026-02-28)
+RESOURCE_GROUP="KoNote-prod"
+ENVIRONMENT="konote-env"
+IMAGE="konoteregistry.azurecr.io/konote:latest"
+REGISTRY="konoteregistry"
+ACR_PASSWORD="<get from: az rest --method post --uri 'https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/resourceGroups/KoNote-prod/providers/Microsoft.App/containerApps/konote-web/listSecrets?api-version=2023-05-01' --query 'value[?name==\`konoteregistryazurecrio-konoteregistry\`].value' -o tsv>"
+
+SECRETS="database-url=<DB_URL> audit-database-url=<AUDIT_DB_URL> secret-key=<SECRET_KEY> field-encryption-key=<FIELD_ENC_KEY> email-host-password=<EMAIL_PWD>"
+# Retrieve actual values with:
+# az rest --method post --uri "https://management.azure.com/subscriptions/$(az account show --query id -o tsv)/resourceGroups/KoNote-prod/providers/Microsoft.App/containerApps/konote-web/listSecrets?api-version=2023-05-01" --query "value[].{name:name,value:value}" -o table
+
+ENV_VARS="DATABASE_URL=secretref:database-url AUDIT_DATABASE_URL=secretref:audit-database-url SECRET_KEY=secretref:secret-key FIELD_ENCRYPTION_KEY=secretref:field-encryption-key EMAIL_HOST_PASSWORD=secretref:email-host-password KONOTE_MODE=production AUTH_MODE=local EMAIL_HOST=smtp.resend.com EMAIL_PORT=465 EMAIL_USE_SSL=True EMAIL_HOST_USER=resend DEFAULT_FROM_EMAIL=noreply@ai.logicaloutcomes.net"
+
+# 1. Daily cleanup job (3 AM UTC)
+az containerapp job create \
+  --name konote-cleanup-exports \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 3 * * *" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
+  --command "python" "manage.py" "cleanup_expired_exports" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
+
+# 2. Daily deadline reminder job (7 AM UTC)
+az containerapp job create \
+  --name konote-check-deadlines \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 7 * * *" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
+  --command "python" "manage.py" "check_report_deadlines" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
+
+# 3. Weekly export summary job (Monday 8 AM UTC)
+az containerapp job create \
+  --name konote-export-summary \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 8 * * 1" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-username "$REGISTRY" \
+  --registry-password "$ACR_PASSWORD" \
+  --secrets $SECRETS \
+  --env-vars $ENV_VARS \
+  --command "python" "manage.py" "send_export_summary" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1 \
+  --parallelism 1 \
+  --replica-completion-count 1
+```
+
+**Verify a job is configured:**
+```bash
+az containerapp job show --name konote-cleanup-exports --resource-group KoNote-prod --query "properties.configuration.scheduleTriggerConfig"
+```
+
+**Run a job manually (one-off):**
+```bash
+az containerapp job start --name konote-cleanup-exports --resource-group KoNote-prod
+```
+
+**View recent job executions:**
+```bash
+az containerapp job execution list --name konote-cleanup-exports --resource-group KoNote-prod --output table
+```
+
+**Update job image after a new deploy:**
+```bash
+az containerapp job update --name konote-cleanup-exports --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+az containerapp job update --name konote-check-deadlines --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+az containerapp job update --name konote-export-summary --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+```
+
+---
+
 ## Common Issues
 
 ### "Export link expired"
@@ -163,9 +426,17 @@ docker compose exec web python manage.py cleanup_expired_exports
 
 ### What to Watch For
 
-**Daily checks (recommended for the first month, then weekly):**
+**Automated monitoring (set up once):**
 
-1. **Manage Export Links page** (`/admin/` area, or `/reports/export-links/`): Review recent exports for anything unexpected
+If the scheduled tasks are configured correctly (see the Scheduled Tasks section above), monitoring happens automatically:
+
+- `send_export_summary` emails admins a weekly digest of all export activity — total count, type breakdown, elevated exports, and top exporters
+- `check_report_deadlines` emails the right people when a report deadline is approaching, and shows a dashboard banner
+- `cleanup_expired_exports` keeps the export directory tidy without manual intervention
+
+**Manual checks (recommended for the first month, then as needed):**
+
+1. **Manage Export Links page** (`/reports/export-links/`): Review recent exports for anything unexpected
 2. **Elevated export alerts**: Make sure you are receiving email notifications when large exports are created
 
 **Signs of a problem:**
@@ -245,6 +516,19 @@ ORDER BY event_timestamp DESC;
 3. **Check server logs** -- look for warnings like "Failed to send elevated export notification" or "No admin email addresses found"
 4. **Test email sending** -- run `python manage.py sendtestemail admin@example.com` to verify SMTP works
 
+### Step-by-step: Weekly summary or deadline reminder emails are not arriving
+
+1. **Check that the commands are scheduled** — verify the cron job or Railway service is configured to run them
+2. **Run manually with `--dry-run`** to confirm the command itself works:
+   ```
+   python manage.py send_export_summary --dry-run
+   python manage.py check_report_deadlines --dry-run
+   ```
+3. **Check email configuration** — verify `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` are set
+4. **Verify recipients exist** — for `send_export_summary`: check `EXPORT_NOTIFICATION_EMAILS` or confirm admin users have email addresses on file; for `check_report_deadlines`: check the `notify_users` field on each `ReportSchedule` record in the admin
+5. **Check logs** — look for lines like "No admin email addresses found" or "Failed to send export summary email" in your application logs
+6. **Test email sending** directly: `python manage.py sendtestemail youraddress@example.com`
+
 ### Step-by-step: Disk space filling up with export files
 
 1. **Check if cleanup is running** -- look for recent runs in your cron logs
@@ -280,7 +564,13 @@ ORDER BY event_timestamp DESC;
 | Revoke an export link | Manage Export Links page, click "Revoke" |
 | Clean up expired links | `python manage.py cleanup_expired_exports` |
 | Preview cleanup | `python manage.py cleanup_expired_exports --dry-run` |
+| Send weekly export summary email | `python manage.py send_export_summary` |
+| Preview weekly summary (no email) | `python manage.py send_export_summary --dry-run` |
+| Check report deadlines + send reminders | `python manage.py check_report_deadlines` |
+| Preview deadline check (no changes) | `python manage.py check_report_deadlines --dry-run` |
 | Check export audit trail | Audit database (see SQL queries above) |
 | Configure link expiry | Set `SECURE_EXPORT_LINK_EXPIRY_HOURS` env var |
 | Configure elevated delay | Set `ELEVATED_EXPORT_DELAY_MINUTES` env var |
 | Configure email notifications | Set `EMAIL_BACKEND`, `EMAIL_HOST`, etc. env vars |
+| Configure summary recipients | Set `EXPORT_NOTIFICATION_EMAILS` env var |
+| Configure report schedules | Django Admin → Reports → Report Schedules |

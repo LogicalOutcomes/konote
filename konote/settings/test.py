@@ -1,5 +1,13 @@
-"""Test settings — SQLite in-memory for fast tests without PostgreSQL."""
+"""Test settings — SQLite for fast tests without PostgreSQL.
+
+Local dev: uses in-memory SQLite by default (fast, no cleanup needed).
+CI: set DATABASE_URL and AUDIT_DATABASE_URL env vars to file-based SQLite
+    (e.g. sqlite:///ci-test.db) so xdist workers and TransactionTestCase
+    sqlflush calls work correctly across process boundaries.
+"""
 import os
+
+import dj_database_url
 
 # Provide test defaults BEFORE importing base (which calls require_env).
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
@@ -15,15 +23,17 @@ ALLOWED_HOSTS = ["*"]
 SESSION_COOKIE_SECURE = False
 LANGUAGE_COOKIE_SECURE = False  # BUG-9: allow language cookie on HTTP test servers
 
+# Use env vars so CI can override with file-based SQLite (required for xdist
+# workers and TransactionTestCase/sqlflush). Falls back to :memory: locally.
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    },
-    "audit": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
-    },
+    "default": dj_database_url.parse(
+        os.environ["DATABASE_URL"],
+        conn_max_age=0,
+    ),
+    "audit": dj_database_url.parse(
+        os.environ["AUDIT_DATABASE_URL"],
+        conn_max_age=0,
+    ),
 }
 
 # Use fast password hasher for tests
