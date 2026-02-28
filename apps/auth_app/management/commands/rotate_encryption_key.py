@@ -18,12 +18,16 @@ Full rotation process:
 
 Models and fields affected:
     - auth_app.User: _email_encrypted
-    - clients.ClientFile: _first_name_encrypted, _middle_name_encrypted,
-      _last_name_encrypted, _birth_date_encrypted
+    - clients.ClientFile: _first_name_encrypted, _preferred_name_encrypted,
+      _middle_name_encrypted, _last_name_encrypted, _birth_date_encrypted,
+      _phone_encrypted, _email_encrypted
     - clients.ClientDetailValue: _value_encrypted (all rows, not just sensitive)
     - notes.ProgressNote: _notes_text_encrypted, _summary_encrypted,
-      _participant_reflection_encrypted
-    - notes.ProgressNoteTarget: _notes_encrypted
+      _participant_reflection_encrypted, _participant_suggestion_encrypted
+    - notes.ProgressNoteTarget: _notes_encrypted, _client_words_encrypted
+    - registration.RegistrationSubmission: _first_name_encrypted,
+      _last_name_encrypted, _email_encrypted, _phone_encrypted
+    - portal.ParticipantUser: _email_encrypted, _totp_secret_encrypted
 """
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -38,22 +42,48 @@ def _get_encrypted_models():
     from apps.clients.models import ClientDetailValue, ClientFile
     from apps.notes.models import ProgressNote, ProgressNoteTarget
 
-    return [
+    models = [
         (User, ["_email_encrypted"]),
         (ClientFile, [
             "_first_name_encrypted",
+            "_preferred_name_encrypted",
             "_middle_name_encrypted",
             "_last_name_encrypted",
             "_birth_date_encrypted",
+            "_phone_encrypted",
+            "_email_encrypted",
         ]),
         (ClientDetailValue, ["_value_encrypted"]),
         (ProgressNote, [
             "_notes_text_encrypted",
             "_summary_encrypted",
             "_participant_reflection_encrypted",
+            "_participant_suggestion_encrypted",
         ]),
-        (ProgressNoteTarget, ["_notes_encrypted"]),
+        (ProgressNoteTarget, ["_notes_encrypted", "_client_words_encrypted"]),
     ]
+
+    try:
+        from apps.registration.models import RegistrationSubmission
+        models.append((RegistrationSubmission, [
+            "_first_name_encrypted",
+            "_last_name_encrypted",
+            "_email_encrypted",
+            "_phone_encrypted",
+        ]))
+    except ImportError:
+        pass
+
+    try:
+        from apps.portal.models import ParticipantUser
+        models.append((ParticipantUser, [
+            "_email_encrypted",
+            "_totp_secret_encrypted",
+        ]))
+    except ImportError:
+        pass
+
+    return models
 
 
 def _validate_fernet_key(key_str, label):

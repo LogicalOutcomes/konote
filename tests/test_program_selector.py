@@ -355,7 +355,7 @@ class ForcedSelectionRedirectTest(TestCase):
     def test_auth_urls_not_redirected(self):
         """Logout and other auth URLs must still work."""
         self.http.login(username="mixed", password="testpass123")
-        resp = self.http.get("/auth/logout/")
+        resp = self.http.post("/auth/logout/")
         self.assertNotEqual(resp.status_code, 403)
 
     def test_merge_url_not_blocked(self):

@@ -15,12 +15,15 @@ services:
       - AZURE_REDIRECT_URI=${AZURE_REDIRECT_URI:-}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
       audit_db:
         condition: service_healthy
+    networks:
+      - frontend
+      - backend
 
   db:
     image: postgres:16-alpine
@@ -35,6 +38,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
 
   audit_db:
     image: postgres:16-alpine
@@ -50,6 +55,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
 
   caddy:
     image: caddy:2-alpine
@@ -62,9 +69,15 @@ services:
       - caddy_config:/config
     depends_on:
       - web
+    networks:
+      - frontend
 
 volumes:
   pgdata:
   audit_pgdata:
   caddy_data:
   caddy_config:
+
+networks:
+  frontend:
+  backend:

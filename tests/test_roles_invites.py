@@ -177,7 +177,8 @@ class DemoLoginTest(TestCase):
     def setUp(self):
         enc_module._fernet = None
         self.demo_user = User.objects.create_user(
-            username="demo-worker-1", password="demo1234", display_name="Casey Worker"
+            username="demo-worker-1", password="demo1234", display_name="Casey Worker",
+            is_demo=True,
         )
 
     def tearDown(self):

@@ -1,6 +1,24 @@
 # Alpine-based Dockerfile for FullHost deployment
 # FullHost only supports Alpine-based Docker images, not Debian
+# Multi-stage build: build deps only in builder stage
 
+FROM python:3.12-alpine AS builder
+
+WORKDIR /build
+
+# Build dependencies for psycopg and cryptography (not in final image)
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    postgresql-dev \
+    jpeg-dev \
+    zlib-dev
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# --- Final stage ---
 FROM python:3.12-alpine
 
 # UTF-8 locale — required for French .mo translation files
@@ -13,8 +31,7 @@ RUN addgroup -S konote && adduser -S konote -G konote
 
 WORKDIR /app
 
-# WeasyPrint system dependencies (PDF export)
-# Alpine packages differ from Debian
+# Runtime dependencies only (no compiler toolchain)
 RUN apk add --no-cache \
     pango \
     cairo \
@@ -22,20 +39,12 @@ RUN apk add --no-cache \
     fontconfig \
     ttf-freefont \
     shared-mime-info \
-    # Build dependencies for psycopg and cryptography
-    gcc \
-    musl-dev \
-    libffi-dev \
-    postgresql-dev \
-    # For WeasyPrint
+    libpq \
     py3-pillow \
-    jpeg-dev \
-    zlib-dev \
     && fc-cache -f
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy installed Python packages from builder
+COPY --from=builder /install /usr/local
 
 # Copy application code
 COPY . .

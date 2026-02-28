@@ -115,20 +115,25 @@ class LogoutViewTest(TestCase):
 
     def test_logout_redirects_to_login(self):
         self.http.login(username="testuser", password="goodpass123")
-        resp = self.http.get("/auth/logout/")
+        resp = self.http.post("/auth/logout/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login/", resp.url)
 
     def test_logout_clears_session(self):
         self.http.login(username="testuser", password="goodpass123")
-        self.http.get("/auth/logout/")
+        self.http.post("/auth/logout/")
         # Accessing a protected page should redirect to login
         resp = self.http.get("/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login", resp.url)
 
-    def test_unauthenticated_logout_redirects_to_login(self):
+    def test_logout_rejects_get(self):
+        self.http.login(username="testuser", password="goodpass123")
         resp = self.http.get("/auth/logout/")
+        self.assertEqual(resp.status_code, 405)
+
+    def test_unauthenticated_logout_redirects_to_login(self):
+        resp = self.http.post("/auth/logout/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login", resp.url)
 
@@ -522,7 +527,7 @@ class AccountLockoutTest(TestCase):
         self.assertEqual(resp.status_code, 302)  # Redirect on success
 
         # Log out so we can try again
-        self.http.get("/auth/logout/")
+        self.http.post("/auth/logout/")
 
         # Now fail 4 more times — should NOT trigger lockout because the
         # counter was reset by the successful login above
@@ -606,7 +611,8 @@ class DemoLoginTest(TestCase):
     def test_demo_login_with_hardcoded_role_name(self):
         """demo_login still works with old role-name shortcuts like 'frontdesk'."""
         User.objects.create_user(
-            username="demo-frontdesk", password="x", display_name="Front Desk"
+            username="demo-frontdesk", password="x", display_name="Front Desk",
+            is_demo=True,
         )
         resp = self.http.post("/auth/demo-login/frontdesk/")
         self.assertEqual(resp.status_code, 302)

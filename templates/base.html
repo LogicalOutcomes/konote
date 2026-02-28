@@ -234,7 +234,7 @@
                 <details class="dropdown" role="list" dir="rtl">
                     <summary aria-haspopup="listbox">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
                     <ul role="listbox">
-                        <li><a href="{% url 'auth_app:logout' %}">{% trans "Sign Out" %}</a></li>
+                        <li><form method="post" action="{% url 'auth_app:logout' %}">{% csrf_token %}<button type="submit" class="nav-link-button">{% trans "Sign Out" %}</button></form></li>
                     </ul>
                 </details>
             </li>
@@ -242,7 +242,7 @@
                 <span class="nav-user-name">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</span>
             </li>
             <li class="nav-signout-mobile">
-                <a href="{% url 'auth_app:logout' %}">{% trans "Sign Out" %}</a>
+                <form method="post" action="{% url 'auth_app:logout' %}">{% csrf_token %}<button type="submit" class="nav-link-button">{% trans "Sign Out" %}</button></form>
             </li>
             <li>{% include "_lang_toggle.html" with inline=True form_class="nav-lang-form" %}</li>
         </ul>

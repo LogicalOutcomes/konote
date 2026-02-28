@@ -12,6 +12,7 @@ Usage:
 
 from django.core.management.base import BaseCommand
 from django.db import connections
+from psycopg.sql import SQL, Identifier
 
 
 class Command(BaseCommand):
@@ -47,15 +48,18 @@ class Command(BaseCommand):
 
             # Revoke everything, then grant only what's needed.
             # This is idempotent: safe to run repeatedly.
-            cursor.execute(f"REVOKE ALL ON audit_log FROM {db_user};")
+            # Use psycopg.sql.Identifier for the role name to prevent SQL injection.
+            role = Identifier(db_user)
+
+            cursor.execute(SQL("REVOKE ALL ON audit_log FROM {};").format(role))
             self.stdout.write(f"  REVOKED all privileges on audit_log from {db_user}")
 
-            cursor.execute(f"GRANT SELECT, INSERT ON audit_log TO {db_user};")
+            cursor.execute(SQL("GRANT SELECT, INSERT ON audit_log TO {};").format(role))
             self.stdout.write(f"  GRANTED SELECT, INSERT on audit_log to {db_user}")
 
             # Sequences are needed for auto-increment primary keys
             cursor.execute(
-                f"GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO {db_user};"
+                SQL("GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO {};").format(role)
             )
             self.stdout.write(f"  GRANTED USAGE on all sequences to {db_user}")
 

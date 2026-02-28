@@ -207,7 +207,7 @@ class LogoutClearsCookieTest(TestCase):
         self.assertEqual(self.http.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
 
         # Log out
-        resp = self.http.get("/auth/logout/")
+        resp = self.http.post("/auth/logout/")
         # Cookie should be cleared (max-age=0 means delete)
         cookie = resp.cookies[settings.LANGUAGE_COOKIE_NAME]
         self.assertEqual(cookie["max-age"], 0)
@@ -218,7 +218,7 @@ class LogoutClearsCookieTest(TestCase):
         self.http.post("/i18n/switch/", {"language": "fr", "next": "/"})
 
         # Log out — clears cookie
-        self.http.get("/auth/logout/")
+        self.http.post("/auth/logout/")
 
         # Visit login page — should see bilingual hero since cookie was cleared
         resp = self.http.get("/auth/login/")
@@ -316,7 +316,7 @@ class SharedBrowserScenarioTest(TestCase):
         self.assertEqual(resp.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
 
         # User A logs out — cookie cleared
-        self.http.get("/auth/logout/")
+        self.http.post("/auth/logout/")
 
         # User B logs in — should get English cookie, not French
         resp = self.http.post("/auth/login/", {
@@ -335,7 +335,7 @@ class SharedBrowserScenarioTest(TestCase):
             "username": "user_a",
             "password": "testpass123",
         })
-        self.http.get("/auth/logout/")
+        self.http.post("/auth/logout/")
 
         # New user logs in — no saved preference, should get default (en)
         resp = self.http.post("/auth/login/", {
