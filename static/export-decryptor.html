@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self' 'unsafe-inline'; connect-src 'none'; script-src 'unsafe-inline'">
+    <title>KoNote Export Decryptor</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+
+        .lang-toggle button {
+            background: none;
+            border: 1px solid #999;
+            border-radius: 4px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #555;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .lang-toggle button:hover,
+        .lang-toggle button:focus-visible {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+
+        .lang-toggle button.active {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+
+        .wrapper { position: relative; }
+
+        .step {
+            margin-bottom: 1.75rem;
+        }
+
+        .step-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed #bbb;
+            border-radius: 6px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            color: #666;
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #1a73e8;
+            background: #e8f0fe;
+        }
+
+        .drop-zone:focus-within {
+            outline: 2px solid #1a73e8;
+            outline-offset: 2px;
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-zone .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #1a73e8;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        /* Passphrase field */
+        .passphrase-wrapper {
+            position: relative;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .passphrase-wrapper input {
+            flex: 1;
+            padding: 0.6rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .passphrase-wrapper input:focus {
+            outline: 2px solid #1a73e8;
+            outline-offset: 1px;
+            border-color: #1a73e8;
+        }
+
+        .toggle-btn {
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+
+        .toggle-btn:hover,
+        .toggle-btn:focus-visible {
+            background: #ddd;
+        }
+
+        /* Decrypt button */
+        .decrypt-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .decrypt-btn:hover:not(:disabled) {
+            background: #1558b0;
+        }
+
+        .decrypt-btn:focus-visible {
+            outline: 2px solid #1a73e8;
+            outline-offset: 2px;
+        }
+
+        .decrypt-btn:disabled {
+            background: #94bef7;
+            cursor: not-allowed;
+        }
+
+        /* Progress */
+        .progress-area {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .progress-area.visible { display: block; }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #1a73e8;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        /* Messages */
+        .message {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .message.visible { display: block; }
+
+        .message.success {
+            background: #e6f4ea;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .message.error {
+            background: #fdecea;
+            color: #d32f2f;
+            border: 1px solid #ef9a9a;
+        }
+
+        /* Security notice */
+        .security-notice {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.82rem;
+            color: #666;
+        }
+
+        .security-notice h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 0.5rem;
+        }
+
+        .security-notice ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .security-notice li {
+            padding: 0.25rem 0;
+            padding-left: 1.2rem;
+            position: relative;
+        }
+
+        .security-notice li::before {
+            content: "\1F512";
+            position: absolute;
+            left: 0;
+            font-size: 0.75rem;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 1rem 0.5rem; }
+            .container { padding: 1.25rem; }
+            h1 { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="lang-toggle">
+            <button type="button" id="btn-en" class="active" onclick="setLang('en')">EN</button>
+            <button type="button" id="btn-fr" onclick="setLang('fr')">FR</button>
+        </div>
+
+        <div class="container">
+            <header>
+                <h1 id="t-title"></h1>
+                <p class="subtitle" id="t-subtitle"></p>
+            </header>
+
+            <!-- Step 1: File Upload -->
+            <div class="step">
+                <div class="step-label" id="t-step1"></div>
+                <div class="drop-zone" id="drop-zone">
+                    <span class="icon" aria-hidden="true">&#128194;</span>
+                    <span id="t-drop-prompt"></span>
+                    <input type="file" id="file-input" accept=".enc" aria-label="Select encrypted file">
+                    <div class="file-name" id="file-name"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Passphrase -->
+            <div class="step">
+                <div class="step-label" id="t-step2"></div>
+                <div class="passphrase-wrapper">
+                    <input type="password" id="passphrase" autocomplete="off" spellcheck="false">
+                    <button type="button" class="toggle-btn" id="toggle-pass" onclick="togglePassphrase()" aria-label="Show passphrase">
+                        <span id="t-show"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Decrypt -->
+            <div class="step">
+                <button type="button" class="decrypt-btn" id="decrypt-btn" onclick="handleDecrypt()" disabled>
+                    <span id="t-decrypt"></span>
+                </button>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-area" id="progress-area">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="t-progress"></div>
+            </div>
+
+            <!-- Messages -->
+            <div class="message" id="message"></div>
+
+            <!-- Security Notice -->
+            <div class="security-notice">
+                <h2 id="t-security-title"></h2>
+                <ul>
+                    <li id="t-sec1"></li>
+                    <li id="t-sec2"></li>
+                    <li id="t-sec3"></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ====== Translations ====== */
+    var i18n = {
+        en: {
+            title: "KoNote Export Decryptor",
+            subtitle: "Decrypt your agency data export",
+            step1: "Step 1: Select encrypted file",
+            step2: "Step 2: Enter the passphrase you received",
+            dropPrompt: "Drag & drop your .enc file here, or click to browse",
+            show: "Show",
+            hide: "Hide",
+            decrypt: "Decrypt",
+            decrypting: "Decrypting\u2026",
+            progressDeriving: "Deriving encryption key\u2026",
+            progressDecrypting: "Decrypting file\u2026",
+            progressDone: "Done!",
+            success: "Decryption successful \u2014 your file is downloading.",
+            errorVersion: "Unsupported file version. This file was not created with a compatible version of KoNote.",
+            errorTooSmall: "The file is too small to be a valid encrypted export.",
+            errorDecrypt: "Decryption failed \u2014 check your passphrase and try again.",
+            errorNoFile: "Please select an encrypted file first.",
+            errorNoPass: "Please enter the passphrase.",
+            errorUnexpected: "An unexpected error occurred. The file may be corrupted.",
+            securityTitle: "Security",
+            sec1: "This page works entirely offline. No data leaves your browser.",
+            sec2: "After decrypting, store the output file securely and delete it when no longer needed.",
+            sec3: "If you suspect the encrypted file has been tampered with, decryption will fail (AES-GCM provides authentication)."
+        },
+        fr: {
+            title: "D\u00e9chiffrement d\u2019exportation KoNote",
+            subtitle: "D\u00e9chiffrez l\u2019exportation des donn\u00e9es de votre organisme",
+            step1: "\u00c9tape 1 : S\u00e9lectionnez le fichier chiffr\u00e9",
+            step2: "\u00c9tape 2 : Entrez la phrase secr\u00e8te que vous avez re\u00e7ue",
+            dropPrompt: "Glissez-d\u00e9posez votre fichier .enc ici, ou cliquez pour parcourir",
+            show: "Afficher",
+            hide: "Masquer",
+            decrypt: "D\u00e9chiffrer",
+            decrypting: "D\u00e9chiffrement en cours\u2026",
+            progressDeriving: "D\u00e9rivation de la cl\u00e9 de chiffrement\u2026",
+            progressDecrypting: "D\u00e9chiffrement du fichier\u2026",
+            progressDone: "Termin\u00e9 !",
+            success: "D\u00e9chiffrement r\u00e9ussi \u2014 votre fichier est en cours de t\u00e9l\u00e9chargement.",
+            errorVersion: "Version de fichier non prise en charge. Ce fichier n\u2019a pas \u00e9t\u00e9 cr\u00e9\u00e9 avec une version compatible de KoNote.",
+            errorTooSmall: "Le fichier est trop petit pour \u00eatre une exportation chiffr\u00e9e valide.",
+            errorDecrypt: "Le d\u00e9chiffrement a \u00e9chou\u00e9 \u2014 v\u00e9rifiez votre phrase secr\u00e8te et r\u00e9essayez.",
+            errorNoFile: "Veuillez d\u2019abord s\u00e9lectionner un fichier chiffr\u00e9.",
+            errorNoPass: "Veuillez entrer la phrase secr\u00e8te.",
+            errorUnexpected: "Une erreur inattendue s\u2019est produite. Le fichier est peut-\u00eatre corrompu.",
+            securityTitle: "S\u00e9curit\u00e9",
+            sec1: "Cette page fonctionne enti\u00e8rement hors ligne. Aucune donn\u00e9e ne quitte votre navigateur.",
+            sec2: "Apr\u00e8s le d\u00e9chiffrement, conservez le fichier en lieu s\u00fbr et supprimez-le lorsqu\u2019il n\u2019est plus n\u00e9cessaire.",
+            sec3: "Si vous soup\u00e7onnez que le fichier chiffr\u00e9 a \u00e9t\u00e9 alt\u00e9r\u00e9, le d\u00e9chiffrement \u00e9chouera (AES-GCM fournit l\u2019authentification)."
+        }
+    };
+
+    var currentLang = "en";
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        document.getElementById("btn-en").classList.toggle("active", lang === "en");
+        document.getElementById("btn-fr").classList.toggle("active", lang === "fr");
+
+        var t = i18n[lang];
+        document.getElementById("t-title").textContent = t.title;
+        document.getElementById("t-subtitle").textContent = t.subtitle;
+        document.getElementById("t-step1").textContent = t.step1;
+        document.getElementById("t-step2").textContent = t.step2;
+        document.getElementById("t-drop-prompt").textContent = t.dropPrompt;
+        document.getElementById("t-decrypt").textContent = t.decrypt;
+        document.getElementById("t-security-title").textContent = t.securityTitle;
+        document.getElementById("t-sec1").textContent = t.sec1;
+        document.getElementById("t-sec2").textContent = t.sec2;
+        document.getElementById("t-sec3").textContent = t.sec3;
+        document.getElementById("passphrase").placeholder = t.step2;
+
+        // Toggle button text
+        var passInput = document.getElementById("passphrase");
+        document.getElementById("t-show").textContent = passInput.type === "password" ? t.show : t.hide;
+    }
+
+    /* ====== File handling ====== */
+    var selectedFile = null;
+
+    var dropZone = document.getElementById("drop-zone");
+    var fileInput = document.getElementById("file-input");
+
+    dropZone.addEventListener("dragover", function(e) {
+        e.preventDefault();
+        dropZone.classList.add("drag-over");
+    });
+    dropZone.addEventListener("dragleave", function() {
+        dropZone.classList.remove("drag-over");
+    });
+    dropZone.addEventListener("drop", function(e) {
+        e.preventDefault();
+        dropZone.classList.remove("drag-over");
+        if (e.dataTransfer.files.length > 0) {
+            selectFile(e.dataTransfer.files[0]);
+        }
+    });
+    fileInput.addEventListener("change", function() {
+        if (fileInput.files.length > 0) {
+            selectFile(fileInput.files[0]);
+        }
+    });
+
+    function selectFile(file) {
+        selectedFile = file;
+        document.getElementById("file-name").textContent = file.name;
+        updateDecryptButton();
+    }
+
+    /* ====== Passphrase toggle ====== */
+    function togglePassphrase() {
+        var input = document.getElementById("passphrase");
+        var t = i18n[currentLang];
+        if (input.type === "password") {
+            input.type = "text";
+            document.getElementById("t-show").textContent = t.hide;
+            document.getElementById("toggle-pass").setAttribute("aria-label", t.hide + " passphrase");
+        } else {
+            input.type = "password";
+            document.getElementById("t-show").textContent = t.show;
+            document.getElementById("toggle-pass").setAttribute("aria-label", t.show + " passphrase");
+        }
+    }
+
+    document.getElementById("passphrase").addEventListener("input", updateDecryptButton);
+
+    function updateDecryptButton() {
+        var btn = document.getElementById("decrypt-btn");
+        btn.disabled = !(selectedFile && document.getElementById("passphrase").value.length > 0);
+    }
+
+    /* ====== Progress & Messages ====== */
+    function showProgress(text, percent) {
+        var area = document.getElementById("progress-area");
+        area.classList.add("visible");
+        document.getElementById("t-progress").textContent = text;
+        document.getElementById("progress-fill").style.width = percent + "%";
+    }
+
+    function hideProgress() {
+        document.getElementById("progress-area").classList.remove("visible");
+    }
+
+    function showMessage(text, type) {
+        var el = document.getElementById("message");
+        el.textContent = text;
+        el.className = "message visible " + type;
+    }
+
+    function hideMessage() {
+        document.getElementById("message").className = "message";
+    }
+
+    /* ====== Crypto ====== */
+    var VERSION = 0x01;
+    var SALT_LEN = 16;
+    var IV_LEN = 12;
+    var HEADER_LEN = 1 + SALT_LEN + IV_LEN; // 29 bytes
+    var ITERATIONS = 600000;
+
+    async function deriveKey(passphrase, salt) {
+        var encoder = new TextEncoder();
+        var keyMaterial = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(passphrase),
+            "PBKDF2",
+            false,
+            ["deriveKey"]
+        );
+        return crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt: salt, iterations: ITERATIONS, hash: "SHA-256" },
+            keyMaterial,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["decrypt"]
+        );
+    }
+
+    async function decryptData(encryptedData, passphrase) {
+        var version = encryptedData[0];
+        if (version !== VERSION) {
+            throw new Error("UNSUPPORTED_VERSION");
+        }
+
+        var salt = encryptedData.slice(1, 1 + SALT_LEN);
+        var iv = encryptedData.slice(1 + SALT_LEN, HEADER_LEN);
+        var ciphertext = encryptedData.slice(HEADER_LEN);
+
+        var key = await deriveKey(passphrase, salt);
+
+        var decrypted = await crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv },
+            key,
+            ciphertext
+        );
+
+        return new Uint8Array(decrypted);
+    }
+
+    /* ====== Main handler ====== */
+    async function handleDecrypt() {
+        var t = i18n[currentLang];
+
+        hideMessage();
+
+        if (!selectedFile) {
+            showMessage(t.errorNoFile, "error");
+            return;
+        }
+
+        var passphrase = document.getElementById("passphrase").value;
+        if (!passphrase) {
+            showMessage(t.errorNoPass, "error");
+            return;
+        }
+
+        var btn = document.getElementById("decrypt-btn");
+        btn.disabled = true;
+        document.getElementById("t-decrypt").textContent = t.decrypting;
+
+        try {
+            // Read file
+            showProgress(t.progressDeriving, 20);
+            var arrayBuffer = await selectedFile.arrayBuffer();
+            var encryptedData = new Uint8Array(arrayBuffer);
+
+            // Validate minimum size (header + at least 16-byte GCM tag)
+            if (encryptedData.length < HEADER_LEN + 16) {
+                throw new Error("TOO_SMALL");
+            }
+
+            showProgress(t.progressDecrypting, 50);
+
+            // Decrypt
+            var decrypted = await decryptData(encryptedData, passphrase);
+
+            showProgress(t.progressDone, 100);
+
+            // Trigger download
+            var blob = new Blob([decrypted], { type: "application/zip" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+
+            // Derive output filename: remove .enc extension
+            var outName = selectedFile.name;
+            if (outName.toLowerCase().endsWith(".enc")) {
+                outName = outName.slice(0, -4);
+            } else {
+                outName = outName + ".zip";
+            }
+
+            a.href = url;
+            a.download = outName;
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            setTimeout(function() {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            showMessage(t.success, "success");
+
+        } catch (err) {
+            if (err.message === "UNSUPPORTED_VERSION") {
+                showMessage(t.errorVersion, "error");
+            } else if (err.message === "TOO_SMALL") {
+                showMessage(t.errorTooSmall, "error");
+            } else if (err.name === "OperationError") {
+                // Web Crypto throws OperationError for bad key / tampered data
+                showMessage(t.errorDecrypt, "error");
+            } else {
+                showMessage(t.errorUnexpected, "error");
+            }
+        } finally {
+            btn.disabled = false;
+            document.getElementById("t-decrypt").textContent = t.decrypt;
+            setTimeout(hideProgress, 2000);
+            updateDecryptButton();
+        }
+    }
+
+    /* Allow Enter key to trigger decrypt */
+    document.getElementById("passphrase").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleDecrypt();
+        }
+    });
+
+    /* Init */
+    setLang("en");
+    </script>
+</body>
+</html>
