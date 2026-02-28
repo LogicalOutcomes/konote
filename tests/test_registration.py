@@ -424,7 +424,7 @@ class ApproveSubmissionUtilityTest(TestCase):
             client_file=client, program=self.program
         ).first()
         self.assertIsNotNone(enrolment)
-        self.assertEqual(enrolment.status, "enrolled")
+        self.assertEqual(enrolment.status, "active")
 
     def test_approve_copies_custom_fields(self):
         """Approving a submission copies custom field values."""
@@ -646,7 +646,7 @@ class MergeWithExistingUtilityTest(TestCase):
             client_file=existing, program=self.program
         ).first()
         self.assertIsNotNone(enrolment)
-        self.assertEqual(enrolment.status, "enrolled")
+        self.assertEqual(enrolment.status, "active")
 
     def test_merge_re_enrols_unenrolled_client(self):
         """Merging re-enrols a previously unenrolled client."""
@@ -657,7 +657,7 @@ class MergeWithExistingUtilityTest(TestCase):
 
         # Create unenrolled enrolment
         enrolment = self.ClientProgramEnrolment.objects.create(
-            client_file=existing, program=self.program, status="unenrolled"
+            client_file=existing, program=self.program, status="finished"
         )
 
         submission = RegistrationSubmission(registration_link=self.registration_link)
@@ -668,7 +668,7 @@ class MergeWithExistingUtilityTest(TestCase):
         self.merge_with_existing(submission, existing, self.admin)
 
         enrolment.refresh_from_db()
-        self.assertEqual(enrolment.status, "enrolled")
+        self.assertEqual(enrolment.status, "active")
 
     def test_merge_updates_submission(self):
         """Merging updates the submission status and links to client."""

@@ -181,12 +181,12 @@ class GetRequiredProgramsTests(TestCase):
         enc_module._fernet = None
 
     def test_active_enrolments_returned(self):
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="active")
         result = get_required_programs(self.cf)
         self.assertEqual(result, [self.prog_a.pk])
 
     def test_discharged_client_uses_historical(self):
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="unenrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="finished")
         result = get_required_programs(self.cf)
         self.assertIn(self.prog_a.pk, result)
 
@@ -224,8 +224,8 @@ class MultiProgramApprovalTests(TestCase):
         self.cf.first_name = "Test"
         self.cf.last_name = "Client"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="enrolled")
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_b, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="active")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_b, status="active")
 
         self.er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -299,8 +299,8 @@ class RejectionTests(TestCase):
         self.cf.first_name = "Test"
         self.cf.last_name = "Client"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="enrolled")
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_b, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_a, status="active")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog_b, status="active")
 
         self.er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -348,7 +348,7 @@ class ExecuteErasureTests(TestCase):
         self.cf.record_id = "REC-001"
         self.cf.save()
 
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
         Alert.objects.create(client_file=self.cf, content="Test alert")
 
         # Create a custom field value
@@ -459,7 +459,7 @@ class DeadlockTests(TestCase):
         self.cf.first_name = "Test"
         self.cf.last_name = "Client"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
         self.er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -519,7 +519,7 @@ class ErasureViewPermissionTests(TestCase):
         self.cf.first_name = "Test"
         self.cf.last_name = "Client"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
     def tearDown(self):
         enc_module._fernet = None
@@ -581,7 +581,7 @@ class ErasureViewWorkflowTests(TestCase):
         self.cf.last_name = "Client"
         self.cf.record_id = "REC-099"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
     def tearDown(self):
         enc_module._fernet = None
@@ -1178,7 +1178,7 @@ class Tier1AnonymiseTests(TestCase):
         self.cf.record_id = "REC-T1"
         self.cf.save()
 
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
         Alert.objects.create(client_file=self.cf, content="Test alert")
         ProgressNote.objects.create(client_file=self.cf, author=self.staff, author_program=self.prog)
 
@@ -1273,7 +1273,7 @@ class Tier2PurgeTests(TestCase):
         self.cf.record_id = "REC-T2"
         self.cf.save()
 
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
         # Create note with content
         self.note = ProgressNote.objects.create(
@@ -1398,7 +1398,7 @@ class EnhancedDataSummaryTests(TestCase):
         self.cf.first_name = "Test"
         self.cf.last_name = "Client"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
     def tearDown(self):
         enc_module._fernet = None
@@ -1436,7 +1436,7 @@ class EmailNotificationWarningTests(TestCase):
         self.cf.last_name = "Client"
         self.cf.record_id = "REC-W3"
         self.cf.save()
-        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="enrolled")
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.prog, status="active")
 
     def tearDown(self):
         enc_module._fernet = None

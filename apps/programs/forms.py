@@ -36,14 +36,25 @@ CONFIDENTIAL_KEYWORDS = [
 class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program
-        fields = ["name", "name_fr", "description", "colour_hex", "service_model", "status", "is_confidential"]
+        fields = [
+            "name", "name_fr", "description", "colour_hex",
+            "service_model", "status", "is_confidential",
+            # CIDS metadata fields
+            "cids_sector_code", "population_served_codes",
+            "description_fr", "funder_program_code",
+        ]
         widgets = {
             "colour_hex": forms.TextInput(attrs={"type": "color"}),
             "description": forms.Textarea(attrs={"rows": 3}),
+            "description_fr": forms.Textarea(attrs={"rows": 3}),
         }
         labels = {
             "service_model": _("How do staff record their work?"),
             "is_confidential": _("Yes, this is a confidential program"),
+            "cids_sector_code": _("CIDS Sector Code"),
+            "population_served_codes": _("Population Served"),
+            "description_fr": _("Description (French)"),
+            "funder_program_code": _("Funder Program Code"),
         }
         help_texts = {
             "service_model": _(
@@ -61,6 +72,21 @@ class ProgramForm(forms.ModelForm):
                 choices=[("", _("— Choose one —"))] + list(Program.SERVICE_MODEL_CHOICES),
             )
             self.fields["service_model"].required = True
+
+        # Populate CIDS sector code dropdown from CidsCodeList
+        self._populate_cids_choices()
+
+    def _populate_cids_choices(self):
+        """Populate CIDS dropdown fields from CidsCodeList entries."""
+        from apps.admin_settings.models import CidsCodeList
+
+        # cids_sector_code → Select from ICNPOsector
+        sector_choices = [("", _("— None —"))]
+        sector_entries = CidsCodeList.objects.filter(
+            list_name="ICNPOsector",
+        ).order_by("code")
+        sector_choices += [(e.code, f"{e.code} — {e.label}") for e in sector_entries]
+        self.fields["cids_sector_code"].widget = forms.Select(choices=sector_choices)
 
     def clean_is_confidential(self):
         """Enforce one-way rule: once confidential, cannot be unchecked."""

@@ -16786,52 +16786,55 @@ msgid "View Demo Directory"
 msgstr "Voir le répertoire de démonstration"
 
 msgid "Demo mode is not enabled."
-msgstr ""
+msgstr "Le mode de démonstration n'est pas activé."
 
 msgid "16/02/2026"
-msgstr ""
+msgstr "16/02/2026"
 
 msgid "2026-02-16 (ISO)"
-msgstr ""
+msgstr "2026-02-16 (ISO)"
 
 msgid "Access tier"
-msgstr ""
+msgstr "Niveau d'accès"
 
 msgid "Cannot remove admin status from the last active admin user."
 msgstr ""
+"Impossible de retirer le statut d'administrateur au dernier administrateur "
+"actif."
 
 msgid "Date format"
-msgstr ""
+msgstr "Format de date"
 
 msgid "English label"
-msgstr ""
+msgstr "Libellé en anglais"
 
 msgid "Feb 16, 2026"
-msgstr ""
+msgstr "16 fév. 2026"
 
 msgid "French label (optional)"
-msgstr ""
+msgstr "Libellé en français (facultatif)"
 
 msgid "Invalid parameters for demo data generation."
 msgstr ""
+"Paramètres non valides pour la génération de données de démonstration."
 
 msgid "Product name"
-msgstr ""
+msgstr "Nom du produit"
 
 msgid "Support email"
-msgstr ""
+msgstr "Courriel de soutien"
 
 msgid "Tier 1 — Role-based only"
-msgstr ""
+msgstr "Niveau 1 — Basé sur les rôles uniquement"
 
 msgid "Tier 2 — Role-based + field-level access"
-msgstr ""
+msgstr "Niveau 2 — Rôles + accès au niveau des champs"
 
 msgid "Tier 3 — Role-based + field-level + gated grants"
-msgstr ""
+msgstr "Niveau 3 — Rôles + champs + autorisations contrôlées"
 
 msgid "Time span (days)"
-msgstr ""
+msgstr "Durée (jours)"
 
 msgid "(opens in a new tab)"
 msgstr "(s'ouvre dans un nouvel onglet)"
@@ -16953,3 +16956,331 @@ msgstr "Gérer %(resource_term)s du portail"
 #, python-format
 msgid "Manage %(resource_term)s"
 msgstr "Gérer %(resource_term)s"
+
+msgid "%(mapped)s of %(total)s indicators mapped to CIDS standards."
+msgstr "%(mapped)s de %(total)s indicateurs associés aux normes CIDS."
+
+msgid "%(term)s has been discharged from the program."
+msgstr "Le/la %(term)s a reçu son congé du programme."
+
+msgid "(auto)"
+msgstr "(auto)"
+
+msgid "Achievement status updated."
+msgstr "Statut de réalisation mis à jour."
+
+msgid "Additional details (optional)"
+msgstr "Détails supplémentaires (facultatif)"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid ""
+"Admin override for CIDS theme derivation when auto-derivation is wrong."
+msgstr ""
+"Substitution manuelle du thème CIDS lorsque la dérivation automatique est "
+"incorrecte."
+
+msgid "Agency (external)"
+msgstr "Agence (externe)"
+
+msgid "Agency (internal)"
+msgstr "Agence (interne)"
+
+msgid "Assigned case worker."
+msgstr "Intervenant(e) assigné(e)."
+
+msgid "Auto-computed"
+msgstr "Calculé automatiquement"
+
+msgid "Auto-derived from enrolment history. Do not set manually."
+msgstr ""
+"Dérivé automatiquement de l'historique d'inscription. Ne pas modifier "
+"manuellement."
+
+msgid "Auto-filled from UserProgramRole at note creation."
+msgstr "Rempli automatiquement à partir du rôle au programme."
+
+msgid "CIDS Sector Code"
+msgstr "Code de secteur CIDS"
+
+msgid "CIDS Standards Metadata"
+msgstr "Métadonnées CIDS"
+
+msgid "CIDS Theme"
+msgstr "Thème CIDS"
+
+msgid ""
+"CIDS indicator @id — CharField not URLField (URIs may use urn: schemes)."
+msgstr ""
+"Identifiant @id CIDS — CharField et non URLField (les URI peuvent utiliser "
+"des schémas urn:)."
+
+msgid "CIDS outcome @id."
+msgstr "Identifiant CIDS du résultat (@id)."
+
+msgid "CIDS sector code from ICNPOsector or ESDCSector code list."
+msgstr "Code de secteur CIDS (liste ICNPOsector ou ESDCSector)."
+
+msgid "City"
+msgstr "Ville"
+
+msgid "Community"
+msgstr "Communauté"
+
+msgid "Confirm Discharge"
+msgstr "Confirmer le congé"
+
+msgid "Country"
+msgstr "Pays"
+
+msgid "Court"
+msgstr "Tribunal"
+
+msgid "Crisis"
+msgstr "Crise"
+
+msgid "Deceased"
+msgstr "Décédé"
+
+msgid "Discharge"
+msgstr "Congé"
+
+msgid "End this participant's service episode in the program."
+msgstr ""
+"Mettre fin à l'épisode de service de ce participant dans le programme."
+
+msgid "Family"
+msgstr "Famille"
+
+msgid "Finished"
+msgstr "Terminé"
+
+msgid "French description for bilingual CIDS exports."
+msgstr "Description en français pour les exportations CIDS bilingues."
+
+msgid "Funder Program Code"
+msgstr "Code de programme du bailleur de fonds"
+
+msgid "Funder Program Code:"
+msgstr "Code du programme :"
+
+msgid "Funder-assigned program identifier."
+msgstr "Identifiant de programme attribué par le bailleur de fonds."
+
+msgid "Goals Met"
+msgstr "Objectifs atteints"
+
+msgid "Healthcare"
+msgstr "Soins de santé"
+
+msgid ""
+"Human-readable baseline description (e.g., 'Average score 3.2 at intake"
+msgstr ""
+"Description de la référence de base lisible (p. ex., « Score moyen de 3,2 à "
+"l’admission »). Ce n’est PAS un booléen."
+
+msgid ""
+"Human-readable unit label for CIDS export (maps to cids:unitDescription)."
+msgstr ""
+"Libellé d'unité lisible pour l'exportation CIDS (correspond à "
+"cids:unitDescription)."
+
+msgid "IRIS+ Code"
+msgstr "Code IRIS+"
+
+msgid "IRIS+ metric code from IrisMetric53 code list (e.g., 'PI2061"
+msgstr "Code de métrique IRIS+ de la liste IrisMetric53 (p. ex., « PI2061 »)."
+
+msgid "Identity"
+msgstr "Identité"
+
+msgid ""
+"Identity information used in CIDS exports and standards compliance "
+"reporting."
+msgstr ""
+"Informations d'identité utilisées dans les exportations CIDS et les rapports"
+" de conformité."
+
+msgid "Indicator"
+msgstr "Indicateur"
+
+msgid "Ineligible"
+msgstr "Inadmissible"
+
+msgid "List of SDG goal numbers [1–17]."
+msgstr "Liste des numéros d’objectifs de développement durable [1–17]."
+
+msgid "Lost Contact"
+msgstr "Perte de contact"
+
+msgid "Mission / Description"
+msgstr "Mission / Description"
+
+msgid "Moved"
+msgstr "Déménagé"
+
+msgid "New Intake"
+msgstr "Nouvelle admission"
+
+msgid ""
+"No CIDS standards alignment data available. Import code lists and tag "
+"metrics to populate this section."
+msgstr ""
+"Aucune donnée d’alignement CIDS disponible. Importez les listes de codes et "
+"associez les indicateurs pour remplir ce rapport."
+
+msgid "Not achieved"
+msgstr "Non atteint"
+
+msgid "Not attainable"
+msgstr "Non réalisable"
+
+msgid "On Hold"
+msgstr "En pause"
+
+msgid "Organisation Profile"
+msgstr "Profil de l'organisme"
+
+msgid "Organisation profile updated."
+msgstr "Profil de l'organisme mis à jour."
+
+msgid "Planned"
+msgstr "Planifié"
+
+msgid "Population Served"
+msgstr "Population desservie"
+
+msgid "Population served codes from PopulationServed code list."
+msgstr "Codes de population desservie (liste PopulationServed)."
+
+msgid "Postal Code"
+msgstr "Code postal"
+
+msgid "Progress"
+msgstr "Progrès"
+
+msgid "Province / Territory"
+msgstr "Province / Territoire"
+
+msgid "Put on Hold"
+msgstr "Mettre en pause"
+
+msgid "Re-enrolment"
+msgstr "Réinscription"
+
+msgid "Reason for putting on hold"
+msgstr "Raison de la mise en pause"
+
+msgid "Referred Out"
+msgstr "Référé à l'externe"
+
+msgid "Resume Service"
+msgstr "Reprendre le service"
+
+msgid "SDG Alignment"
+msgstr "Alignement ODD"
+
+msgid "SDG Goals"
+msgstr "Objectifs de développement durable"
+
+msgid "SDG goals must be numbers 1–17."
+msgstr "Les ODD doivent être des nombres de 1 à 17."
+
+msgid "STANDARDS ALIGNMENT (CIDS v%(version)s)"
+msgstr "ALIGNEMENT AUX NORMES (CIDS v%(version)s)"
+
+msgid "School"
+msgstr "École"
+
+msgid "Sector"
+msgstr "Secteur"
+
+msgid "Sector:"
+msgstr "Secteur :"
+
+msgid "Self"
+msgstr "Auto-référence"
+
+msgid "Service has been put on hold."
+msgstr "Le service a été mis en pause."
+
+msgid "Service has been resumed."
+msgstr "Le service a été repris."
+
+msgid "Shelter"
+msgstr "Refuge"
+
+msgid "Short-term"
+msgstr "Court terme"
+
+msgid "Standards Alignment"
+msgstr "Alignement aux normes"
+
+msgid "Standards Alignment (CIDS)"
+msgstr "Alignement aux normes (CIDS)"
+
+msgid "Street Address"
+msgstr "Adresse"
+
+msgid "Sustaining"
+msgstr "Maintenu"
+
+msgid ""
+"Temporarily pause service for this participant. They can be resumed later."
+msgstr ""
+"Mettre temporairement en pause le service pour ce participant. Il pourra "
+"être repris ultérieurement."
+
+msgid "Transfer In"
+msgstr "Transfert entrant"
+
+msgid "Transferred"
+msgstr "Transféré"
+
+msgid ""
+"URI of the organisation that defined this indicator (e.g., GIIN for IRIS+)."
+msgstr ""
+"URI de l'organisation qui a défini cet indicateur (p. ex., GIIN pour IRIS+)."
+
+msgid "When active service began."
+msgstr "Quand le service actif a commencé."
+
+msgid "When first achieved. Never cleared once set."
+msgstr "Date de premier atteinte. Ne peut être effacée."
+
+msgid "When service ended."
+msgstr "Quand le service a pris fin."
+
+msgid "Why is service being paused?"
+msgstr "Pourquoi le service est-il suspendu?"
+
+msgid "Why is this person leaving?"
+msgstr "Pourquoi cette personne quitte-t-elle?"
+
+msgid "Why the status changed."
+msgstr "Pourquoi le statut a changé."
+
+msgid "Withdrew"
+msgstr "Retrait volontaire"
+
+msgid "Worker assessed"
+msgstr "Évalué par l'intervenant(e)"
+
+msgid "Worsening"
+msgstr "En détérioration"
+
+msgid "e.g., Example Community Services"
+msgstr "p. ex., Services communautaires Exemple"
+
+msgid "e.g., Example Community Services Inc."
+msgstr "p. ex., Services communautaires Exemple inc."
+
+msgid "— Not specified —"
+msgstr "— Non précisé —"
+
+msgid ""
+"When active service began. Auto-set to enrolled_at on creation if blank."
+msgstr ""
+"Début du service actif. Défini automatiquement à la date d’inscription si "
+"laissé vide."

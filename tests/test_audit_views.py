@@ -330,7 +330,7 @@ class ProgramAuditLogTests(TestCase):
         self.enrolment = ClientProgramEnrolment.objects.create(
             client_file=self.client_file,
             program=self.program,
-            status="enrolled",
+            status="active",
         )
 
     def _url(self):

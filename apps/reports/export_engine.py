@@ -49,7 +49,7 @@ def _get_active_client_ids(program, date_from, date_to, user=None):
 
     enrolled_client_ids = list(
         ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
         ).values_list("client_file_id", flat=True)
     )
 

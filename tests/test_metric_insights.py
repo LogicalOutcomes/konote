@@ -54,7 +54,7 @@ class MetricDistributionTest(TestCase):
         """
         client = ClientFile.objects.create(record_id=record_id)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         section = PlanSection.objects.create(
             client_file=client, name="Section", program=self.program,
@@ -84,7 +84,7 @@ class MetricDistributionTest(TestCase):
         """Multi-goal participants should not be over-counted."""
         client = ClientFile.objects.create(record_id="MULTI-GOAL-001")
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         section = PlanSection.objects.create(
             client_file=client, name="Section", program=self.program,
@@ -135,7 +135,7 @@ class MetricDistributionTest(TestCase):
         for i in range(12):
             client = ClientFile.objects.create(record_id=f"PHQ-{i:03d}")
             ClientProgramEnrolment.objects.create(
-                client_file=client, program=self.program, status="enrolled",
+                client_file=client, program=self.program, status="active",
             )
             section = PlanSection.objects.create(
                 client_file=client, name="Section", program=self.program,
@@ -228,7 +228,7 @@ class AchievementRateTest(TestCase):
     def _create_participant_with_achievement(self, record_id, value):
         client = ClientFile.objects.create(record_id=record_id)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         section = PlanSection.objects.create(
             client_file=client, name="Section", program=self.program,
@@ -291,7 +291,7 @@ class DataCompletenessTest(TestCase):
     def _enrol_participant(self, record_id, with_score=False):
         client = ClientFile.objects.create(record_id=record_id)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         if with_score:
             section = PlanSection.objects.create(
@@ -494,7 +494,7 @@ class MetricTrendsTest(TestCase):
         """
         client = ClientFile.objects.create(record_id=record_id)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         section = PlanSection.objects.create(
             client_file=client, name="Section", program=self.program,
@@ -669,10 +669,10 @@ class ReEnrolmentDuplicateTest(TestCase):
         client = ClientFile.objects.create(record_id="DUAL-ENROL-001")
         # Two active enrolments for the same program (data quality issue)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
 
         section = PlanSection.objects.create(
@@ -702,7 +702,7 @@ class ReEnrolmentDuplicateTest(TestCase):
         for i in range(9):
             c = ClientFile.objects.create(record_id=f"NORMAL-{i:03d}")
             ClientProgramEnrolment.objects.create(
-                client_file=c, program=self.program, status="enrolled",
+                client_file=c, program=self.program, status="active",
             )
             s = PlanSection.objects.create(
                 client_file=c, name="Section", program=self.program,
@@ -776,7 +776,7 @@ class ProgramInsightsViewContextTest(TestCase):
         """Create an enrolled participant with metric scores."""
         client = ClientFile.objects.create(record_id=record_id)
         ClientProgramEnrolment.objects.create(
-            client_file=client, program=self.program, status="enrolled",
+            client_file=client, program=self.program, status="active",
         )
         section = PlanSection.objects.create(
             client_file=client, name="Goals", program=self.program,

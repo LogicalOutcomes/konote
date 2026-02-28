@@ -12,6 +12,9 @@
 <form method="post">
     {% csrf_token %}
     {% for field in form %}
+    {% if field.name == "iris_metric_code" or field.name == "sdg_goals" or field.name == "cids_indicator_uri" or field.name == "cids_unit_description" or field.name == "cids_defined_by" or field.name == "cids_has_baseline" or field.name == "cids_theme_override" %}
+    {# CIDS fields rendered in the collapsible section below #}
+    {% else %}
     <div {% if field.name == "higher_is_better" or field.name == "threshold_low" or field.name == "threshold_high" or field.name == "target_band_high_pct" %}class="metric-scale-field"{% elif field.name == "achievement_options" or field.name == "achievement_success_values" or field.name == "target_rate" %}class="metric-achievement-field"{% endif %}>
         {% if field.name == "higher_is_better" %}
         <label>
@@ -28,7 +31,32 @@
         <small class="error" role="alert">{{ field.errors.0 }}</small>
         {% endif %}
     </div>
+    {% endif %}
     {% endfor %}
+
+    {# CIDS Standards Metadata — collapsible so it doesn't clutter the form #}
+    <details>
+        <summary>{% trans "CIDS Standards Metadata" %}</summary>
+        <fieldset>
+            {% for field in form %}
+            {% if field.name == "iris_metric_code" or field.name == "cids_indicator_uri" or field.name == "cids_unit_description" or field.name == "cids_defined_by" or field.name == "cids_has_baseline" or field.name == "cids_theme_override" %}
+            <div>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+            </div>
+            {% elif field.name == "sdg_goals" %}
+            <div>
+                <label>{{ field.label }}</label>
+                <div style="columns: 2; column-gap: 2rem;">{{ field }}</div>
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </fieldset>
+    </details>
 
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with metric=term.metric|default:"Metric" %}Create {{ metric }}{% endblocktrans %}{% endif %}</button>

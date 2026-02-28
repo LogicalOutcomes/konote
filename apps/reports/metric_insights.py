@@ -37,7 +37,7 @@ def _base_metric_values_qs(program, date_from, date_to):
     qs = MetricValue.objects.filter(
         progress_note_target__progress_note__status="default",
         progress_note_target__progress_note__client_file__enrolments__program=program,
-        progress_note_target__progress_note__client_file__enrolments__status="enrolled",
+        progress_note_target__progress_note__client_file__enrolments__status="active",
     ).annotate(
         _effective_date=_effective_date_annotation(),
     )
@@ -389,7 +389,7 @@ def get_data_completeness(program, date_from, date_to):
     enrolled_count = (
         ClientProgramEnrolment.objects.filter(
             program=program,
-            status="enrolled",
+            status="active",
         )
         .values("client_file_id")
         .distinct()

@@ -133,7 +133,7 @@ def count_clients_by_program(
     """
     enrolment_filter = {"program": program}
     if active_only:
-        enrolment_filter["status"] = "enrolled"
+        enrolment_filter["status"] = "active"
 
     client_ids = ClientProgramEnrolment.objects.filter(
         **enrolment_filter
@@ -318,7 +318,7 @@ def get_metric_values_for_program(
     # Get client IDs for the program
     enrolment_filter = {"program": program}
     if active_enrolments_only:
-        enrolment_filter["status"] = "enrolled"
+        enrolment_filter["status"] = "active"
 
     client_ids = ClientProgramEnrolment.objects.filter(
         **enrolment_filter
@@ -363,7 +363,7 @@ def count_notes_by_program(
         Count of progress notes.
     """
     client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled"
+        program=program, status="active"
     ).values_list("client_file_id", flat=True)
 
     note_filter = Q(client_file_id__in=client_ids, status="default")
@@ -393,7 +393,7 @@ def count_contacts_by_outcome(
         Dict with keys: total_contacts, successful_contacts, contact_attempts
     """
     client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled"
+        program=program, status="active"
     ).values_list("client_file_id", flat=True)
 
     note_filter = Q(

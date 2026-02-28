@@ -324,7 +324,7 @@ def leave_message(request, client_id):
     user_program_ids = set(get_user_program_ids(request.user))
     client_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
+            client_file=client, status="active"
         ).values_list("program_id", flat=True)
     )
     shared_program_ids = client_program_ids & user_program_ids
@@ -453,7 +453,7 @@ def my_messages(request):
     accessible_client_ids = set(
         ClientProgramEnrolment.objects.filter(
             program_id__in=user_program_ids,
-            status="enrolled",
+            status="active",
         ).values_list("client_file_id", flat=True)
     )
 

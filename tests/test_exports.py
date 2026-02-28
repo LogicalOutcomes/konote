@@ -231,7 +231,7 @@ class StructuredInsightsJSONTest(TestCase):
         self.client_file.last_name = "Client"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
         # Create a note with an engagement observation to trigger label lookup
         ProgressNote.objects.create(
@@ -284,7 +284,7 @@ class AnalysisChartTimeframeTest(TestCase):
         self.client_file.last_name = "Test"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         section = PlanSection.objects.create(
@@ -472,7 +472,7 @@ class FunderReportTemplateMetricFilterTest(TestCase):
         self.client_file.last_name = "Test"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=self.client_file, program=self.program, status="enrolled"
+            client_file=self.client_file, program=self.program, status="active"
         )
 
         section = PlanSection.objects.create(

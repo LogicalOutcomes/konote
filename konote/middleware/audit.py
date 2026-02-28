@@ -94,7 +94,7 @@ class AuditMiddleware:
             enrolment = ClientProgramEnrolment.objects.filter(
                 client_file_id=client_id,
                 program__is_confidential=True,
-                status="enrolled",
+                status="active",
             ).select_related("program").first()
             if enrolment:
                 return True, enrolment.program_id
@@ -112,7 +112,7 @@ class AuditMiddleware:
 
             # Get programs the client is enrolled in
             client_program_ids = ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="enrolled",
+                client_file_id=client_id, status="active",
             ).values_list("program_id", flat=True)
 
             # Get user's role in any of those programs

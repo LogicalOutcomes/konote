@@ -209,7 +209,7 @@ class Command(BaseCommand):
         # Get participants enrolled in this program
         participants = ClientFile.objects.filter(
             enrolments__program=config.program,
-            enrolments__status="enrolled",
+            enrolments__status="active",
             status="active",
         ).distinct()
 

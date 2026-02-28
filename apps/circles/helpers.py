@@ -29,7 +29,7 @@ def get_accessible_client_ids(user):
     )
     return set(
         ClientProgramEnrolment.objects.filter(
-            program_id__in=user_program_ids, status="enrolled"
+            program_id__in=user_program_ids, status="active"
         ).values_list("client_file_id", flat=True)
     )
 

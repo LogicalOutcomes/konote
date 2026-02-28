@@ -53,7 +53,7 @@ def _check_privacy_gate(program):
 
     participant_count = (
         ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
         )
         .values("client_file_id")
         .distinct()

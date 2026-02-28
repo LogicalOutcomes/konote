@@ -45,7 +45,7 @@ def _get_enrolled_client_ids(program, user=None):
     """Get IDs of clients enrolled in the program, filtered by demo/real."""
     enrolled_ids = list(
         ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled",
+            program=program, status="active",
         ).values_list("client_file_id", flat=True)
     )
 

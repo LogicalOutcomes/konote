@@ -17,9 +17,9 @@ from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
+from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -70,7 +70,7 @@ def _get_accessible_clients(user, active_program_ids=None):
     else:
         program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
-        program_id__in=program_ids, status="enrolled"
+        program_id__in=program_ids, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
     ).values_list("client_file_id", flat=True)
     # Filter by demo status using the helper function
     base_queryset = get_client_queryset(user)
@@ -285,7 +285,7 @@ def client_list(request):
         # Prevents leaking confidential program names.
         programs = [
             e.program for e in client.enrolments.all()
-            if e.status == "enrolled" and e.program_id in user_program_ids
+            if e.status in ServiceEpisode.ACCESSIBLE_STATUSES and e.program_id in user_program_ids
         ]
 
         # Apply program filter
@@ -419,7 +419,7 @@ def client_create(request):
                 # Enrol in selected programs
                 for program in form.cleaned_data["programs"]:
                     ClientProgramEnrolment.objects.create(
-                        client_file=client, program=program, status="enrolled",
+                        client_file=client, program=program, status="active",
                     )
                 # Circle linking/creation (when circles feature is on)
                 existing_circle_id = form.cleaned_data.get("existing_circle", "")
@@ -560,7 +560,7 @@ def client_transfer(request, client_id):
     available_programs = _get_accessible_programs(request.user)
     current_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled",
+            client_file=client, status="active",
         ).values_list("program_id", flat=True)
     )
     if request.method == "POST":
@@ -570,23 +570,44 @@ def client_transfer(request, client_id):
             selected_ids = set(p.pk for p in form.cleaned_data["programs"])
             added = []
             removed = []
-            # Unenrol removed programs (only within user's accessible programs)
+            # Determine if this is a transfer (removing + adding simultaneously)
+            is_transfer = bool(selected_ids - current_program_ids) and bool(
+                current_program_ids & accessible_program_ids - selected_ids
+            )
+
+            # Finish removed programs (only within user's accessible programs)
+            now = timezone.now()
             for enrolment in ClientProgramEnrolment.objects.filter(
-                client_file=client, status="enrolled",
+                client_file=client, status="active",
                 program_id__in=accessible_program_ids,
             ):
                 if enrolment.program_id not in selected_ids:
-                    enrolment.status = "unenrolled"
-                    enrolment.unenrolled_at = timezone.now()
+                    enrolment.status = "finished"
+                    enrolment.ended_at = now
+                    enrolment.unenrolled_at = now
+                    enrolment.end_reason = "transferred" if is_transfer else ""
                     enrolment.save()
+                    ServiceEpisodeStatusChange.objects.create(
+                        episode=enrolment,
+                        status="finished",
+                        reason="Transferred to another program" if is_transfer else "Removed from program",
+                        changed_by=request.user,
+                    )
                     removed.append(enrolment.program_id)
             # Enrol in new programs
             for program_id in selected_ids:
                 if program_id not in current_program_ids:
-                    ClientProgramEnrolment.objects.update_or_create(
+                    episode, created = ClientProgramEnrolment.objects.update_or_create(
                         client_file=client, program_id=program_id,
-                        defaults={"status": "enrolled", "unenrolled_at": None},
+                        defaults={"status": "active", "unenrolled_at": None, "started_at": now},
                     )
+                    if created:
+                        ServiceEpisodeStatusChange.objects.create(
+                            episode=episode,
+                            status="active",
+                            reason="Enrolled via transfer" if is_transfer else "Enrolled",
+                            changed_by=request.user,
+                        )
                     added.append(program_id)
             # Update cross-program sharing preference
             client.cross_program_sharing = form.cleaned_data.get(
@@ -639,9 +660,200 @@ def client_transfer(request, client_id):
         "client": client,
         "breadcrumbs": breadcrumbs,
         "current_enrolments": ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled",
+            client_file=client, status="active",
         ).select_related("program"),
     })
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_discharge(request, client_id):
+    """Discharge a client from a specific program.
+
+    Sets episode status to 'finished', records end_reason and ended_at,
+    and writes a ServiceEpisodeStatusChange row.
+    """
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        form = DischargeForm(request.POST)
+        if form.is_valid():
+            program_id = form.cleaned_data["program_id"]
+            episode = get_object_or_404(
+                ClientProgramEnrolment,
+                client_file=client, program_id=program_id, status="active",
+            )
+            now = timezone.now()
+            episode.status = "finished"
+            episode.ended_at = now
+            episode.unenrolled_at = now
+            episode.end_reason = form.cleaned_data["end_reason"]
+            episode.status_reason = form.cleaned_data.get("status_reason", "")
+            episode.save()
+
+            # Record status change
+            ServiceEpisodeStatusChange.objects.create(
+                episode=episode,
+                status="finished",
+                reason=f"{episode.get_end_reason_display()}: {episode.status_reason}".strip(": "),
+                changed_by=request.user,
+            )
+
+            # Audit log
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=now,
+                user_id=request.user.pk,
+                user_display=(
+                    request.user.display_name
+                    if hasattr(request.user, "display_name")
+                    else str(request.user)
+                ),
+                action="update",
+                resource_type="enrolment",
+                resource_id=client.pk,
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={
+                    "discharge": True,
+                    "program_id": program_id,
+                    "end_reason": form.cleaned_data["end_reason"],
+                    "status_reason": form.cleaned_data.get("status_reason", ""),
+                },
+            )
+
+            messages.success(
+                request,
+                _("%(term)s has been discharged from the program.")
+                % {"term": request.get_term("client")},
+            )
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        # GET — show the discharge form
+        program_id = request.GET.get("program_id")
+        form = DischargeForm(initial={"program_id": program_id})
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Discharge")},
+    ]
+    return render(request, "clients/discharge.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_on_hold(request, client_id):
+    """Put a client's service episode on hold."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        form = OnHoldForm(request.POST)
+        if form.is_valid():
+            program_id = form.cleaned_data["program_id"]
+            episode = get_object_or_404(
+                ClientProgramEnrolment,
+                client_file=client, program_id=program_id, status="active",
+            )
+            episode.status = "on_hold"
+            episode.status_reason = form.cleaned_data["status_reason"]
+            episode.save()
+
+            ServiceEpisodeStatusChange.objects.create(
+                episode=episode,
+                status="on_hold",
+                reason=form.cleaned_data["status_reason"],
+                changed_by=request.user,
+            )
+
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=(
+                    request.user.display_name
+                    if hasattr(request.user, "display_name")
+                    else str(request.user)
+                ),
+                action="update",
+                resource_type="enrolment",
+                resource_id=client.pk,
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={
+                    "on_hold": True,
+                    "program_id": program_id,
+                    "reason": form.cleaned_data["status_reason"],
+                },
+            )
+
+            messages.success(request, _("Service has been put on hold."))
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        program_id = request.GET.get("program_id")
+        form = OnHoldForm(initial={"program_id": program_id})
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Put on Hold")},
+    ]
+    return render(request, "clients/on_hold.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_resume(request, client_id):
+    """Resume a client's on-hold service episode."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        program_id = request.POST.get("program_id")
+        episode = get_object_or_404(
+            ClientProgramEnrolment,
+            client_file=client, program_id=program_id, status="on_hold",
+        )
+        episode.status = "active"
+        episode.status_reason = ""
+        episode.save()
+
+        ServiceEpisodeStatusChange.objects.create(
+            episode=episode,
+            status="active",
+            reason="Resumed from on-hold",
+            changed_by=request.user,
+        )
+
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=(
+                request.user.display_name
+                if hasattr(request.user, "display_name")
+                else str(request.user)
+            ),
+            action="update",
+            resource_type="enrolment",
+            resource_id=client.pk,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "resumed": True,
+                "program_id": int(program_id),
+            },
+        )
+
+        messages.success(request, _("Service has been resumed."))
+    return redirect("clients:client_detail", client_id=client.pk)
 
 
 @login_required
@@ -742,13 +954,15 @@ def client_detail(request, client_id):
 
     # Only show enrolments in programs the user has access to.
     # Prevents leaking confidential program names.
+    # Include on_hold episodes so they appear with a badge.
     user_program_ids = _get_user_program_ids(request.user)
     enrolments = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="enrolled", program_id__in=user_program_ids,
+        client_file=client, status__in=["active", "on_hold"],
+        program_id__in=user_program_ids,
     ).select_related("program")
     # IMPROVE-5: Check if client has programs hidden from this user
     all_enrolled_count = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="enrolled",
+        client_file=client, status__in=["active", "on_hold"],
     ).count()
     visible_count = enrolments.count()
     has_hidden_programs = all_enrolled_count > visible_count
@@ -1201,7 +1415,7 @@ def client_search(request):
         if date_to_parsed and client.created_at.date() > date_to_parsed:
             continue
 
-        programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
+        programs = [e.program for e in client.enrolments.all() if e.status in ServiceEpisode.ACCESSIBLE_STATUSES]
 
         # Apply program filter
         if program_filter:
@@ -1569,24 +1783,36 @@ def bulk_transfer(request):
                 if add_program:
                     enrolment, created = ClientProgramEnrolment.objects.get_or_create(
                         client_file=client_obj, program=add_program,
-                        defaults={"status": "enrolled"},
+                        defaults={"status": "active"},
                     )
                     if created:
                         added.append(add_program.pk)
-                    elif enrolment.status != "enrolled":
-                        enrolment.status = "enrolled"
+                    elif enrolment.status != "active":
+                        enrolment.status = "active"
                         enrolment.unenrolled_at = None
                         enrolment.save()
                         added.append(add_program.pk)
 
                 # Remove from program
                 if remove_program:
-                    updated = ClientProgramEnrolment.objects.filter(
+                    now = timezone.now()
+                    episodes = list(ClientProgramEnrolment.objects.filter(
                         client_file=client_obj,
                         program=remove_program,
-                        status="enrolled",
-                    ).update(status="unenrolled", unenrolled_at=timezone.now())
-                    if updated:
+                        status="active",
+                    ))
+                    for ep in episodes:
+                        ep.status = "finished"
+                        ep.unenrolled_at = now
+                        ep.ended_at = now
+                        ep.save()
+                        ServiceEpisodeStatusChange.objects.create(
+                            episode=ep,
+                            status="finished",
+                            reason="Bulk transfer",
+                            changed_by=request.user,
+                        )
+                    if episodes:
                         removed.append(remove_program.pk)
 
                 if added or removed:

@@ -716,7 +716,7 @@ def resources_list(request):
     # Get active program IDs for this participant
     active_program_ids = list(
         ClientProgramEnrolment.objects.filter(
-            client_file=client_file, status="enrolled",
+            client_file=client_file, status="active",
         ).values_list("program_id", flat=True)
     )
 

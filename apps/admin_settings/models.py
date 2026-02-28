@@ -208,6 +208,239 @@ class InstanceSetting(models.Model):
             return default
 
 
+class CidsCodeList(models.Model):
+    """CIDS code list entries from Common Approach code lists.
+
+    Stores codes from the 17 official code lists published at
+    codelist.commonapproach.org. Populated via the import_cids_codelists
+    management command.
+    """
+
+    list_name = models.CharField(
+        max_length=100,
+        help_text=_lazy('Code list name, e.g., "ICNPOsector", "IrisMetric53".'),
+    )
+    code = models.CharField(
+        max_length=100,
+        help_text=_lazy("The code value within the list."),
+    )
+    label = models.CharField(
+        max_length=255,
+        help_text=_lazy("Display label (English)."),
+    )
+    label_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("French label."),
+    )
+    description = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("Longer description of the code."),
+    )
+    specification_uri = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_lazy("URI of code list spec (for SHACL cids:hasSpecification)."),
+    )
+    defined_by_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy('Defining organisation name (e.g., "GIIN", "United Nations").'),
+    )
+    defined_by_uri = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_lazy("URI of defining organisation (for SHACL cids:definedBy)."),
+    )
+    source_url = models.URLField(
+        blank=True, default="",
+        help_text=_lazy("Common Approach code list page URL."),
+    )
+    version_date = models.DateField(
+        blank=True, null=True,
+        help_text=_lazy("For staleness warnings."),
+    )
+
+    class Meta:
+        app_label = "admin_settings"
+        db_table = "cids_code_lists"
+        unique_together = [("list_name", "code")]
+        ordering = ["list_name", "code"]
+        verbose_name = "CIDS Code List Entry"
+        verbose_name_plural = "CIDS Code List Entries"
+
+    def __str__(self):
+        return f"{self.list_name}: {self.code} — {self.label}"
+
+
+class TaxonomyMapping(models.Model):
+    """Maps metrics, programs, or plan targets to external taxonomy codes.
+
+    Supports multi-funder taxonomy: a single metric can have mappings
+    to CIDS/IRIS, United Way, PHAC, provincial taxonomies, etc.
+    Each mapping optionally scopes to a specific funder context.
+
+    Design: explicit nullable FKs (not GenericFK) — simpler queries,
+    standard Django patterns, and the set of mappable models is small.
+    Exactly one of the three FKs must be set per row.
+    """
+
+    TAXONOMY_SYSTEMS = [
+        ("cids_iris", _lazy("CIDS / IRIS+")),
+        ("united_way", _lazy("United Way")),
+        ("phac", _lazy("Public Health Agency of Canada")),
+        ("provincial", _lazy("Provincial")),
+        ("esdc", _lazy("ESDC")),
+        ("custom", _lazy("Custom")),
+    ]
+
+    metric_definition = models.ForeignKey(
+        "plans.MetricDefinition",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="taxonomy_mappings",
+    )
+    program = models.ForeignKey(
+        "programs.Program",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="taxonomy_mappings",
+    )
+    plan_target = models.ForeignKey(
+        "plans.PlanTarget",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="taxonomy_mappings",
+    )
+    taxonomy_system = models.CharField(
+        max_length=50,
+        choices=TAXONOMY_SYSTEMS,
+        help_text=_lazy('e.g., "cids_iris", "united_way", "phac".'),
+    )
+    taxonomy_code = models.CharField(
+        max_length=100,
+        help_text=_lazy("Code within the taxonomy system."),
+    )
+    taxonomy_label = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("Display label for the taxonomy code."),
+    )
+    funder_context = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_lazy("Which funder this mapping serves (blank = universal)."),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "admin_settings"
+        db_table = "taxonomy_mappings"
+        ordering = ["taxonomy_system", "taxonomy_code"]
+        verbose_name = "Taxonomy Mapping"
+
+    def __str__(self):
+        target = (
+            f"Metric:{self.metric_definition_id}"
+            if self.metric_definition_id
+            else f"Program:{self.program_id}"
+            if self.program_id
+            else f"Target:{self.plan_target_id}"
+        )
+        return f"{target} → {self.taxonomy_system}:{self.taxonomy_code}"
+
+    def clean(self):
+        """Validate that exactly one of the three FKs is set."""
+        from django.core.exceptions import ValidationError
+
+        fk_count = sum([
+            self.metric_definition_id is not None,
+            self.program_id is not None,
+            self.plan_target_id is not None,
+        ])
+        if fk_count != 1:
+            raise ValidationError(
+                _lazy("Exactly one of metric_definition, program, or plan_target must be set.")
+            )
+
+
+class OrganizationProfile(models.Model):
+    """Singleton model storing organisation identity for CIDS exports.
+
+    Only one row should exist per instance. Use get_solo() to retrieve.
+    """
+
+    PROVINCE_CHOICES = [
+        ("AB", "Alberta"),
+        ("BC", "British Columbia"),
+        ("MB", "Manitoba"),
+        ("NB", "New Brunswick"),
+        ("NL", "Newfoundland and Labrador"),
+        ("NS", "Nova Scotia"),
+        ("NT", "Northwest Territories"),
+        ("NU", "Nunavut"),
+        ("ON", "Ontario"),
+        ("PE", "Prince Edward Island"),
+        ("QC", "Quebec"),
+        ("SK", "Saskatchewan"),
+        ("YT", "Yukon"),
+    ]
+
+    legal_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("Required for CIDS BasicTier (org:hasLegalName)."),
+    )
+    operating_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("Display name used in the application."),
+    )
+    description = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("Mission statement or organisation description."),
+    )
+    description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("French mission statement for bilingual CIDS exports."),
+    )
+    legal_status = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_lazy("e.g., Registered charity, Nonprofit corporation."),
+    )
+    sector_codes = models.JSONField(
+        default=list, blank=True,
+        help_text=_lazy("ICNPOsector codes for the organisation."),
+    )
+    street_address = models.CharField(max_length=255, blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
+    province = models.CharField(
+        max_length=2, blank=True, default="",
+        choices=PROVINCE_CHOICES,
+    )
+    postal_code = models.CharField(
+        max_length=10, blank=True, default="",
+        help_text=_lazy("Canadian format: A1A 1A1."),
+    )
+    country = models.CharField(max_length=2, default="CA")
+    website = models.URLField(blank=True, default="")
+
+    class Meta:
+        app_label = "admin_settings"
+        db_table = "organization_profiles"
+        verbose_name = "Organisation Profile"
+
+    def __str__(self):
+        return self.operating_name or self.legal_name or "Organisation Profile"
+
+    @classmethod
+    def get_solo(cls):
+        """Get or create the singleton instance."""
+        obj, _created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def save(self, *args, **kwargs):
+        """Enforce singleton — always use pk=1."""
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Prevent deletion of the singleton."""
+        pass
+
+
 # --- Access tier helper ---
 
 # Tier descriptions for admin UI and documentation

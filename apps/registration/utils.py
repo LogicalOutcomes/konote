@@ -54,7 +54,7 @@ def approve_submission(submission, reviewed_by=None):
     ClientProgramEnrolment.objects.create(
         client_file=client,
         program=submission.registration_link.program,
-        status="enrolled",
+        status="active",
     )
 
     # Update submission status
@@ -191,12 +191,12 @@ def merge_with_existing(submission, existing_client, reviewed_by):
     enrolment, created = ClientProgramEnrolment.objects.get_or_create(
         client_file=existing_client,
         program=program,
-        defaults={"status": "enrolled"}
+        defaults={"status": "active"}
     )
 
     # If previously unenrolled, re-enrol
-    if not created and enrolment.status == "unenrolled":
-        enrolment.status = "enrolled"
+    if not created and enrolment.status == "finished":
+        enrolment.status = "active"
         enrolment.unenrolled_at = None
         enrolment.save()
 

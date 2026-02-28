@@ -61,7 +61,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     if program:
         notes_qs = notes_qs.filter(
             client_file__enrolments__program=program,
-            client_file__enrolments__status="enrolled",
+            client_file__enrolments__status="active",
         )
     if date_from:
         notes_qs = notes_qs.filter(_effective_date__date__gte=date_from)
@@ -208,7 +208,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
         participant_count = (
             ClientProgramEnrolment.objects.filter(
                 program=program,
-                status="enrolled",
+                status="active",
             )
             .values("client_file_id")
             .distinct()
@@ -236,7 +236,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
     if program:
         targets_qs = targets_qs.filter(
             progress_note__client_file__enrolments__program=program,
-            progress_note__client_file__enrolments__status="enrolled",
+            progress_note__client_file__enrolments__status="active",
         )
     if date_from:
         targets_qs = targets_qs.filter(_effective_date__date__gte=date_from)
@@ -301,7 +301,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
         if program:
             notes_qs = notes_qs.filter(
                 client_file__enrolments__program=program,
-                client_file__enrolments__status="enrolled",
+                client_file__enrolments__status="active",
             )
         if date_from:
             notes_qs = notes_qs.filter(_effective_date__date__gte=date_from)

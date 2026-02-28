@@ -4,7 +4,6 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — PB, SG (DOC-INTEG1)
 
 ## Active Work
 
@@ -15,7 +14,8 @@
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
-- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
+- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
+- [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — GK (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 
 ## Do Occasionally
@@ -57,17 +57,16 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: FHIR-Informed Data Foundations + CIDS Compliance — interleaved sequence, quick win for funders before heavier model work (see tasks/fhir-informed-data-modelling.md, tasks/cids-json-ld-export.md, tasks/design-rationale/fhir-informed-modelling.md)
 
-- [ ] Add CIDS metadata fields + OrganizationProfile — CIDS fields (iris_metric_code, sdg_goals, cids_theme_override, etc.) on MetricDefinition/Program/PlanTarget + singleton OrganizationProfile. MetricDefinition.category unchanged (see tasks/phase-fhir-cids-prompt.md Session 1) — GK reviews metadata fields (CIDS-META1 + CIDS-ORG1)
-- [ ] Import CIDS code lists (17 lists) + build TaxonomyMapping model for multi-funder taxonomy support — management command from codelist.commonapproach.org, TaxonomyMapping enables one metric → multiple external taxonomies with optional funder context (CIDS Phase 2) — (CIDS-CODES1)
-- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates (CIDS Phase 2) — (CIDS-ADMIN1)
-- [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix — quick win for funders, no ServiceEpisode needed yet (CIDS Phase 2.5) — (CIDS-ENRICH1)
-- [ ] Extend ClientProgramEnrolment into ServiceEpisode — add status lifecycle, status history, episode type (auto-derived), discharge reason, primary worker, referral source. Extend in place with class alias, no table rename (Phase F1) — GK reviews data model (FHIR-EPISODE1)
-- [ ] Populate new ServiceEpisode fields from existing enrolment data — in-place migration, all new fields nullable (Phase F1) — (FHIR-MIGRATE1)
-- [ ] Add achievement_status + first_achieved_at to PlanTarget — auto-computed from metric trajectory or progress_descriptor, with worker override. Documented sparse data rules (Phase F2) — GK reviews methodology (FHIR-ACHIEVE1)
-- [ ] Add author_role to ProgressNote — auto-filled from UserProgramRole at note creation, no UI change (Phase F3) — (FHIR-ROLE1)
-- [ ] Build full JSON-LD export with SHACL validation — FullTier compliance, benefits from all FHIR work (CIDS Phase 3) — (CIDS-EXPORT1)
-- [ ] Compute CIDS impact dimensions (scale, depth, duration) — enriched by achievement_status + first_achieved_at, no new data entry (CIDS Phase 4) — (CIDS-IMPACT1)
-- [ ] Add CIDS conformance badge and detailed validation reporting (CIDS Phase 5) — (CIDS-VALIDATE1)
+- [x] Add CIDS metadata fields + OrganizationProfile — PR #131 (CIDS-META1 + CIDS-ORG1)
+- [x] Import CIDS code lists + TaxonomyMapping model — PR #131 (CIDS-CODES1)
+- [x] Build admin UI for CIDS tagging — PR #131 (CIDS-ADMIN1)
+- [x] Add CIDS codes to reports + Standards Alignment appendix — PR #131 (CIDS-ENRICH1)
+- [x] Extend ClientProgramEnrolment into ServiceEpisode — PR #131 (FHIR-EPISODE1)
+- [x] Populate new ServiceEpisode fields from existing data — PR #131 (FHIR-MIGRATE1)
+- [x] Add achievement_status + first_achieved_at to PlanTarget — PR #131 (FHIR-ACHIEVE1)
+- [x] Add author_role to ProgressNote — PR #131 (FHIR-ROLE1)
+- [x] Build JSON-LD export + impact dimensions — PR #131 (CIDS-EXPORT1 + CIDS-IMPACT1)
+- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -103,6 +102,7 @@ _Nothing here right now._
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
+- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
@@ -126,6 +126,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] FHIR+CIDS full implementation (Sessions 1-5) — CIDS metadata, code lists, ServiceEpisode, achievement status, JSON-LD export — PR #131 to develop — 2026-02-27 (CIDS-META1 thru CIDS-IMPACT1)
+- [x] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — 2026-02-27 (DOC-INTEG1)
 - [x] Backup restore verification — management command, Azure/Docker test scripts, 757-line runbook — 2026-02-26 (OPS4)
 - [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
 - [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
