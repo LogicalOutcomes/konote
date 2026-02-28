@@ -1155,10 +1155,11 @@ class PortalAutoSaveTests(TestCase):
 
     def test_submit_cleans_up_partial_answers(self):
         """After submit, partial answers are deleted."""
+        from konote.encryption import encrypt_field
         PartialAnswer.objects.create(
             assignment=self.assignment,
             question=self.q1,
-            value_encrypted=b"dummy",
+            value_encrypted=encrypt_field("dummy"),
         )
         self._portal_session()
         self.client.post(

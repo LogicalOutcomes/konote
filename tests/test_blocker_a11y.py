@@ -174,7 +174,8 @@ class BlockerA11yTests(StaticLiveServerTestCase):
                 self.fail("Could not log in with either method")
 
             print(f"\n  Dashboard URL: {page.url}")
-            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker2_dashboard.png", full_page=True)
+            import tempfile, os
+            page.screenshot(path=os.path.join(tempfile.gettempdir(), "blocker2_dashboard.png"), full_page=True)
 
             focus_info = page.evaluate("""() => {
                 const el = document.activeElement;
@@ -253,7 +254,8 @@ class BlockerA11yTests(StaticLiveServerTestCase):
             self.assertEqual(main_info["tabindex"], "-1", "Main content should have tabindex='-1' for skip link focus")
             self.assertTrue(main_info["hasAriaLabel"], "Main content should have aria-label")
 
-            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker1_skip_link.png", full_page=True)
+            import tempfile, os
+            page.screenshot(path=os.path.join(tempfile.gettempdir(), "blocker1_skip_link.png"), full_page=True)
             print("  >>> BLOCKER-1: PASS — skip link exists, main content is keyboard-focusable")
 
         finally:

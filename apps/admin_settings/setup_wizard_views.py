@@ -108,7 +108,7 @@ def _handle_instance_settings(request, context, wizard_data):
                 "support_email": form.cleaned_data["support_email"] or "",
                 "logo_url": form.cleaned_data["logo_url"] or "",
                 "date_format": form.cleaned_data["date_format"],
-                "access_tier": form.cleaned_data["access_tier"],
+                "access_tier": form.cleaned_data.get("access_tier") or "1",
             }
             _set_wizard_data(request, wizard_data)
             return redirect("admin_settings:setup_wizard_step", step="terminology")

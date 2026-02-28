@@ -553,5 +553,6 @@ class SetupWizardInstanceSettingsForm(forms.Form):
     access_tier = forms.ChoiceField(
         choices=ACCESS_TIER_CHOICES_WIZARD,
         initial="1",
+        required=False,
         label=_("Access tier"),
     )

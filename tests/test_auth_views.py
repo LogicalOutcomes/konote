@@ -419,18 +419,20 @@ class ImpersonationGuardTest(TestCase):
         """Failed impersonation (real user) should NOT create audit log."""
         from apps.audit.models import AuditLog
 
-        # Clear any existing logs
-        AuditLog.objects.using("audit").all().delete()
+        # Record count before — audit logs are immutable so we can't delete them
+        before_count = AuditLog.objects.using("audit").filter(
+            resource_type="impersonation",
+        ).count()
 
         self.http.login(username="admin", password="adminpass")
         self.http.get(f"/manage/users/{self.real_user.pk}/impersonate/")
 
-        # No audit log should be created for failed impersonation
-        log = AuditLog.objects.using("audit").filter(
+        # No new audit log should be created for failed impersonation
+        after_count = AuditLog.objects.using("audit").filter(
             resource_type="impersonation",
-        ).first()
+        ).count()
 
-        self.assertIsNone(log)
+        self.assertEqual(before_count, after_count)
 
     def test_impersonation_updates_last_login(self):
         """Impersonation should update the target user's last_login_at."""
