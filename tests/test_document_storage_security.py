@@ -316,7 +316,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
         client_file.last_name = "Doe"
         client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=client_file, program=program, status="enrolled"
+            client_file=client_file, program=program, status="active"
         )
 
         self.client.login(username="sec_admin", password="testpass123")
@@ -347,7 +347,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
         client_file.last_name = "Doe"
         client_file.save()
         ClientProgramEnrolment.objects.create(
-            client_file=client_file, program=program, status="enrolled"
+            client_file=client_file, program=program, status="active"
         )
 
         self.client.login(username="sec_admin", password="testpass123")

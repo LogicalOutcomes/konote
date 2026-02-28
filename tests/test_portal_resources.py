@@ -298,14 +298,6 @@ class StaffClientResourceTests(TestCase):
             status="active",
         )
 
-        # Staff needs a program role to access client-scoped views
-        UserProgramRole.objects.create(
-            user=self.staff,
-            program=self.program,
-            role="program_manager",
-            status="active",
-        )
-
         FeatureToggle.objects.update_or_create(
             feature_key="participant_portal",
             defaults={"is_enabled": True},
