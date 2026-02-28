@@ -1,4 +1,12 @@
-# KoNote
+<p align="center">
+  <img src="Logo/brand/konote-logo-lg.png" alt="KoNote" width="400">
+</p>
+
+<p align="center">
+  <strong>Participant Outcome Management for Nonprofits</strong>
+</p>
+
+---
 
 A secure, web-based Participant Outcome Management system for nonprofits. Agencies define desired outcomes with clients, record progress notes with metrics, and visualise progress over time. Each organisation runs their own instance with full control over configuration, terminology, and user access.
 

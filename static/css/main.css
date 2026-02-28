@@ -1334,14 +1334,14 @@ details.search-filters-panel[open] summary {
     line-height: 1.5;
 }
 .filter-btn:hover {
-    border-color: var(--kn-primary-active, var(--kn-primary, #0d7377));
-    color: var(--kn-primary-active, var(--kn-primary, #0d7377));
+    border-color: var(--kn-primary-active, var(--kn-primary, #3176aa));
+    color: var(--kn-primary-active, var(--kn-primary, #3176aa));
 }
 .filter-btn[aria-pressed="true"],
 .filter-btn.filter-active {
-    background-color: var(--kn-primary, #0d7377);
+    background-color: var(--kn-primary, #3176aa);
     color: #fff;
-    border-color: var(--kn-primary, #0d7377);
+    border-color: var(--kn-primary, #3176aa);
 }
 
 /* ---- Alert cards ---- */
@@ -1365,6 +1365,12 @@ details.search-filters-panel[open] summary {
 .login-container {
     max-width: 420px;
     margin-top: 10vh;
+}
+.login-logo {
+    display: block;
+    margin: 0 auto 1rem;
+    max-height: 120px;
+    width: auto;
 }
 .login-wordmark {
     text-align: center;
@@ -1541,9 +1547,9 @@ details.search-filters-panel[open] summary {
     outline-offset: 2px;
 }
 .demo-btn-portal {
-    background: var(--kn-primary, #0d7377);
+    background: var(--kn-primary, #3176aa);
     color: #fff;
-    border-color: var(--kn-primary, #0d7377);
+    border-color: var(--kn-primary, #3176aa);
     grid-column: 1 / -1;
     max-width: 16rem;
     margin: 0 auto;
@@ -3518,6 +3524,16 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-primary);
     text-decoration: underline;
 }
+.powered-by {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--kn-text-muted);
+    font-size: 0.85rem;
+}
+.powered-by img {
+    vertical-align: middle;
+}
 
 .site-footer-session {
     text-align: right;
@@ -4435,7 +4451,7 @@ article[aria-label="notification"].fading-out {
 }
 .goal-card.selected {
     border-color: var(--kn-primary);
-    background: rgba(13, 115, 119, 0.08);
+    background: rgba(49, 118, 170, 0.08);
 }
 
 /* Goal name autocomplete dropdown */
@@ -4462,7 +4478,7 @@ article[aria-label="notification"].fading-out {
 }
 #goal-suggestions-list [role="option"]:hover,
 #goal-suggestions-list [role="option"][aria-selected="true"] {
-    background: rgba(13, 115, 119, 0.1);
+    background: rgba(49, 118, 170, 0.1);
 }
 
 /* Universal metric cards (Tier 1) */

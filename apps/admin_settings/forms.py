@@ -1,4 +1,5 @@
 """Forms for admin settings views."""
+import re
 from urllib.parse import urlparse
 
 from django import forms
@@ -135,6 +136,15 @@ class InstanceSettingsForm(forms.Form):
         required=False, label=_("Logo URL"),
         help_text=_("URL to your organisation's logo image."),
     )
+    brand_color = forms.CharField(
+        max_length=7, required=False, label=_("Brand Colour"),
+        help_text=_("Your organisation's accent colour (e.g. #3176aa). "
+                     "Used for buttons, links, and navigation."),
+        widget=forms.TextInput(attrs={
+            "type": "color",
+            "style": "width: 4rem; height: 2.5rem; padding: 0.25rem; cursor: pointer;",
+        }),
+    )
     date_format = forms.ChoiceField(
         choices=[
             ("Y-m-d", "2026-02-02 (ISO)"),
@@ -225,9 +235,15 @@ class InstanceSettingsForm(forms.Form):
         help_text=_("Gap between time slots in the meeting picker."),
     )
 
+    def clean_brand_color(self):
+        value = self.cleaned_data.get("brand_color", "").strip()
+        if value and not re.match(r'^#[0-9a-fA-F]{6}$', value):
+            raise forms.ValidationError(_("Enter a valid hex colour (e.g. #3176aa)."))
+        return value
+
     SETTING_KEYS = [
         "access_tier",
-        "product_name", "support_email", "logo_url",
+        "product_name", "support_email", "logo_url", "brand_color",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
@@ -298,6 +314,13 @@ class InstanceSettingsForm(forms.Form):
 
     def save(self):
         from .models import InstanceSetting
+
+        # Derive brand colour variants first (crash early on bad input)
+        brand_color = self.cleaned_data.get("brand_color", "").strip()
+        derived = {}
+        if brand_color and re.match(r'^#[0-9a-fA-F]{6}$', brand_color):
+            derived = _derive_brand_colours(brand_color)
+
         for key in self.SETTING_KEYS:
             value = str(self.cleaned_data.get(key, "")).strip()
             if value:
@@ -306,6 +329,62 @@ class InstanceSettingsForm(forms.Form):
                 )
             else:
                 InstanceSetting.objects.filter(setting_key=key).delete()
+
+        # Save derived brand colour variants
+        if derived:
+            for dk, dv in derived.items():
+                InstanceSetting.objects.update_or_create(
+                    setting_key=dk, defaults={"setting_value": dv}
+                )
+        else:
+            # Clear derived values when brand colour is removed
+            for dk in ("brand_color_hover", "brand_color_focus",
+                       "brand_color_subtle", "brand_color_light",
+                       "brand_color_text"):
+                InstanceSetting.objects.filter(setting_key=dk).delete()
+
+
+def _derive_brand_colours(hex_color):
+    """Derive hover, focus, subtle, and text-on-primary from a hex colour.
+
+    Returns a dict of setting_key -> value for the derived CSS variables.
+    """
+    r = int(hex_color[1:3], 16)
+    g = int(hex_color[3:5], 16)
+    b = int(hex_color[5:7], 16)
+
+    # Hover: 15% darker
+    hover = "#{:02x}{:02x}{:02x}".format(
+        int(r * 0.85), int(g * 0.85), int(b * 0.85)
+    )
+    # Focus ring: 25% opacity
+    focus = f"rgba({r}, {g}, {b}, 0.25)"
+    # Subtle background: 8% opacity
+    subtle = f"rgba({r}, {g}, {b}, 0.08)"
+
+    # Light variant for dark mode (blend 40% toward white)
+    light = "#{:02x}{:02x}{:02x}".format(
+        min(255, int(r + (255 - r) * 0.4)),
+        min(255, int(g + (255 - g) * 0.4)),
+        min(255, int(b + (255 - b) * 0.4)),
+    )
+
+    # Text on primary: white or dark based on relative luminance
+    # Using simplified sRGB luminance
+    def to_linear(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+    luminance = 0.2126 * to_linear(r) + 0.7152 * to_linear(g) + 0.0722 * to_linear(b)
+    text_color = "#1a202c" if luminance > 0.4 else "#ffffff"
+
+    return {
+        "brand_color_hover": hover,
+        "brand_color_focus": focus,
+        "brand_color_subtle": subtle,
+        "brand_color_light": light,
+        "brand_color_text": text_color,
+    }
 
 
 class MessagingSettingsForm(forms.Form):
@@ -457,6 +536,14 @@ class SetupWizardInstanceSettingsForm(forms.Form):
     logo_url = forms.URLField(
         required=False,
         label=_("Logo URL"),
+    )
+    brand_color = forms.CharField(
+        max_length=7, required=False, label=_("Brand colour"),
+        help_text=_("Your organisation's accent colour for buttons and links."),
+        widget=forms.TextInput(attrs={
+            "type": "color",
+            "style": "width: 4rem; height: 2.5rem; padding: 0.25rem; cursor: pointer;",
+        }),
     )
     date_format = forms.ChoiceField(
         choices=DATE_FORMAT_CHOICES,

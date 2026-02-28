@@ -13,7 +13,7 @@
     <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% static 'portal/manifest.json' %}">
-    <meta name="theme-color" content="#0d7377">
+    <meta name="theme-color" content="{{ site.brand_color|default:'#3176aa' }}">
 
     <!-- CSRF token for HTMX -->
     <meta name="csrf-token" content="{{ csrf_token }}">
@@ -25,6 +25,29 @@
 
     <!-- Portal-specific styles -->
     <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+
+    {% if site.brand_color %}
+    <!-- Agency brand colour override -->
+    <style>
+    :root {
+        --kn-primary: {{ site.brand_color }};
+        --kn-primary-hover: {{ site.brand_color_hover|default:site.brand_color }};
+        --kn-primary-focus: {{ site.brand_color_focus|default:"rgba(49, 118, 170, 0.25)" }};
+        --kn-primary-subtle: {{ site.brand_color_subtle|default:"rgba(49, 118, 170, 0.08)" }};
+        --kn-text-on-primary: {{ site.brand_color_text|default:"#ffffff" }};
+        --pico-primary: var(--kn-primary);
+        --pico-primary-hover: var(--kn-primary-hover);
+        --pico-primary-focus: var(--kn-primary-focus);
+        --pico-primary-inverse: var(--kn-text-on-primary);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --kn-primary-active: {{ site.brand_color_light|default:site.brand_color }};
+            --kn-primary-subtle: {{ site.brand_color_focus|default:"rgba(49, 118, 170, 0.25)" }};
+        }
+    }
+    </style>
+    {% endif %}
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>

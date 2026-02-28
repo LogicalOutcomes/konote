@@ -34,7 +34,7 @@ body {
 .pdf-cover h1 {
     font-size: 24pt;
     margin-bottom: 0.5cm;
-    color: #0d7377;
+    color: #3176aa;
 }
 
 .pdf-cover .subtitle {
@@ -51,8 +51,8 @@ body {
 /* --- Section headings --- */
 h2 {
     font-size: 16pt;
-    color: #0d7377;
-    border-bottom: 2px solid #0d7377;
+    color: #3176aa;
+    border-bottom: 2px solid #3176aa;
     padding-bottom: 0.3cm;
     margin-top: 1cm;
 }
@@ -72,7 +72,7 @@ table {
 }
 
 thead th {
-    background-color: #0d7377;
+    background-color: #3176aa;
     color: #ffffff;
     padding: 6px 10px;
     text-align: left;
@@ -107,7 +107,7 @@ dd {
 
 /* --- Timeline items (notes, events) --- */
 .timeline-item {
-    border-left: 3px solid #0d7377;
+    border-left: 3px solid #3176aa;
     padding: 0.3cm 0 0.3cm 0.5cm;
     margin-bottom: 0.4cm;
 }
@@ -190,7 +190,7 @@ dd {
 .summary-card .number {
     font-size: 20pt;
     font-weight: 700;
-    color: #0d7377;
+    color: #3176aa;
 }
 
 .summary-card .label {
