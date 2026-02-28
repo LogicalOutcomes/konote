@@ -2850,6 +2850,22 @@ article[aria-label="notification"].fading-out {
     display: none;
 }
 
+/* Style logout button (inside a POST form) to look like a nav link */
+.nav-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+.nav-signout-mobile .nav-link-button {
+    color: var(--kn-danger, #c0392b);
+    font-weight: 600;
+}
+
 @media (max-width: 768px) {
     /* Show hamburger menu button */
     .nav-toggle {
@@ -2944,7 +2960,7 @@ article[aria-label="notification"].fading-out {
     .nav-signout-mobile {
         display: block !important;
     }
-    .nav-signout-mobile a {
+    .nav-signout-mobile .nav-link-button {
         color: var(--kn-danger, #c0392b);
         font-weight: 600;
     }

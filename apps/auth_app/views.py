@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils import translation
@@ -316,8 +315,8 @@ def azure_callback(request):
     return _set_language_cookie(response, lang_code)
 
 
-@csrf_exempt
 @require_POST
+@ratelimit(key="ip", rate="10/m", method=["POST"])
 def demo_login(request, role):
     """Quick-login as a demo user. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
@@ -337,7 +336,7 @@ def demo_login(request, role):
     username = demo_usernames.get(role)
     if username:
         try:
-            user = User.objects.get(username=username, is_active=True)
+            user = User.objects.get(username=username, is_active=True, is_demo=True)
         except User.DoesNotExist:
             from django.http import Http404
             raise Http404
@@ -415,6 +414,7 @@ def demo_portal_login(request):
 
 
 @login_required
+@require_POST
 def logout_view(request):
     """Log out and destroy server-side session.
 

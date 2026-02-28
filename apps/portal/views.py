@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
+from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_POST
 
 from apps.admin_settings.models import FeatureToggle
@@ -878,6 +879,7 @@ def password_reset_request(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="10/m", method=["POST"])
 def password_reset_confirm(request):
     """Enter the emailed reset code and set a new password."""
     from apps.portal.forms import PortalPasswordResetConfirmForm

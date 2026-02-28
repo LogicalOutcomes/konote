@@ -320,6 +320,10 @@ def _anonymise_client_pii(client, erasure_code):
     client._middle_name_encrypted = b""
     client._last_name_encrypted = b""
     client._birth_date_encrypted = b""
+    client._phone_encrypted = b""
+    client._email_encrypted = b""
+    client.has_phone = False
+    client.has_email = False
     client.record_id = erasure_code
     client.status = "discharged"
     client.is_anonymised = True
@@ -373,12 +377,13 @@ def _purge_narrative_content(client):
         _notes_text_encrypted=b"",
         _summary_encrypted=b"",
         _participant_reflection_encrypted=b"",
+        _participant_suggestion_encrypted=b"",
     )
 
     # Blank target-level notes
     ProgressNoteTarget.objects.filter(
         progress_note__client_file=client,
-    ).update(_notes_encrypted=b"")
+    ).update(_notes_encrypted=b"", _client_words_encrypted=b"")
 
     # Blank alert content
     Alert.objects.filter(client_file=client).update(content="")

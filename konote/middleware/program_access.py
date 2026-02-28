@@ -17,6 +17,9 @@ CLIENT_URL_PATTERNS = [
     (re.compile(r"^/plans/participant/(?P<client_id>\d+)"), "client_id"),
     (re.compile(r"^/events/participant/(?P<client_id>\d+)"), "client_id"),
     (re.compile(r"^/communications/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/groups/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/circles/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/surveys/participant/(?P<client_id>\d+)"), "client_id"),
 ]
 
 # URL patterns for note-specific routes (look up client from note)
