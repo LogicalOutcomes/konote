@@ -61,3 +61,6 @@ audit_pgdata/
 # Backup files
 backups/
 *.dump
+
+# Generated documents (built from .md source)
+*.docx

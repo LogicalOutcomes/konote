@@ -273,11 +273,18 @@ class StaffClientResourceTests(TestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        from apps.programs.models import UserProgramRole
+
         self.staff = User.objects.create_user(
             username="cli_staff", password="testpass123",
             display_name="CLI Staff", is_admin=True,
         )
         self.program = Program.objects.create(name="Client Prog")
+        # Admin needs a program role to pass @requires_permission("note.create")
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program,
+            role="program_manager", status="active",
+        )
         self.client_file = ClientFile.objects.create(
             record_id="CLI-001", status="active",
         )
