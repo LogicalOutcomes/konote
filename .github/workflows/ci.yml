@@ -36,8 +36,11 @@ jobs:
       - name: Install Playwright browsers
         run: playwright install chromium --with-deps
 
+      - name: Clean up any stale test databases
+        run: rm -f ci-test.db ci-audit-test.db
+
       - name: Run tests
-        run: pytest -m "not browser and not scenario_eval"
+        run: pytest -m "not browser and not scenario_eval" -p no:xdist
         env:
           DJANGO_SETTINGS_MODULE: konote.settings.test
           SECRET_KEY: ci-secret-key-not-for-production
