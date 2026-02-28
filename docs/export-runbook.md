@@ -245,6 +245,87 @@ All three commands should be scheduled in production:
 0 8 * * 1   docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_export_summary
 ```
 
+**On Azure Container Apps** (e.g., Prosper Canada production), use [Azure Container Apps Jobs](https://learn.microsoft.com/en-us/azure/container-apps/jobs) with a schedule trigger. Each job runs the same container image as the web app and inherits its environment variables from the Container Apps environment.
+
+Prerequisites: `az` CLI authenticated, correct subscription set, image already pushed to ACR.
+
+```bash
+# Variables — adjust to match your deployment
+RESOURCE_GROUP="KoNote-prod"
+ENVIRONMENT="<your-container-apps-environment-name>"   # run: az containerapp env list -g KoNote-prod
+IMAGE="konoteregistry.azurecr.io/konote:latest"
+REGISTRY="konoteregistry"
+
+# 1. Daily cleanup job (3 AM UTC)
+az containerapp job create \
+  --name konote-cleanup-exports \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 3 * * *" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-identity system \
+  --command "python" "manage.py" "cleanup_expired_exports" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1
+
+# 2. Daily deadline reminder job (7 AM UTC)
+az containerapp job create \
+  --name konote-check-deadlines \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 7 * * *" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-identity system \
+  --command "python" "manage.py" "check_report_deadlines" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1
+
+# 3. Weekly export summary job (Monday 8 AM UTC)
+az containerapp job create \
+  --name konote-export-summary \
+  --resource-group "$RESOURCE_GROUP" \
+  --environment "$ENVIRONMENT" \
+  --trigger-type Schedule \
+  --cron-expression "0 8 * * 1" \
+  --image "$IMAGE" \
+  --registry-server "${REGISTRY}.azurecr.io" \
+  --registry-identity system \
+  --command "python" "manage.py" "send_export_summary" \
+  --cpu 0.25 --memory 0.5Gi \
+  --replica-timeout 300 \
+  --replica-retry-limit 1
+```
+
+> **Note:** Container Apps Jobs inherit environment variables from the managed environment, but you may need to copy secrets (e.g., `DATABASE_URL`, `FIELD_ENCRYPTION_KEY`, `EXPORT_NOTIFICATION_EMAILS`) explicitly if they are not shared at the environment level. Use `--env-vars` or `--secrets` flags as needed.
+
+**Verify a job is configured:**
+```bash
+az containerapp job show --name konote-cleanup-exports --resource-group KoNote-prod --query "properties.configuration.scheduleTriggerConfig"
+```
+
+**Run a job manually (one-off):**
+```bash
+az containerapp job start --name konote-cleanup-exports --resource-group KoNote-prod
+```
+
+**View recent job executions:**
+```bash
+az containerapp job execution list --name konote-cleanup-exports --resource-group KoNote-prod --output table
+```
+
+**Update job image after a new deploy:**
+```bash
+az containerapp job update --name konote-cleanup-exports --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+az containerapp job update --name konote-check-deadlines --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+az containerapp job update --name konote-export-summary --resource-group KoNote-prod --image konoteregistry.azurecr.io/konote:latest
+```
+
 ---
 
 ## Common Issues
