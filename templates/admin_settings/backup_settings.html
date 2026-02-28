@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Backup & Export Settings" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Backup & Export Settings" %}</h1>
+    <p>{% trans "Configure automated backup reminders to protect against encryption key loss." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Backup Reminders" %}</legend>
+        <p><small>{% trans "KoNote can send periodic email reminders when a backup export is due. The system reminds — a human acts." %}</small></p>
+
+        <label for="{{ form.backup_reminder_enabled.id_for_label }}">
+            <input type="checkbox"
+                   name="backup_reminder_enabled"
+                   id="{{ form.backup_reminder_enabled.id_for_label }}"
+                   {% if form.backup_reminder_enabled.value %}checked{% endif %}
+                   role="switch">
+            {% trans "Enable backup reminders" %}
+        </label>
+        {% if form.backup_reminder_enabled.errors %}
+        <small class="badge badge-danger">{{ form.backup_reminder_enabled.errors.0 }}</small>
+        {% endif %}
+
+        <label for="{{ form.backup_reminder_frequency_days.id_for_label }}">
+            {{ form.backup_reminder_frequency_days.label }}
+        </label>
+        {{ form.backup_reminder_frequency_days }}
+        {% if form.backup_reminder_frequency_days.help_text %}<small>{{ form.backup_reminder_frequency_days.help_text }}</small>{% endif %}
+        {% if form.backup_reminder_frequency_days.errors %}
+        <small class="badge badge-danger">{{ form.backup_reminder_frequency_days.errors.0 }}</small>
+        {% endif %}
+
+        <label for="{{ form.backup_reminder_contact_email.id_for_label }}">
+            {{ form.backup_reminder_contact_email.label }}
+        </label>
+        {{ form.backup_reminder_contact_email }}
+        <small>{% trans "The email address that will receive backup reminders." %}</small>
+        {% if form.backup_reminder_contact_email.errors %}
+        <small class="badge badge-danger">{{ form.backup_reminder_contact_email.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Status" %}</legend>
+
+        <div class="grid">
+            <div>
+                <strong>{% trans "Last backup export" %}</strong><br>
+                {% if profile.backup_last_exported_at %}
+                    {{ profile.backup_last_exported_at|date:"N j, Y, P" }}
+                {% else %}
+                    <em>{% trans "Never" %}</em>
+                {% endif %}
+            </div>
+            <div>
+                <strong>{% trans "Last reminder sent" %}</strong><br>
+                {% if profile.backup_reminder_last_sent_at %}
+                    {{ profile.backup_reminder_last_sent_at|date:"N j, Y, P" }}
+                {% else %}
+                    <em>{% trans "Never" %}</em>
+                {% endif %}
+            </div>
+        </div>
+    </fieldset>
+
+    <div role="group">
+        <button type="submit">{% trans "Save Changes" %}</button>
+        <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back" %}</a>
+    </div>
+</form>
+{% endblock %}
