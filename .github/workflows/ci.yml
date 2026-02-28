@@ -1,0 +1,43 @@
+# Run the test suite on every pull request targeting main.
+# Must pass before a PR can be merged (enforce this via branch protection rules
+# in GitHub → Settings → Branches → Require status checks → "test").
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Run tests
+        run: pytest -m "not browser and not scenario_eval"
+        env:
+          DJANGO_SETTINGS_MODULE: konote.settings.test
+          SECRET_KEY: ci-secret-key-not-for-production
+          DATABASE_URL: sqlite://:memory:
+          AUDIT_DATABASE_URL: sqlite://:memory:
+          FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
