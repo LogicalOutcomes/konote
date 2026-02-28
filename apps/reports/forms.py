@@ -547,6 +547,7 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
     FORMAT_CHOICES = [
         ("pdf", _("PDF (printable report)")),
         ("csv", _("CSV (spreadsheet)")),
+        ("json", _("JSON (machine-readable)")),
     ]
 
     format = forms.ChoiceField(
