@@ -4,7 +4,7 @@
     "start_url": "/my/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#0d7377",
+    "theme_color": "#3176aa",
     "icons": [
         {
             "src": "/static/portal/icons/icon-192.png",

@@ -1,1 +1,26 @@
+# Normalise line endings to LF in the repository
+* text=auto
+
+# Force LF for shell scripts (required for Docker/Linux)
 entrypoint.sh eol=lf
+*.sh eol=lf
+
+# Force LF for web assets
+*.css eol=lf
+*.js eol=lf
+*.html eol=lf
+*.svg eol=lf
+*.json eol=lf
+
+# Force LF for Python
+*.py eol=lf
+
+# Binary files — do not normalise
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff binary
+*.woff2 binary
+*.mo binary

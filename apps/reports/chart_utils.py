@@ -32,7 +32,7 @@ except ImportError:
 # Accessible colour palette — all meet WCAG 2.2 AA 3:1 contrast on white.
 # Chosen for distinguishability across common colour-vision deficiencies.
 CHART_COLOURS = [
-    "#0d7377",  # Teal (brand primary) — 5.1:1 contrast
+    "#3176aa",  # Blue (brand primary) — 4.9:1 contrast
     "#b35900",  # Burnt orange — 4.6:1 contrast
     "#5b21b6",  # Deep purple — 7.3:1 contrast
     "#0369a1",  # Ocean blue — 4.7:1 contrast

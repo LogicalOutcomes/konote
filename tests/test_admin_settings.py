@@ -303,6 +303,185 @@ class InstanceSettingsTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class BrandColourDerivationTest(TestCase):
+    """Tests for the brand colour picker, hex validation, and CSS derivation."""
+
+    def test_derive_brand_colours_known_blue(self):
+        from apps.admin_settings.forms import _derive_brand_colours
+        result = _derive_brand_colours("#3176aa")
+        self.assertEqual(result["brand_color_hover"], "#296490")
+        self.assertEqual(result["brand_color_focus"], "rgba(49, 118, 170, 0.25)")
+        self.assertEqual(result["brand_color_subtle"], "rgba(49, 118, 170, 0.08)")
+        self.assertEqual(result["brand_color_text"], "#ffffff")  # dark colour → white text
+        # Light variant should be brighter than original
+        self.assertTrue(result["brand_color_light"] > "#3176aa")
+
+    def test_derive_brand_colours_light_colour_gets_dark_text(self):
+        from apps.admin_settings.forms import _derive_brand_colours
+        result = _derive_brand_colours("#ffd700")  # gold/yellow
+        self.assertEqual(result["brand_color_text"], "#1a202c")
+
+    def test_derive_brand_colours_dark_colour_gets_white_text(self):
+        from apps.admin_settings.forms import _derive_brand_colours
+        result = _derive_brand_colours("#1a202c")  # near-black
+        self.assertEqual(result["brand_color_text"], "#ffffff")
+
+    def test_derive_brand_colours_white_gets_dark_text(self):
+        from apps.admin_settings.forms import _derive_brand_colours
+        result = _derive_brand_colours("#ffffff")
+        self.assertEqual(result["brand_color_text"], "#1a202c")
+
+    def test_clean_brand_color_valid_hex(self):
+        from apps.admin_settings.forms import InstanceSettingsForm
+        form = InstanceSettingsForm(data={
+            "brand_color": "#3176aa",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["brand_color"], "#3176aa")
+
+    def test_clean_brand_color_rejects_non_hex(self):
+        from apps.admin_settings.forms import InstanceSettingsForm
+        form = InstanceSettingsForm(data={
+            "brand_color": "#}abcd",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("brand_color", form.errors)
+
+    def test_clean_brand_color_rejects_named_colour(self):
+        from apps.admin_settings.forms import InstanceSettingsForm
+        form = InstanceSettingsForm(data={
+            "brand_color": "red",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("brand_color", form.errors)
+
+    def test_clean_brand_color_rejects_short_hex(self):
+        from apps.admin_settings.forms import InstanceSettingsForm
+        form = InstanceSettingsForm(data={
+            "brand_color": "#123",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("brand_color", form.errors)
+
+    def test_clean_brand_color_allows_empty(self):
+        from apps.admin_settings.forms import InstanceSettingsForm
+        form = InstanceSettingsForm(data={
+            "brand_color": "",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class BrandColourSaveTest(TestCase):
+    """Tests for saving brand colour and derived values via admin settings."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+
+    def test_save_brand_colour_creates_derived_settings(self):
+        self.client.login(username="admin", password="testpass123")
+        self.client.post("/admin/settings/instance/", {
+            "brand_color": "#3176aa",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertEqual(InstanceSetting.get("brand_color"), "#3176aa")
+        self.assertEqual(InstanceSetting.get("brand_color_hover"), "#296490")
+        self.assertIn("rgba(49, 118, 170", InstanceSetting.get("brand_color_focus"))
+        self.assertIsNotNone(InstanceSetting.get("brand_color_light"))
+        self.assertIn(InstanceSetting.get("brand_color_text"), ("#ffffff", "#1a202c"))
+
+    def test_clear_brand_colour_removes_derived_settings(self):
+        self.client.login(username="admin", password="testpass123")
+        # First set a colour
+        self.client.post("/admin/settings/instance/", {
+            "brand_color": "#ff0000",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertIsNotNone(InstanceSetting.get("brand_color_hover"))
+        # Then clear it
+        self.client.post("/admin/settings/instance/", {
+            "brand_color": "",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "30",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertFalse(InstanceSetting.get("brand_color_hover"))
+        self.assertFalse(InstanceSetting.get("brand_color_text"))
+
+    def test_brand_colour_style_block_in_response(self):
+        self.client.login(username="admin", password="testpass123")
+        # Set a brand colour
+        InstanceSetting.objects.update_or_create(
+            setting_key="brand_color", defaults={"setting_value": "#ff5500"}
+        )
+        resp = self.client.get("/admin/settings/")
+        self.assertContains(resp, "--kn-primary: #ff5500")
+        self.assertContains(resp, "--kn-text-on-primary:")
+        self.assertContains(resp, "--pico-primary-inverse:")
+        self.assertContains(resp, "--kn-primary-active:")  # dark mode block
+
+    def test_no_style_block_without_brand_colour(self):
+        self.client.login(username="admin", password="testpass123")
+        InstanceSetting.objects.filter(setting_key="brand_color").delete()
+        resp = self.client.get("/admin/settings/")
+        self.assertNotContains(resp, "--kn-primary:")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class UserManagementTest(TestCase):
     databases = {"default", "audit"}
 
