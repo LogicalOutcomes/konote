@@ -3,7 +3,7 @@
 **Feature:** Schema-per-tenant multi-tenancy using django-tenants, with per-tenant encryption and consortium data model
 **Status:** Decided. Implementation starts after first single-tenant agency deployment is live.
 **Date:** 2026-02-21
-**Implementation plan:** `tasks/prosper-canada/multi-tenancy-implementation-plan.md`
+**Implementation plan:** `tasks/multi-tenancy-implementation-plan.md`
 
 ---
 
@@ -152,4 +152,4 @@ A future developer might think "Consortium belongs in the consortia app." It doe
 
 ## Expert Panel Source
 
-Panel convened 2026-02-20: Software Architect, Nonprofit Technology Strategist, Privacy & Compliance Specialist, Systems Thinker. Followed by code review that identified and resolved 11 issues. Full implementation plan at `tasks/prosper-canada/multi-tenancy-implementation-plan.md`.
+Panel convened 2026-02-20: Software Architect, Nonprofit Technology Strategist, Privacy & Compliance Specialist, Systems Thinker. Followed by code review that identified and resolved 11 issues. Full implementation plan at `tasks/multi-tenancy-implementation-plan.md`.

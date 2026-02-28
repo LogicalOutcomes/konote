@@ -6,8 +6,14 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required
 
-from .forms import DemoDataForm, FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
-from .models import DEFAULT_TERMS, TERM_HELP_TEXT, FeatureToggle, InstanceSetting, TerminologyOverride
+from .forms import (
+    DemoDataForm, FeatureToggleForm, InstanceSettingsForm,
+    MessagingSettingsForm, OrganizationProfileForm, TerminologyForm,
+)
+from .models import (
+    DEFAULT_TERMS, TERM_HELP_TEXT,
+    FeatureToggle, InstanceSetting, OrganizationProfile, TerminologyOverride,
+)
 
 
 # --- Dashboard ---
@@ -225,7 +231,7 @@ DEFAULT_FEATURES = {
         "when_on": [_lazy("Staff can invite participants to the portal"), _lazy("Portal features (journal, messaging, surveys) become available")],
         "when_off": [_lazy("Portal invitation and access is disabled"), _lazy("Existing portal accounts are deactivated")],
         "depends_on": [],
-        "used_by": ["portal_journal", "portal_messaging"],
+        "used_by": ["portal_journal", "portal_messaging", "portal_resources"],
     },
     "portal_journal": {
         "label": _lazy("Portal Journal"),
@@ -338,10 +344,18 @@ DEFAULT_FEATURES = {
         "depends_on": [],
         "used_by": [],
     },
+    "portal_resources": {
+        "label": _lazy("Portal Resources"),
+        "description": _lazy("Show a Resources page in the participant portal with helpful links to websites."),
+        "when_on": [_lazy("Participants see a Resources page in their portal with helpful links"), _lazy("Staff can manage resource links per program and per participant")],
+        "when_off": [_lazy("Resources page is hidden from the portal"), _lazy("Existing resource links are preserved")],
+        "depends_on": ["participant_portal"],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources"}
 
 
 @login_required
@@ -789,4 +803,27 @@ def demo_data_management(request):
         "demo_note_count": demo_note_count,
         "active_program_count": active_program_count,
         "last_generated": last_generated,
+    })
+
+
+# --- Organisation Profile (CIDS) ---
+
+@login_required
+@admin_required
+def organization_profile(request):
+    """Edit the singleton organisation profile for CIDS exports."""
+    profile = OrganizationProfile.get_solo()
+
+    if request.method == "POST":
+        form = OrganizationProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Organisation profile updated."))
+            return redirect("admin_settings:organization_profile")
+    else:
+        form = OrganizationProfileForm(instance=profile)
+
+    return render(request, "admin_settings/organization_profile.html", {
+        "form": form,
+        "profile": profile,
     })

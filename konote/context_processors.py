@@ -296,6 +296,8 @@ def portal_context(request):
             page = "message"
         elif url_name == "settings":
             page = "settings"
+        elif url_name == "resources":
+            page = "resources"
 
     emergency_logout_token = request.session.get("_portal_emergency_logout_token", "")
     return {

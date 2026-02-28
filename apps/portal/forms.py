@@ -405,6 +405,50 @@ class StaffPortalNoteForm(forms.Form):
         return text
 
 
+class ProgramResourceForm(forms.ModelForm):
+    """Form for staff to add/edit program-level resource links."""
+
+    class Meta:
+        from apps.portal.models import PortalResourceLink
+        model = PortalResourceLink
+        fields = ["title", "title_fr", "url", "description", "description_fr", "display_order"]
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": _("e.g. Crisis Support Line")}),
+            "title_fr": forms.TextInput(attrs={"placeholder": _("e.g. Ligne de soutien en situation de crise")}),
+            "url": forms.URLInput(attrs={"placeholder": "https://"}),
+            "description": forms.Textarea(attrs={"rows": 2, "placeholder": _("Brief description (optional)")}),
+            "description_fr": forms.Textarea(attrs={"rows": 2, "placeholder": _("Description en français (optionnel)")}),
+            "display_order": forms.NumberInput(attrs={"min": 0, "style": "width: 5em"}),
+        }
+        labels = {
+            "title": _("Title (English)"),
+            "title_fr": _("Title (French)"),
+            "url": _("Website URL"),
+            "description": _("Description (English)"),
+            "description_fr": _("Description (French)"),
+            "display_order": _("Display order"),
+        }
+
+
+class ClientResourceForm(forms.ModelForm):
+    """Form for staff to add resource links for a specific participant."""
+
+    class Meta:
+        from apps.portal.models import ClientResourceLink
+        model = ClientResourceLink
+        fields = ["title", "url", "description"]
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": _("e.g. Local Housing Directory")}),
+            "url": forms.URLInput(attrs={"placeholder": "https://"}),
+            "description": forms.Textarea(attrs={"rows": 2, "placeholder": _("Brief description (optional)")}),
+        }
+        labels = {
+            "title": _("Title"),
+            "url": _("Website URL"),
+            "description": _("Description"),
+        }
+
+
 class StaffPortalInviteForm(forms.Form):
     """Form for staff to create a portal invite for a participant."""
 

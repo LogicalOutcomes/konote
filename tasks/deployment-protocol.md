@@ -582,7 +582,7 @@ Hand off to Prince for configuration in Phase 4.
 Using the Customisation Worksheet from Phase 3 and the Configuration Summary from Phase 1:
 
 **Instance Settings:**
-- [ ] Set product name (e.g., "Prosper Canada — KoNote")
+- [ ] Set product name (e.g., "Example Agency — KoNote")
 - [ ] Set support email
 - [ ] Upload logo (if provided)
 - [ ] Set date format
@@ -794,4 +794,4 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 
 *Update this section after each deployment. What worked? What didn't? What would you change?*
 
-*(This section will be populated after the Prosper Canada deployment.)*
+*(This section will be populated after the first agency deployment.)*

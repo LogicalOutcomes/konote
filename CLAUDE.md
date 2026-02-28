@@ -27,9 +27,11 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 ## Git Workflow
 
+**Pull main before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin main`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
+
 **Branch before working.** `main` has branch protection — never commit directly to it.
 
-1. **At the start of every task**, check the current branch with `git branch --show-current`
+1. **At the start of every task**, run `git pull origin main`, then check the current branch with `git branch --show-current`
 2. If on `main`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
 3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
 4. Commit frequently on the feature branch
@@ -194,6 +196,8 @@ Current DRRs:
 - `tasks/design-rationale/ai-feature-toggles.md` — AI feature toggle split. Two-tier design: `ai_assist_tools_only` (no participant data, default enabled) vs `ai_assist_participant_data` (de-identified participant content, default disabled). Anti-patterns (including translation in toggles, single three-level toggle). Future path: self-hosted open-source LLM for participant data.
 - `tasks/design-rationale/ovhcloud-deployment.md` — OVHcloud Beauharnois deployment architecture. Full stack (Docker Compose, Caddy, PostgreSQL x2), 4-layer self-healing automation, backup strategy, Azure Key Vault for encryption keys, LLM integration, multi-agency hosting. Anti-patterns (US cloud backups, missing autoheal, single-point key storage).
 - `tasks/design-rationale/data-access-residency-policy.md` — Data access residency policy. Three access tiers (direct data access, indirect, no data access). Canadian residency required for Tier 1 (SSH, DB, backups). Open questions on VPN-from-Canada, temporary travel, contractor/MSP requirements. Anti-patterns (VPN as residency substitute, production data in non-Canadian staging).
+- `tasks/design-rationale/document-integration.md` — Dual document integration (SharePoint + Google Drive). SharePoint for staff-side internal documents (program-centric folders), Google Drive for participant portal working documents (digital toolkit handoff). Link-broker-only architecture, PHIPA compliance, discharge ownership transfer, operational setup guides. Anti-patterns (storing document contents, OAuth at launch, cross-program URL copying, client names in folder paths).
+- `tasks/design-rationale/no-live-api-individual-data.md` — No live API for individual participant data. Rejects persistent API access for individual PII between systems. Two-tier export model instead (individual via SecureExportLink, agency-wide via AES-256-GCM management command). Anti-patterns (live API, bidirectional sync, automated PII transfers, webhook-based data push, shared database access). Three expert panels.
 
 ### How Claude Manages Tasks
 
