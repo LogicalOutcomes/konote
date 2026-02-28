@@ -7,20 +7,47 @@
 <h1>{{ term.resource_plural }}</h1>
 
 {% if has_resources %}
-<ul class="portal-resources-list" role="list">
-    {% for resource in resources %}
-    <li class="portal-resource-item">
-        <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="portal-resource-link">
-            <strong>{{ resource.title }}</strong>
-            <span class="portal-external-icon" aria-hidden="true">&#x2197;</span>
-            <span class="visually-hidden">{% trans "(opens in a new tab)" %}</span>
-        </a>
-        {% if resource.description %}
-        <p class="portal-resource-desc">{{ resource.description }}</p>
-        {% endif %}
-    </li>
-    {% endfor %}
-</ul>
+
+{% for program_name, resources in program_groups.items %}
+<section>
+    <h2>{{ program_name }}</h2>
+    <ul class="portal-resources-list" role="list">
+        {% for resource in resources %}
+        <li class="portal-resource-item">
+            <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="portal-resource-link">
+                <strong>{{ resource.title }}</strong>
+                <span class="portal-external-icon" aria-hidden="true">&#x2197;</span>
+                <span class="visually-hidden">{% trans "(opens in a new tab)" %}</span>
+            </a>
+            {% if resource.description %}
+            <p class="portal-resource-desc">{{ resource.description }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endfor %}
+
+{% if staff_resources %}
+<section>
+    <h2>{% trans "Added for you" %}</h2>
+    <ul class="portal-resources-list" role="list">
+        {% for resource in staff_resources %}
+        <li class="portal-resource-item">
+            <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer" class="portal-resource-link">
+                <strong>{{ resource.title }}</strong>
+                <span class="portal-external-icon" aria-hidden="true">&#x2197;</span>
+                <span class="visually-hidden">{% trans "(opens in a new tab)" %}</span>
+            </a>
+            {% if resource.description %}
+            <p class="portal-resource-desc">{{ resource.description }}</p>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 {% else %}
 <p>{% blocktrans with resource_term=term.resource_plural|lower %}No {{ resource_term }} are available right now.{% endblocktrans %}</p>
 {% endif %}

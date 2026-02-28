@@ -208,6 +208,89 @@ class InstanceSetting(models.Model):
             return default
 
 
+class OrganizationProfile(models.Model):
+    """Singleton model storing organisation identity for CIDS exports.
+
+    Only one row should exist per instance. Use get_solo() to retrieve.
+    """
+
+    PROVINCE_CHOICES = [
+        ("AB", "Alberta"),
+        ("BC", "British Columbia"),
+        ("MB", "Manitoba"),
+        ("NB", "New Brunswick"),
+        ("NL", "Newfoundland and Labrador"),
+        ("NS", "Nova Scotia"),
+        ("NT", "Northwest Territories"),
+        ("NU", "Nunavut"),
+        ("ON", "Ontario"),
+        ("PE", "Prince Edward Island"),
+        ("QC", "Quebec"),
+        ("SK", "Saskatchewan"),
+        ("YT", "Yukon"),
+    ]
+
+    legal_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("Required for CIDS BasicTier (org:hasLegalName)."),
+    )
+    operating_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_lazy("Display name used in the application."),
+    )
+    description = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("Mission statement or organisation description."),
+    )
+    description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("French mission statement for bilingual CIDS exports."),
+    )
+    legal_status = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_lazy("e.g., Registered charity, Nonprofit corporation."),
+    )
+    sector_codes = models.JSONField(
+        default=list, blank=True,
+        help_text=_lazy("ICNPOsector codes for the organisation."),
+    )
+    street_address = models.CharField(max_length=255, blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
+    province = models.CharField(
+        max_length=2, blank=True, default="",
+        choices=PROVINCE_CHOICES,
+    )
+    postal_code = models.CharField(
+        max_length=10, blank=True, default="",
+        help_text=_lazy("Canadian format: A1A 1A1."),
+    )
+    country = models.CharField(max_length=2, default="CA")
+    website = models.URLField(blank=True, default="")
+
+    class Meta:
+        app_label = "admin_settings"
+        db_table = "organization_profiles"
+        verbose_name = "Organisation Profile"
+
+    def __str__(self):
+        return self.operating_name or self.legal_name or "Organisation Profile"
+
+    @classmethod
+    def get_solo(cls):
+        """Get or create the singleton instance."""
+        obj, _created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def save(self, *args, **kwargs):
+        """Enforce singleton — always use pk=1."""
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Prevent deletion of the singleton."""
+        pass
+
+
 # --- Access tier helper ---
 
 # Tier descriptions for admin UI and documentation

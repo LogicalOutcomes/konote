@@ -10,7 +10,7 @@ from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.portal.models import ClientResourceLink, ParticipantUser, PortalResourceLink
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -296,6 +296,14 @@ class StaffClientResourceTests(TestCase):
             client_file=self.client_file,
             program=self.program,
             status="enrolled",
+        )
+
+        # Staff needs a program role to access client-scoped views
+        UserProgramRole.objects.create(
+            user=self.staff,
+            program=self.program,
+            role="program_manager",
+            status="active",
         )
 
         FeatureToggle.objects.update_or_create(
