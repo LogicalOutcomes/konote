@@ -82,6 +82,8 @@ class SetupWizardNavigationTest(TestCase):
 class SetupWizardFormTest(TestCase):
     """Test wizard form submissions and session storage."""
 
+    databases = ["default", "audit"]
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -150,6 +152,8 @@ class SetupWizardFormTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class SetupWizardResetTest(TestCase):
     """Test wizard reset functionality."""
+
+    databases = ["default", "audit"]
 
     def setUp(self):
         enc_module._fernet = None

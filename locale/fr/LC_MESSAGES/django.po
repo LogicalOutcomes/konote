@@ -17284,3 +17284,33 @@ msgid ""
 msgstr ""
 "Début du service actif. Défini automatiquement à la date d’inscription si "
 "laissé vide."
+
+msgid "Brand Colour"
+msgstr ""
+
+msgid "Brand colour"
+msgstr ""
+
+msgid "Domain must be one of: %(domains)s"
+msgstr ""
+
+msgid "Enter a valid hex colour (e.g. #3176aa)."
+msgstr ""
+
+msgid "Powered by"
+msgstr ""
+
+msgid "URL template contains a disallowed protocol."
+msgstr ""
+
+msgid "URL template is required when a provider is selected."
+msgstr ""
+
+msgid "URL template must contain {record_id} placeholder."
+msgstr ""
+
+msgid "URL template must use HTTPS."
+msgstr ""
+
+msgid "Your organisation's accent colour for buttons and links."
+msgstr ""

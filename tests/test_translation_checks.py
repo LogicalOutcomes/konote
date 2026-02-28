@@ -166,13 +166,25 @@ class MoFileHealthCheckTest(SimpleTestCase):
     """Test the W011 system check for .mo freshness."""
 
     def test_no_warnings_when_mo_is_fresh(self):
-        """Current project state: .mo is newer than .po."""
-        warnings = check_mo_file_health(None)
-        self.assertEqual(
-            len(warnings),
-            0,
-            f"Expected no W011 warnings but got: {warnings}",
-        )
+        """W011 does not fire when .mo is newer than .po."""
+        with tempfile.TemporaryDirectory() as tmp:
+            locale_dir = Path(tmp) / "locale" / "fr" / "LC_MESSAGES"
+            locale_dir.mkdir(parents=True)
+
+            po_path = locale_dir / "django.po"
+            po_path.write_text('msgid ""\nmsgstr ""\n', encoding="utf-8")
+            time.sleep(0.05)
+
+            mo_path = locale_dir / "django.mo"
+            mo_path.write_bytes(b"")
+
+            with override_settings(BASE_DIR=tmp, LOCALE_PATHS=[]):
+                warnings = check_mo_file_health(None)
+                self.assertEqual(
+                    len(warnings),
+                    0,
+                    f"Expected no W011 warnings but got: {warnings}",
+                )
 
     def test_warns_when_mo_missing(self):
         """W011 fires if .mo file doesn't exist."""

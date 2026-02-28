@@ -159,6 +159,7 @@ class AccessTierWizardTest(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post("/admin/settings/setup-wizard/", {
             "product_name": "TestOrg",
+            "date_format": "YYYY-MM-DD",
         })
         self.assertEqual(resp.status_code, 302)
         wizard_data = self.client.session.get("setup_wizard", {})
