@@ -7,4 +7,4 @@ anthropic>=0.40,<1.0
 pytest>=8.0,<9.0
 pytest-django>=4.8,<5.0
 pytest-xdist>=3.5,<4.0
-polib>=2.0,<3.0
+polib>=1.2,<2.0
