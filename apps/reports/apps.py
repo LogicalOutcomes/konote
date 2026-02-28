@@ -6,3 +6,6 @@ class ReportsConfig(AppConfig):
     name = "apps.reports"
     label = "reports"
     verbose_name = "Reports & Charts"
+
+    def ready(self):
+        import apps.reports.checks  # noqa: F401
