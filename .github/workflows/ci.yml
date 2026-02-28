@@ -33,11 +33,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-test.txt
 
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
       - name: Run tests
         run: pytest -m "not browser and not scenario_eval"
         env:
           DJANGO_SETTINGS_MODULE: konote.settings.test
           SECRET_KEY: ci-secret-key-not-for-production
-          DATABASE_URL: "sqlite://:memory:"
-          AUDIT_DATABASE_URL: "sqlite://:memory:"
+          DATABASE_URL: "sqlite:///ci-test.db"
+          AUDIT_DATABASE_URL: "sqlite:///ci-audit-test.db"
           FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
