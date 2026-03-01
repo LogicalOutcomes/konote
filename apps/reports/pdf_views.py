@@ -288,7 +288,7 @@ def generate_funder_report_pdf(request, report_data, sections=None,
     return render_pdf("reports/pdf_funder_outcome_report.html", context, filename)
 
 
-def _collect_client_data(client, include_plans, include_notes, include_metrics, include_events, include_custom_fields, user_program_ids=None):
+def _collect_client_data(client, include_plans, include_notes, include_metrics, include_events, include_custom_fields, user_program_ids=None, user=None):
     """Collect all data for an individual client export."""
     data = {}
 
@@ -337,7 +337,7 @@ def _collect_client_data(client, include_plans, include_notes, include_metrics, 
 
             for ptm in ptm_links:
                 metric_def = ptm.metric_def
-                values = MetricValue.objects.filter(
+                values_qs = MetricValue.objects.filter(
                     metric_def=metric_def,
                     progress_note_target__plan_target=target,
                     progress_note_target__progress_note__client_file=client,
@@ -347,6 +347,21 @@ def _collect_client_data(client, include_plans, include_notes, include_metrics, 
                 ).order_by(
                     "progress_note_target__progress_note__created_at"
                 )
+                # Apply PHIPA consent: exclude metric values from
+                # cross-program notes when sharing is restricted.
+                if user is not None and user_program_ids is not None:
+                    from apps.programs.access import apply_consent_filter
+                    visible_note_ids = ProgressNote.objects.filter(
+                        client_file=client, status="default"
+                    ).values_list("pk", flat=True)
+                    filtered_notes, _ = apply_consent_filter(
+                        ProgressNote.objects.filter(pk__in=visible_note_ids),
+                        client, user, user_program_ids=user_program_ids,
+                    )
+                    values_qs = values_qs.filter(
+                        progress_note_target__progress_note__in=filtered_notes
+                    )
+                values = values_qs
 
                 if not values:
                     continue
@@ -377,10 +392,18 @@ def _collect_client_data(client, include_plans, include_notes, include_metrics, 
         data["metric_tables"] = []
 
     # Progress notes (all, not just last 20 — this is a full data export)
+    # Apply PHIPA consent filtering: cross-program notes are only visible
+    # when the agency or participant has enabled sharing.
     if include_notes:
-        data["notes"] = ProgressNote.objects.filter(
+        from apps.programs.access import apply_consent_filter
+        notes_qs = ProgressNote.objects.filter(
             client_file=client, status="default"
         ).select_related("author").order_by("-created_at")
+        if user is not None:
+            notes_qs, _ = apply_consent_filter(
+                notes_qs, client, user, user_program_ids=user_program_ids,
+            )
+        data["notes"] = notes_qs
     else:
         data["notes"] = []
 
@@ -662,6 +685,7 @@ def client_export(request, client_id):
                 client, include_plans, include_notes,
                 include_metrics, include_events, include_custom_fields,
                 user_program_ids=user_program_ids,
+                user=request.user,
             )
 
             safe_name = sanitise_filename(client.record_id or str(client.pk))
