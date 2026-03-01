@@ -95,6 +95,7 @@ These rules apply to **every phase**. Do not skip them.
 5. **Encrypted fields cannot be searched in SQL** — client search must load accessible clients into Python and filter in memory. This is acceptable up to ~2,000 clients. Document the ceiling.
 6. **Cache invalidation** — after saving terminology, features, or settings, clear the relevant cache key. Prefer `post_save` signals over manual cache.delete() calls in views.
 7. **HTMX error handling** — `app.js` must include a global `htmx:responseError` handler so network/server errors don't fail silently.
+8. **QA scenario coverage** — when adding a new URL route or page, check if the sister repo `konote-qa-scenarios` needs a new scenario or page inventory entry. See `konote-qa-scenarios/pages/page-inventory.yaml` for the current page list.
 
 ## Testing Strategy
 
