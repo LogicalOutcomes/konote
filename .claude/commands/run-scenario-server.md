@@ -33,13 +33,31 @@ Notes:
 - The test framework starts its own live server (via `StaticLiveServerTestCase`) — do NOT start `runserver` separately.
 - If tests skip with "Holdout repo not found", the user needs to clone the konote-qa-scenarios repo next to konote-app.
 
-### Step 2: Report results
+### Step 2: Record deployment state
+
+After tests complete, record the deployed commit SHA for traceability:
+
+```bash
+git rev-parse HEAD
+```
+
+Include this SHA in the pipeline log Step 1 entry so that Step 3 (/process-qa-report) can determine whether tickets predate known fixes.
+
+### Step 3: Report results
 
 After tests complete, report to the user:
 - Number of tests run and pass/fail counts
+- **Deployed commit SHA** (from Step 2)
 - Location of screenshots: `konote-qa-scenarios/reports/screenshots/`
 - Location of satisfaction report: `konote-qa-scenarios/reports/YYYY-MM-DD-satisfaction-report.md`
 - Any failures or errors
+
+### Step 4: Update the pipeline log
+
+Append a Step 1 entry to `qa/pipeline-log.txt`:
+```
+YYYY-MM-DD HH:MM — Step 1: N screenshots captured (X/Y scenarios, Z skipped: [list]). Deployed commit: [SHA].
+```
 
 ### Next steps
 

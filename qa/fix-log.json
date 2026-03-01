@@ -1,0 +1,158 @@
+{
+  "_description": "Maps QA ticket issues to known fixes. Step 3 (/process-qa-report) reads this before analysing tickets. Any ticket matching a known fix is labelled 'VERIFY' rather than 'FIX NOW'. Populated when fixes are completed.",
+  "_format": "Each entry has: description, finding_group (if applicable), fixed_date, fixed_in (TODO ID or PR), verified_date (date fix was confirmed in a subsequent QA round, or null)",
+  "fixes": [
+    {
+      "description": "Skip-to-content link misdirection",
+      "finding_group": "FG-S-5",
+      "fixed_date": "2026-02-21",
+      "fixed_in": "QA-R7-TIER1",
+      "verified_date": null,
+      "notes": "Skip link added to base.html, CSS clip-path. Also fixed in Round 2 (QA-FIX1, 2026-02-08) and re-fixed in QA-W27 (2026-02-10)."
+    },
+    {
+      "description": "404 instead of 403 for restricted pages (notes, cross-programme clients)",
+      "finding_group": "FG-S-1",
+      "fixed_date": "2026-02-21",
+      "fixed_in": "QA-R7-TIER1",
+      "verified_date": null,
+      "notes": "Explicit permission check before queryset filter. Also addressed in Round 7 same-day fix BUG-3 (403 page styling)."
+    },
+    {
+      "description": "Language preference not persisting (French/English mixing)",
+      "finding_group": "FG-S-2",
+      "fixed_date": "2026-02-21",
+      "fixed_in": "QA-R7-TIER1",
+      "verified_date": null,
+      "notes": "UserLanguageMiddleware makes user profile preferred_language authoritative. First fixed in Round 1 (BUG-4, 2026-02-07/08), re-fixed in QA-R7-TIER1."
+    },
+    {
+      "description": "htmx syntax errors on create-participant page",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "QA-R7-TIER1",
+      "verified_date": null,
+      "notes": "Audited and fixed all hx-* attributes on create-participant template."
+    },
+    {
+      "description": "Executive nav shows admin items (IMPROVE-3)",
+      "finding_group": null,
+      "fixed_date": "2026-02-22",
+      "fixed_in": "QA-R7-TIER2",
+      "verified_date": null,
+      "notes": "Nav template permission check hides admin links for executives."
+    },
+    {
+      "description": "Communication quick-log from client profile (BUG-7)",
+      "finding_group": null,
+      "fixed_date": "2026-02-22",
+      "fixed_in": "QA-R7-TIER2",
+      "verified_date": null,
+      "notes": "Added 'Log Communication' to client profile Actions dropdown."
+    },
+    {
+      "description": "ARIA tablist on client profile tabs",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "Round 7 same-day (BUG-14)",
+      "verified_date": null,
+      "notes": "Arrow key navigation on profile tabs. Different from Actions dropdown ARIA."
+    },
+    {
+      "description": "Form validation: novalidate + custom errors with aria-describedby",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "Round 7 same-day (BUG-16)",
+      "verified_date": null,
+      "notes": null
+    },
+    {
+      "description": "Offline fallback page (service worker)",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "Round 7 same-day (BUG-17)",
+      "verified_date": null,
+      "notes": null
+    },
+    {
+      "description": "Group creation pre-selects programme for single-programme users",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "Round 7 same-day (BUG-22)",
+      "verified_date": null,
+      "notes": null
+    },
+    {
+      "description": "Executive dashboard date range filter + CSV export",
+      "finding_group": null,
+      "fixed_date": "2026-02-21",
+      "fixed_in": "Round 7 same-day (BUG-9/10)",
+      "verified_date": null,
+      "notes": "CSV export added. PDF export is a new request in Round 8."
+    },
+    {
+      "description": "Individual client data export from client profile",
+      "finding_group": "FG-S-8",
+      "fixed_date": "2026-02-28",
+      "fixed_in": "QA-R7-PRIVACY1",
+      "verified_date": null,
+      "notes": "PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating."
+    },
+    {
+      "description": "Secure download link infrastructure (SecureExportLink)",
+      "finding_group": "FG-S-8",
+      "fixed_date": "2026-02-28",
+      "fixed_in": "QA-R7-PRIVACY1 + SEC3",
+      "verified_date": null,
+      "notes": "Single-use, time-limited, audit-trailed download links."
+    },
+    {
+      "description": "Service episode lifecycle (data model)",
+      "finding_group": null,
+      "fixed_date": "2026-02-27",
+      "fixed_in": "FHIR-EPISODE1 (PR #131)",
+      "verified_date": null,
+      "notes": "Data model exists. UI may not exist yet — verify."
+    },
+    {
+      "description": "Login autofocus race condition — credentials leaked into dashboard search bar after redirect",
+      "finding_group": "FG-S-16",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-SEC1",
+      "verified_date": null,
+      "notes": "Removed autofocus from dashboard search input. Login page autofocus on username field is correct and unchanged."
+    },
+    {
+      "description": "Demo login buttons visible in production — regression test added",
+      "finding_group": "FG-S-13",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-SEC2",
+      "verified_date": null,
+      "notes": "DEMO_MODE env var already defaults to False. Added test_demo_buttons_hidden_when_demo_mode_off to test suite."
+    },
+    {
+      "description": "Language toggle Tab order before login form (WCAG 2.4.3)",
+      "finding_group": "FG-S-6",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-A11Y2",
+      "verified_date": null,
+      "notes": "Moved _lang_toggle.html include from before <main> to after </article> on return visits. First-visit bilingual hero unchanged."
+    },
+    {
+      "description": "Actions dropdown ARIA keyboard pattern (WCAG 4.1.2) — verified correct",
+      "finding_group": "FG-S-7",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-A11Y3 (verified, no code change needed)",
+      "verified_date": "2026-03-01",
+      "notes": "app.js already implements ArrowDown/Up focus navigation without activation, Escape, Home/End. Stale screenshot."
+    },
+    {
+      "description": "Form validation data corruption BUG-33 — could not reproduce",
+      "finding_group": null,
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-UX2 (closed, no code change needed)",
+      "verified_date": "2026-03-01",
+      "notes": "Template uses explicit name= bindings per field. No mechanism for Last Name migrating to Preferred Name. Likely browser autofill artifact or stale screenshot."
+    }
+  ]
+}

@@ -213,6 +213,7 @@ Current DRRs:
 - When a task is blocked or needs a decision: add it to the Flagged section
 - When a flag is resolved: remove it from Flagged
 - Never put inline paragraphs, meeting notes, or decision detail in TODO.md
+- **When completing a QA fix task**, update `qa/fix-log.json` in the same commit — add the fix description, finding_group, fixed_date, fixed_in (TODO ID or PR), and verified_date (null). This prevents the next `/process-qa-report` run from missing known fixes.
 
 ### Marking Work In Progress
 

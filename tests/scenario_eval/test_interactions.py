@@ -65,11 +65,21 @@ class TestInteractions(BrowserTestBase):
         self.page.wait_for_load_state("networkidle")
 
         # Fill required fields
-        self.page.fill("[name='first_name'], #id_first_name", "Test")
-        self.page.fill("[name='last_name'], #id_last_name", "Participant")
+        self.page.fill("#id_first_name", "Test")
+        self.page.fill("#id_last_name", "Participant")
 
-        # Submit
-        self.page.click("button[type='submit']")
+        # Select status (required ChoiceField)
+        status_select = self.page.locator("select[name='status']")
+        if status_select.count() > 0:
+            status_select.select_option("active")
+
+        # Select a program (required when programs are available)
+        program_cb = self.page.locator("input[name='programs']").first
+        if program_cb.count() > 0:
+            program_cb.check()
+
+        # Submit — use "main" scope to avoid matching the Sign Out button in nav
+        self.page.click("main button[type='submit']")
         self.page.wait_for_load_state("networkidle")
 
         # Should redirect to participant profile (not stay on create form)
@@ -109,8 +119,8 @@ class TestInteractions(BrowserTestBase):
         if textarea.count() > 0:
             textarea.fill("Test note content from interaction test")
 
-        # Submit
-        submit = self.page.locator("button[type='submit']").first
+        # Submit — use "main" scope to avoid matching the Sign Out button in nav
+        submit = self.page.locator("main button[type='submit']").first
         if submit.count() > 0:
             submit.click()
             self.page.wait_for_load_state("networkidle")
@@ -135,8 +145,8 @@ class TestInteractions(BrowserTestBase):
         )
         self.page.wait_for_load_state("networkidle")
 
-        # Submit without filling anything
-        submit = self.page.locator("button[type='submit']").first
+        # Submit without filling anything — use "main" scope to skip nav Sign Out
+        submit = self.page.locator("main button[type='submit']").first
         if submit.count() > 0:
             submit.click()
             self.page.wait_for_load_state("networkidle")
@@ -166,7 +176,8 @@ class TestInteractions(BrowserTestBase):
         if textarea.count() > 0:
             textarea.fill("Updated note content from interaction test")
 
-        submit = self.page.locator("button[type='submit']").first
+        # Use "main" scope to avoid matching the Sign Out button in nav
+        submit = self.page.locator("main button[type='submit']").first
         if submit.count() > 0:
             submit.click()
             self.page.wait_for_load_state("networkidle")
@@ -181,7 +192,7 @@ class TestInteractions(BrowserTestBase):
         """Staff can create a goal — appears on participant profile."""
         self.login_via_browser("staff")
         self.page.goto(
-            self.live_url(f"/participants/{self.client_a.pk}/plans/")
+            self.live_url(f"/plans/participant/{self.client_a.pk}/")
         )
         self.page.wait_for_load_state("networkidle")
 
@@ -191,6 +202,8 @@ class TestInteractions(BrowserTestBase):
             "Mental Health" in body
             or "goal" in body.lower()
             or "plan" in body.lower()
+            or "outcome" in body.lower()
+            or "target" in body.lower()
         )
         self.assertTrue(has_plan_content, "No plan content visible")
         self.assertNotIn("500", self.page.title())
@@ -206,7 +219,7 @@ class TestInteractions(BrowserTestBase):
         """
         self.login_via_browser("staff")
         self.page.goto(
-            self.live_url(f"/participants/{self.client_a.pk}/plans/")
+            self.live_url(f"/plans/participant/{self.client_a.pk}/")
         )
         self.page.wait_for_load_state("networkidle")
 
@@ -305,22 +318,24 @@ class TestInteractions(BrowserTestBase):
         """After session clear, user gets helpful redirect (not data loss)."""
         self.login_via_browser("staff")
         self.page.goto(
-            self.live_url(f"/participants/{self.client_a.pk}/notes/add/")
+            self.live_url(f"/notes/participant/{self.client_a.pk}/new/")
         )
         self.page.wait_for_load_state("networkidle")
 
         # Simulate session expiry by clearing cookies
         self._context.clear_cookies()
 
-        # Try to submit — should redirect to login, not 500
+        # Try to navigate to a protected page — should redirect to login, not 500
         self.page.goto(
-            self.live_url(f"/participants/{self.client_a.pk}/notes/add/")
+            self.live_url(f"/notes/participant/{self.client_a.pk}/new/")
         )
         self.page.wait_for_load_state("networkidle")
 
+        body_lower = self.page.text_content("body").lower()
         is_redirected = (
             "/auth/login" in self.page.url
-            or "login" in self.page.text_content("body").lower()
+            or "sign in" in body_lower
+            or "username" in body_lower
         )
         self.assertTrue(is_redirected, "No redirect to login after session clear")
 

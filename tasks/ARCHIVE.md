@@ -4,6 +4,17 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-03-01 QA R8 Tier 1 cleanup)
+
+- [x] Fix PHIPA consent filtering in individual client export — apply_consent_filter to progress notes and metric values — 2026-02-28 (QA-R7-PRIVACY1-FIX)
+- [x] Build HTML/JS AES-256-GCM decryptor — bilingual, offline, CSP-locked, Web Crypto API — PR #146 — 2026-02-28 (SEC3-DECRYPT1)
+- [x] Add export coverage safety nets — Django system check W020 + CI test for model coverage — PR #145 — 2026-02-28 (SEC3-SAFETY1)
+- [x] Add automated backup reminder notifications — management command, admin form, email templates — PR #144 — 2026-02-28 (SEC3-REMIND1)
+- [x] Document scheduled task setup for export monitoring in the runbook — added send_export_summary (weekly) and check_report_deadlines (daily) to docs/export-runbook.md — 2026-02-28 (EXP2w)
+- [x] FHIR+CIDS full implementation (Sessions 1-5) — CIDS metadata, code lists, ServiceEpisode, achievement status, JSON-LD export — PR #131 to develop — 2026-02-27 (CIDS-META1 thru CIDS-IMPACT1)
+- [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
+- [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
+
 ## Moved from Recently Done (2026-02-28 export/consent cleanup)
 
 - [x] Resolve SEC3-Q1: who runs the export command — tiered model: self-hosted self-serve, SaaS via KoNote with SLA. Expert panel. Design unblocked — 2026-02-27 (SEC3-Q1)

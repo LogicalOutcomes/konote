@@ -7,6 +7,8 @@
 
 ## Active Work
 
+_QA Round 8 Tier 1 complete — see Recently Done._
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -30,6 +32,25 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
+
+### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
+
+- [ ] Verify: language middleware — ref fix-log FG-S-2, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or overridden (QA-R8-LANG1)
+- [ ] Fix newly created client not searchable by other users — cross-role intake handoff (QA-R8-UX3)
+- [ ] Fix quick note entry point unreachable — selector mismatch on client profile (QA-R8-UX4)
+- [ ] Fix create form Tab order — Last Name gets focus before First Name, WCAG 1.3.2 (QA-R8-A11Y4)
+- [ ] Fix excessive Tab presses to reach search results — filter controls blocking path, WCAG 2.4.3 (QA-R8-A11Y5)
+- [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
+- [ ] Fix missing validation error + success confirmation on participant create (QA-R8-UX5)
+- [ ] Fix mobile edit navigating to wrong form — opens New Participant instead of contact edit (QA-R8-UX6)
+- [ ] Verify: offline fallback — ref fix-log entry 9, fixed 2026-02-21 Round 7 same-day, check if regressed (QA-R8-UX7)
+- [ ] Add date presets + PDF export to executive dashboard (QA-R8-UX8)
+- [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
+- [ ] Fix calendar feed URL generation failing silently (QA-R8-UX9)
+- [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
+- [ ] Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
+- [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
+- [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -97,7 +118,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Nothing ready to build._
+- [ ] Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
+- [ ] Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
+- [ ] Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
 
 ## Parking Lot: Needs Review
 
@@ -122,16 +145,18 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md for full analysis — GK reviews (AI-SELFHOST1)
+- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
+- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
 
+- [x] QA Round 8 Tier 1: removed dashboard search autofocus (credentials leaked into search bar after login redirect) — 2026-03-01 (QA-R8-SEC1)
+- [x] QA Round 8 Tier 1: added regression test confirming demo buttons hidden when DEMO_MODE off — 2026-03-01 (QA-R8-SEC2)
+- [x] QA Round 8 Tier 1: verified skip link correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y1)
+- [x] QA Round 8 Tier 1: moved language toggle after login form for WCAG 2.4.3 Tab order — 2026-03-01 (QA-R8-A11Y2)
+- [x] QA Round 8 Tier 1: verified Actions dropdown ARIA pattern already correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y3)
+- [x] QA Round 8 Tier 1: verified 404→403 handling correct in code (stale screenshot) — 2026-03-01 (QA-R8-UX1)
+- [x] QA Round 8 Tier 1: closed BUG-33 form data corruption — could not reproduce, fields use explicit name bindings — 2026-03-01 (QA-R8-UX2)
+- [x] QA Round 8 Tier 1: verified admin nav hidden for executive role (stale screenshot) — 2026-03-01 (QA-R8-PERM1)
 - [x] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, nested client-centric JSON, config files, Diceware passphrase, 20 tests — 2026-02-28 (SEC3)
-- [x] Fix PHIPA consent filtering in individual client export — apply_consent_filter to progress notes and metric values — 2026-02-28 (QA-R7-PRIVACY1-FIX)
 - [x] Individual client data export from client profile (Tier 1) — PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating — 2026-02-28 (QA-R7-PRIVACY1)
-- [x] Build HTML/JS AES-256-GCM decryptor — bilingual, offline, CSP-locked, Web Crypto API — PR #146 — 2026-02-28 (SEC3-DECRYPT1)
-- [x] Add export coverage safety nets — Django system check W020 + CI test for model coverage — PR #145 — 2026-02-28 (SEC3-SAFETY1)
-- [x] Add automated backup reminder notifications — management command, admin form, email templates — PR #144 — 2026-02-28 (SEC3-REMIND1)
-- [x] Document scheduled task setup for export monitoring in the runbook — added send_export_summary (weekly) and check_report_deadlines (daily) to docs/export-runbook.md — 2026-02-28 (EXP2w)
-- [x] FHIR+CIDS full implementation (Sessions 1-5) — CIDS metadata, code lists, ServiceEpisode, achievement status, JSON-LD export — PR #131 to develop — 2026-02-27 (CIDS-META1 thru CIDS-IMPACT1)
-- [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
-- [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
