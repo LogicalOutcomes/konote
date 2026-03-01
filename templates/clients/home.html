@@ -37,6 +37,7 @@
             <input type="search"
                    id="client-search"
                    name="q"
+                   autocomplete="off"
                    placeholder="{% trans 'Name or ID...' %}"
                    aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
                    hx-get="{% url 'clients:client_search' %}"

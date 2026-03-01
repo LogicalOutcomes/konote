@@ -90,7 +90,9 @@
         </article>
 
         {% if has_language_cookie %}
+        <div style="text-align: center; margin-top: 0.5rem;">
         {% include "_lang_toggle.html" with inline=True %}
+        </div>
         {% endif %}
 
         {% if demo_mode %}
