@@ -1147,9 +1147,12 @@ def executive_dashboard(request):
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
     # Batch: program learning data (outcome headlines, trend, completeness)
-    # Use the dashboard date range (month_start to today) for consistency
-    learning_date_from = month_start.date()
-    learning_date_to = today
+    # Use the local-timezone month range: DB date lookups (DateTimeField__date)
+    # convert datetimes to the active timezone before comparing, so we must
+    # use the local date to avoid mismatches near UTC midnight / month boundaries.
+    _local_today = timezone.localdate()
+    learning_date_from = _local_today.replace(day=1)
+    learning_date_to = _local_today
     learning_map = _batch_program_learning(
         filtered_programs, learning_date_from, learning_date_to,
     )

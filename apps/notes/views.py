@@ -93,12 +93,14 @@ def _compute_auto_calc_values(client):
     Returns dict: {computation_type: computed_value}
     """
     computed = {}
-    now = timezone.now()
+    # Use localtime so year/month match how Django evaluates created_at__month
+    # (Django converts DateTimeField to the active timezone before comparing).
+    local_now = timezone.localtime(timezone.now())
     count = ProgressNote.objects.filter(
         client_file=client,
         status="default",
-        created_at__year=now.year,
-        created_at__month=now.month,
+        created_at__year=local_now.year,
+        created_at__month=local_now.month,
     ).count()
     computed["session_count"] = count
     return computed
