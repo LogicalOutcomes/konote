@@ -27,6 +27,10 @@ from apps.reports.metric_insights import get_data_completeness
 # Below this threshold, percentages could identify individuals.
 SMALL_PROGRAM_THRESHOLD = 5
 
+# Program Learning cards use a rolling window so values remain stable
+# across month boundaries (e.g., on the 1st of the month).
+PROGRAM_LEARNING_LOOKBACK_DAYS = 90
+
 
 # ---------------------------------------------------------------------------
 # Metric helper functions (single-program versions, kept for unit tests)
@@ -1147,11 +1151,10 @@ def executive_dashboard(request):
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
     # Batch: program learning data (outcome headlines, trend, completeness)
-    # Use the local-timezone month range: DB date lookups (DateTimeField__date)
-    # convert datetimes to the active timezone before comparing, so we must
-    # use the local date to avoid mismatches near UTC midnight / month boundaries.
+    # Use a local-timezone rolling window to avoid month-boundary dropouts
+    # while still matching DB date lookup timezone behaviour.
     _local_today = timezone.localdate()
-    learning_date_from = _local_today.replace(day=1)
+    learning_date_from = _local_today - timedelta(days=PROGRAM_LEARNING_LOOKBACK_DAYS - 1)
     learning_date_to = _local_today
     learning_map = _batch_program_learning(
         filtered_programs, learning_date_from, learning_date_to,
