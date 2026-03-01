@@ -39,7 +39,7 @@
     <fieldset>
         <legend>{% trans "Branding & Display" %}</legend>
         {% for field in form %}
-            {% if field.name == "product_name" or field.name == "support_email" or field.name == "logo_url" or field.name == "date_format" or field.name == "session_timeout_minutes" %}
+            {% if field.name == "product_name" or field.name == "product_name_fr" or field.name == "support_email" or field.name == "logo_url" or field.name == "date_format" or field.name == "session_timeout_minutes" %}
             <label for="{{ field.id_for_label }}">
                 {{ field.label }}
                 {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}

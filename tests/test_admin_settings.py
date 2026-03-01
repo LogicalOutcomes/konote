@@ -301,6 +301,67 @@ class InstanceSettingsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(InstanceSetting.get("product_name"), "MyApp")
 
+    def test_admin_can_save_product_name_fr(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/admin/settings/instance/", {
+            "product_name": "MyApp",
+            "product_name_fr": "MonAppli",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "60",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(InstanceSetting.get("product_name_fr"), "MonAppli")
+
+    def test_blank_product_name_fr_is_not_saved(self):
+        self.client.login(username="admin", password="testpass123")
+        InstanceSetting.objects.create(
+            setting_key="product_name_fr", setting_value="OldFrench"
+        )
+        self.client.post("/admin/settings/instance/", {
+            "product_name": "MyApp",
+            "product_name_fr": "",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "60",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        self.assertEqual(InstanceSetting.get("product_name_fr"), "")
+
+    def test_context_processor_resolves_fr_product_name(self):
+        from konote.context_processors import instance_settings
+        from django.test import RequestFactory
+
+        InstanceSetting.objects.create(
+            setting_key="product_name", setting_value="MyAgency"
+        )
+        InstanceSetting.objects.create(
+            setting_key="product_name_fr", setting_value="MonAgence"
+        )
+        factory = RequestFactory()
+        request = factory.get("/")
+
+        # English — should return English name
+        activate("en")
+        result = instance_settings(request)
+        self.assertEqual(result["site"]["product_name"], "MyAgency")
+        deactivate()
+
+        # French — should return French name
+        activate("fr")
+        from django.core.cache import cache
+        cache.delete("instance_settings")
+        result = instance_settings(request)
+        self.assertEqual(result["site"]["product_name"], "MonAgence")
+        deactivate()
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class BrandColourDerivationTest(TestCase):
