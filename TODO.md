@@ -7,16 +7,7 @@
 
 ## Active Work
 
-### Phase: QA Round 8 — Tier 1 Fixes (see tasks/qa-action-plan-2026-03-01.md)
-
-- [ ] Fix login autofocus race condition — remove duplicate autofocus, prevent credentials in search bar (QA-R8-SEC1)
-- [ ] Verify demo login buttons are DEBUG-only — add test confirming buttons don't render in production (QA-R8-SEC2)
-- [ ] Verify: skip link — ref fix-log FG-S-5, fixed 2026-02-21 in QA-R7-TIER1, check if regressed, WCAG 2.4.1 (QA-R8-A11Y1)
-- [ ] Fix language toggle Tab order on login page — move after login form, WCAG 2.4.3 (QA-R8-A11Y2)
-- [ ] Fix Actions dropdown ARIA pattern — implement menu button keyboard navigation, WCAG 4.1.2 (QA-R8-A11Y3)
-- [ ] Verify: 404→403 — ref fix-log FG-S-1, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or new instances (QA-R8-UX1)
-- [ ] Fix form validation data corruption — Last Name migrates to Preferred Name on validation error (QA-R8-UX2)
-- [ ] Verify: admin nav for executive — ref fix-log IMPROVE-3, fixed 2026-02-22 in QA-R7-TIER2, check if regressed (QA-R8-PERM1)
+_QA Round 8 Tier 1 complete — see Recently Done._
 
 ### Phase: Launch Readiness
 
@@ -159,13 +150,13 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] QA Round 8 Tier 1: removed dashboard search autofocus (credentials leaked into search bar after login redirect) — 2026-03-01 (QA-R8-SEC1)
+- [x] QA Round 8 Tier 1: added regression test confirming demo buttons hidden when DEMO_MODE off — 2026-03-01 (QA-R8-SEC2)
+- [x] QA Round 8 Tier 1: verified skip link correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y1)
+- [x] QA Round 8 Tier 1: moved language toggle after login form for WCAG 2.4.3 Tab order — 2026-03-01 (QA-R8-A11Y2)
+- [x] QA Round 8 Tier 1: verified Actions dropdown ARIA pattern already correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y3)
+- [x] QA Round 8 Tier 1: verified 404→403 handling correct in code (stale screenshot) — 2026-03-01 (QA-R8-UX1)
+- [x] QA Round 8 Tier 1: closed BUG-33 form data corruption — could not reproduce, fields use explicit name bindings — 2026-03-01 (QA-R8-UX2)
+- [x] QA Round 8 Tier 1: verified admin nav hidden for executive role (stale screenshot) — 2026-03-01 (QA-R8-PERM1)
 - [x] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, nested client-centric JSON, config files, Diceware passphrase, 20 tests — 2026-02-28 (SEC3)
-- [x] Fix PHIPA consent filtering in individual client export — apply_consent_filter to progress notes and metric values — 2026-02-28 (QA-R7-PRIVACY1-FIX)
 - [x] Individual client data export from client profile (Tier 1) — PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating — 2026-02-28 (QA-R7-PRIVACY1)
-- [x] Build HTML/JS AES-256-GCM decryptor — bilingual, offline, CSP-locked, Web Crypto API — PR #146 — 2026-02-28 (SEC3-DECRYPT1)
-- [x] Add export coverage safety nets — Django system check W020 + CI test for model coverage — PR #145 — 2026-02-28 (SEC3-SAFETY1)
-- [x] Add automated backup reminder notifications — management command, admin form, email templates — PR #144 — 2026-02-28 (SEC3-REMIND1)
-- [x] Document scheduled task setup for export monitoring in the runbook — added send_export_summary (weekly) and check_report_deadlines (daily) to docs/export-runbook.md — 2026-02-28 (EXP2w)
-- [x] FHIR+CIDS full implementation (Sessions 1-5) — CIDS metadata, code lists, ServiceEpisode, achievement status, JSON-LD export — PR #131 to develop — 2026-02-27 (CIDS-META1 thru CIDS-IMPACT1)
-- [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
-- [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
