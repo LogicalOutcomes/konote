@@ -1,0 +1,17 @@
+{% load i18n %}{% blocktrans with name=product_name %}{{ name }} — Backup Reminder{% endblocktrans %}
+
+{% blocktrans with agency=agency_name %}It's time for a backup of your {{ agency }} data in KoNote.{% endblocktrans %}
+
+{% trans "Why this matters:" %}
+{% trans "Regular backups protect your data in case of encryption key loss or other technical issues. Without a recent backup, participant records could become permanently inaccessible." %}
+
+{% trans "What to do:" %}
+{% if is_self_hosted %}
+{% trans "Run the backup command on your server:" %}
+  python manage.py export_agency_data
+{% else %}
+{% trans "Contact KoNote support to request a backup export." %}
+{% endif %}
+
+{% trans "This is an automated reminder. No participant data is included in this message." %}
+{% blocktrans with name=product_name %}You're receiving this because backup reminders are enabled in your {{ name }} settings.{% endblocktrans %}
