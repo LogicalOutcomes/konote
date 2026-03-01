@@ -92,6 +92,13 @@ def instance_settings(request):
     if settings_dict is None:
         settings_dict = InstanceSetting.get_all()
         cache.set("instance_settings", settings_dict, 300)
+
+    # Resolve bilingual product name based on current language
+    lang = get_language() or "en"
+    if lang.startswith("fr") and settings_dict.get("product_name_fr"):
+        settings_dict = dict(settings_dict)  # copy to avoid mutating cache
+        settings_dict["product_name"] = settings_dict["product_name_fr"]
+
     return {"site": settings_dict}
 
 

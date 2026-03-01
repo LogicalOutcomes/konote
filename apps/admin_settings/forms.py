@@ -125,8 +125,12 @@ class InstanceSettingsForm(forms.Form):
     )
 
     product_name = forms.CharField(
-        max_length=255, required=False, label=_("Product Name"),
-        help_text=_("Shown in the header and page titles."),
+        max_length=255, required=False, label=_("Product Name (English)"),
+        help_text=_("Shown in the header, footer, and page titles. Use your short, recognizable name."),
+    )
+    product_name_fr = forms.CharField(
+        max_length=255, required=False, label=_("Product Name (French)"),
+        help_text=_("French version. Leave blank to use the English name."),
     )
     support_email = forms.EmailField(
         required=False, label=_("Support Email"),
@@ -243,7 +247,7 @@ class InstanceSettingsForm(forms.Form):
 
     SETTING_KEYS = [
         "access_tier",
-        "product_name", "support_email", "logo_url", "brand_color",
+        "product_name", "product_name_fr", "support_email", "logo_url", "brand_color",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
