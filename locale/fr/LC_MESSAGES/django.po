@@ -17310,7 +17310,7 @@ msgid "Enter a valid hex colour (e.g. #3176aa)."
 msgstr ""
 
 msgid "Powered by"
-msgstr ""
+msgstr "Propulsé par"
 
 msgid "URL template contains a disallowed protocol."
 msgstr ""
