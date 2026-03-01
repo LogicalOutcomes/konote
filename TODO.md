@@ -85,9 +85,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
 - [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
-- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow (DOC-PERM1)
-- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit (DOC-PERM2)
-- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure (DOC-PERM3)
+- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
+- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
+- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
 - [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
@@ -97,11 +97,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Individual client data export from client profile (Tier 1) — "Export Client Data" action, staff chooses PDF or JSON, delivered via SecureExportLink. For PIPEDA requests, program transfers, and client data requests. Design approved (see tasks/agency-data-offboarding.md) — GK reviews privacy workflow (QA-R7-PRIVACY1)
+- [ ] Individual client data export from client profile (Tier 1) — "Export Client Data" action, staff chooses PDF or JSON, delivered via SecureExportLink. For PIPEDA requests, program transfers, and client data requests. Design approved (see tasks/agency-data-offboarding.md) — PR #143, GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, HTML/JS decryptor, tiered access (self-hosted self-serve, SaaS via KoNote). Design complete (see tasks/agency-data-offboarding.md) (SEC3)
-- [ ] Build HTML/JS AES-256-GCM decryptor — self-contained browser-based file, Web Crypto API, fully offline, CSP-locked. Ships with Tier 2 exports (SEC3-DECRYPT1)
-- [ ] Add export coverage safety nets — Django system check + CI test to catch uncovered models automatically (SEC3-SAFETY1)
-- [ ] Add automated backup reminder notifications — periodic reminders to agency contact person when a backup export is due (SEC3-REMIND1)
+- [ ] Build HTML/JS AES-256-GCM decryptor — self-contained browser-based file, Web Crypto API, fully offline, CSP-locked. Ships with Tier 2 exports — PR #146 (SEC3-DECRYPT1)
+- [ ] Add export coverage safety nets — Django system check + CI test to catch uncovered models automatically — PR #145 (SEC3-SAFETY1)
+- [ ] Add automated backup reminder notifications — periodic reminders to agency contact person when a backup export is due — PR #144 (SEC3-REMIND1)
 - [ ] Create data handling acknowledgement template — agency signs before plaintext exports are enabled (SEC3-AGREE1)
 
 ## Parking Lot: Needs Review
