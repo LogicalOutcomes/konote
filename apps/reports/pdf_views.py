@@ -1,11 +1,12 @@
 """PDF export views for client progress reports, program outcome reports, and individual client data export."""
 import csv
 import io
+import json
 import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -24,7 +25,7 @@ from .pdf_utils import (
     is_pdf_available,
     render_pdf,
 )
-from .views import _get_client_ip, _get_client_or_403
+from .views import _get_client_ip, _get_client_or_403, _save_export_and_create_link
 
 
 def _pdf_unavailable_response(request):
@@ -492,6 +493,122 @@ def _generate_client_csv(client, data):
     return output.getvalue()
 
 
+def _generate_client_json(client, data, exported_by):
+    """Generate a JSON export of an individual client's data (PIPEDA portability).
+
+    Returns a JSON string with nested client-centric structure including
+    human-readable labels alongside raw values.
+    """
+    export = {
+        "export_metadata": {
+            "exported_at": timezone.now().isoformat(),
+            "exported_by": exported_by,
+            "format_version": "1.0",
+        },
+        "client": {
+            "first_name": client.first_name,
+            "last_name": client.last_name,
+        },
+    }
+    client_data = export["client"]
+
+    if client.middle_name:
+        client_data["middle_name"] = client.middle_name
+    if client.birth_date:
+        client_data["date_of_birth"] = str(client.birth_date)
+    if client.record_id:
+        client_data["record_id"] = client.record_id
+    client_data["status"] = client.status
+    client_data["created_at"] = client.created_at.isoformat()
+    if client.consent_given_at:
+        client_data["consent_given_at"] = client.consent_given_at.isoformat()
+        if client.consent_type:
+            client_data["consent_type"] = client.consent_type
+
+    # Programs (enrolments with nested plan targets, notes, metrics)
+    programs = []
+    for enrolment in data["enrolments"]:
+        program_entry = {
+            "name": enrolment.program.name,
+            "status": enrolment.status,
+            "enrolled": str(enrolment.enrolled_at) if enrolment.enrolled_at else None,
+            "unenrolled": str(enrolment.unenrolled_at) if enrolment.unenrolled_at else None,
+        }
+
+        # Plan targets for this program
+        plan_targets = []
+        for section in data.get("sections", []):
+            for target in section.targets.all():
+                plan_targets.append({
+                    "section": section.name,
+                    "name": target.name,
+                    "status": target.status,
+                })
+        program_entry["plan_targets"] = plan_targets
+
+        # Progress notes
+        progress_notes = []
+        for note in data.get("notes", []):
+            note_entry = {
+                "date": str(note.effective_date) if note.effective_date else str(note.created_at.date()),
+                "interaction_type": {
+                    "value": note.interaction_type,
+                    "label": note.get_interaction_type_display(),
+                },
+                "author": note.author.display_name if note.author else "",
+                "created_at": note.created_at.isoformat(),
+            }
+            # Target entries with progress descriptors
+            target_entries = []
+            for te in note.target_entries.all():
+                entry = {
+                    "target": te.plan_target.name if te.plan_target else "",
+                    "notes": te.notes,
+                }
+                if te.progress_descriptor:
+                    entry["progress_descriptor"] = {
+                        "value": te.progress_descriptor,
+                        "label": te.get_progress_descriptor_display(),
+                    }
+                target_entries.append(entry)
+            note_entry["target_entries"] = target_entries
+            progress_notes.append(note_entry)
+        program_entry["progress_notes"] = progress_notes
+
+        # Metric values
+        metric_values = []
+        for mt in data.get("metric_tables", []):
+            metric_entry = {
+                "target_name": mt["target_name"],
+                "metric_name": mt["metric_name"],
+                "unit": mt["unit"],
+                "min_value": mt["min_value"],
+                "max_value": mt["max_value"],
+                "values": mt["rows"],
+            }
+            metric_values.append(metric_entry)
+        program_entry["metric_values"] = metric_values
+
+        programs.append(program_entry)
+    client_data["programs"] = programs
+
+    # Events
+    events = []
+    for event in data.get("events", []):
+        events.append({
+            "date": event.start_timestamp.strftime("%Y-%m-%d"),
+            "type": event.event_type.name if event.event_type else "",
+            "title": event.title or "",
+            "description": event.description or "",
+        })
+    client_data["events"] = events
+
+    # Custom fields
+    client_data["custom_fields"] = data.get("custom_fields", [])
+
+    return json.dumps(export, ensure_ascii=False, indent=2, default=str)
+
+
 @login_required
 @requires_permission("report.data_extract")
 def client_export(request, client_id):
@@ -547,6 +664,64 @@ def client_export(request, client_id):
                 user_program_ids=user_program_ids,
             )
 
+            safe_name = sanitise_filename(client.record_id or str(client.pk))
+            date_str = timezone.now().strftime("%Y-%m-%d")
+
+            # Generate file content based on format
+            if export_format == "json":
+                content = _generate_client_json(client, data, request.user.display_name)
+                filename = f"client_export_{safe_name}_{date_str}.json"
+            elif export_format == "csv":
+                content = _generate_client_csv(client, data)
+                filename = f"client_export_{safe_name}_{date_str}.csv"
+            else:
+                # PDF format
+                if not is_pdf_available():
+                    return _pdf_unavailable_response(request)
+                from django.template.loader import render_to_string
+                from weasyprint import HTML
+                pdf_context = {
+                    "client": client,
+                    "enrolments": data["enrolments"],
+                    "custom_fields": data["custom_fields"],
+                    "sections": data["sections"],
+                    "metric_tables": data["metric_tables"],
+                    "notes": data["notes"],
+                    "events": data["events"],
+                    "include_plans": include_plans,
+                    "include_notes": include_notes,
+                    "include_metrics": include_metrics,
+                    "include_events": include_events,
+                    "generated_at": timezone.now(),
+                    "generated_by": request.user.display_name,
+                }
+                from django.conf import settings as django_settings
+                html_string = render_to_string("reports/pdf_client_data_export.html", pdf_context)
+                base_url = getattr(django_settings, "STATIC_ROOT", None) or "."
+                content = HTML(string=html_string, base_url=base_url).write_pdf()
+                filename = f"client_export_{safe_name}_{date_str}.pdf"
+
+            # Save to file and create SecureExportLink
+            link = _save_export_and_create_link(
+                request,
+                content=content,
+                filename=filename,
+                export_type="individual_client",
+                client_count=1,
+                includes_notes=include_notes,
+                recipient=recipient,
+                filters_dict={
+                    "client_id": client.pk,
+                    "format": export_format,
+                    "include_plans": include_plans,
+                    "include_notes": include_notes,
+                    "include_metrics": include_metrics,
+                    "include_events": include_events,
+                    "include_custom_fields": include_custom_fields,
+                },
+                contains_pii=True,
+            )
+
             # Audit log
             AuditLog.objects.using("audit").create(
                 event_timestamp=timezone.now(),
@@ -567,42 +742,16 @@ def client_export(request, client_id):
                     "include_events": include_events,
                     "include_custom_fields": include_custom_fields,
                     "recipient": recipient,
+                    "delivery": "secure_link",
+                    "link_id": str(link.pk),
                 },
             )
 
-            safe_name = sanitise_filename(client.record_id or str(client.pk))
-            date_str = timezone.now().strftime("%Y-%m-%d")
-
-            if export_format == "csv":
-                csv_content = _generate_client_csv(client, data)
-                response = HttpResponse(csv_content, content_type="text/csv")
-                response["Content-Disposition"] = (
-                    f'attachment; filename="client_export_{safe_name}_{date_str}.csv"'
-                )
-                return response
-
-            # PDF format
-            if not is_pdf_available():
-                return _pdf_unavailable_response(request)
-
-            context = {
+            return render(request, "reports/client_export_ready.html", {
                 "client": client,
-                "enrolments": data["enrolments"],
-                "custom_fields": data["custom_fields"],
-                "sections": data["sections"],
-                "metric_tables": data["metric_tables"],
-                "notes": data["notes"],
-                "events": data["events"],
-                "include_plans": include_plans,
-                "include_notes": include_notes,
-                "include_metrics": include_metrics,
-                "include_events": include_events,
-                "generated_at": timezone.now(),
-                "generated_by": request.user.display_name,
-            }
-
-            filename = f"client_export_{safe_name}_{date_str}.pdf"
-            return render_pdf("reports/pdf_client_data_export.html", context, filename)
+                "client_name": client_name,
+                "link": link,
+            })
     else:
         form = IndividualClientExportForm()
 

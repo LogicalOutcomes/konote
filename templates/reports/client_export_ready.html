@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Export Ready" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Export Ready" %}</h1>
+    <p>{% blocktrans with name=client_name %}Export ready for {{ name }}.{% endblocktrans %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'Download available' %}" style="border-left: 4px solid var(--kn-success-fg, #2a9d4e); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">&#x2705;</span> {% trans "Your export has been generated" %}</strong>
+    <p style="margin-top: 0.5rem;">
+        {% trans "Click the button below to download your file. This link expires in 24 hours." %}
+    </p>
+    <p>
+        <a href="{% url 'reports:download_export' link_id=link.pk %}" role="button">
+            <span aria-hidden="true">&#x1F4E5;</span> {% trans "Download Export" %}
+        </a>
+    </p>
+</article>
+
+<article aria-label="{% trans 'Security notice' %}" style="border-left: 4px solid var(--kn-info-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">&#x1F512;</span> {% trans "Security Information" %}</strong>
+    <ul style="margin-bottom: 0;">
+        <li>{% trans "This link expires in 24 hours and cannot be reused after expiry." %}</li>
+        <li>{% trans "This export contains participant-identifying information — handle securely." %}</li>
+        <li>{% trans "This export has been logged for audit purposes." %}</li>
+    </ul>
+</article>
+
+<a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="secondary">
+    {% trans "Return to Participant" %}
+</a>
+{% endblock %}
