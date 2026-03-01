@@ -97,12 +97,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Individual client data export from client profile (Tier 1) — "Export Client Data" action, staff chooses PDF or JSON, delivered via SecureExportLink. For PIPEDA requests, program transfers, and client data requests. Design approved (see tasks/agency-data-offboarding.md) — PR #143, GK reviews privacy workflow (QA-R7-PRIVACY1)
-- [ ] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, HTML/JS decryptor, tiered access (self-hosted self-serve, SaaS via KoNote). Design complete (see tasks/agency-data-offboarding.md) (SEC3)
-- [ ] Build HTML/JS AES-256-GCM decryptor — self-contained browser-based file, Web Crypto API, fully offline, CSP-locked. Ships with Tier 2 exports — PR #146 (SEC3-DECRYPT1)
-- [ ] Add export coverage safety nets — Django system check + CI test to catch uncovered models automatically — PR #145 (SEC3-SAFETY1)
-- [ ] Add automated backup reminder notifications — periodic reminders to agency contact person when a backup export is due — PR #144 (SEC3-REMIND1)
-- [ ] Create data handling acknowledgement template — agency signs before plaintext exports are enabled (SEC3-AGREE1)
+_Nothing ready to build._
 
 ## Parking Lot: Needs Review
 
@@ -130,21 +125,13 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, nested client-centric JSON, config files, Diceware passphrase, 20 tests — 2026-02-28 (SEC3)
+- [x] Fix PHIPA consent filtering in individual client export — apply_consent_filter to progress notes and metric values — 2026-02-28 (QA-R7-PRIVACY1-FIX)
+- [x] Individual client data export from client profile (Tier 1) — PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating — 2026-02-28 (QA-R7-PRIVACY1)
+- [x] Build HTML/JS AES-256-GCM decryptor — bilingual, offline, CSP-locked, Web Crypto API — PR #146 — 2026-02-28 (SEC3-DECRYPT1)
+- [x] Add export coverage safety nets — Django system check W020 + CI test for model coverage — PR #145 — 2026-02-28 (SEC3-SAFETY1)
+- [x] Add automated backup reminder notifications — management command, admin form, email templates — PR #144 — 2026-02-28 (SEC3-REMIND1)
 - [x] Document scheduled task setup for export monitoring in the runbook — added send_export_summary (weekly) and check_report_deadlines (daily) to docs/export-runbook.md — 2026-02-28 (EXP2w)
 - [x] FHIR+CIDS full implementation (Sessions 1-5) — CIDS metadata, code lists, ServiceEpisode, achievement status, JSON-LD export — PR #131 to develop — 2026-02-27 (CIDS-META1 thru CIDS-IMPACT1)
 - [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
 - [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
-- [x] Resolve SEC3-Q1: who runs the export command — tiered model: self-hosted self-serve, SaaS via KoNote with SLA. Expert panel. Design unblocked — 2026-02-27 (SEC3-Q1)
-- [x] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — 2026-02-27 (DOC-INTEG1)
-- [x] Backup restore verification — management command, Azure/Docker test scripts, 757-line runbook — 2026-02-26 (OPS4)
-- [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
-- [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
-- [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — GO with corrections, all decisions resolved 2026-02-25 (see tasks/cids-plan-validation.md) — 2026-02-25 (CIDS-APPROVE1)
-- [x] Deploy and test config-aware demo data engine on Azure client instance — wrote agency profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
-- [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
-- [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
-- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)
-- [x] Email verification fixes — export double-submit protection, erasure form radio hardening, 17 password reset tests (PR pending) — 2026-02-24 (OPS3)
-- [x] Add axe-core pass to `/capture-page-states` — automated WCAG checks on every page+persona+state, standalone report, skip flag — 2026-02-25 (T59)
-- [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
-- [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
