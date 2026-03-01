@@ -53,9 +53,7 @@
 
         <hr>
     {% else %}
-    {# ── Return visit: language link top-right, following canada.ca convention ── #}
-    {% include "_lang_toggle.html" %}
-
+    {# ── Return visit: language toggle moved after login form for Tab order (WCAG 2.4.3) ── #}
     <main id="main-content" class="container login-container" tabindex="-1">
         {% if site.logo_url %}
         <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
@@ -90,6 +88,10 @@
             <a href="/auth/login/" role="button">{% trans "Sign in with Microsoft" %}</a>
             {% endif %}
         </article>
+
+        {% if has_language_cookie %}
+        {% include "_lang_toggle.html" with inline=True %}
+        {% endif %}
 
         {% if demo_mode %}
         <hr class="demo-divider">
