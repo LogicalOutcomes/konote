@@ -1,4 +1,6 @@
 """Tests for the reports app — fiscal year functionality, metric export, demographics, and achievements."""
+import shutil
+import tempfile
 from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
@@ -2674,9 +2676,11 @@ class IndividualClientExportViewTests(TestCase):
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
 
     def tearDown(self):
         enc_module._fernet = None
+        shutil.rmtree(self.export_dir, ignore_errors=True)
 
     # --- Access control ---
 
@@ -2727,37 +2731,42 @@ class IndividualClientExportViewTests(TestCase):
     # --- CSV export ---
 
     def test_csv_export_returns_csv_file(self):
-        """POST with format=csv should return a CSV attachment."""
+        """POST with format=csv should save a CSV via SecureExportLink."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post(self.export_url, {
-            "format": "csv",
-            "include_plans": True,
-            "include_notes": True,
-            "include_metrics": True,
-            "include_events": True,
-            "include_custom_fields": True,
-            "recipient": "self",
-            "recipient_reason": "Test export",
-        })
+        with self.settings(SECURE_EXPORT_DIR=self.export_dir):
+            resp = self.client.post(self.export_url, {
+                "format": "csv",
+                "include_plans": True,
+                "include_notes": True,
+                "include_metrics": True,
+                "include_events": True,
+                "include_custom_fields": True,
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            })
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp["Content-Type"], "text/csv")
-        self.assertIn("attachment", resp["Content-Disposition"])
-        self.assertIn("client_export", resp["Content-Disposition"])
+        link = SecureExportLink.objects.filter(export_type="individual_client").first()
+        self.assertIsNotNone(link)
+        self.assertTrue(link.filename.endswith(".csv"))
+        self.assertIn("client_export", link.filename)
 
     def test_csv_contains_client_info(self):
-        """CSV export should include the client's name and record ID."""
+        """CSV export file should include the client's name and record ID."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post(self.export_url, {
-            "format": "csv",
-            "include_plans": True,
-            "include_notes": True,
-            "include_metrics": True,
-            "include_events": True,
-            "include_custom_fields": True,
-            "recipient": "self",
-            "recipient_reason": "Test export",
-        })
-        content = resp.content.decode("utf-8")
+        with self.settings(SECURE_EXPORT_DIR=self.export_dir):
+            self.client.post(self.export_url, {
+                "format": "csv",
+                "include_plans": True,
+                "include_notes": True,
+                "include_metrics": True,
+                "include_events": True,
+                "include_custom_fields": True,
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            })
+        link = SecureExportLink.objects.filter(export_type="individual_client").first()
+        with open(link.file_path, encoding="utf-8") as f:
+            content = f.read()
         self.assertIn("Alice", content)
         self.assertIn("Smith", content)
         self.assertIn("PIPEDA-001", content)
@@ -3013,27 +3022,30 @@ class CsvInjectionIntegrationTests(TestCase):
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
 
     def tearDown(self):
         enc_module._fernet = None
+        shutil.rmtree(self.export_dir, ignore_errors=True)
 
     def test_csv_export_sanitises_dangerous_values(self):
-        """CSV export should prefix dangerous cell values with a tab character."""
+        """CSV export file should prefix dangerous cell values with a tab character."""
         self.client.login(username="csvtest", password="testpass123")
-        resp = self.client.post(self.export_url, {
-            "format": "csv",
-            "include_plans": True,
-            "include_notes": True,
-            "include_metrics": True,
-            "include_events": True,
-            "include_custom_fields": True,
-            "recipient": "self",
-            "recipient_reason": "Test export",
-        })
-        content = resp.content.decode("utf-8")
+        with self.settings(SECURE_EXPORT_DIR=self.export_dir):
+            self.client.post(self.export_url, {
+                "format": "csv",
+                "include_plans": True,
+                "include_notes": True,
+                "include_metrics": True,
+                "include_events": True,
+                "include_custom_fields": True,
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            })
+        link = SecureExportLink.objects.filter(export_type="individual_client").first()
+        with open(link.file_path, encoding="utf-8") as f:
+            content = f.read()
         # The malicious first name should be prefixed with a tab character.
-        # CSV writer may quote the value (escaping internal quotes with ""),
-        # but the tab prefix must be present before the = sign.
         self.assertIn("\t=HYPERLINK", content)
         # Verify no line contains the raw =HYPERLINK without the tab prefix
         for line in content.split("\n"):
@@ -3072,30 +3084,30 @@ class FilenameSanitisationIntegrationTests(TestCase):
         )
 
         self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
 
     def tearDown(self):
         enc_module._fernet = None
+        shutil.rmtree(self.export_dir, ignore_errors=True)
 
     def test_filename_strips_dangerous_characters(self):
-        """Content-Disposition filename should not contain path traversal chars."""
+        """SecureExportLink filename should not contain path traversal chars."""
         self.client.login(username="fntest", password="testpass123")
-        resp = self.client.post(self.export_url, {
-            "format": "csv",
-            "include_plans": True,
-            "include_notes": True,
-            "include_metrics": True,
-            "include_events": True,
-            "include_custom_fields": True,
-            "recipient": "self",
-            "recipient_reason": "Test export",
-        })
-        disposition = resp["Content-Disposition"]
-        # Should not contain path traversal
-        self.assertNotIn("../", disposition)
-        self.assertNotIn("..\\", disposition)
-        # Should not contain double quotes inside the filename value
-        # (the outer quotes are the HTTP header format, inner ones would be injection)
-        filename_part = disposition.split("filename=")[1]
-        # The filename should be safely sanitised
-        self.assertNotIn("passwd", disposition.replace("..etcpasswdinject", ""))  # it's in the sanitised form
-        self.assertIn("client_export_", disposition)
+        with self.settings(SECURE_EXPORT_DIR=self.export_dir):
+            self.client.post(self.export_url, {
+                "format": "csv",
+                "include_plans": True,
+                "include_notes": True,
+                "include_metrics": True,
+                "include_events": True,
+                "include_custom_fields": True,
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            })
+        link = SecureExportLink.objects.filter(export_type="individual_client").first()
+        self.assertIsNotNone(link)
+        # Should not contain path traversal in the display filename
+        self.assertNotIn("../", link.filename)
+        self.assertNotIn("..\\" , link.filename)
+        self.assertNotIn("passwd", link.filename.replace("etcpasswdinject", ""))
+        self.assertIn("client_export_", link.filename)
