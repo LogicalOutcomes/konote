@@ -554,6 +554,12 @@ class DemoDataEngine:
             if created:
                 user.set_password("demo1234")
                 user.save()
+            else:
+                # Ensure existing users have is_demo=True and is_active=True
+                if not user.is_demo or not user.is_active:
+                    user.is_demo = True
+                    user.is_active = True
+                    user.save()
             users[username] = user
 
         # Assign roles across programs

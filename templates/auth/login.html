@@ -26,8 +26,11 @@
     <main id="main-content" class="container login-container" tabindex="-1">
         {% if site.logo_url %}
         <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
-        {% endif %}
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
+        {% else %}
+        <img src="{% static 'img/konote-logo.png' %}" alt="KoNote" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
+        <h1 class="visually-hidden">KoNote</h1>
+        {% endif %}
         <p class="login-tagline-bilingual">
             Participant Outcome Management<br>
             <span lang="fr">Gestion des résultats des participants</span>
@@ -56,8 +59,11 @@
     <main id="main-content" class="container login-container" tabindex="-1">
         {% if site.logo_url %}
         <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
-        {% endif %}
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
+        {% else %}
+        <img src="{% static 'img/konote-logo.png' %}" alt="KoNote" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
+        <h1 class="visually-hidden">KoNote</h1>
+        {% endif %}
         <p class="login-tagline">{% trans "Participant Outcome Management" %}</p>
     {% endif %}
 
