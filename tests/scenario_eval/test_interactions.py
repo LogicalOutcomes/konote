@@ -68,6 +68,16 @@ class TestInteractions(BrowserTestBase):
         self.page.fill("[name='first_name'], #id_first_name", "Test")
         self.page.fill("[name='last_name'], #id_last_name", "Participant")
 
+        # Select status (required ChoiceField)
+        status_select = self.page.locator("select[name='status']")
+        if status_select.count() > 0:
+            status_select.select_option("active")
+
+        # Select a program (required when programs are available)
+        program_cb = self.page.locator("input[name='programs']").first
+        if program_cb.count() > 0:
+            program_cb.check()
+
         # Submit — use "main" scope to avoid matching the Sign Out button in nav
         self.page.click("main button[type='submit']")
         self.page.wait_for_load_state("networkidle")
