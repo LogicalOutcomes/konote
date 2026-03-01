@@ -270,6 +270,21 @@ def pending_recommendations(request):
     return {"pending_recommendation_count": count if count > 0 else None}
 
 
+def organization_profile(request):
+    """Inject organization profile (name, website) into all templates."""
+    from apps.admin_settings.models import OrganizationProfile
+
+    profile = cache.get("organization_profile_ctx")
+    if profile is None:
+        org = OrganizationProfile.get_solo()
+        profile = {
+            "operating_name": org.operating_name,
+            "website": org.website,
+        }
+        cache.set("organization_profile_ctx", profile, 300)
+    return {"org": profile}
+
+
 def portal_context(request):
     """Inject participant and portal_page for portal templates.
 
