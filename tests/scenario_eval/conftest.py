@@ -12,12 +12,16 @@ def _resolve_holdout_dir():
 
     Checks SCENARIO_HOLDOUT_DIR env var first, then falls back to the
     sibling directory ../konote-qa-scenarios relative to the project root.
-    This matches the default in the preflight management command, so the
-    env var is only needed for non-standard layouts.
+    In git worktrees, the project root differs from the main repo location,
+    so we also check the main repo's sibling directory via git.
     """
     path = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
     if path and os.path.isdir(path):
         return path
+
+    def _set_and_return(d):
+        os.environ["SCENARIO_HOLDOUT_DIR"] = d
+        return d
 
     # Default: sibling repo next to konote-app
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(
@@ -25,9 +29,27 @@ def _resolve_holdout_dir():
     )))
     default = os.path.join(os.path.dirname(project_root), "konote-qa-scenarios")
     if os.path.isdir(default):
-        # Set the env var so downstream code (scenario_loader, etc.) sees it
-        os.environ["SCENARIO_HOLDOUT_DIR"] = default
-        return default
+        return _set_and_return(default)
+
+    # Worktree fallback: resolve from the main repo, not the worktree copy
+    import subprocess
+    try:
+        git_common = subprocess.check_output(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=project_root, text=True, stderr=subprocess.DEVNULL,
+        ).strip()
+        # --git-common-dir returns the main repo's .git dir (absolute or relative)
+        main_repo = os.path.dirname(os.path.normpath(
+            os.path.join(project_root, git_common)
+        ))
+        if main_repo != project_root:
+            fallback = os.path.join(
+                os.path.dirname(main_repo), "konote-qa-scenarios"
+            )
+            if os.path.isdir(fallback):
+                return _set_and_return(fallback)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
 
     return None
 
