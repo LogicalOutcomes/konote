@@ -7,6 +7,17 @@
 
 ## Active Work
 
+### Phase: QA Round 8 — Tier 1 Fixes (see tasks/qa-action-plan-2026-03-01.md)
+
+- [ ] Fix login autofocus race condition — remove duplicate autofocus, prevent credentials in search bar (QA-R8-SEC1)
+- [ ] Verify demo login buttons are DEBUG-only — add test confirming buttons don't render in production (QA-R8-SEC2)
+- [ ] Verify: skip link — ref fix-log FG-S-5, fixed 2026-02-21 in QA-R7-TIER1, check if regressed, WCAG 2.4.1 (QA-R8-A11Y1)
+- [ ] Fix language toggle Tab order on login page — move after login form, WCAG 2.4.3 (QA-R8-A11Y2)
+- [ ] Fix Actions dropdown ARIA pattern — implement menu button keyboard navigation, WCAG 4.1.2 (QA-R8-A11Y3)
+- [ ] Verify: 404→403 — ref fix-log FG-S-1, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or new instances (QA-R8-UX1)
+- [ ] Fix form validation data corruption — Last Name migrates to Preferred Name on validation error (QA-R8-UX2)
+- [ ] Verify: admin nav for executive — ref fix-log IMPROVE-3, fixed 2026-02-22 in QA-R7-TIER2, check if regressed (QA-R8-PERM1)
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -30,6 +41,25 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
+
+### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
+
+- [ ] Verify: language middleware — ref fix-log FG-S-2, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or overridden (QA-R8-LANG1)
+- [ ] Fix newly created client not searchable by other users — cross-role intake handoff (QA-R8-UX3)
+- [ ] Fix quick note entry point unreachable — selector mismatch on client profile (QA-R8-UX4)
+- [ ] Fix create form Tab order — Last Name gets focus before First Name, WCAG 1.3.2 (QA-R8-A11Y4)
+- [ ] Fix excessive Tab presses to reach search results — filter controls blocking path, WCAG 2.4.3 (QA-R8-A11Y5)
+- [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
+- [ ] Fix missing validation error + success confirmation on participant create (QA-R8-UX5)
+- [ ] Fix mobile edit navigating to wrong form — opens New Participant instead of contact edit (QA-R8-UX6)
+- [ ] Verify: offline fallback — ref fix-log entry 9, fixed 2026-02-21 Round 7 same-day, check if regressed (QA-R8-UX7)
+- [ ] Add date presets + PDF export to executive dashboard (QA-R8-UX8)
+- [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
+- [ ] Fix calendar feed URL generation failing silently (QA-R8-UX9)
+- [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
+- [ ] Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
+- [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
+- [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -97,7 +127,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Nothing ready to build._
+- [ ] Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
+- [ ] Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
+- [ ] Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
 
 ## Parking Lot: Needs Review
 
@@ -122,6 +154,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md for full analysis — GK reviews (AI-SELFHOST1)
+- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
+- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
 
