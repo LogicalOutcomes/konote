@@ -86,7 +86,12 @@ def user_create(request):
     if request.method == "POST":
         form = UserCreateForm(request.POST, requesting_user=request.user)
         if form.is_valid():
-            form.save()
+            new_user = form.save()
+            _audit_user_change(
+                request, new_user, "create",
+                old_values={},
+                new_values={"email": new_user.email, "is_admin": new_user.is_admin},
+            )
             messages.success(request, _("User created."))
             return redirect("admin_users:user_list")
     else:
@@ -107,7 +112,13 @@ def user_edit(request, user_id):
     if request.method == "POST":
         form = UserEditForm(request.POST, instance=user, requesting_user=request.user)
         if form.is_valid():
+            old_values = {"email": user.email, "is_admin": user.is_admin, "is_active": user.is_active}
             form.save()
+            _audit_user_change(
+                request, user, "update",
+                old_values=old_values,
+                new_values={"email": user.email, "is_admin": user.is_admin, "is_active": user.is_active},
+            )
             messages.success(request, _("User updated."))
             return redirect("admin_users:user_list")
     else:
@@ -135,6 +146,11 @@ def user_deactivate(request, user_id):
         else:
             user.is_active = False
             user.save()
+            _audit_user_change(
+                request, user, "update",
+                old_values={"is_active": True},
+                new_values={"is_active": False},
+            )
             messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
     return redirect("admin_users:user_list")
 
@@ -339,6 +355,30 @@ def user_role_remove(request, user_id, role_id):
             request, edit_user, role_obj.program, role_obj.role, "remove",
         )
     return redirect("admin_users:user_roles", user_id=edit_user.pk)
+
+
+def _audit_user_change(request, target_user, action_type, old_values, new_values):
+    """Record user account creation or modification in audit log."""
+    try:
+        from apps.audit.models import AuditLog
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.id,
+            user_display=request.user.get_display_name(),
+            ip_address=request.META.get("REMOTE_ADDR", ""),
+            action=action_type,
+            resource_type="user",
+            resource_id=target_user.id,
+            metadata={
+                "target_user_id": target_user.id,
+                "target_user": target_user.display_name,
+                "old_values": old_values,
+                "new_values": new_values,
+            },
+        )
+    except Exception:
+        logger.exception("Failed to audit user change for user %s", target_user.id)
 
 
 def _audit_role_change(request, target_user, program, role, action_type):

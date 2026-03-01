@@ -241,12 +241,12 @@ class Command(BaseCommand):
         # ClientDetailValue, ClientProgramEnrolment, ParticipantUser, etc.
         demo_clients.delete()
 
-        # Remove calendar feed tokens and roles for demo users
+        # Remove ALL demo users (and their calendar tokens / program roles).
+        # This ensures stale users from previous seed versions are cleaned up.
         demo_users = User.objects.filter(is_demo=True)
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
-        # Remove old demo-worker (replaced by demo-worker-1 and demo-worker-2)
-        User.objects.filter(username="demo-worker", is_demo=True).delete()
+        demo_users.delete()
 
         # Remove old program names that no longer exist
         for old_name in ("Demo Program", "Youth Services"):
