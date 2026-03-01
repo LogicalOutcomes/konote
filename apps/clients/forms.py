@@ -111,6 +111,7 @@ class ClientFileForm(forms.Form):
     preferred_language = forms.ChoiceField(
         choices=[("en", _("English")), ("fr", _("French"))],
         initial="en",
+        required=False,
         label=_("Preferred Language for Messages"),
     )
     sms_consent = forms.BooleanField(

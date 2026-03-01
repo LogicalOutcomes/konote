@@ -78,19 +78,6 @@ class TestInteractions(BrowserTestBase):
         if program_cb.count() > 0:
             program_cb.check()
 
-        # preferred_language is required in the form class but not rendered
-        # in the template — inject it so the POST includes it.
-        self.page.evaluate("""() => {
-            const form = document.querySelector('main form');
-            if (form && !form.querySelector('[name="preferred_language"]')) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'preferred_language';
-                input.value = 'en';
-                form.appendChild(input);
-            }
-        }""")
-
         # Submit — use "main" scope to avoid matching the Sign Out button in nav
         self.page.click("main button[type='submit']")
         self.page.wait_for_load_state("networkidle")
