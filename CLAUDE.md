@@ -27,17 +27,19 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 ## Git Workflow
 
-**Pull main before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin main`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
+**Branch model:** `main` is the production branch (deploy-ready). `develop` is the integration branch (all feature work merges here). Periodically, `develop` is merged into `main` for releases.
 
-**Branch before working.** `main` has branch protection — never commit directly to it.
+**Pull develop before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin develop`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
 
-1. **At the start of every task**, run `git pull origin main`, then check the current branch with `git branch --show-current`
-2. If on `main`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
+**Branch before working.** `main` and `develop` have branch protection — never commit directly to either.
+
+1. **At the start of every task**, run `git pull origin develop`, then check the current branch with `git branch --show-current`
+2. If on `main` or `develop`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
 3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
 4. Commit frequently on the feature branch
-5. When work is done, push and create a PR to merge into `main`
+5. When work is done, push and create a PR to merge into `develop`
 
-**Never commit to `main` directly.** If you accidentally do, stop and move the commit to a new branch before continuing.
+**Never commit to `main` or `develop` directly.** If you accidentally do, stop and move the commit to a new branch before continuing.
 
 ### Concurrent Session Safety
 
@@ -48,7 +50,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - **If parallel work is needed**, use `git worktree add` to give each session its own directory.
 - **Verify branch immediately before every commit** — in the SAME Bash call as the commit, not in a separate tool call. Another session can switch the branch in the gap between calls.
 - **Never leave edits uncommitted across multiple tool calls.** Edit then commit then next edit. Do not batch.
-- **After merging a PR from a worktree session**, pull main into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory. The user works from the worktree and needs to see changes there immediately.
+- **After merging a PR from a worktree session**, pull develop into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory. The user works from the worktree and needs to see changes there immediately.
 
 ## Terminal Command Rules
 
@@ -201,7 +203,7 @@ Current DRRs:
 
 ### How Claude Manages Tasks
 
-- **Always `git pull origin main` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current. **After merging a PR that changes TODO.md, pull main into the current working directory** (whether that's the main repo or a worktree) so the user sees the update immediately — do not wait to be asked.
+- **Always `git pull origin develop` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current. **After merging a PR that changes TODO.md, pull develop into the current working directory** (whether that's the main repo or a worktree) so the user sees the update immediately — do not wait to be asked.
 - When user describes a task: create an ID, add one line to the right section in TODO.md
 - When a task needs subtasks or context: create a detail file in `tasks/`
 - When user asks about a task: read TODO.md for status, read `tasks/*.md` for detail
