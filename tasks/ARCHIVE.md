@@ -4,6 +4,23 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-28 export/consent cleanup)
+
+- [x] Resolve SEC3-Q1: who runs the export command — tiered model: self-hosted self-serve, SaaS via KoNote with SLA. Expert panel. Design unblocked — 2026-02-27 (SEC3-Q1)
+- [x] Approve dual document integration design — SharePoint for staff documents (program-centric folders), Google Drive for participant portal (digital toolkit handoff). Expert panel reviewed. See tasks/design-rationale/document-integration.md — 2026-02-27 (DOC-INTEG1)
+- [x] Backup restore verification — management command, Azure/Docker test scripts, 757-line runbook — 2026-02-26 (OPS4)
+- [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
+- [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
+- [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — GO with corrections, all decisions resolved 2026-02-25 (see tasks/cids-plan-validation.md) — 2026-02-25 (CIDS-APPROVE1)
+- [x] Deploy and test config-aware demo data engine on Azure client instance — wrote agency profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
+- [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
+- [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
+- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)
+- [x] Email verification fixes — export double-submit protection, erasure form radio hardening, 17 password reset tests (PR pending) — 2026-02-24 (OPS3)
+- [x] Add axe-core pass to `/capture-page-states` — automated WCAG checks on every page+persona+state, standalone report, skip flag — 2026-02-25 (T59)
+- [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
+- [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
+
 ## Moved from Recently Done (2026-02-26 TODO cleanup)
 
 - [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
