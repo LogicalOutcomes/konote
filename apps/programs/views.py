@@ -70,7 +70,12 @@ def program_create(request):
     if request.method == "POST":
         form = ProgramForm(request.POST)
         if form.is_valid():
-            form.save()
+            program = form.save()
+            _audit_program_change(
+                request, program, "create",
+                old_values={},
+                new_values={"name": program.name, "is_confidential": program.is_confidential},
+            )
             messages.success(request, _("Program created."))
             return redirect("programs:program_list")
     else:
@@ -90,7 +95,13 @@ def program_edit(request, program_id):
     if request.method == "POST":
         form = ProgramForm(request.POST, instance=program)
         if form.is_valid():
+            old_values = {"name": program.name, "is_confidential": program.is_confidential, "status": program.status}
             form.save()
+            _audit_program_change(
+                request, program, "update",
+                old_values=old_values,
+                new_values={"name": program.name, "is_confidential": program.is_confidential, "status": program.status},
+            )
             messages.success(request, _("Program updated."))
             return redirect("programs:program_detail", program_id=program.pk)
     else:
@@ -198,6 +209,7 @@ def program_add_role(request, program_id):
             messages.success(request, _("%(name)s role updated.") % {"name": user.display_name})
         else:
             messages.success(request, _("%(name)s added.") % {"name": user.display_name})
+        _audit_program_role_change(request, program, user, role, "add")
     # Return full role list partial
     roles = UserProgramRole.objects.filter(program=program).select_related("user").order_by("status", "user__display_name")
     return render(request, "programs/_role_list.html", {"roles": roles, "program": program, "is_admin": True})
@@ -208,9 +220,12 @@ def program_add_role(request, program_id):
 def program_remove_role(request, program_id, role_id):
     """HTMX: remove a user from a program (set status to removed)."""
     role = get_object_or_404(UserProgramRole, pk=role_id, program_id=program_id)
+    removed_user = role.user
+    removed_role = role.role
     role.status = "removed"
     role.save()
-    messages.success(request, _("%(name)s removed.") % {"name": role.user.display_name})
+    _audit_program_role_change(request, role.program, removed_user, removed_role, "remove")
+    messages.success(request, _("%(name)s removed.") % {"name": removed_user.display_name})
     roles = UserProgramRole.objects.filter(program_id=program_id).select_related("user").order_by("status", "user__display_name")
     return render(request, "programs/_role_list.html", {"roles": roles, "program": role.program, "is_admin": True})
 
@@ -315,3 +330,49 @@ def _audit_program_switch(request, program):
 
 
 from konote.utils import get_client_ip as _get_client_ip
+
+
+def _audit_program_change(request, program, action_type, old_values, new_values):
+    """Record program creation or modification in audit log."""
+    try:
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            ip_address=_get_client_ip(request),
+            action=action_type,
+            resource_type="program",
+            resource_id=program.pk,
+            program_id=program.pk,
+            is_confidential_context=program.is_confidential,
+            metadata={"old_values": old_values, "new_values": new_values},
+        )
+    except Exception:
+        logger.exception("Failed to audit program change for program %s", program.pk)
+
+
+def _audit_program_role_change(request, program, user, role, action_type):
+    """Record adding or removing a user from a program in audit log."""
+    try:
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            ip_address=_get_client_ip(request),
+            action="update",
+            resource_type="user_program_role",
+            resource_id=user.pk,
+            program_id=program.pk,
+            is_confidential_context=program.is_confidential,
+            metadata={
+                "target_user_id": user.pk,
+                "target_user": user.display_name,
+                "program": program.name,
+                "role": role,
+                "change": action_type,
+            },
+        )
+    except Exception:
+        logger.exception("Failed to audit program role change for program %s", program.pk)

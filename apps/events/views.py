@@ -287,11 +287,22 @@ def alert_create(request, client_id):
     if request.method == "POST":
         form = AlertForm(request.POST)
         if form.is_valid():
-            Alert.objects.create(
+            alert = Alert.objects.create(
                 client_file=client,
                 content=form.cleaned_data["content"],
                 author=request.user,
                 author_program=_get_author_program(request.user, client),
+            )
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name if hasattr(request.user, "display_name") else str(request.user),
+                action="create",
+                resource_type="alert",
+                resource_id=alert.pk,
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={"client_id": client.pk},
             )
             messages.success(request, _("Alert created."))
             return redirect("events:event_list", client_id=client.pk)
