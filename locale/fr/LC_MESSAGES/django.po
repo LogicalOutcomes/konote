@@ -3604,6 +3604,18 @@ msgstr "Google Drive"
 msgid "Product Name"
 msgstr "Nom du produit"
 
+msgid "Product Name (English)"
+msgstr "Nom du produit (anglais)"
+
+msgid "Shown in the header, footer, and page titles. Use your short, recognizable name."
+msgstr "Affiché dans l'en-tête, le pied de page et les titres de page. Utilisez votre nom court et reconnaissable."
+
+msgid "Product Name (French)"
+msgstr "Nom du produit (français)"
+
+msgid "French version. Leave blank to use the English name."
+msgstr "Version française. Laissez vide pour utiliser le nom anglais."
+
 msgid "Shown in the header and page titles."
 msgstr "Affiché dans l'en-tête et les titres de page."
 
