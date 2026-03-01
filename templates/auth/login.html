@@ -130,10 +130,10 @@
                 {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
             </div>
             <div class="site-footer-links">
-                <span class="powered-by">
+                <a href="https://logicaloutcomes.github.io/konote-website/" class="powered-by" target="_blank" rel="noopener">
                     <img src="{% static 'img/konote-icon.png' %}" alt="" width="20" height="20">
                     {% trans "Powered by" %} KoNote
-                </span>
+                </a>
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
             </div>
