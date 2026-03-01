@@ -82,6 +82,14 @@ class LoginViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Invalid username or password")
 
+    def test_demo_buttons_hidden_when_demo_mode_off(self):
+        """Demo login buttons must not render when DEMO_MODE is off (the default)."""
+        resp = self.http.get("/auth/login/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "demo-login")
+        self.assertNotContains(resp, "demo-btn")
+        self.assertNotContains(resp, "Try the Demo")
+
     def test_authenticated_user_redirected_from_login_page(self):
         self.http.login(username="testuser", password="goodpass123")
         resp = self.http.get("/auth/login/")

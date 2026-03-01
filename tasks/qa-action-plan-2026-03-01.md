@@ -135,12 +135,9 @@ These items were fixed in previous rounds or built between screenshot capture an
 - **Acceptance:** Demo buttons not visible with DEBUG=False; test in test suite
 
 **3. BUG-33 — Form validation destroys entered data**
-- **Status:** NEW — first reported this round
-- **Expert reasoning:** When a validation error occurs on the create participant form, the Last Name value migrates to the Preferred Name field. Silent data corruption. Screen reader users cannot visually detect the shift.
-- **Root cause:** Likely form field ordering mismatch — `Meta.fields` order doesn't match template field order, so re-rendered form values appear in wrong positions.
-- **Fix:** Ensure form `Meta.fields` order matches template visual layout. Verify each field's `name` attribute binds to the correct model field.
-- **Complexity:** Moderate (1 hour — investigate + fix + verify)
-- **Fix in:** konote-app (participant form, create template)
+- **Status:** CLOSED — could not reproduce (2026-03-01)
+- **Investigation:** Template uses explicit `name="first_name"`, `name="last_name"`, `name="preferred_name"` attributes with matching `value="{{ form.field_name.value|default:'' }}"` bindings. Django maps POST data by field name, not DOM position. No code path exists for Last Name data to migrate to Preferred Name. Likely a browser autofill artifact or stale screenshot.
+- **Re-test in next QA round:** Add a specific scenario step to SCN-061 (or a new scenario) that: (1) fills the create participant form with First Name="Test", Last Name="Retest", Preferred Name left blank, (2) submits with a missing required field to trigger validation error, (3) checks that Last Name still shows "Retest" and Preferred Name is still blank. This confirms closure or catches a browser-specific issue.
 - **Acceptance:** After validation error, all field values appear in their original fields
 
 **4. BLOCKER-5/BUG-19 (FG-S-6) — Language toggle blocks login form (WCAG 2.4.3)**

@@ -113,6 +113,46 @@
       "fixed_in": "FHIR-EPISODE1 (PR #131)",
       "verified_date": null,
       "notes": "Data model exists. UI may not exist yet — verify."
+    },
+    {
+      "description": "Login autofocus race condition — credentials leaked into dashboard search bar after redirect",
+      "finding_group": "FG-S-16",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-SEC1",
+      "verified_date": null,
+      "notes": "Removed autofocus from dashboard search input. Login page autofocus on username field is correct and unchanged."
+    },
+    {
+      "description": "Demo login buttons visible in production — regression test added",
+      "finding_group": "FG-S-13",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-SEC2",
+      "verified_date": null,
+      "notes": "DEMO_MODE env var already defaults to False. Added test_demo_buttons_hidden_when_demo_mode_off to test suite."
+    },
+    {
+      "description": "Language toggle Tab order before login form (WCAG 2.4.3)",
+      "finding_group": "FG-S-6",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-A11Y2",
+      "verified_date": null,
+      "notes": "Moved _lang_toggle.html include from before <main> to after </article> on return visits. First-visit bilingual hero unchanged."
+    },
+    {
+      "description": "Actions dropdown ARIA keyboard pattern (WCAG 4.1.2) — verified correct",
+      "finding_group": "FG-S-7",
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-A11Y3 (verified, no code change needed)",
+      "verified_date": "2026-03-01",
+      "notes": "app.js already implements ArrowDown/Up focus navigation without activation, Escape, Home/End. Stale screenshot."
+    },
+    {
+      "description": "Form validation data corruption BUG-33 — could not reproduce",
+      "finding_group": null,
+      "fixed_date": "2026-03-01",
+      "fixed_in": "QA-R8-UX2 (closed, no code change needed)",
+      "verified_date": "2026-03-01",
+      "notes": "Template uses explicit name= bindings per field. No mechanism for Last Name migrating to Preferred Name. Likely browser autofill artifact or stale screenshot."
     }
   ]
 }
