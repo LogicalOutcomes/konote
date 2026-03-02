@@ -1354,6 +1354,10 @@ class ScenarioRunner(BrowserTestBase):
         (re.compile(r"/plans/(\d+)"), "plan_id"),
         (re.compile(r"/events/(\d+)"), "event_id"),
         (re.compile(r"/alerts/(\d+)"), "alert_id"),
+        # QA-R8b-TEST2: recommendation URLs (SCN-075)
+        (re.compile(r"/alerts/recommendations/(\d+)"), "recommendation_id"),
+        # QA-R8b-TEST2: meeting URLs (SCN-084)
+        (re.compile(r"/meetings/(\d+)"), "meeting_id"),
     ]
 
     def _build_initial_context_vars(self, scenario):
@@ -1364,9 +1368,11 @@ class ScenarioRunner(BrowserTestBase):
         were only populated AFTER navigating to a page containing an
         entity ID, so the first reference would fail.
 
-        This method queries the test database for the first available
-        client, program, and group IDs, plus any named-client IDs
-        referenced in the scenario's prerequisites.
+        QA-R8b-TEST2: Extended to also seed alert_id, recommendation_id,
+        and meeting IDs, and to build first-name-based client keys like
+        {client_id_alex} (in addition to the full-name slug {alex_chen_id}).
+        These alternative keys match the naming convention used in SCN-075,
+        SCN-076, and SCN-084 YAML files.
 
         Returns:
             Dict mapping variable names to string ID values.
@@ -1398,10 +1404,39 @@ class ScenarioRunner(BrowserTestBase):
         except Exception:
             pass
 
+        # QA-R8b-TEST2: Pre-seed alert_id from the first active alert.
+        # SCN-075 uses {alert_id} in steps 2 and 3 before navigating to any
+        # alert URL, so it must be available from the start of the scenario.
+        try:
+            from apps.events.models import Alert
+            first_alert = Alert.objects.filter(
+                status="default",
+            ).order_by("pk").first()
+            if first_alert:
+                context["alert_id"] = str(first_alert.pk)
+        except Exception:
+            pass
+
+        # QA-R8b-TEST2: Pre-seed recommendation_id from the first
+        # AlertCancellationRecommendation, if any exist.
+        try:
+            from apps.events.models import AlertCancellationRecommendation
+            first_rec = AlertCancellationRecommendation.objects.order_by(
+                "pk",
+            ).first()
+            if first_rec:
+                context["recommendation_id"] = str(first_rec.pk)
+        except Exception:
+            pass
+
         # --- Named-client IDs from prerequisites ---
         # Scenarios can require specific clients (e.g. "Jane Doe").
-        # Generate slug-based variable names like {jane_doe_id} so
-        # YAML files can reference them in goto URLs.
+        # Generate slug-based variable names like {jane_doe_id} AND
+        # first-name-based keys like {client_id_jane} so YAML files can
+        # reference them in goto URLs using either convention.
+        # QA-R8b-TEST2: The first-name key ({client_id_alex}) matches the
+        # pattern used by SCN-084; the full-name slug ({alex_chen_id})
+        # matches the TEST-20 pattern used by earlier scenarios.
         prereqs = scenario.get("prerequisites", {})
         required_data = prereqs.get("data", [])
         try:
@@ -1418,16 +1453,64 @@ class ScenarioRunner(BrowserTestBase):
                 for c in all_clients:
                     full_name = f"{c.first_name} {c.last_name}".strip()
                     if full_name == req_name:
-                        # Build a slug-based variable: "Jane Doe" → "jane_doe_id"
-                        slug = re.sub(r"[^a-z0-9]+", "_", req_name.lower()).strip("_")
+                        # Full-name slug key: "Jane Doe" → jane_doe_id
+                        slug = re.sub(
+                            r"[^a-z0-9]+", "_", req_name.lower(),
+                        ).strip("_")
                         context[f"{slug}_id"] = str(c.pk)
+
+                        # First-name key: "Jane Doe" → client_id_jane
+                        # Matches the {client_id_alex} convention in SCN-084.
+                        first_name_slug = re.sub(
+                            r"[^a-z0-9]+", "_", c.first_name.lower(),
+                        ).strip("_") if c.first_name else ""
+                        if first_name_slug:
+                            context[f"client_id_{first_name_slug}"] = str(c.pk)
+
                         # Also set as generic client_id if not already set
                         if "client_id" not in context:
                             context["client_id"] = str(c.pk)
+
+                        # QA-R8b-TEST2: Pre-seed meeting IDs for this client.
+                        # SCN-084 uses {meeting_id_alex} and {meeting_id_priya}
+                        # in send-reminder URLs before navigating to any meeting
+                        # page.  Look up the client's first meeting by ID.
+                        if first_name_slug:
+                            try:
+                                from apps.events.models import Meeting
+                                first_meeting = Meeting.objects.filter(
+                                    event__client_file=c,
+                                ).order_by("pk").first()
+                                if first_meeting:
+                                    context[
+                                        f"meeting_id_{first_name_slug}"
+                                    ] = str(first_meeting.pk)
+                                    # Also set generic meeting_id if not set
+                                    if "meeting_id" not in context:
+                                        context["meeting_id"] = str(
+                                            first_meeting.pk,
+                                        )
+                            except Exception:
+                                pass
+
+                        # QA-R8b-TEST2: Also pre-seed alert_id for this client
+                        # if the scenario has an alert prerequisite for them.
+                        # This allows {alert_id} to reference the right client's
+                        # alert in multi-client scenarios.
+                        try:
+                            from apps.events.models import Alert
+                            client_alert = Alert.objects.filter(
+                                client_file=c, status="default",
+                            ).order_by("pk").first()
+                            if client_alert and "alert_id" not in context:
+                                context["alert_id"] = str(client_alert.pk)
+                        except Exception:
+                            pass
+
                         break
 
         logger.debug(
-            "TEST-20: Pre-seeded context_vars for %s: %s",
+            "TEST-20/QA-R8b-TEST2: Pre-seeded context_vars for %s: %s",
             scenario.get("id", "?"), context,
         )
         return context
