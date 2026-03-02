@@ -80,10 +80,10 @@ def invite_accept(request, code):
 
             # Assign program roles (non-admin roles)
             if invite.role != "admin":
-                for program in invite.programs.all():
-                    UserProgramRole.objects.create(
-                        user=user, program=program, role=invite.role,
-                    )
+                UserProgramRole.objects.bulk_create([
+                    UserProgramRole(user=user, program=program, role=invite.role)
+                    for program in invite.programs.all()
+                ])
 
             # Mark invite as used
             invite.used_by = user
