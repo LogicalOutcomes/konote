@@ -195,22 +195,22 @@ This document presents the implementation plan, effort estimates, cost model, an
 
 ## Effort Summary
 
+Estimates assume AI-assisted development (Claude Code with Opus 4.6). Tasks marked with ⚡ can be completed in a single session.
+
 | Task | Description | Effort | Dependencies |
 |------|-------------|--------|-------------|
-| 0 | PostgreSQL for local dev | 1–2 days | None |
-| 1 | django-tenants + app split | 2–3 days | Task 0 |
-| 2 | Middleware + domain routing | 1–2 days | Task 1 |
-| 3 | Per-tenant encryption keys | 2–3 days | Task 1 |
-| 4 | Consortium data model | 2–3 days | Task 1 |
-| 5 | Consent + audit fields | 1–2 days | Task 1 |
-| 6 | Provisioning command | 1–2 days | Tasks 1–5 |
-| 7 | Test infrastructure | 3–5 days | Tasks 1–6 |
-| 8 | Validate existing features | 2–3 days | Task 7 |
-| **Total** | | **15–25 developer days** | |
+| 0 | PostgreSQL for local dev | ⚡ 1–2 hours | None |
+| 1 | django-tenants + app split | 2–4 hours | Task 0 |
+| 2 | Middleware + domain routing | ⚡ 1–2 hours | Task 1 |
+| 3 | Per-tenant encryption keys | 2–3 hours | Task 1 |
+| 4 | Consortium data model | ⚡ 1–2 hours | Task 1 |
+| 5 | Consent + audit fields | ⚡ 1 hour | Task 1 |
+| 6 | Provisioning command | ⚡ 1–2 hours | Tasks 1–5 |
+| 7 | Test infrastructure | 3–5 hours | Tasks 1–6 |
+| 8 | Validate existing features | 2–4 hours | Task 7 |
+| **Total** | | **~2–3 developer days** | |
 
-**Calendar time:** 4–6 weeks with one developer (PB), accounting for review cycles and unforeseen issues.
-
-**Tasks 2, 3, 4, 5 can run in parallel** after Task 1 is complete, reducing calendar time to ~3–4 weeks if resources allow.
+**Calendar time:** 1–2 weeks, accounting for review cycles. Tasks 2, 3, 4, 5 can run in parallel sessions (worktrees) after Task 1 is complete.
 
 ---
 
@@ -228,10 +228,11 @@ This document presents the implementation plan, effort estimates, cost model, an
 
 ### Development Cost
 
-At an estimated developer rate of $100–150/hr:
-- **15–25 days × 8 hours = 120–200 hours**
-- **Estimated cost: $12,000–$30,000 CAD** (one-time)
-- Payback period at 10 agencies on OVHcloud: infrastructure savings vs single-tenant cover the development cost within 6–12 months
+With AI-assisted development (Claude Code):
+- **~2–3 days × 8 hours = 16–24 hours of session time**
+- **Claude Code API cost: ~$50–100 CAD** (estimated token usage)
+- **Human review time: ~4–8 hours** (GK/PB reviewing PRs, testing)
+- Payback period at 10 agencies on OVHcloud: infrastructure savings cover development cost immediately
 
 ---
 

@@ -162,14 +162,16 @@ This means **no specific funder requirements are needed before building.** The s
 
 ## Effort Summary
 
+Estimates assume AI-assisted development (Claude Code with Opus 4.6).
+
 | Phase | Description | Effort | Dependencies |
 |-------|-------------|--------|-------------|
-| 1 | PublishedReport model + publish step | 2–3 days | Multi-tenancy (MT-CORE1), approval workflow (RPT-APPROVE1) |
-| 2 | Cross-agency reporting API | 3–5 days | Phase 1 |
-| 3 | Umbrella dashboard | 5–8 days | Phase 2 |
-| **Total** | | **10–16 developer days** | |
+| 1 | PublishedReport model + publish step | 2–3 hours | Multi-tenancy (MT-CORE1), approval workflow (RPT-APPROVE1) |
+| 2 | Cross-agency reporting API | 3–5 hours | Phase 1 |
+| 3 | Umbrella dashboard | 4–6 hours | Phase 2 |
+| **Total** | | **~1.5–2 developer days** | |
 
-**Calendar time:** 3–4 weeks with one developer.
+**Calendar time:** 1 week, accounting for review cycles.
 
 ---
 
@@ -177,8 +179,10 @@ This means **no specific funder requirements are needed before building.** The s
 
 ### Development Cost
 
-- **10–16 days × 8 hours = 80–128 hours**
-- **Estimated cost: $8,000–$19,200 CAD** (one-time, at $100–150/hr)
+With AI-assisted development (Claude Code):
+- **~1.5–2 days of session time**
+- **Claude Code API cost: ~$30–60 CAD** (estimated token usage)
+- **Human review time: ~2–4 hours** (GK reviewing data model, PB reviewing PRs)
 
 ### Ongoing Cost
 
@@ -216,4 +220,4 @@ Phases 1–3 can begin as soon as multi-tenancy is live. The approval workflow (
 - **RP4 (cross-agency rollup):** Configurable metric system (already built) + PublishedReport model + aggregation API. Metrics are defined per funder through templates — no hardcoded requirements.
 - **Architecture is proven:** The template-driven reporting pipeline is already in production. Cross-agency extends it, doesn't replace it.
 - **Privacy by design:** Small-cell suppression, consent checking, and aggregate-only output are already enforced. Cross-agency reporting inherits all safeguards.
-- **Credible timeline:** 10–16 developer days after multi-tenancy is live. Can be demonstrated within 4–6 weeks of multi-tenancy completion.
+- **Credible timeline:** ~1.5–2 days of AI-assisted development after multi-tenancy is live. Can be demonstrated within 1–2 weeks of multi-tenancy completion.

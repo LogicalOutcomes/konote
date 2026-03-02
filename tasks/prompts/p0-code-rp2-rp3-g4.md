@@ -238,12 +238,14 @@ Add to `tests/test_reports.py`:
 
 ## Implementation Order
 
-1. **G4 first** (30 minutes) — small, self-contained, quick win
-2. **RPT-APPROVE1 Steps 1–2** (model fields + view split) — the core change
-3. **Step 3** (preview template)
-4. **Steps 4–5** (CSV update + audit log)
-5. **Step 6** (translations)
-6. **Step 7** (tests)
+Both tasks should be completable in a single Claude Code session (~2–3 hours total).
+
+1. **G4 first** (~15 minutes) — small, self-contained, quick win
+2. **RPT-APPROVE1 Steps 1–2** (~30 minutes) — model fields + view split
+3. **Step 3** (~20 minutes) — preview template
+4. **Steps 4–5** (~15 minutes) — CSV update + audit log
+5. **Step 6** (~10 minutes) — translations
+6. **Step 7** (~30 minutes) — tests
 
 Commit after each step. Run relevant tests after each commit.
 
