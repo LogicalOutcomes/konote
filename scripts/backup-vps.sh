@@ -9,7 +9,11 @@
 #   - .env file with POSTGRES_USER, POSTGRES_DB, AUDIT_POSTGRES_USER, AUDIT_POSTGRES_DB
 #
 # Optional:
-#   - Set ALERT_WEBHOOK_URL in .env to receive failure alerts (e.g., UptimeRobot heartbeat URL)
+#   - Set ALERT_WEBHOOK_URL in .env to receive failure alerts
+#     Alerts are sent as plain-text HTTP POST (no JSON, no Content-Type header).
+#     Compatible with: UptimeRobot push monitors, Slack incoming webhooks,
+#     ntfy.sh, Uptime Kuma push monitors. For JSON-only endpoints, use a
+#     middleware like Zapier or n8n to transform the request.
 
 set -euo pipefail
 
