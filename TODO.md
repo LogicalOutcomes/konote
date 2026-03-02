@@ -40,9 +40,9 @@ Items from `requirements-analysis.md` that must move from "Planned" to "Fully me
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
-- [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — GK (SEC3-AGREE1)
+- [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
-- [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — GK (LEGAL-SaaS1)
+- [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
 
 ## Do Occasionally
 
@@ -55,6 +55,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
+
+### Phase: QA Round 8b — Fixes + Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
+
+- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
+- [ ] Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
+- [ ] Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
 
 ### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
 
@@ -75,6 +81,15 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
 - [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
+### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
+
+- [ ] Fix systemic ARIA role violations — aria-required-children (CRITICAL, 59 pages, 512 nodes) + aria-allowed-role (MINOR, 59 pages, 546 nodes), likely a shared component or base template pattern (AXE-ARIA1)
+- [ ] Fix duplicate landmark regions — landmark-unique (MODERATE, 60 pages, 352 nodes), likely duplicate nav or main landmarks in base template structure (AXE-LANDMARK1)
+- [ ] Fix 4 pages missing base template wrapper — export-confirmation, plan-section-edit, public-survey-link, public-unsubscribe are missing title, lang attr, landmarks, and h1 (AXE-TEMPLATE1)
+- [ ] Fix colour contrast failures — 11 pages, 257 nodes including client-detail, dashboard-staff, plan-view, notes-list, events-list, comm pages (AXE-CONTRAST1)
+- [ ] Fix missing h1 on notes-detail page (AXE-HEADING1)
+- [ ] Fix empty table headers on 4 admin pages — admin-event-types, admin-settings-terminology, admin-users, programs-list (AXE-TABLE1)
+
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
@@ -89,19 +104,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
-
-### Phase: FHIR-Informed Data Foundations + CIDS Compliance — interleaved sequence, quick win for funders before heavier model work (see tasks/fhir-informed-data-modelling.md, tasks/cids-json-ld-export.md, tasks/design-rationale/fhir-informed-modelling.md)
-
-- [x] Add CIDS metadata fields + OrganizationProfile — PR #131 (CIDS-META1 + CIDS-ORG1)
-- [x] Import CIDS code lists + TaxonomyMapping model — PR #131 (CIDS-CODES1)
-- [x] Build admin UI for CIDS tagging — PR #131 (CIDS-ADMIN1)
-- [x] Add CIDS codes to reports + Standards Alignment appendix — PR #131 (CIDS-ENRICH1)
-- [x] Extend ClientProgramEnrolment into ServiceEpisode — PR #131 (FHIR-EPISODE1)
-- [x] Populate new ServiceEpisode fields from existing data — PR #131 (FHIR-MIGRATE1)
-- [x] Add achievement_status + first_achieved_at to PlanTarget — PR #131 (FHIR-ACHIEVE1)
-- [x] Add author_role to ProgressNote — PR #131 (FHIR-ROLE1)
-- [x] Build JSON-LD export + impact dimensions — PR #131 (CIDS-EXPORT1 + CIDS-IMPACT1)
-- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -162,6 +164,21 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Phase: FHIR-Informed Data Foundations + CIDS Compliance (PR #131)
+
+- [x] Add CIDS metadata fields + OrganizationProfile — 2026-02-27 (CIDS-META1 + CIDS-ORG1)
+- [x] Import CIDS code lists + TaxonomyMapping model — 2026-02-27 (CIDS-CODES1)
+- [x] Build admin UI for CIDS tagging — 2026-02-27 (CIDS-ADMIN1)
+- [x] Add CIDS codes to reports + Standards Alignment appendix — 2026-02-27 (CIDS-ENRICH1)
+- [x] Extend ClientProgramEnrolment into ServiceEpisode — 2026-02-27 (FHIR-EPISODE1)
+- [x] Populate new ServiceEpisode fields from existing data — 2026-02-27 (FHIR-MIGRATE1)
+- [x] Add achievement_status + first_achieved_at to PlanTarget — 2026-02-27 (FHIR-ACHIEVE1)
+- [x] Add author_role to ProgressNote — 2026-02-27 (FHIR-ROLE1)
+- [x] Build JSON-LD export + impact dimensions — 2026-02-27 (CIDS-EXPORT1 + CIDS-IMPACT1)
+- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
+
+### QA Round 8 Tier 1
 
 - [x] QA Round 8 Tier 1: removed dashboard search autofocus (credentials leaked into search bar after login redirect) — 2026-03-01 (QA-R8-SEC1)
 - [x] QA Round 8 Tier 1: added regression test confirming demo buttons hidden when DEMO_MODE off — 2026-03-01 (QA-R8-SEC2)

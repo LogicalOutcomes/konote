@@ -383,16 +383,20 @@ def _format_a11y_tree(node, depth=0):
     return result
 
 
-def validate_screenshot_dir(screenshot_dir):
+def validate_screenshot_dir(screenshot_dir, only_files=None):
     """Scan a screenshot directory and return validation results.
 
-    Checks every .png file for:
+    Checks .png files for:
     - File size (< 5 KB = likely blank)
     - Duplicate detection via SHA-256 hash
     - URL slug consistency (filename vs. expected pattern)
 
     Args:
         screenshot_dir: Path to the screenshots directory.
+        only_files: Optional set/list of filenames to validate. When
+            provided, only those files are checked (used to scope
+            validation to the current run's screenshots instead of
+            the entire historical folder).
 
     Returns:
         dict with keys: total, blank, duplicates, valid, issues (list of dicts).
@@ -401,7 +405,13 @@ def validate_screenshot_dir(screenshot_dir):
     if not screenshot_path.is_dir():
         return {"total": 0, "blank": 0, "duplicates": 0, "valid": 0, "issues": []}
 
-    pngs = sorted(screenshot_path.glob("*.png"))
+    if only_files is not None:
+        only_set = set(only_files)
+        pngs = sorted(
+            p for p in screenshot_path.glob("*.png") if p.name in only_set
+        )
+    else:
+        pngs = sorted(screenshot_path.glob("*.png"))
     seen_hashes = {}  # hash -> first filename
     issues = []
     blank_count = 0

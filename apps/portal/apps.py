@@ -8,4 +8,4 @@ class PortalConfig(AppConfig):
     verbose_name = "Participant Portal"
 
     def ready(self):
-        import apps.portal.signals  # noqa: F401 -- registers signal handlers
+        from . import signals  # noqa: F401 -- registers signal handlers

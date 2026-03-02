@@ -3607,8 +3607,12 @@ msgstr "Nom du produit"
 msgid "Product Name (English)"
 msgstr "Nom du produit (anglais)"
 
-msgid "Shown in the header, footer, and page titles. Use your short, recognizable name."
-msgstr "Affiché dans l'en-tête, le pied de page et les titres de page. Utilisez votre nom court et reconnaissable."
+msgid ""
+"Shown in the header, footer, and page titles. Use your short, recognizable "
+"name."
+msgstr ""
+"Affiché dans l'en-tête, le pied de page et les titres de page. Utilisez "
+"votre nom court et reconnaissable."
 
 msgid "Product Name (French)"
 msgstr "Nom du produit (français)"
@@ -17325,4 +17329,123 @@ msgid "URL template must use HTTPS."
 msgstr ""
 
 msgid "Your organisation's accent colour for buttons and links."
+msgstr ""
+
+msgid "Annually (365 days)"
+msgstr ""
+
+msgid "Backup & Export Settings"
+msgstr ""
+
+msgid "Backup Reminder"
+msgstr ""
+
+msgid "Backup Reminders"
+msgstr ""
+
+msgid "Backup reminder settings updated."
+msgstr ""
+
+msgid ""
+"Click the button below to download your file. This link expires in 24 hours."
+msgstr ""
+
+msgid ""
+"Configure automated backup reminders to protect against encryption key loss."
+msgstr ""
+
+msgid "Contact KoNote support to request a backup export."
+msgstr ""
+
+msgid "Download Export"
+msgstr ""
+
+msgid "Download available"
+msgstr ""
+
+msgid "Enable backup reminders"
+msgstr ""
+
+msgid "Every 2 months (60 days)"
+msgstr ""
+
+msgid "Every 6 months (180 days)"
+msgstr ""
+
+msgid "Export Ready"
+msgstr ""
+
+msgid "Frequency must be a positive number."
+msgstr ""
+
+msgid "How often to send backup reminders."
+msgstr ""
+
+msgid "Individual Client Export"
+msgstr ""
+
+msgid "Invalid request."
+msgstr ""
+
+msgid "JSON (machine-readable)"
+msgstr ""
+
+msgid ""
+"KoNote can send periodic email reminders when a backup export is due. The "
+"system reminds — a human acts."
+msgstr ""
+
+msgid "Last backup export"
+msgstr ""
+
+msgid "Last reminder sent"
+msgstr ""
+
+msgid "Monthly (30 days)"
+msgstr ""
+
+msgid "Quarterly (90 days)"
+msgstr ""
+
+msgid ""
+"Regular backups protect your data in case of encryption key loss or other "
+"technical issues. Without a recent backup, participant records could become "
+"permanently inaccessible."
+msgstr ""
+
+msgid "Reminder Frequency"
+msgstr ""
+
+msgid "Return to Participant"
+msgstr ""
+
+msgid "Run the backup command on your server:"
+msgstr ""
+
+msgid "Security Information"
+msgstr ""
+
+msgid "Security notice"
+msgstr ""
+
+msgid "The email address that will receive backup reminders."
+msgstr ""
+
+msgid ""
+"This export contains participant-identifying information — handle securely."
+msgstr ""
+
+msgid "This export has been logged for audit purposes."
+msgstr ""
+
+msgid "This link expires in 24 hours and cannot be reused after expiry."
+msgstr ""
+
+msgid "What to do"
+msgstr ""
+
+msgid "Why this matters"
+msgstr ""
+
+msgid "Your export has been generated"
 msgstr ""
