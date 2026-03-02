@@ -11,27 +11,26 @@ _QA Round 8 Tier 1 complete — see Recently Done._
 
 ### Phase: P0 — Requirements Analysis (March 31)
 
-Items from `requirements-analysis.md` that must move from "Planned" to "Fully met" before deliverable deadline.
+Items that must move from "Planned" to "Fully met" before deliverable deadline. Two types of deliverable: **working code** that ships, and **costed implementation plans** that demonstrate the capability is designed and ready to execute.
+
+#### Ship Code
 
 **Funder reporting (RP2, RP3):**
-- [ ] Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
-
-**Cross-agency rollup (RP4):**
-- [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
-- [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
-- [ ] Build umbrella admin dashboard — central view for [funder partner] to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
-
-**Multi-tenancy and central management (MA3, MA4):**
-- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
-- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — PB (MT-ENCRYPT1)
-- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — PB (MT-CONSENT1)
-- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
-- [ ] Build deploy script to automate infrastructure provisioning — Azure/OVHcloud resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
-- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
+- [ ] Add partner report approval workflow — preview, agency annotations, explicit approve step before export (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md). Prompt: tasks/prompts/p0-code-rp2-rp3-g4.md (RPT-APPROVE1)
 
 **Outcome tracking (G4):**
-- [ ] Auto-update progress metrics when goal status changes — recalculate related metrics when a goal is marked achieved/abandoned (REQ-G4)
+- [ ] Auto-update progress metrics when goal status changes — add post_save signal on PlanTarget to recompute achievement_status. Prompt: tasks/prompts/p0-code-rp2-rp3-g4.md (REQ-G4)
+
+#### Ship Costed Plans
+
+**Cross-agency rollup and reporting (RP4):** plan: tasks/p0-cross-agency-reporting-plan.md
+- [ ] Write cross-agency reporting plan — architecture, configurable metrics, API design, umbrella dashboard, effort estimates, timeline (SCALE-PLAN1)
+
+**Multi-tenancy and central management (MA3, MA4, MA5):** plan: tasks/p0-multi-tenancy-plan.md
+- [ ] Write multi-tenancy implementation plan — django-tenants architecture, per-tenant encryption, consortium model, effort estimates, timeline, cost model (MT-PLAN1)
+
+**Managed service and deployment (MA5):** plan: tasks/p0-managed-service-plan.md
+- [ ] Write managed service model — Azure and OVHcloud hosting paths, support tiers, SLA framework, cost model, deployment protocol for both platforms (OPS-PLAN1)
 
 ### Phase: Launch Readiness
 
