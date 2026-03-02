@@ -116,14 +116,14 @@ class TestInteractions(BrowserTestBase):
 
         # Fill note content (look for textarea or rich text field)
         textarea = self.page.locator("textarea").first
-        if textarea.count() > 0:
-            textarea.fill("Test note content from interaction test")
+        self.assertGreater(textarea.count(), 0, "No textarea found on note form")
+        textarea.fill("Test note content from interaction test")
 
         # Submit — use "main" scope to avoid matching the Sign Out button in nav
         submit = self.page.locator("main button[type='submit']").first
-        if submit.count() > 0:
-            submit.click()
-            self.page.wait_for_load_state("networkidle")
+        self.assertGreater(submit.count(), 0, "No submit button found on note form")
+        submit.click()
+        self.page.wait_for_load_state("networkidle")
 
         # Should show confirmation or redirect to notes list
         body = self.page.text_content("body")
@@ -147,9 +147,9 @@ class TestInteractions(BrowserTestBase):
 
         # Submit without filling anything — use "main" scope to skip nav Sign Out
         submit = self.page.locator("main button[type='submit']").first
-        if submit.count() > 0:
-            submit.click()
-            self.page.wait_for_load_state("networkidle")
+        self.assertGreater(submit.count(), 0, "No submit button found on note form")
+        submit.click()
+        self.page.wait_for_load_state("networkidle")
 
         # Should stay on the form (not 500 error) and show a validation message
         # or the form itself (i.e., not a server error page)
@@ -173,14 +173,14 @@ class TestInteractions(BrowserTestBase):
 
         # Edit and save
         textarea = self.page.locator("textarea").first
-        if textarea.count() > 0:
-            textarea.fill("Updated note content from interaction test")
+        self.assertGreater(textarea.count(), 0, "No textarea found on note edit form")
+        textarea.fill("Updated note content from interaction test")
 
         # Use "main" scope to avoid matching the Sign Out button in nav
         submit = self.page.locator("main button[type='submit']").first
-        if submit.count() > 0:
-            submit.click()
-            self.page.wait_for_load_state("networkidle")
+        self.assertGreater(submit.count(), 0, "No submit button found on note edit form")
+        submit.click()
+        self.page.wait_for_load_state("networkidle")
 
         # Verify not an error page
         self.assertNotIn("Server Error", self.page.text_content("body"))
