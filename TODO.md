@@ -17,6 +17,7 @@ Items from `requirements-analysis.md` that must move from "Planned" to "Fully me
 - [ ] Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
 
 **Cross-agency rollup (RP4):**
+- [ ] Write cross-agency reporting API design doc — which metrics aggregate, API spec, how funder views data across agencies (docs/plans/2026-02-20-cross-agency-reporting-api-design.md) — GK (DOC-RP4)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
 - [ ] Build umbrella admin dashboard — central view for [funder partner] to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
@@ -27,6 +28,7 @@ Items from `requirements-analysis.md` that must move from "Planned" to "Fully me
 - [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
 - [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — PB (MT-CONSENT1)
 - [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
+- [ ] Write deploy script design doc — how provisioning is automated, target: infrastructure in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — PB (DOC-MA5)
 - [ ] Build deploy script to automate infrastructure provisioning — Azure/OVHcloud resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
 
