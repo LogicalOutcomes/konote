@@ -7,6 +7,10 @@
 
 ## Active Work
 
+### Phase: QA Round 8b — New Fixes (see tasks/qa-action-plan-2026-03-01b.md)
+
+- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
+
 _QA Round 8 Tier 1 complete — see Recently Done._
 
 ### Phase: Launch Readiness
@@ -32,6 +36,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
+
+### Phase: QA Round 8b — Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
+
+- [ ] Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
+- [ ] Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
 
 ### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
 
