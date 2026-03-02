@@ -17,11 +17,14 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
       - DEMO_MODE=${DEMO_MODE:-}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-}
-      - EMAIL_BACKEND=${EMAIL_BACKEND:-}
+      # Email defaults: if not configured in .env, email logs to console (no
+      # real emails sent). To enable email, set EMAIL_BACKEND, EMAIL_HOST, and
+      # credentials in .env — see docs/deploy-ovhcloud.md Step 13.
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-KoNote <noreply@konote.app>}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
       - EMAIL_HOST=${EMAIL_HOST:-}
-      - EMAIL_PORT=${EMAIL_PORT:-}
-      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
@@ -83,6 +86,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
