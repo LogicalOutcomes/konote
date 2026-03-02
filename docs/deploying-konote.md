@@ -11,6 +11,7 @@ This guide covers everything you need to get KoNote running — from local devel
 | Deploy to Azure | [Deploy to Azure](#deploy-to-azure) |
 | Deploy to Elestio | [Deploy to Elestio](#deploy-to-elestio) |
 | Deploy to FullHost | [Deploy to FullHost](#deploy-to-fullhost) |
+| Deploy to OVHcloud VPS | [Deploy to OVHcloud](deploy-ovhcloud.md) |
 | Set up PDF reports | [PDF Report Setup](#pdf-report-setup) |
 | Go live with real data | [Before You Enter Real Data](#before-you-enter-real-data) |
 
@@ -28,6 +29,9 @@ Not sure which platform is right for your organisation? This section compares yo
 | **Azure** | $75–115 | Hard | Yes (Canada Central) | SOC 2, ISO 27001, HIPAA, 90+ |
 | **Elestio** | $50–80 | Medium | No (EU/US servers) | SOC 2 Type 1, ISO 27001 |
 | **FullHost** | $23–45 | Easy | Yes (Montreal) | None documented |
+| **OVHcloud VPS** | $11–30 | Medium | Yes (Beauharnois, QC) or EU | Not US CLOUD Act subject |
+
+> **OVHcloud** is a French company (not subject to the US CLOUD Act). Canadian data centre in Beauharnois, QC, with EU alternatives. Lowest cost at scale. Requires VPS management (Docker on unmanaged server). See the [full OVHcloud deployment guide](deploy-ovhcloud.md).
 
 ### Cost Breakdown (200 Clients, 5–10 Staff)
 

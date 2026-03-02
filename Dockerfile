@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi-dev \
     libcairo2 \
     shared-mime-info \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
