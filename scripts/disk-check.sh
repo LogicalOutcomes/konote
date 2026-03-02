@@ -6,6 +6,9 @@
 #
 # Optional:
 #   - Set ALERT_WEBHOOK_URL in .env or environment to receive alerts
+#     Alerts are sent as plain-text HTTP POST (no JSON, no Content-Type header).
+#     Compatible with: UptimeRobot push monitors, Slack incoming webhooks,
+#     ntfy.sh, Uptime Kuma push monitors.
 #   - Set DISK_THRESHOLD (default: 80) to change the alert threshold percentage
 
 set -euo pipefail

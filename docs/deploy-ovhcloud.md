@@ -195,7 +195,7 @@ You need to generate four secret values. Run these commands on the VPS:
 ```bash
 # Install Python cryptography library (for key generation)
 sudo apt install -y python3 python3-pip
-pip3 install cryptography --break-system-packages
+pip3 install cryptography --break-system-packages  # this flag is required on Ubuntu 24.04+ — it's a Python safety check, not breaking anything
 
 # Generate Django secret key
 echo "SECRET_KEY:"
@@ -632,23 +632,25 @@ sudo nano /opt/konote/docker-compose.override.yml
 ```
 
 ```yaml
-# Production override -- connects Caddy and web to the shared proxy network
-# so Caddy can reach both prod and dev web containers by container name
+# Production override — connects Caddy and web to the shared proxy network
+# so Caddy can reach both prod and dev web containers by container name.
+# This file is automatically merged with docker-compose.yml when you run
+# "docker compose up". You don't need to reference it explicitly.
 services:
   web:
     networks:
       - frontend
       - backend
-      - konote-proxy
+      - konote-proxy    # adds the shared network so Caddy can route to this container
 
   caddy:
     networks:
       - frontend
-      - konote-proxy
+      - konote-proxy    # adds the shared network so Caddy can also reach the dev container
 
 networks:
   konote-proxy:
-    external: true
+    external: true      # "external" means this network already exists (created in Step 2)
 ```
 
 Apply the override:
@@ -765,19 +767,23 @@ sudo nano /opt/konote-dev/docker-compose.override.yml
 ```
 
 ```yaml
+# Dev instance override — gives each container a unique name, disables its own
+# Caddy (production Caddy handles both domains), and uses separate database
+# volumes so dev data is completely isolated from production.
 services:
   web:
-    container_name: konote-dev-web
-    ports: !reset []
+    container_name: konote-dev-web       # unique name so Caddy can address it directly
+    ports: !reset []                     # removes the host port mapping from the base file
+                                         # (Caddy reaches this container via Docker network instead)
     networks:
       - frontend
       - backend
-      - konote-proxy
+      - konote-proxy                     # shared network so production Caddy can reach this container
 
   db:
     container_name: konote-dev-db
     volumes:
-      - dev_pgdata:/var/lib/postgresql/data
+      - dev_pgdata:/var/lib/postgresql/data   # separate volume — dev data stays isolated from prod
 
   audit_db:
     container_name: konote-dev-audit-db
@@ -787,18 +793,18 @@ services:
 
   caddy:
     profiles:
-      - disabled
+      - disabled                         # disables this container — production Caddy handles both domains
 
   autoheal:
     container_name: konote-dev-autoheal
 
 volumes:
-  dev_pgdata:
+  dev_pgdata:                            # separate named volumes prevent data mixing
   dev_audit_pgdata:
 
 networks:
   konote-proxy:
-    external: true
+    external: true                       # connects to the shared network created in Step 2
 ```
 
 Key details:
