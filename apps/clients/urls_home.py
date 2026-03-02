@@ -110,14 +110,18 @@ def home(request):
         )
         # Active clients without recent notes
         needs_attention = []
-        for c in accessible.filter(status="active")[:200]:
-            if c.pk not in clients_with_recent_notes:
-                needs_attention.append({
-                    "client": c,
-                    "name": f"{c.first_name} {c.last_name}",
-                })
-            if len(needs_attention) >= 10:
-                break
+        # Optimization: Filter in DB and limit to 10 immediately (PERF-CLI1)
+        # This avoids fetching and decrypting names for up to 200 clients
+        # when only 10 are displayed.
+        attention_qs = accessible.filter(status="active").exclude(
+            pk__in=clients_with_recent_notes
+        )[:10]
+
+        for c in attention_qs:
+            needs_attention.append({
+                "client": c,
+                "name": f"{c.first_name} {c.last_name}",
+            })
         needs_attention_count = len(needs_attention)
 
     # --- Organization name (placeholder — will come from settings later) ---
