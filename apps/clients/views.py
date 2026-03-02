@@ -242,7 +242,15 @@ def _find_clients_with_matching_notes(client_ids, query_lower, user,
 def client_list(request):
     # CONF9: Use active program context from middleware if available
     active_ids = getattr(request, "active_program_ids", None)
-    clients = _get_accessible_clients(request.user, active_program_ids=active_ids)
+
+    # QA-R8-UX3: When a search query is present, search across ALL programs the
+    # user has access to — not just the active program context. This ensures a
+    # newly created client is findable by any user with program access, regardless
+    # of which context they currently have selected.
+    search_query_raw = request.GET.get("q", "").strip()
+    search_active_ids = None if search_query_raw else active_ids
+
+    clients = _get_accessible_clients(request.user, active_program_ids=search_active_ids)
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
     user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
 
