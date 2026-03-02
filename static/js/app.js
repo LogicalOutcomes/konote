@@ -60,10 +60,10 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 })();
 
 // --- Link form error messages to their inputs (aria-describedby) ---
-// Scans for <small class="error" id="..."> and links the preceding input/select/textarea
+// Scans for <small class="error"> and links the preceding input/select/textarea
 (function () {
     function linkErrorMessages() {
-        var errors = document.querySelectorAll("small.error[id]");
+        var errors = document.querySelectorAll("small.error");
         errors.forEach(function (errorEl) {
             // Walk backwards through siblings to find the form control
             var sibling = errorEl.previousElementSibling;
@@ -77,9 +77,15 @@ document.body.addEventListener("htmx:configRequest", function (event) {
                     input = sibling.querySelector("input, textarea, select");
                 }
                 if (input) {
+                    // Ensure error element has an ID for aria-describedby
+                    if (!errorEl.id) {
+                        errorEl.id = "error-" + Math.random().toString(36).substr(2, 9);
+                    }
                     var existing = input.getAttribute("aria-describedby");
                     if (existing) {
-                        input.setAttribute("aria-describedby", existing + " " + errorEl.id);
+                        if (existing.indexOf(errorEl.id) === -1) {
+                            input.setAttribute("aria-describedby", existing + " " + errorEl.id);
+                        }
                     } else {
                         input.setAttribute("aria-describedby", errorEl.id);
                     }
@@ -96,6 +102,9 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     } else {
         linkErrorMessages();
     }
+
+    // Also run after HTMX swaps so dynamic form errors are linked
+    document.body.addEventListener("htmx:afterSwap", linkErrorMessages);
 })();
 
 // --- Auto-dismiss success messages after 8 seconds ---
