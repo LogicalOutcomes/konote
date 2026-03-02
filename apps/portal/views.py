@@ -7,7 +7,6 @@ auth system — participants are ParticipantUser, not User.
 Data isolation: every view scopes queries to request.participant_user.client_file.
 Sub-objects are always fetched with get_object_or_404(..., client_file=client_file).
 """
-import json
 import logging
 import secrets
 from functools import wraps
