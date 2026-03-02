@@ -302,6 +302,9 @@ def client_list(request):
             if int(program_filter) not in program_ids:
                 continue
 
+        # QA-R8-UX13: name preserves original accents (e.g. "Benoît").
+        # _strip_accents() is ONLY applied to name.lower() for search comparison
+        # (line below); the item dict always holds the unstripped display name.
         name = f"{client.display_name} {client.last_name}"
         # Check if user can edit plans for this participant
         enrolled_prog_ids = {p.pk for p in programs}
@@ -1434,6 +1437,8 @@ def client_search(request):
             except ValueError:
                 pass
 
+        # QA-R8-UX13: name preserves original accents for display.
+        # _strip_accents() is only applied during search comparison — never here.
         name = f"{client.display_name} {client.last_name}"
         item = {"client": client, "name": name, "programs": programs}
 
