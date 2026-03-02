@@ -17,21 +17,53 @@ Read `qa/pipeline-log.txt`. The last entry **MUST** say "Step 2: Evaluation comp
 3. If the improvement tickets file, `qa/satisfaction-history.json`, or `qa/pipeline-log.txt` are missing, STOP and tell the user:
    > The handoff files from `/run-scenarios` are not in `qa/`. Run `/run-scenarios` in the konote-qa-scenarios repo first.
 
+## File Locations — Two Repos
+
+The QA pipeline spans **two repositories**. Getting this wrong causes file-not-found errors.
+
+| File | Repo | Path |
+|------|------|------|
+| Improvement tickets (copy) | **konote** | `qa/{date}-improvement-tickets.md` |
+| Satisfaction history | **konote** | `qa/satisfaction-history.json` |
+| Pipeline log | **konote** | `qa/pipeline-log.txt` |
+| Fix log | **konote** | `qa/fix-log.json` |
+| Handoff JSON | **konote** | `qa/.qa-handoff.json` |
+| **Satisfaction report** | **konote-qa-scenarios** | `reports/{date}-satisfaction-report.md` |
+| **Rounds summary** | **konote-qa-scenarios** | `reports/rounds-summary.json` |
+| **Improvement tickets (source)** | **konote-qa-scenarios** | `reports/{date}-improvement-tickets.md` |
+
+The `.qa-handoff.json` paths are **relative to different repos**: `satisfaction_file` and `tickets_file` paths like `reports/...` are relative to konote-qa-scenarios, while `qa/...` paths are relative to konote.
+
+**Resolving paths:** Use `../konote-qa-scenarios/` relative to the konote repo root, or the absolute path `C:\Users\gilli\GitHub\konote-qa-scenarios\`.
+
 ## Steps
 
 ### Step 1: Read the latest improvement tickets
 
 Find the most recent `*-improvement-tickets.md` file in `qa/`. Read it fully — this contains all tickets from the evaluation round.
 
-### Step 2: Read the satisfaction history
+**Data integrity check (MANDATORY):** After reading the tickets file, verify the `Report ID` in the file header matches the current round (e.g. if pipeline log says "report 2026-03-01ab", the tickets file should contain `Report ID: 2026-03-01ab`). If the Report ID is wrong, the file contains **stale data from a previous round**. In that case:
+1. Log a warning: "Improvement tickets file contains stale data (Report ID: {actual} instead of {expected})"
+2. **Fall back to the satisfaction report** in `konote-qa-scenarios/reports/{date}-satisfaction-report.md` as the primary data source
+3. Document the data integrity issue in the action plan
 
-Read `qa/satisfaction-history.json` for trend data across rounds.
+### Step 2: Read the satisfaction report
 
-### Step 3: Read the pipeline log
+Read the satisfaction report from `../konote-qa-scenarios/reports/{date}-satisfaction-report.md`. This is the authoritative source for per-scenario scores, persona breakdowns, and finding groups. Use the date from the most recent Step 2 pipeline log entry.
+
+**This file is always the primary source for scores and analysis.** The improvement tickets file is a convenience copy — if they disagree, the satisfaction report wins.
+
+### Step 3: Read the satisfaction history and rounds summary
+
+Read both:
+- `qa/satisfaction-history.json` (in konote) for trend data
+- `../konote-qa-scenarios/reports/rounds-summary.json` for per-round score details
+
+### Step 4: Read the pipeline log
 
 Read `qa/pipeline-log.txt` for context on what was captured and evaluated.
 
-### Step 4: Cross-reference completed work (MANDATORY)
+### Step 5: Cross-reference completed work (MANDATORY)
 
 **Before analysing any tickets**, read these sources to identify what has already been fixed:
 
@@ -45,7 +77,7 @@ For each ticket in the improvement file, check whether it matches a known fix. I
 
 Include a "Previously Fixed (Verify)" section in the action plan showing which tickets match known fixes.
 
-### Step 5: Convene expert panel review
+### Step 6: Convene expert panel review
 
 Analyse the tickets and produce an action plan. Follow the format of the most recent `tasks/qa-action-plan-*.md` file for consistency across rounds.
 
@@ -56,17 +88,17 @@ Analyse the tickets and produce an action plan. Follow the format of the most re
 - Within Tier 1, separate "Fix" items (genuinely new) from "Verify" items (previously fixed)
 - Write the action plan to `tasks/qa-action-plan-YYYY-MM-DD.md`
 
-### Step 6: Update TODO.md
+### Step 7: Update TODO.md
 
 Add Tier 1 tasks to Active Work, Tier 2 to Coming Up, Tier 3 to Parking Lot. Flag any items that match GK's consultation gates (see CLAUDE.md § "Consultation Gates") with "GK reviews [topic]" in the owner field.
 
 **For VERIFY items:** prefix with "Verify:" in TODO.md so future sessions know to check before re-implementing.
 
-### Step 7: Update the fix log
+### Step 8: Update the fix log
 
 If any tickets from a previous round are confirmed fixed (based on the evaluation showing improved scores), update their `verified_date` in `qa/fix-log.json`.
 
-### Step 8: Update the pipeline log
+### Step 9: Update the pipeline log
 
 Append a "Step 3" entry to `qa/pipeline-log.txt`:
 ```

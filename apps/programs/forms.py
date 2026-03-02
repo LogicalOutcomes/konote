@@ -113,3 +113,9 @@ class UserProgramRoleForm(forms.Form):
     def __init__(self, *args, program=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.program = program
+
+
+class SwitchProgramForm(forms.Form):
+    """Validate program switch requests cleanly."""
+    program = forms.CharField(max_length=50)
+    next = forms.CharField(required=False)
