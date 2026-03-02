@@ -7,7 +7,7 @@ This guide walks you through deploying KoNote on an OVHcloud VPS from scratch. I
 - You are working from a Windows computer
 - You have Claude Code available to help if you get stuck
 
-**Time estimate:** 45–90 minutes for a first deployment.
+**Time estimate:** 45-90 minutes for a first deployment.
 
 ---
 
@@ -34,67 +34,98 @@ This guide walks you through deploying KoNote on an OVHcloud VPS from scratch. I
 
 ## 1. Connect to Your VPS via SSH
 
-When OVHcloud set up your VPS, they emailed you a **root password** and the **VPS IP address**. You will use these to connect.
+When OVHcloud set up your VPS, they emailed you a **password** and the **VPS IP address**. The default username is `ubuntu` (not `root`).
 
 ### From Windows (PowerShell or Windows Terminal)
 
 Open **PowerShell** or **Windows Terminal** and type:
 
 ```bash
-ssh root@YOUR_VPS_IP
+ssh ubuntu@YOUR_VPS_IP
 ```
 
-Replace `YOUR_VPS_IP` with the IP address from your OVHcloud email (e.g., `51.195.123.45`).
+Replace `YOUR_VPS_IP` with the IP address from your OVHcloud email (e.g., `141.227.151.7`).
 
 The first time you connect, you will see a message like:
 
 ```
-The authenticity of host '51.195.123.45' can't be established.
+The authenticity of host '141.227.151.7' can't be established.
 ED25519 key fingerprint is SHA256:abc123...
 Are you sure you want to continue connecting (yes/no)?
 ```
 
-Type **yes** and press Enter. Then enter your root password when prompted.
+Type **yes** and press Enter. Then enter your password when prompted.
 
-> **Tip:** The password will not show as you type — this is normal. Just type it and press Enter.
+> **Tip:** The password will not show as you type -- this is normal. Just type it and press Enter.
 
-If you see a `root@vps-xxxxx:~#` prompt, you are connected.
+### First login: Mandatory password change
 
-### Set Up SSH Key (Optional but Recommended)
+OVHcloud forces a password change on first login. You will see:
+
+```
+WARNING: Your password has expired.
+You must change your password now and login again!
+Current password:
+New password:
+Retype new password:
+```
+
+Enter the OVHcloud-provided password as the current password, then choose a new password. **OVHcloud will disconnect you after the password change** -- this is normal. Reconnect with:
+
+```bash
+ssh ubuntu@YOUR_VPS_IP
+```
+
+Use your new password this time.
+
+### Set Up SSH Key (Recommended)
 
 Using an SSH key means you will not need to type your password every time. On your **local Windows machine** (not the VPS):
 
 ```powershell
-# Generate a key (press Enter for all defaults)
-ssh-keygen -t ed25519
+# Generate a key with a descriptive name
+ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\ovh_konote
 
-# Copy the key to your VPS
-type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh root@YOUR_VPS_IP "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+# Copy the public key to the VPS
+type $env:USERPROFILE\.ssh\ovh_konote.pub | ssh ubuntu@YOUR_VPS_IP "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
-After this, `ssh root@YOUR_VPS_IP` will connect without a password.
+After this, connect without a password:
+
+```bash
+ssh -i ~/.ssh/ovh_konote ubuntu@YOUR_VPS_IP
+```
+
+> **Tip:** Add this to your SSH config (`~/.ssh/config`) for convenience:
+> ```
+> Host konote-vps
+>     HostName YOUR_VPS_IP
+>     User ubuntu
+>     IdentityFile ~/.ssh/ovh_konote
+> ```
+> Then just type `ssh konote-vps` to connect.
 
 ---
 
 ## 2. Secure the VPS
 
-Run these commands on the VPS (you should be logged in via SSH as root):
+Run these commands on the VPS (you should be logged in via SSH):
 
 ### Update the system
 
 ```bash
-apt update && apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 
 ### Set up the firewall
 
 ```bash
 # Allow SSH, HTTP, and HTTPS only
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-ufw status
+sudo ufw allow OpenSSH
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
+sudo ufw status
 ```
 
 You should see:
@@ -111,8 +142,8 @@ OpenSSH                    ALLOW       Anywhere
 ### Enable automatic security updates
 
 ```bash
-apt install -y unattended-upgrades
-dpkg-reconfigure -plow unattended-upgrades
+sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure -plow unattended-upgrades
 ```
 
 Select **Yes** when prompted.
@@ -123,14 +154,16 @@ Select **Yes** when prompted.
 
 ```bash
 # Install Docker using the official convenience script
-curl -fsSL https://get.docker.com | sh
+curl -fsSL https://get.docker.com | sudo sh
 
 # Verify Docker is running
 docker --version
-docker compose version
+sudo docker compose version
 ```
 
 You should see version numbers for both. Docker Compose is included with modern Docker.
+
+> **Note:** On OVHcloud VPS, docker commands require `sudo`. All docker commands in this guide use `sudo`.
 
 ---
 
@@ -138,11 +171,11 @@ You should see version numbers for both. Docker Compose is included with modern 
 
 ```bash
 # Create the deployment directory
-mkdir -p /opt/konote
+sudo mkdir -p /opt/konote
 cd /opt/konote
 
 # Clone the repository
-git clone https://github.com/LogicalOutcomes/konote.git .
+sudo git clone https://github.com/LogicalOutcomes/konote.git .
 ```
 
 > **Note:** The `.` at the end means "clone into the current directory" (not a subdirectory).
@@ -150,18 +183,18 @@ git clone https://github.com/LogicalOutcomes/konote.git .
 If the repository is private, you will need a GitHub Personal Access Token:
 
 ```bash
-git clone https://YOUR_GITHUB_TOKEN@github.com/LogicalOutcomes/konote.git .
+sudo git clone https://YOUR_GITHUB_TOKEN@github.com/LogicalOutcomes/konote.git .
 ```
 
 ---
 
 ## 5. Generate Credentials
 
-You need to generate three secret values. Run these commands on the VPS:
+You need to generate four secret values. Run these commands on the VPS:
 
 ```bash
-# Install Python temporarily (for key generation only)
-apt install -y python3 python3-pip
+# Install Python cryptography library (for key generation)
+sudo apt install -y python3 python3-pip
 pip3 install cryptography --break-system-packages
 
 # Generate Django secret key
@@ -180,7 +213,7 @@ echo "AUDIT_POSTGRES_PASSWORD:"
 python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-**Write these down** — you will need them in the next step. The `FIELD_ENCRYPTION_KEY` is especially critical:
+**Save all four values in your password manager immediately.** The `FIELD_ENCRYPTION_KEY` is especially critical:
 
 > **WARNING:** If you lose the `FIELD_ENCRYPTION_KEY`, all encrypted participant data (names, emails, birth dates) is **permanently unrecoverable**. Save a copy in your password manager and store a printed backup in a secure location.
 
@@ -191,7 +224,7 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 Create the environment file with your production values:
 
 ```bash
-nano /opt/konote/.env
+sudo nano /opt/konote/.env
 ```
 
 Paste the following, replacing the placeholder values with your actual credentials from Step 5:
@@ -218,23 +251,29 @@ AUDIT_POSTGRES_DB=konote_audit
 # DOMAIN AND SECURITY
 # ==============================================================================
 
-# Your domain name — Caddy uses this for automatic HTTPS
+# Your domain name -- Caddy uses this for automatic HTTPS
 DOMAIN=konote.example.ca
 
-# Allowed hosts — must match your domain
-ALLOWED_HOSTS=konote.example.ca
+# Allowed hosts -- must include your domain AND localhost (for healthcheck)
+ALLOWED_HOSTS=konote.example.ca,localhost
 
-# CSRF protection — must include https://
+# CSRF protection -- must include https://
 CSRF_TRUSTED_ORIGINS=https://konote.example.ca
 
 # Authentication mode
 AUTH_MODE=local
 
-# Production mode — blocks startup if security checks fail
+# Production mode -- blocks startup if security checks fail
 KONOTE_MODE=production
 
+# Demo mode -- creates demo users with quick-login buttons for staff training.
+# Demo users are completely separate from real participants (is_demo=True).
+# Recommended: keep this enabled so staff can train without creating fake
+# participants in the real database (which would need legal tracking).
+DEMO_MODE=true
+
 # ==============================================================================
-# EMAIL (OPTIONAL — see Step 13)
+# EMAIL (OPTIONAL -- see Step 13)
 # ==============================================================================
 
 # Uncomment and configure after setting up Resend (Step 13)
@@ -258,22 +297,27 @@ Save the file: press **Ctrl+O**, then **Enter**, then **Ctrl+X** to exit nano.
 
 **Important:** Replace `konote.example.ca` with your actual domain (e.g., `konote.llewelyn.ca`).
 
+> **Note:** `ALLOWED_HOSTS` must include `localhost` -- the Docker healthcheck pings `http://localhost:8000/auth/login/` from inside the container. Without it, the healthcheck fails and the container will be marked as unhealthy.
+
 ---
 
 ## 7. Point Your Domain to the VPS
 
-You need to create a DNS record that points your domain to the VPS IP address.
+You need to create a DNS **A record** that points your domain to the VPS IP address.
 
 ### If your domain is managed by Cloudflare, Namecheap, GoDaddy, etc.
 
 1. Log in to your domain registrar or DNS provider
 2. Go to **DNS settings** for your domain
-3. Add a new record:
+3. **Delete any existing CNAME records** for the same subdomain (e.g., if `konote` has a CNAME pointing to Railway or another host, delete it first). CNAME records take priority over A records and will block the new one.
+4. Add a new record:
    - **Type:** A
    - **Name:** `konote` (or whatever subdomain you want, e.g., `konote` for `konote.yourdomain.ca`)
-   - **Value:** Your VPS IP address (e.g., `51.195.123.45`)
+   - **Value:** Your VPS IP address (e.g., `141.227.151.7`)
    - **TTL:** 300 (5 minutes) or Auto
-4. If using Cloudflare: set the **proxy status to DNS only** (grey cloud, not orange). Caddy handles HTTPS directly — Cloudflare's proxy would interfere with Let's Encrypt certificate issuance.
+5. If using Cloudflare: set the **proxy status to DNS only** (grey cloud, not orange). Caddy handles HTTPS directly -- Cloudflare's proxy would interfere with Let's Encrypt certificate issuance.
+
+> **Important:** If you previously hosted on Railway, Heroku, or another platform, you likely have old CNAME records. These **must be deleted** before adding A records. DNS rules give CNAME priority -- if both exist, the CNAME wins and your A record will be ignored.
 
 ### Verify DNS is working
 
@@ -285,7 +329,7 @@ nslookup konote.yourdomain.ca
 
 You should see your VPS IP address in the response.
 
-> **Note:** DNS changes can take up to 48 hours to propagate, but usually work within 5–15 minutes.
+> **Note:** DNS changes can take up to 48 hours to propagate globally, but usually work within 5-15 minutes for most users. Let's Encrypt uses multiple validation servers worldwide -- if some still see stale DNS, the certificate request will fail on the first attempt but Caddy retries automatically every 60 seconds until all validators see the correct IP.
 
 ---
 
@@ -300,11 +344,11 @@ cd /opt/konote
 Build and start all containers:
 
 ```bash
-docker compose up -d --build
+sudo docker compose up -d --build
 ```
 
 This will:
-1. Build the KoNote Docker image (2–5 minutes the first time)
+1. Build the KoNote Docker image (2-5 minutes the first time)
 2. Pull PostgreSQL and Caddy images
 3. Start all containers
 4. Run database migrations automatically
@@ -313,7 +357,7 @@ This will:
 Watch the startup progress:
 
 ```bash
-docker compose logs -f web
+sudo docker compose logs -f web
 ```
 
 You should see:
@@ -336,19 +380,21 @@ Press **Ctrl+C** to stop watching logs (the containers keep running).
 ### Check all containers are running
 
 ```bash
-docker compose ps
+sudo docker compose ps
 ```
 
 You should see 5 containers, all with status "Up" or "Up (healthy)":
 
 ```
-NAME          SERVICE     STATUS
-konote-web-1       web         Up (healthy)
-konote-db-1        db          Up (healthy)
-konote-audit_db-1  audit_db    Up (healthy)
-konote-caddy-1     caddy       Up
-konote-autoheal-1  autoheal    Up
+NAME                 SERVICE     STATUS
+konote-web-1         web         Up (healthy)
+konote-db-1          db          Up (healthy)
+konote-audit_db-1    audit_db    Up (healthy)
+konote-caddy-1       caddy       Up
+konote-autoheal-1    autoheal    Up (healthy)
 ```
+
+> **Note:** The web container takes about 60 seconds to become healthy (it needs to run migrations and start up). If it shows "health: starting", wait a minute and check again.
 
 ### Check HTTPS is working
 
@@ -360,19 +406,29 @@ https://konote.yourdomain.ca
 
 You should see the KoNote login page with a valid HTTPS certificate (padlock icon in the address bar).
 
+### If HTTPS is not ready yet
+
+Caddy obtains the certificate automatically via Let's Encrypt. If DNS has not fully propagated to all of Let's Encrypt's worldwide validation servers, the first few certificate requests may fail. Check Caddy logs:
+
+```bash
+sudo docker compose logs caddy
+```
+
+If you see "challenge failed" errors mentioning "secondary validation", this is normal during DNS propagation. Caddy retries every 60 seconds. Once all validators see your IP, the certificate will be obtained automatically -- no action needed from you.
+
 ### If something is wrong
 
 Check the logs:
 
 ```bash
 # All container logs
-docker compose logs
+sudo docker compose logs
 
 # Just the web app
-docker compose logs web
+sudo docker compose logs web
 
 # Just Caddy (HTTPS issues)
-docker compose logs caddy
+sudo docker compose logs caddy
 ```
 
 See [Troubleshooting](#16-troubleshooting) for common issues.
@@ -382,12 +438,15 @@ See [Troubleshooting](#16-troubleshooting) for common issues.
 ## 10. Create Your First Admin User
 
 ```bash
-docker compose exec web python manage.py createsuperuser
+cd /opt/konote
+sudo docker compose exec web python manage.py createsuperuser
 ```
 
-Follow the prompts to set a username, email, and password. This creates a System Admin account that can configure the agency.
+Follow the prompts to set a username and password. This creates a System Admin account that can configure the agency.
 
-After logging in, go to **Admin → Settings** to:
+> **Note:** The `createsuperuser` command asks for username, display name, and password. There is no email field -- KoNote uses a custom User model.
+
+After logging in, go to **Admin > Settings** to:
 - Set your organisation name
 - Configure terminology (what you call participants, programs, etc.)
 - Enable or disable features
@@ -401,28 +460,30 @@ KoNote includes a backup script that dumps both databases nightly.
 ### Make the scripts executable
 
 ```bash
-chmod +x /opt/konote/scripts/backup-vps.sh
-chmod +x /opt/konote/scripts/disk-check.sh
+sudo chmod +x /opt/konote/scripts/backup-vps.sh
+sudo chmod +x /opt/konote/scripts/disk-check.sh
 ```
 
 ### Create the backup directory
 
 ```bash
-mkdir -p /opt/konote/backups
+sudo mkdir -p /opt/konote/backups
 ```
 
 ### Test the backup manually
 
 ```bash
-/opt/konote/scripts/backup-vps.sh
+sudo /opt/konote/scripts/backup-vps.sh
 ```
 
-You should see output showing both databases being backed up.
+You should see output showing both databases being backed up with file sizes.
+
+> **Note:** The backup script runs `docker compose` commands which require `sudo`.
 
 ### Set up automated backups via cron
 
 ```bash
-crontab -e
+sudo crontab -e
 ```
 
 If asked to choose an editor, select **nano** (option 1).
@@ -445,7 +506,7 @@ Save and exit (**Ctrl+O**, **Enter**, **Ctrl+X**).
 ### Verify cron is set up
 
 ```bash
-crontab -l
+sudo crontab -l
 ```
 
 You should see your three cron entries.
@@ -474,7 +535,7 @@ UptimeRobot will now check your site every 5 minutes and email you within minute
 
 OVHcloud LocalZone VPS instances block outgoing email ports (25, 587, 465). To send email (password resets, export notifications, erasure approvals), you need an external email relay service.
 
-### Option A: Resend (Recommended — Free Tier)
+### Option A: Resend (Recommended -- Free Tier)
 
 [Resend](https://resend.com/) offers 100 emails/day free, which is plenty for a small nonprofit.
 
@@ -484,7 +545,7 @@ OVHcloud LocalZone VPS instances block outgoing email ports (25, 587, 465). To s
 4. Update your `.env` file on the VPS:
 
 ```bash
-nano /opt/konote/.env
+sudo nano /opt/konote/.env
 ```
 
 Uncomment and fill in the email section:
@@ -503,10 +564,12 @@ DEFAULT_FROM_EMAIL=KoNote <noreply@yourdomain.ca>
 
 ```bash
 cd /opt/konote
-docker compose up -d
+sudo docker compose up -d
 ```
 
-### Option B: Brevo (Alternative — Free Tier)
+> **Important:** After changing `.env`, you must run `docker compose up -d` (not `docker compose restart`). The `restart` command does not re-read the `.env` file -- only `up -d` does.
+
+### Option B: Brevo (Alternative -- Free Tier)
 
 [Brevo](https://www.brevo.com/) (formerly Sendinblue) offers 300 emails/day free.
 
@@ -523,7 +586,7 @@ DEFAULT_FROM_EMAIL=KoNote <noreply@yourdomain.ca>
 ### Test email is working
 
 ```bash
-docker compose exec web python manage.py shell -c "
+sudo docker compose exec web python manage.py shell -c "
 from django.core.mail import send_mail
 send_mail('KoNote Test', 'Email is working!', None, ['your-email@example.com'])
 print('Sent!')
@@ -536,109 +599,76 @@ Check your inbox for the test email.
 
 ## 14. Run a Second Instance (Dev/Demo)
 
-You can run a demo instance alongside production on the same VPS — useful for testing, training, and showing KoNote to prospective agencies.
+You can run a demo instance alongside production on the same VPS -- useful for testing, training, and showing KoNote to prospective agencies. The two instances share a single Caddy reverse proxy but have completely separate databases and encryption keys.
 
-### Create a separate directory
+### Architecture
 
-```bash
-mkdir -p /opt/konote-dev
-cd /opt/konote-dev
-
-# Clone the same repo
-git clone https://github.com/LogicalOutcomes/konote.git .
+```
+Internet
+  |
+  +-- konote.yourdomain.ca -----> Caddy -----> konote-web-1:8000 (production)
+  |                                 |
+  +-- konote-dev.yourdomain.ca ---> +--------> konote-dev-web:8000 (demo)
 ```
 
-### Create a dev .env file
+Both web containers connect to a shared Docker network (`konote-proxy`) so the production Caddy can reach the dev instance. Each instance has its own databases, encryption keys, and volumes.
+
+### Step 1: Add the dev DNS record
+
+Add an A record for `konote-dev.yourdomain.ca` pointing to the same VPS IP. Follow the same process as [Step 7](#7-point-your-domain-to-the-vps).
+
+### Step 2: Create the shared Docker network
 
 ```bash
-nano /opt/konote-dev/.env
+sudo docker network create konote-proxy
 ```
 
-```ini
-# Dev instance — demo mode with sample data
-SECRET_KEY=GENERATE_A_DIFFERENT_SECRET_KEY
-FIELD_ENCRYPTION_KEY=GENERATE_A_DIFFERENT_ENCRYPTION_KEY
+### Step 3: Create the production override
 
-POSTGRES_USER=konote_dev
-POSTGRES_PASSWORD=GENERATE_A_DIFFERENT_PASSWORD
-POSTGRES_DB=konote_dev
-
-AUDIT_POSTGRES_USER=audit_dev
-AUDIT_POSTGRES_PASSWORD=GENERATE_A_DIFFERENT_PASSWORD
-AUDIT_POSTGRES_DB=konote_dev_audit
-
-DOMAIN=konote-dev.yourdomain.ca
-ALLOWED_HOSTS=konote-dev.yourdomain.ca
-CSRF_TRUSTED_ORIGINS=https://konote-dev.yourdomain.ca
-
-AUTH_MODE=local
-KONOTE_MODE=demo
-DEMO_MODE=true
-```
-
-### Create a dev docker-compose override
-
-The dev instance needs different container names, ports, and volume names so it does not conflict with production. Create a file called `docker-compose.override.yml`:
+The production instance needs a `docker-compose.override.yml` that connects its web and caddy containers to the shared network:
 
 ```bash
-nano /opt/konote-dev/docker-compose.override.yml
+sudo nano /opt/konote/docker-compose.override.yml
 ```
 
 ```yaml
+# Production override -- connects Caddy and web to the shared proxy network
+# so Caddy can reach both prod and dev web containers by container name
 services:
   web:
-    container_name: konote-dev-web
-    ports:
-      - "127.0.0.1:8001:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/auth/login/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-  db:
-    container_name: konote-dev-db
-    volumes:
-      - dev_pgdata:/var/lib/postgresql/data
-
-  audit_db:
-    container_name: konote-dev-audit-db
-    volumes:
-      - dev_audit_pgdata:/var/lib/postgresql/data
-      - ./scripts/audit_db_init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - frontend
+      - backend
+      - konote-proxy
 
   caddy:
-    container_name: konote-dev-caddy
-    ports:
-      - "8080:80"
-      - "8443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - dev_caddy_data:/data
-      - dev_caddy_config:/config
+    networks:
+      - frontend
+      - konote-proxy
 
-  autoheal:
-    container_name: konote-dev-autoheal
-
-volumes:
-  dev_pgdata:
-  dev_audit_pgdata:
-  dev_caddy_data:
-  dev_caddy_config:
+networks:
+  konote-proxy:
+    external: true
 ```
 
-### Important: Caddy port conflict
+Apply the override:
 
-Both prod and dev cannot share ports 80 and 443. The simplest approach is to use a **shared Caddy instance** on the production stack that reverse-proxies both domains. Alternatively, use the override above which puts the dev Caddy on ports 8080/8443.
+```bash
+cd /opt/konote
+sudo docker compose up -d
+```
 
-**Recommended approach — shared Caddy:**
+### Step 4: Update the production Caddyfile
 
-1. Update the **production** Caddyfile (`/opt/konote/Caddyfile`) to serve both domains:
+Replace the Caddyfile with one that serves both domains. Use **explicit container names** (not service names) to avoid DNS conflicts between the two instances:
+
+```bash
+sudo nano /opt/konote/Caddyfile
+```
 
 ```
 konote.yourdomain.ca {
-    reverse_proxy web:8000
+    reverse_proxy konote-web-1:8000
 
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -651,7 +681,7 @@ konote.yourdomain.ca {
 }
 
 konote-dev.yourdomain.ca {
-    reverse_proxy 127.0.0.1:8001
+    reverse_proxy konote-dev-web:8000
 
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -664,14 +694,85 @@ konote-dev.yourdomain.ca {
 }
 ```
 
-2. In the dev `docker-compose.override.yml`, **remove the caddy service entirely** (the prod Caddy handles both):
+> **Important:** Use `konote-web-1` (the container name), not `web` (the service name). Both instances define a `web` service, so Docker's DNS would resolve `web` ambiguously. Container names are unique.
+
+### Step 5: Clone and configure the dev instance
+
+```bash
+# Clone to a separate directory
+sudo git clone https://github.com/LogicalOutcomes/konote.git /opt/konote-dev
+cd /opt/konote-dev
+```
+
+Generate new credentials (different from production):
+
+```bash
+echo "DEV_SECRET_KEY:"
+python3 -c "import secrets; print(secrets.token_urlsafe(48))"
+
+echo "DEV_FIELD_ENCRYPTION_KEY:"
+python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+echo "DEV_POSTGRES_PASSWORD:"
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+
+echo "DEV_AUDIT_POSTGRES_PASSWORD:"
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Create the dev `.env`:
+
+```bash
+sudo nano /opt/konote-dev/.env
+```
+
+```ini
+# KoNote Dev/Demo Instance
+SECRET_KEY=PASTE_DEV_SECRET_KEY
+FIELD_ENCRYPTION_KEY=PASTE_DEV_ENCRYPTION_KEY
+
+# Main database
+POSTGRES_USER=konote_dev
+POSTGRES_PASSWORD=PASTE_DEV_POSTGRES_PASSWORD
+POSTGRES_DB=konote_dev
+
+# Audit database
+AUDIT_POSTGRES_USER=audit_dev
+AUDIT_POSTGRES_PASSWORD=PASTE_DEV_AUDIT_PASSWORD
+AUDIT_POSTGRES_DB=konote_dev_audit
+
+# Domain
+DOMAIN=konote-dev.yourdomain.ca
+ALLOWED_HOSTS=konote-dev.yourdomain.ca,localhost
+CSRF_TRUSTED_ORIGINS=https://konote-dev.yourdomain.ca
+
+# Auth and mode
+AUTH_MODE=local
+KONOTE_MODE=demo
+DEMO_MODE=true
+
+# Email (console backend -- demo doesn't need real email)
+DEFAULT_FROM_EMAIL=KoNote Dev <noreply@konote.app>
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+```
+
+### Step 6: Create the dev docker-compose override
+
+```bash
+sudo nano /opt/konote-dev/docker-compose.override.yml
+```
 
 ```yaml
 services:
   web:
     container_name: konote-dev-web
-    ports:
-      - "127.0.0.1:8001:8000"
+    ports: !reset []
+    networks:
+      - frontend
+      - backend
+      - konote-proxy
 
   db:
     container_name: konote-dev-db
@@ -694,25 +795,45 @@ services:
 volumes:
   dev_pgdata:
   dev_audit_pgdata:
+
+networks:
+  konote-proxy:
+    external: true
 ```
 
-3. Add the DNS A record for `konote-dev.yourdomain.ca` pointing to the same VPS IP.
+Key details:
+- `ports: !reset []` removes the host port mapping (Caddy reaches it via Docker network)
+- `caddy: profiles: [disabled]` disables the dev's own Caddy (production Caddy handles both domains)
+- Separate volume names (`dev_pgdata`, `dev_audit_pgdata`) keep data isolated from production
+- Unique container names prevent conflicts
 
-4. Start the dev instance:
+### Step 7: Start the dev instance
 
 ```bash
 cd /opt/konote-dev
-docker compose up -d --build
+sudo docker compose up -d --build
 ```
 
-5. Reload production Caddy to pick up the new domain:
+### Step 8: Reload production Caddy
 
 ```bash
 cd /opt/konote
-docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+sudo docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
-The dev instance will be available at `https://konote-dev.yourdomain.ca` with demo data and quick-login buttons.
+### Step 9: Verify
+
+```bash
+# Check all containers
+sudo docker compose -f /opt/konote/docker-compose.yml ps
+sudo docker compose -f /opt/konote-dev/docker-compose.yml ps
+```
+
+You should see 9 containers total (5 prod + 4 dev).
+
+Open `https://konote-dev.yourdomain.ca` in your browser. You should see the login page with **demo quick-login buttons** that let you switch between different roles without passwords.
+
+> **Note:** Caddy provisions the dev certificate separately. If DNS is still propagating for the dev subdomain, the certificate may take a few minutes to appear. Caddy retries automatically.
 
 ---
 
@@ -724,10 +845,10 @@ When a new version is released:
 cd /opt/konote
 
 # Pull the latest code
-git pull origin main
+sudo git pull origin main
 
 # Rebuild and restart (migrations run automatically on startup)
-docker compose up -d --build
+sudo docker compose up -d --build
 ```
 
 The entrypoint script handles database migrations automatically. Downtime is typically under 2 minutes.
@@ -736,8 +857,8 @@ The entrypoint script handles database migrations automatically. Downtime is typ
 
 ```bash
 cd /opt/konote-dev
-git pull origin main
-docker compose up -d --build
+sudo git pull origin main
+sudo docker compose up -d --build
 ```
 
 ---
@@ -746,17 +867,27 @@ docker compose up -d --build
 
 ### "Cannot connect" or timeout when accessing the site
 
-1. **Check containers are running:** `docker compose ps`
-2. **Check firewall:** `ufw status` — ports 80 and 443 must be open
-3. **Check DNS:** `nslookup konote.yourdomain.ca` from your local machine — must show VPS IP
-4. **Check Caddy logs:** `docker compose logs caddy` — look for certificate errors
+1. **Check containers are running:** `sudo docker compose ps`
+2. **Check firewall:** `sudo ufw status` -- ports 80 and 443 must be open
+3. **Check DNS:** `nslookup konote.yourdomain.ca` from your local machine -- must show VPS IP
+4. **Check Caddy logs:** `sudo docker compose logs caddy` -- look for certificate errors
+
+### "400 Bad Request" or "DisallowedHost"
+
+Django is rejecting the request because the domain is not in `ALLOWED_HOSTS`. Common causes:
+
+- The domain in `.env` doesn't match the URL you're visiting
+- `localhost` is missing from `ALLOWED_HOSTS` (needed for Docker healthcheck)
+- You're running two instances and the wrong one is receiving traffic (check Caddyfile uses explicit container names)
+
+Fix: edit `.env`, update `ALLOWED_HOSTS`, then run `sudo docker compose up -d`.
 
 ### "502 Bad Gateway" from Caddy
 
 The web container is not ready yet or has crashed:
 
 ```bash
-docker compose logs web
+sudo docker compose logs web
 ```
 
 Look for error messages. Common causes:
@@ -776,21 +907,34 @@ CSRF_TRUSTED_ORIGINS=https://konote.yourdomain.ca
 CSRF_TRUSTED_ORIGINS=konote.yourdomain.ca
 ```
 
-After fixing, restart: `docker compose up -d`
+After fixing, restart: `sudo docker compose up -d`
+
+### .env changes not taking effect
+
+After editing `.env`, you must run:
+
+```bash
+sudo docker compose up -d
+```
+
+Do **not** use `docker compose restart` -- it does not re-read the `.env` file. Only `docker compose up -d` recreates containers with the new environment variables.
 
 ### Caddy cannot get HTTPS certificate
 
 - DNS must point to the VPS **before** starting Caddy
 - Port 80 must be open (Let's Encrypt uses HTTP-01 challenge)
+- Old CNAME records must be deleted (they take priority over A records)
 - If using Cloudflare: set proxy to **DNS only** (grey cloud)
-- Check Caddy logs: `docker compose logs caddy`
+- Check Caddy logs: `sudo docker compose logs caddy`
+
+If you see "challenge failed" with "secondary validation" errors, this means some of Let's Encrypt's worldwide validators still see old DNS. Caddy retries every 60 seconds -- no action needed. This resolves within minutes to hours as DNS propagates.
 
 ### Container keeps restarting
 
 Check what is failing:
 
 ```bash
-docker compose logs --tail 50 web
+sudo docker compose logs --tail 50 web
 ```
 
 If you see "security check failed", the app is in production mode and a required setting is missing. Either fix the setting or temporarily set `KONOTE_MODE=demo` in `.env` to start with warnings instead of hard failures.
@@ -802,7 +946,7 @@ If you see "security check failed", the app is in production mode and a required
 df -h /
 
 # Remove old Docker images
-docker system prune -f
+sudo docker system prune -f
 
 # Check backup sizes
 du -sh /opt/konote/backups/
@@ -814,18 +958,18 @@ If you need to restore a database from backup:
 
 ```bash
 # Stop the web container (keep databases running)
-docker compose stop web
+sudo docker compose stop web
 
 # Restore main database
 gunzip -c /opt/konote/backups/main_2026-03-01_0200.sql.gz | \
-  docker compose exec -T db psql -U konote konote
+  sudo docker compose exec -T db psql -U konote konote
 
 # Restore audit database
 gunzip -c /opt/konote/backups/audit_2026-03-01_0200.sql.gz | \
-  docker compose exec -T audit_db psql -U audit_writer konote_audit
+  sudo docker compose exec -T audit_db psql -U audit_writer konote_audit
 
 # Restart the web container
-docker compose start web
+sudo docker compose start web
 ```
 
 ---
@@ -834,14 +978,14 @@ docker compose start web
 
 | Task | Command |
 |------|---------|
-| Start KoNote | `cd /opt/konote && docker compose up -d` |
-| Stop KoNote | `cd /opt/konote && docker compose down` |
-| View logs | `cd /opt/konote && docker compose logs -f web` |
-| Restart after .env change | `cd /opt/konote && docker compose up -d` |
-| Rebuild after code update | `cd /opt/konote && git pull && docker compose up -d --build` |
-| Create admin user | `docker compose exec web python manage.py createsuperuser` |
-| Run backup now | `/opt/konote/scripts/backup-vps.sh` |
-| Check container health | `docker compose ps` |
+| Start KoNote | `cd /opt/konote && sudo docker compose up -d` |
+| Stop KoNote | `cd /opt/konote && sudo docker compose down` |
+| View logs | `cd /opt/konote && sudo docker compose logs -f web` |
+| Restart after .env change | `cd /opt/konote && sudo docker compose up -d` |
+| Rebuild after code update | `cd /opt/konote && sudo git pull && sudo docker compose up -d --build` |
+| Create admin user | `sudo docker compose exec web python manage.py createsuperuser` |
+| Run backup now | `sudo /opt/konote/scripts/backup-vps.sh` |
+| Check container health | `sudo docker compose ps` |
 | Check disk space | `df -h /` |
 | View backup files | `ls -lh /opt/konote/backups/` |
-| SSH to VPS | `ssh root@YOUR_VPS_IP` |
+| SSH to VPS | `ssh -i ~/.ssh/ovh_konote ubuntu@YOUR_VPS_IP` |
