@@ -17452,3 +17452,19 @@ msgstr ""
 
 msgid "Your export has been generated"
 msgstr ""
+
+msgid ""
+"Calendar link created. Copy the link below and add it to your calendar app."
+msgstr ""
+"Lien de calendrier créé. Copiez le lien ci-dessous et ajoutez-le à votre "
+"application de calendrier."
+
+msgid "Could not build your calendar link. Please contact support."
+msgstr ""
+"Impossible de générer votre lien de calendrier. Veuillez contacter le "
+"support."
+
+msgid "Something went wrong generating your calendar link. Please try again."
+msgstr ""
+"Une erreur s'est produite lors de la génération de votre lien de calendrier. "
+"Veuillez réessayer."
