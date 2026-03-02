@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -178,16 +179,42 @@ def _get_next_sequence(report_dir, date_str):
         return chr(ord(max_letter) + 1)
 
 
+def _collect_run_files(screenshot_dir, scenario_ids):
+    """Return screenshot filenames belonging to the given scenario IDs.
+
+    Matches by filename prefix (e.g. "SCN-010_step1_..." belongs to
+    scenario "SCN-010"). This identifies which files THIS run produced
+    without needing cross-module state.
+    """
+    dirpath = Path(screenshot_dir)
+    if not dirpath.is_dir():
+        return []
+    files = []
+    for png in sorted(dirpath.glob("*.png")):
+        for sid in scenario_ids:
+            if png.name.startswith(f"{sid}_"):
+                files.append(png.name)
+                break
+    return files
+
+
 def _build_run_manifest(holdout, results):
     """Build a .run-manifest.json summarising the scenario run.
 
     Includes per-scenario metadata, screenshot validation results,
+    a files_written list (for downstream tools to scope evaluation),
     and aggregate statistics for downstream tools (qa_gate.py, etc.).
     """
     from .state_capture import validate_screenshot_dir
 
     screenshot_dir = os.path.join(holdout, "reports", "screenshots")
-    validation = validate_screenshot_dir(screenshot_dir)
+
+    # Collect files belonging to THIS run's scenarios
+    run_scenario_ids = {r.scenario_id for r in results}
+    files_written = _collect_run_files(screenshot_dir, run_scenario_ids)
+
+    # Validate only this run's files (not the entire historical folder)
+    validation = validate_screenshot_dir(screenshot_dir, only_files=files_written)
 
     scenarios = []
     all_personas = set()
@@ -205,10 +232,11 @@ def _build_run_manifest(holdout, results):
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "version": 1,
+        "version": 2,
         "scenarios_run": len(results),
         "personas_tested": sorted(all_personas),
         "total_steps": sum(s["steps"] for s in scenarios),
+        "files_written": files_written,
         "screenshots": {
             "total": validation["total"],
             "valid": validation["valid"],
@@ -217,6 +245,48 @@ def _build_run_manifest(holdout, results):
             "issues": validation["issues"],
         },
         "scenarios": scenarios,
+    }
+
+
+def _merge_manifests(existing, new_manifest):
+    """Merge a partial re-run manifest into an existing full-run manifest.
+
+    Keeps scenario data from the previous run for scenarios not re-run,
+    and replaces data for scenarios that were re-run. Merges
+    files_written so the combined list covers all runs.
+    """
+    new_ids = {s["scenario_id"] for s in new_manifest["scenarios"]}
+
+    # Keep existing scenarios that weren't re-run
+    merged_scenarios = [
+        s for s in existing.get("scenarios", [])
+        if s["scenario_id"] not in new_ids
+    ]
+    merged_scenarios.extend(new_manifest["scenarios"])
+    merged_scenarios.sort(key=lambda s: s["scenario_id"])
+
+    # Merge files_written: remove old files for re-run scenarios, add new
+    existing_files = set(existing.get("files_written", []))
+    for fname in list(existing_files):
+        for sid in new_ids:
+            if fname.startswith(f"{sid}_"):
+                existing_files.discard(fname)
+                break
+    merged_files = sorted(existing_files | set(new_manifest.get("files_written", [])))
+
+    # Merge personas
+    all_personas = set(existing.get("personas_tested", []))
+    all_personas.update(new_manifest.get("personas_tested", []))
+
+    return {
+        "generated_at": new_manifest["generated_at"],
+        "version": 2,
+        "scenarios_run": len(merged_scenarios),
+        "personas_tested": sorted(all_personas),
+        "total_steps": sum(s["steps"] for s in merged_scenarios),
+        "files_written": merged_files,
+        "screenshots": new_manifest["screenshots"],
+        "scenarios": merged_scenarios,
     }
 
 
@@ -260,23 +330,32 @@ def pytest_sessionfinish(session, exitstatus):
             manifest = _build_run_manifest(holdout, _all_results)
             manifest_path = os.path.join(screenshot_dir, ".run-manifest.json")
             os.makedirs(screenshot_dir, exist_ok=True)
+
+            # Merge with existing manifest if this is a partial re-run
+            try:
+                with open(manifest_path, encoding="utf-8") as f:
+                    existing = json.load(f)
+                if existing.get("scenarios_run", 0) > manifest["scenarios_run"]:
+                    print(
+                        f"  Partial re-run ({manifest['scenarios_run']} scenarios) "
+                        f"— merging with existing manifest "
+                        f"({existing['scenarios_run']} scenarios)"
+                    )
+                    manifest = _merge_manifests(existing, manifest)
+            except (FileNotFoundError, json.JSONDecodeError, KeyError):
+                pass  # No existing manifest or unreadable — write fresh
+
             with open(manifest_path, "w", encoding="utf-8") as f:
                 json.dump(manifest, f, indent=2, default=str)
             print(f"Run manifest written to: {manifest_path}")
 
             # Print screenshot validation summary
             ss = manifest["screenshots"]
-            if ss["blank"] or ss["duplicates"]:
-                print(
-                    f"  Screenshot issues: {ss['blank']} blank, "
-                    f"{ss['duplicates']} duplicates "
-                    f"(out of {ss['total']} total)"
-                )
-            else:
-                print(
-                    f"  All {ss['total']} screenshots valid "
-                    f"(no blanks or duplicates)"
-                )
+            print(
+                f"  {len(manifest.get('files_written', []))} files from this run, "
+                f"{ss['total']} validated "
+                f"({ss['blank']} blank, {ss['duplicates']} duplicates)"
+            )
         except Exception as exc:
             print(f"WARNING: Could not write run manifest: {exc}")
     else:
