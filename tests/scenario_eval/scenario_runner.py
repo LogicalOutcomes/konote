@@ -140,6 +140,50 @@ class ScenarioRunner(BrowserTestBase):
         except Exception:
             self.page.wait_for_load_state("domcontentloaded")
 
+    # Interactive action types that may trigger HTMX in-page swaps.
+    # After executing these actions, an extra HTMX settle wait is needed
+    # before taking a screenshot so the DOM reflects the server response.
+    _HTMX_TRIGGER_ACTIONS = frozenset({"click", "fill", "select", "press", "type"})
+
+    def _wait_for_htmx_if_interactive(self, actions):
+        """Wait for HTMX to settle after interactive actions.
+
+        QA-R8b-TEST1: After a click, fill, select, or key-press, the page
+        may trigger an HTMX request that swaps content in-place (without a
+        URL change).  The existing _wait_for_idle() only runs when the URL
+        changes after a click, so pure HTMX in-page responses are missed.
+
+        This method checks whether the step contained interactive actions.
+        If so, it waits for HTMX to settle (via wait_for_htmx() when
+        available, or a short networkidle attempt as a fallback).
+
+        Called AFTER _execute_actions() and BEFORE capture_step_state().
+        Navigation-only steps (goto, wait_for) don't need this — they
+        already wait via _wait_for_idle inside _execute_actions.
+        """
+        has_interactive = any(
+            isinstance(a, dict) and bool(
+                self._HTMX_TRIGGER_ACTIONS.intersection(a.keys())
+            )
+            for a in actions
+        )
+        if not has_interactive:
+            return
+
+        # Prefer the dedicated HTMX settle helper from BrowserTestBase
+        if hasattr(self, "wait_for_htmx"):
+            try:
+                self.wait_for_htmx()
+                return
+            except Exception:
+                pass  # Fall through to networkidle
+
+        # Fallback: short networkidle wait (capped to avoid long hangs)
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=3000)
+        except Exception:
+            pass  # If it times out, proceed — screenshot may show mid-transition
+
     def _create_test_data(self):
         """Extend base test data with extra users needed by scenarios."""
         super()._create_test_data()
@@ -882,6 +926,12 @@ class ScenarioRunner(BrowserTestBase):
         # database so {client_id}, {jane_doe_id}, etc. resolve on first use.
         context_vars = self._build_initial_context_vars(scenario)
 
+        # QA-R8b-TEST1: Track previous screenshot path for duplicate detection.
+        # Each step passes the previous step's screenshot so state_capture can
+        # flag byte-identical images (action did not execute or HTMX did not
+        # respond before the screenshot was taken).
+        previous_screenshot_path = None
+
         for step in steps:
             step_id = step.get("id", 0)
             actor = step.get("actor", persona_id)
@@ -921,7 +971,15 @@ class ScenarioRunner(BrowserTestBase):
             # Execute Playwright actions
             self._execute_actions(actions, context_vars=context_vars)
 
-            # Capture page state
+            # QA-R8b-TEST1: After interactive actions (click, fill, select),
+            # give HTMX a moment to complete in-page swaps before the
+            # screenshot.  Without this wait, in-page HTMX updates haven't
+            # rendered yet and the screenshot is identical to the previous
+            # step (duplicate).  Only triggered when the step has interactive
+            # actions — navigation-only steps already wait via _wait_for_idle.
+            self._wait_for_htmx_if_interactive(actions)
+
+            # Capture page state — pass previous path for duplicate detection
             capture = capture_step_state(
                 page=self.page,
                 scenario_id=scenario["id"],
@@ -929,7 +987,11 @@ class ScenarioRunner(BrowserTestBase):
                 actor_persona=actor,
                 screenshot_dir=screenshot_dir,
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
+                previous_screenshot_path=previous_screenshot_path,
             )
+
+            # Update previous screenshot path for the next step
+            previous_screenshot_path = capture.screenshot_path or None
 
             # QA-W2: Attach console messages and clear buffer for next step
             if hasattr(self, "_console_messages"):
@@ -1292,6 +1354,10 @@ class ScenarioRunner(BrowserTestBase):
         (re.compile(r"/plans/(\d+)"), "plan_id"),
         (re.compile(r"/events/(\d+)"), "event_id"),
         (re.compile(r"/alerts/(\d+)"), "alert_id"),
+        # QA-R8b-TEST2: recommendation URLs (SCN-075)
+        (re.compile(r"/alerts/recommendations/(\d+)"), "recommendation_id"),
+        # QA-R8b-TEST2: meeting URLs (SCN-084)
+        (re.compile(r"/meetings/(\d+)"), "meeting_id"),
     ]
 
     def _build_initial_context_vars(self, scenario):
@@ -1302,9 +1368,11 @@ class ScenarioRunner(BrowserTestBase):
         were only populated AFTER navigating to a page containing an
         entity ID, so the first reference would fail.
 
-        This method queries the test database for the first available
-        client, program, and group IDs, plus any named-client IDs
-        referenced in the scenario's prerequisites.
+        QA-R8b-TEST2: Extended to also seed alert_id, recommendation_id,
+        and meeting IDs, and to build first-name-based client keys like
+        {client_id_alex} (in addition to the full-name slug {alex_chen_id}).
+        These alternative keys match the naming convention used in SCN-075,
+        SCN-076, and SCN-084 YAML files.
 
         Returns:
             Dict mapping variable names to string ID values.
@@ -1336,10 +1404,39 @@ class ScenarioRunner(BrowserTestBase):
         except Exception:
             pass
 
+        # QA-R8b-TEST2: Pre-seed alert_id from the first active alert.
+        # SCN-075 uses {alert_id} in steps 2 and 3 before navigating to any
+        # alert URL, so it must be available from the start of the scenario.
+        try:
+            from apps.events.models import Alert
+            first_alert = Alert.objects.filter(
+                status="default",
+            ).order_by("pk").first()
+            if first_alert:
+                context["alert_id"] = str(first_alert.pk)
+        except Exception:
+            pass
+
+        # QA-R8b-TEST2: Pre-seed recommendation_id from the first
+        # AlertCancellationRecommendation, if any exist.
+        try:
+            from apps.events.models import AlertCancellationRecommendation
+            first_rec = AlertCancellationRecommendation.objects.order_by(
+                "pk",
+            ).first()
+            if first_rec:
+                context["recommendation_id"] = str(first_rec.pk)
+        except Exception:
+            pass
+
         # --- Named-client IDs from prerequisites ---
         # Scenarios can require specific clients (e.g. "Jane Doe").
-        # Generate slug-based variable names like {jane_doe_id} so
-        # YAML files can reference them in goto URLs.
+        # Generate slug-based variable names like {jane_doe_id} AND
+        # first-name-based keys like {client_id_jane} so YAML files can
+        # reference them in goto URLs using either convention.
+        # QA-R8b-TEST2: The first-name key ({client_id_alex}) matches the
+        # pattern used by SCN-084; the full-name slug ({alex_chen_id})
+        # matches the TEST-20 pattern used by earlier scenarios.
         prereqs = scenario.get("prerequisites", {})
         required_data = prereqs.get("data", [])
         try:
@@ -1356,16 +1453,64 @@ class ScenarioRunner(BrowserTestBase):
                 for c in all_clients:
                     full_name = f"{c.first_name} {c.last_name}".strip()
                     if full_name == req_name:
-                        # Build a slug-based variable: "Jane Doe" → "jane_doe_id"
-                        slug = re.sub(r"[^a-z0-9]+", "_", req_name.lower()).strip("_")
+                        # Full-name slug key: "Jane Doe" → jane_doe_id
+                        slug = re.sub(
+                            r"[^a-z0-9]+", "_", req_name.lower(),
+                        ).strip("_")
                         context[f"{slug}_id"] = str(c.pk)
+
+                        # First-name key: "Jane Doe" → client_id_jane
+                        # Matches the {client_id_alex} convention in SCN-084.
+                        first_name_slug = re.sub(
+                            r"[^a-z0-9]+", "_", c.first_name.lower(),
+                        ).strip("_") if c.first_name else ""
+                        if first_name_slug:
+                            context[f"client_id_{first_name_slug}"] = str(c.pk)
+
                         # Also set as generic client_id if not already set
                         if "client_id" not in context:
                             context["client_id"] = str(c.pk)
+
+                        # QA-R8b-TEST2: Pre-seed meeting IDs for this client.
+                        # SCN-084 uses {meeting_id_alex} and {meeting_id_priya}
+                        # in send-reminder URLs before navigating to any meeting
+                        # page.  Look up the client's first meeting by ID.
+                        if first_name_slug:
+                            try:
+                                from apps.events.models import Meeting
+                                first_meeting = Meeting.objects.filter(
+                                    event__client_file=c,
+                                ).order_by("pk").first()
+                                if first_meeting:
+                                    context[
+                                        f"meeting_id_{first_name_slug}"
+                                    ] = str(first_meeting.pk)
+                                    # Also set generic meeting_id if not set
+                                    if "meeting_id" not in context:
+                                        context["meeting_id"] = str(
+                                            first_meeting.pk,
+                                        )
+                            except Exception:
+                                pass
+
+                        # QA-R8b-TEST2: Also pre-seed alert_id for this client
+                        # if the scenario has an alert prerequisite for them.
+                        # This allows {alert_id} to reference the right client's
+                        # alert in multi-client scenarios.
+                        try:
+                            from apps.events.models import Alert
+                            client_alert = Alert.objects.filter(
+                                client_file=c, status="default",
+                            ).order_by("pk").first()
+                            if client_alert and "alert_id" not in context:
+                                context["alert_id"] = str(client_alert.pk)
+                        except Exception:
+                            pass
+
                         break
 
         logger.debug(
-            "TEST-20: Pre-seeded context_vars for %s: %s",
+            "TEST-20/QA-R8b-TEST2: Pre-seeded context_vars for %s: %s",
             scenario.get("id", "?"), context,
         )
         return context
@@ -1482,6 +1627,23 @@ class ScenarioRunner(BrowserTestBase):
                     self.page.fill(selector, "", timeout=5000)
                 except Exception:
                     pass
+
+            elif "select" in action:
+                # QA-R8b-TEST1: Select an option from a <select> element.
+                # YAML format: - select: ["#selector", "value"]
+                # Uses Playwright's select_option, which works with both
+                # option values and visible text labels.
+                selector, value = action["select"]
+                try:
+                    self.page.select_option(selector, value, timeout=5000)
+                except Exception:
+                    # Fallback: try matching by label text
+                    try:
+                        self.page.select_option(
+                            selector, label=value, timeout=3000,
+                        )
+                    except Exception:
+                        pass  # Not found — evaluator will note the issue
 
             elif "click" in action:
                 selector = action["click"]
