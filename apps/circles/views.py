@@ -68,20 +68,18 @@ def _get_accessible_clients_for_search(user):
 
     qs = get_client_queryset(user).filter(status="active")
     program_ids = get_user_program_ids(user)
-    enrolled_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            program_id__in=program_ids, status="active"
-        ).values_list("client_file_id", flat=True)
-    )
+    enrolled_ids_qs = ClientProgramEnrolment.objects.filter(
+        program_id__in=program_ids, status="active"
+    ).values("client_file_id")
+
     # DV safety: exclude blocked clients
-    blocked_ids = set(
-        ClientAccessBlock.objects.filter(user=user, is_active=True)
-        .values_list("client_file_id", flat=True)
-    )
-    enrolled_ids -= blocked_ids
+    blocked_ids_qs = ClientAccessBlock.objects.filter(
+        user=user, is_active=True
+    ).values("client_file_id")
 
     results = []
-    for client in qs.filter(pk__in=enrolled_ids):
+    clients = qs.filter(pk__in=enrolled_ids_qs).exclude(pk__in=blocked_ids_qs)
+    for client in clients:
         name = f"{client.display_name} {client.last_name}".strip()
         results.append((client.pk, name or f"#{client.pk}"))
     results.sort(key=lambda x: x[1].lower())

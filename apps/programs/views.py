@@ -22,7 +22,7 @@ from .context import (
 )
 from apps.groups.models import Group
 
-from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm
+from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm, SwitchProgramForm
 from .models import Program, UserProgramRole
 
 logger = logging.getLogger(__name__)
@@ -249,7 +249,10 @@ def select_program(request):
     })
 
 
+from django.views.decorators.http import require_POST
+
 @login_required
+@require_POST
 def switch_program(request):
     """POST: Set the active program in the user's session.
 
@@ -261,11 +264,12 @@ def switch_program(request):
     Audit-logs switches to confidential programs.
     Redirects to 'next' param or home.
     """
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+    form = SwitchProgramForm(request.POST)
+    if not form.is_valid():
+        return HttpResponseForbidden(_("Invalid request."))
 
-    value = request.POST.get("program", "").strip()
-    next_url = request.POST.get("next", "/")
+    value = form.cleaned_data["program"].strip()
+    next_url = form.cleaned_data.get("next") or "/"
 
     # Validate next URL (prevent open redirect)
     from django.utils.http import url_has_allowed_host_and_scheme
