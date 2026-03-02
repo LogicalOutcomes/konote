@@ -248,12 +248,16 @@ def _build_run_manifest(holdout, results):
     }
 
 
-def _merge_manifests(existing, new_manifest):
+def _merge_manifests(existing, new_manifest, screenshot_dir=None):
     """Merge a partial re-run manifest into an existing full-run manifest.
 
     Keeps scenario data from the previous run for scenarios not re-run,
     and replaces data for scenarios that were re-run. Merges
     files_written so the combined list covers all runs.
+
+    If screenshot_dir is provided, re-validates screenshots for the merged
+    file set (gives accurate combined stats). Otherwise falls back to
+    new_manifest's screenshot stats (useful for unit tests without disk).
     """
     new_ids = {s["scenario_id"] for s in new_manifest["scenarios"]}
 
@@ -278,6 +282,20 @@ def _merge_manifests(existing, new_manifest):
     all_personas = set(existing.get("personas_tested", []))
     all_personas.update(new_manifest.get("personas_tested", []))
 
+    # Re-validate screenshots for the merged file set when possible
+    if screenshot_dir:
+        from .state_capture import validate_screenshot_dir
+        validation = validate_screenshot_dir(screenshot_dir, only_files=merged_files)
+        screenshots = {
+            "total": validation["total"],
+            "valid": validation["valid"],
+            "blank": validation["blank"],
+            "duplicates": validation["duplicates"],
+            "issues": validation["issues"],
+        }
+    else:
+        screenshots = new_manifest.get("screenshots", {})
+
     return {
         "generated_at": new_manifest["generated_at"],
         "version": 2,
@@ -285,7 +303,7 @@ def _merge_manifests(existing, new_manifest):
         "personas_tested": sorted(all_personas),
         "total_steps": sum(s["steps"] for s in merged_scenarios),
         "files_written": merged_files,
-        "screenshots": new_manifest["screenshots"],
+        "screenshots": screenshots,
         "scenarios": merged_scenarios,
     }
 
@@ -341,7 +359,7 @@ def pytest_sessionfinish(session, exitstatus):
                         f"— merging with existing manifest "
                         f"({existing['scenarios_run']} scenarios)"
                     )
-                    manifest = _merge_manifests(existing, manifest)
+                    manifest = _merge_manifests(existing, manifest, screenshot_dir=screenshot_dir)
             except (FileNotFoundError, json.JSONDecodeError, KeyError):
                 pass  # No existing manifest or unreadable — write fresh
 
