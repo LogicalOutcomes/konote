@@ -94,9 +94,9 @@ class SetupWizardFormTest(TestCase):
 
     def test_instance_settings_post_redirects_to_terminology(self):
         resp = self.client.post("/admin/settings/setup-wizard/instance_settings/", {
-            "product_name": "TestNote",
+            "organization_name": "TestNote",
             "support_email": "test@example.ca",
-            "logo_url": "",
+            "organization_website": "",
             "date_format": "YYYY-MM-DD",
         })
         self.assertEqual(resp.status_code, 302)
@@ -104,15 +104,15 @@ class SetupWizardFormTest(TestCase):
 
     def test_instance_settings_stored_in_session(self):
         self.client.post("/admin/settings/setup-wizard/instance_settings/", {
-            "product_name": "TestNote",
+            "organization_name": "TestNote",
             "support_email": "test@example.ca",
-            "logo_url": "",
+            "organization_website": "",
             "date_format": "YYYY-MM-DD",
         })
         session = self.client.session
         wizard_data = session.get("setup_wizard", {})
         self.assertIn("instance_settings", wizard_data)
-        self.assertEqual(wizard_data["instance_settings"]["product_name"], "TestNote")
+        self.assertEqual(wizard_data["instance_settings"]["organization_name"], "TestNote")
 
     def test_features_post_redirects_to_programs(self):
         resp = self.client.post("/admin/settings/setup-wizard/features/", {
@@ -217,7 +217,7 @@ class SetupWizardApplyTest(TestCase):
         session = self.client.session
         session["setup_wizard"] = {
             "instance_settings": {
-                "product_name": "TestNote",
+                "organization_name": "TestNote",
                 "support_email": "test@example.ca",
             },
         }
@@ -228,7 +228,7 @@ class SetupWizardApplyTest(TestCase):
         self.assertIn("complete", resp.url)
 
         # Verify settings were applied
-        setting = InstanceSetting.objects.get(setting_key="product_name")
+        setting = InstanceSetting.objects.get(setting_key="organization_name")
         self.assertEqual(setting.setting_value, "TestNote")
 
     def test_complete_page_loads(self):
