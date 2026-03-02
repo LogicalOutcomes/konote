@@ -16,7 +16,7 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 **Product code to build:**
 
 - [ ] Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (RP2/RP3) (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
-- [ ] Auto-update progress metrics when goal status changes — recalculate related metrics when a goal is marked achieved/abandoned (REQ-G4)
+- [ ] 🔨 Auto-update progress metrics when goal status changes — recalculate related metrics when a goal is marked achieved/abandoned (REQ-G4)
 - [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
 - [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. (SCALE-ROLLUP1)
 
@@ -51,27 +51,27 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 8b — Fixes + Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
 
-- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
-- [ ] Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
-- [ ] Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
+- [ ] 🔨 Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
+- [ ] 🔨 Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
+- [ ] 🔨 Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
 
 ### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
 
-- [ ] Verify: language middleware — ref fix-log FG-S-2, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or overridden (QA-R8-LANG1)
-- [ ] Fix newly created client not searchable by other users — cross-role intake handoff (QA-R8-UX3)
-- [ ] Fix quick note entry point unreachable — selector mismatch on client profile (QA-R8-UX4)
-- [ ] Fix create form Tab order — Last Name gets focus before First Name, WCAG 1.3.2 (QA-R8-A11Y4)
-- [ ] Fix excessive Tab presses to reach search results — filter controls blocking path, WCAG 2.4.3 (QA-R8-A11Y5)
+- [ ] 🔨 Verify: language middleware — ref fix-log FG-S-2, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or overridden (QA-R8-LANG1)
+- [ ] 🔨 Fix newly created client not searchable by other users — cross-role intake handoff (QA-R8-UX3)
+- [ ] 🔨 Fix quick note entry point unreachable — selector mismatch on client profile (QA-R8-UX4)
+- [ ] 🔨 Fix create form Tab order — Last Name gets focus before First Name, WCAG 1.3.2 (QA-R8-A11Y4)
+- [ ] 🔨 Fix excessive Tab presses to reach search results — filter controls blocking path, WCAG 2.4.3 (QA-R8-A11Y5)
 - [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
-- [ ] Fix missing validation error + success confirmation on participant create (QA-R8-UX5)
-- [ ] Fix mobile edit navigating to wrong form — opens New Participant instead of contact edit (QA-R8-UX6)
-- [ ] Verify: offline fallback — ref fix-log entry 9, fixed 2026-02-21 Round 7 same-day, check if regressed (QA-R8-UX7)
+- [ ] 🔨 Fix missing validation error + success confirmation on participant create (QA-R8-UX5)
+- [ ] 🔨 Fix mobile edit navigating to wrong form — opens New Participant instead of contact edit (QA-R8-UX6)
+- [ ] 🔨 Verify: offline fallback — ref fix-log entry 9, fixed 2026-02-21 Round 7 same-day, check if regressed (QA-R8-UX7)
 - [ ] Add date presets + PDF export to executive dashboard (QA-R8-UX8)
 - [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
-- [ ] Fix calendar feed URL generation failing silently (QA-R8-UX9)
+- [ ] 🔨 Fix calendar feed URL generation failing silently (QA-R8-UX9)
 - [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
 - [ ] Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
-- [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
+- [ ] 🔨 Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
 - [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
 ### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
@@ -80,7 +80,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Fix duplicate landmark regions — landmark-unique (MODERATE, 60 pages, 352 nodes), likely duplicate nav or main landmarks in base template structure (AXE-LANDMARK1)
 - [ ] Fix 4 pages missing base template wrapper — export-confirmation, plan-section-edit, public-survey-link, public-unsubscribe are missing title, lang attr, landmarks, and h1 (AXE-TEMPLATE1)
 - [ ] Fix colour contrast failures — 11 pages, 257 nodes including client-detail, dashboard-staff, plan-view, notes-list, events-list, comm pages (AXE-CONTRAST1)
-- [ ] Fix missing h1 on notes-detail page (AXE-HEADING1)
+- [ ] 🔨 Fix missing h1 on notes-detail page (AXE-HEADING1)
 - [ ] Fix empty table headers on 4 admin pages — admin-event-types, admin-settings-terminology, admin-users, programs-list (AXE-TABLE1)
 
 ### Phase: Demo Mode Safeguards (from expert panel, see tasks/design-rationale/ovhcloud-deployment.md)
@@ -141,9 +141,9 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
-- [ ] Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
-- [ ] Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
+- [ ] 🔨 Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
+- [ ] 🔨 Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
+- [ ] 🔨 Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
 
 ## Parking Lot: Needs Review
 
