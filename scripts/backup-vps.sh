@@ -9,7 +9,11 @@
 #   - .env file with POSTGRES_USER, POSTGRES_DB, AUDIT_POSTGRES_USER, AUDIT_POSTGRES_DB
 #
 # Optional:
-#   - Set ALERT_WEBHOOK_URL in .env to receive failure alerts (e.g., UptimeRobot heartbeat URL)
+#   - Set ALERT_WEBHOOK_URL in .env to receive failure alerts
+#     Alerts are sent as plain-text HTTP POST (no JSON, no Content-Type header).
+#     Compatible with: UptimeRobot push monitors, Slack incoming webhooks,
+#     ntfy.sh, Uptime Kuma push monitors. For JSON-only endpoints, use a
+#     middleware like Zapier or n8n to transform the request.
 
 set -euo pipefail
 
@@ -21,6 +25,11 @@ AUDIT_RETENTION_DAYS="${AUDIT_RETENTION_DAYS:-90}"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M)
 
 # Load environment variables from .env
+# Safety note: source treats .env as a shell script, so values with shell
+# metacharacters (backticks, $(...), semicolons) would be executed. This is
+# safe because the deploy guide generates all passwords with Python's
+# secrets.token_urlsafe(), which produces only [A-Za-z0-9_-] characters.
+# If .env editing ever becomes user-facing, switch to a grep-based approach.
 if [ -f "$KONOTE_DIR/.env" ]; then
     set -a
     source "$KONOTE_DIR/.env"
