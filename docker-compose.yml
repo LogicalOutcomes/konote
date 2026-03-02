@@ -17,6 +17,9 @@ services:
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost}
       - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-}
       - DEMO_MODE=${DEMO_MODE:-}
+      # Email defaults: if not configured in .env, email logs to console (no
+      # real emails sent). To enable email, set EMAIL_BACKEND, EMAIL_HOST, and
+      # credentials in .env — see docs/deploy-ovhcloud.md Step 13.
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-KoNote <noreply@konote.app>}
       - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
       - EMAIL_HOST=${EMAIL_HOST:-}
