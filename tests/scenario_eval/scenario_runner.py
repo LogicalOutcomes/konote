@@ -140,6 +140,50 @@ class ScenarioRunner(BrowserTestBase):
         except Exception:
             self.page.wait_for_load_state("domcontentloaded")
 
+    # Interactive action types that may trigger HTMX in-page swaps.
+    # After executing these actions, an extra HTMX settle wait is needed
+    # before taking a screenshot so the DOM reflects the server response.
+    _HTMX_TRIGGER_ACTIONS = frozenset({"click", "fill", "select", "press", "type"})
+
+    def _wait_for_htmx_if_interactive(self, actions):
+        """Wait for HTMX to settle after interactive actions.
+
+        QA-R8b-TEST1: After a click, fill, select, or key-press, the page
+        may trigger an HTMX request that swaps content in-place (without a
+        URL change).  The existing _wait_for_idle() only runs when the URL
+        changes after a click, so pure HTMX in-page responses are missed.
+
+        This method checks whether the step contained interactive actions.
+        If so, it waits for HTMX to settle (via wait_for_htmx() when
+        available, or a short networkidle attempt as a fallback).
+
+        Called AFTER _execute_actions() and BEFORE capture_step_state().
+        Navigation-only steps (goto, wait_for) don't need this — they
+        already wait via _wait_for_idle inside _execute_actions.
+        """
+        has_interactive = any(
+            isinstance(a, dict) and bool(
+                self._HTMX_TRIGGER_ACTIONS.intersection(a.keys())
+            )
+            for a in actions
+        )
+        if not has_interactive:
+            return
+
+        # Prefer the dedicated HTMX settle helper from BrowserTestBase
+        if hasattr(self, "wait_for_htmx"):
+            try:
+                self.wait_for_htmx()
+                return
+            except Exception:
+                pass  # Fall through to networkidle
+
+        # Fallback: short networkidle wait (capped to avoid long hangs)
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=3000)
+        except Exception:
+            pass  # If it times out, proceed — screenshot may show mid-transition
+
     def _create_test_data(self):
         """Extend base test data with extra users needed by scenarios."""
         super()._create_test_data()
@@ -882,6 +926,12 @@ class ScenarioRunner(BrowserTestBase):
         # database so {client_id}, {jane_doe_id}, etc. resolve on first use.
         context_vars = self._build_initial_context_vars(scenario)
 
+        # QA-R8b-TEST1: Track previous screenshot path for duplicate detection.
+        # Each step passes the previous step's screenshot so state_capture can
+        # flag byte-identical images (action did not execute or HTMX did not
+        # respond before the screenshot was taken).
+        previous_screenshot_path = None
+
         for step in steps:
             step_id = step.get("id", 0)
             actor = step.get("actor", persona_id)
@@ -921,7 +971,15 @@ class ScenarioRunner(BrowserTestBase):
             # Execute Playwright actions
             self._execute_actions(actions, context_vars=context_vars)
 
-            # Capture page state
+            # QA-R8b-TEST1: After interactive actions (click, fill, select),
+            # give HTMX a moment to complete in-page swaps before the
+            # screenshot.  Without this wait, in-page HTMX updates haven't
+            # rendered yet and the screenshot is identical to the previous
+            # step (duplicate).  Only triggered when the step has interactive
+            # actions — navigation-only steps already wait via _wait_for_idle.
+            self._wait_for_htmx_if_interactive(actions)
+
+            # Capture page state — pass previous path for duplicate detection
             capture = capture_step_state(
                 page=self.page,
                 scenario_id=scenario["id"],
@@ -929,7 +987,11 @@ class ScenarioRunner(BrowserTestBase):
                 actor_persona=actor,
                 screenshot_dir=screenshot_dir,
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
+                previous_screenshot_path=previous_screenshot_path,
             )
+
+            # Update previous screenshot path for the next step
+            previous_screenshot_path = capture.screenshot_path or None
 
             # QA-W2: Attach console messages and clear buffer for next step
             if hasattr(self, "_console_messages"):
@@ -1482,6 +1544,23 @@ class ScenarioRunner(BrowserTestBase):
                     self.page.fill(selector, "", timeout=5000)
                 except Exception:
                     pass
+
+            elif "select" in action:
+                # QA-R8b-TEST1: Select an option from a <select> element.
+                # YAML format: - select: ["#selector", "value"]
+                # Uses Playwright's select_option, which works with both
+                # option values and visible text labels.
+                selector, value = action["select"]
+                try:
+                    self.page.select_option(selector, value, timeout=5000)
+                except Exception:
+                    # Fallback: try matching by label text
+                    try:
+                        self.page.select_option(
+                            selector, label=value, timeout=3000,
+                        )
+                    except Exception:
+                        pass  # Not found — evaluator will note the issue
 
             elif "click" in action:
                 selector = action["click"]
