@@ -7,20 +7,7 @@
 
 ## Active Work
 
-### Phase: QA Round 8b — New Fixes (see tasks/qa-action-plan-2026-03-01b.md)
-
-- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
-
 _QA Round 8 Tier 1 complete — see Recently Done._
-
-### Phase: Page Audit Round 4 — Tier 1 Fixes (see tasks/qa-action-plan-2026-03-01-page-audit.md)
-
-- [ ] Fix public-unsubscribe 500 error — CASL compliance, carryover from Round 3 BLOCKER-P-4, "public view hardening" (2026-02-22) did not resolve (QA-PA4-CASL1)
-- [ ] Verify: E2 admin nav visible despite admin:false — QA-R8-PERM1 verified E1 only, re-check E2 persona specifically (QA-PA4-PERM1)
-- [ ] Verify: custom 500.html template being served — was built 2026-02-22 but audit found raw Django 500 on two pages (QA-PA4-VERIFY1)
-- [ ] Fix plan-view Actions CSS vertical text rendering — "Actions" stacks letter-by-letter, a11y and voice control failure (QA-PA4-CSS1)
-- [ ] Fix Target→Goal terminology in plan-view and notes-create — third round flagged, codebase-wide search-and-replace needed (QA-PA4-TERM1)
-- [ ] Verify: client-export URL matches page-inventory — export built 2026-02-28, URL in inventory may differ from actual route (QA-PA4-VERIFY2)
 
 ### Phase: Launch Readiness
 
@@ -46,8 +33,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: QA Round 8b — Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
+### Phase: QA Round 8b — Fixes + Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
 
+- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
 - [ ] Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
 - [ ] Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
 
@@ -69,12 +57,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
 - [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
 - [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
-
-### Phase: Page Audit Round 4 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01-page-audit.md)
-
-- [ ] Fix notes-create accessibility — add section headings for skip-nav, aria-required on required fields, visible required indicators, WCAG 1.3.1 + 3.3.2 (QA-PA4-A11Y1)
-- [ ] Fix reports-funder executive audit fields — pre-fill or make optional for executive roles — GK reviews reporting methodology (QA-PA4-UX1)
-- [ ] Verify: notes-create autosave indicator — feature built 2026-02-03 (UX21), audit found no visible indicator or unsaved-changes warning (QA-PA4-VERIFY3)
 
 ### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
 
@@ -138,8 +120,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Add progress indicator to notes-create form — sidebar checklist or top bar for DS1c (ADHD) and DS1b (first week) orientation (QA-PA4-UX2)
-- [ ] Add sample/preview to reports-insights pre-query form — new users don't know what insights look like (QA-PA4-UX3)
 - [ ] Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
 - [ ] Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
 - [ ] Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
