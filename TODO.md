@@ -9,7 +9,7 @@
 
 _QA Round 8 Tier 1 complete — see Recently Done._
 
-### Phase: P0 — Prosper Canada Requirements (March 31)
+### Phase: P0 — Requirements Analysis (March 31)
 
 Items from `requirements-analysis.md` that must move from "Planned" to "Fully met" before deliverable deadline.
 
@@ -18,8 +18,8 @@ Items from `requirements-analysis.md` that must move from "Planned" to "Fully me
 
 **Cross-agency rollup (RP4):**
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
-- [ ] Build cross-agency reporting API — standardised endpoint per instance for Prosper Canada to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
-- [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
+- [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
+- [ ] Build umbrella admin dashboard — central view for [funder partner] to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
 
 **Multi-tenancy and central management (MA3, MA4):**
 - [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
