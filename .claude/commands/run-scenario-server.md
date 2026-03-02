@@ -29,9 +29,19 @@ pytest tests/scenario_eval/ -v --no-llm
 **This takes 2-5 minutes.** Use `timeout: 360000` (6 minutes) on the Bash call. Wait for it to finish. Do NOT poll or run other commands while it runs.
 
 Notes:
-- `SCENARIO_HOLDOUT_DIR` auto-resolves to `../konote-qa-scenarios` if the repo is cloned next to konote-app. Only set it manually for non-standard layouts.
+- `SCENARIO_HOLDOUT_DIR` auto-resolves to `../konote-qa-scenarios` if the repo is cloned next to konote-app. In **git worktrees**, it falls back to the main repo's sibling via `git rev-parse --git-common-dir`. If auto-resolution fails, set it manually: `export SCENARIO_HOLDOUT_DIR=/c/Users/gilli/GitHub/konote-qa-scenarios`
 - The test framework starts its own live server (via `StaticLiveServerTestCase`) — do NOT start `runserver` separately.
 - If tests skip with "Holdout repo not found", the user needs to clone the konote-qa-scenarios repo next to konote-app.
+
+### Step 1b: Validate results (MANDATORY — do not skip)
+
+After tests complete, check the summary line. **All three conditions must pass:**
+
+1. **Skipped count must be ≤ 5.** If more than 5 tests skipped, STOP. Investigate why before proceeding — run one skipped test in isolation with `-v` to see the skip reason. Common causes: `SCENARIO_HOLDOUT_DIR` not resolving (especially in worktrees), missing scenario YAML files.
+2. **Scenario tests must have run (not just unit tests).** Look for PASSED lines from `test_scenario_eval.py` (e.g. TestStarterScenarios, TestDailyScenarios, TestDayInTheLife). If only `test_interactions.py`, `test_health_check.py`, and `test_objective_scorer.py` tests passed, the scenario tests were silently skipped — STOP and investigate.
+3. **Failed count should be 0.** If tests failed, report the failures and ask the user whether to proceed or fix first.
+
+**If validation fails, do NOT proceed to Step 2.** Fix the issue and re-run.
 
 ### Step 2: Record deployment state
 

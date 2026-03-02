@@ -1429,6 +1429,12 @@ details.search-filters-panel[open] summary {
     color: #fff;
 }
 
+/* Language toggle below login form (return visitors) */
+.login-lang-toggle {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
 /* Language link — canada.ca convention (top-right text link) */
 .lang-nav {
     display: flex;
