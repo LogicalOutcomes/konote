@@ -266,6 +266,12 @@ AUTH_MODE=local
 # Production mode -- blocks startup if security checks fail
 KONOTE_MODE=production
 
+# Demo mode -- creates demo users with quick-login buttons for staff training.
+# Demo users are completely separate from real participants (is_demo=True).
+# Recommended: keep this enabled so staff can train without creating fake
+# participants in the real database (which would need legal tracking).
+DEMO_MODE=true
+
 # ==============================================================================
 # EMAIL (OPTIONAL -- see Step 13)
 # ==============================================================================

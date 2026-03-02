@@ -497,6 +497,17 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 
 ---
 
+## Demo Mode in Production
+
+`DEMO_MODE` and `KONOTE_MODE` are independent settings. A production agency should run **both**:
+
+- `KONOTE_MODE=production` — strict security checks, blocks startup on missing config
+- `DEMO_MODE=true` — demo users with quick-login buttons for ongoing staff training
+
+**Rationale:** Demo users are completely separated from real participants (`is_demo=True` flag). Having built-in demo users available in production prevents admins from creating fake test users in the production database. Test users created manually would be subject to data retention policies, PHIPA consent tracking, and audit logging — creating a compliance burden for data that has no real value. The demo system avoids this entirely.
+
+**Anti-pattern: Do not disable DEMO_MODE in production to "harden" the instance.** Demo users are a training and onboarding feature, not a security risk. Removing them pushes agencies toward creating test participants in the real database, which is worse.
+
 ## Anti-Patterns
 
 **Do not:**
@@ -507,3 +518,4 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 - Run Ollama on the same VPS as a high-traffic multi-tenant deployment (resource contention)
 - Send agency identifiers to the LLM endpoint (unnecessary data exposure)
 - Use OVHcloud's built-in VPS backup feature as the only backup (no granular restore, no off-site copy)
+- Disable DEMO_MODE in production — demo users prevent test data in the real database (see above)
