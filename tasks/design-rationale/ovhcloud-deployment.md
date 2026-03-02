@@ -497,6 +497,66 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 
 ---
 
+## Demo Mode in Production
+
+**Decision:** `DEMO_MODE=true` is the recommended default for all KoNote instances, including production.
+
+**Date:** 2026-03-02
+**Panel:** Privacy & Compliance Specialist, Nonprofit Operations Consultant, Application Security Engineer, UX/Human Factors Specialist (4 perspectives, unanimous consensus)
+
+### Configuration
+
+`DEMO_MODE` and `KONOTE_MODE` are independent settings. A production agency should run **both**:
+
+- `KONOTE_MODE=production` — strict security checks, blocks startup on missing config
+- `DEMO_MODE=true` — demo users with quick-login buttons for ongoing staff training
+
+### Compliance rationale (decisive argument)
+
+Without built-in demo accounts, agency admins invariably create "Jane Test" or "Mickey Mouse" participant records. In a PHIPA-regulated system, every participant record triggers:
+
+- **Consent tracking obligations** — who consented, when, for what
+- **Data retention schedules** — can't just delete; must follow retention policy
+- **Audit log entries** — every access logged to the immutable audit database
+- **Right-of-erasure workflow** — even test records must go through the formal pipeline
+- **Reporting contamination** — test records skew outcome metrics unless manually excluded
+
+With `is_demo=True`, none of this applies. The flag creates a clean legal boundary: demo users are explicitly not real persons, not subject to PHIPA, and are excluded from all compliance workflows programmatically.
+
+### Training and adoption rationale
+
+Nonprofits have 30-50% annual turnover in frontline roles, plus part-time/casual workers who onboard mid-program. Every new hire needs a safe place to explore. Built-in demo accounts make training self-serve — any staff member can explore on their own time without requiring IT intervention. In software adoption research, the strongest predictor of long-term adoption is early, low-stakes exploration.
+
+### Security assessment
+
+**What DEMO_MODE adds to the attack surface:**
+- Passwordless auth endpoints (`/auth/demo-login/<username>/`, POST-only)
+- Demo sessions with real role-based permissions (but limited to demo data)
+- Login page reveals demo account structure (minor reconnaissance value)
+
+**Mitigating factors:**
+- Demo users have `is_demo=True` — blast radius limited to demo data
+- Endpoints return 404 when DEMO_MODE is false (no hidden surface)
+- Quick-login is POST-only (not GET), preventing casual URL-based access
+
+**Panel assessment:** Risk is **low**. The compliance benefit decisively outweighs the security surface.
+
+### Required safeguards
+
+These are implementation items to harden demo mode. Items 1-3 should be verified before any agency goes live with real participant data.
+
+1. **Demo-admin restrictions** — Demo users with admin role should be able to view but not modify agency settings (terminology, feature toggles, programs). Prevents accidental or malicious configuration changes via demo sessions.
+2. **Persistent training banner** — Every page in a demo session should show an amber banner: "Training Mode — changes here do not affect real participant records."
+3. **Visual login separation** — Demo quick-login buttons should be in a visually distinct section of the login page, clearly labelled "Training Accounts," with different styling from the real login form.
+4. **Audit demo logins** — Log demo login events for operational awareness, but don't route them through the PHIPA audit pipeline.
+5. **Exclude demo data from reports** — Every report query, export, and aggregate count must filter on `is_demo=False`. Verify this for all data pathways.
+
+### Anti-patterns
+
+- **Do not disable DEMO_MODE in production to "harden" the instance.** Demo users are a training and onboarding feature, not a security risk. Removing them pushes agencies toward creating test participants in the real database, which is worse.
+- **Do not let demo admin modify production configuration.** View-only access for demo admin users.
+- **Do not commingle demo data in reports.** Every query that produces output for real users must exclude `is_demo=True` records.
+
 ## Anti-Patterns
 
 **Do not:**
@@ -507,3 +567,4 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 - Run Ollama on the same VPS as a high-traffic multi-tenant deployment (resource contention)
 - Send agency identifiers to the LLM endpoint (unnecessary data exposure)
 - Use OVHcloud's built-in VPS backup feature as the only backup (no granular restore, no off-site copy)
+- Disable DEMO_MODE in production — demo users prevent test data in the real database (see above)
