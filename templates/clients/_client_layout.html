@@ -26,6 +26,11 @@
         <div class="actions-dropdown">
             <button class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'Actions menu' %}">{% trans "Actions" %} ▾</button>
             <ul class="actions-dropdown-menu" role="menu" hidden>
+                {# QA-R8-UX6: Edit is first so it is immediately visible on mobile without scrolling #}
+                {% if can_edit_client %}
+                <li role="none"><a role="menuitem" href="{% url 'clients:client_edit' client_id=client.pk %}">{% trans "Edit" %}<small>{% trans "Edit participant record" %}</small></a></li>
+                <li class="dropdown-divider" role="separator"></li>
+                {% endif %}
                 <li role="none"><a role="menuitem" href="{% url 'notes:quick_note_create' client_id=client.pk %}">{% trans "Quick Note" %}<small>{% trans "Log a contact or brief update" %}</small></a></li>
                 <li role="none"><a role="menuitem" href="{% url 'notes:note_create' client_id=client.pk %}">{% trans "Detailed Note" %}<small>{% trans "Document a session with outcomes" %}</small></a></li>
                 <li class="dropdown-divider" role="separator"></li>
@@ -47,11 +52,8 @@
                 {% if user_role == "program_manager" %}
                 <li role="none"><a role="menuitem" href="{% url 'reports:client_export' client_id=client.pk %}" class="actions-confirm" data-confirm-message="{% trans 'Export all data for' %} {{ client.display_name }} {{ client.last_name }}? {% trans 'This file will contain personal information.' %}">{% trans "Export All Data" %}</a></li>
                 {% endif %}
-                {% if can_edit_client or can_transfer_client %}
+                {% if can_transfer_client %}
                 <li class="dropdown-divider" role="separator"></li>
-                {% endif %}
-                {% if can_edit_client %}
-                <li role="none"><a role="menuitem" href="{% url 'clients:client_edit' client_id=client.pk %}">{% trans "Edit" %}<small>{% trans "Edit participant record" %}</small></a></li>
                 {% endif %}
                 {% if can_transfer_client %}
                 <li role="none"><a role="menuitem" href="{% url 'clients:client_transfer' client_id=client.pk %}">{% trans "Transfer" %}<small>{% trans "Transfer between programs" %}</small></a></li>
