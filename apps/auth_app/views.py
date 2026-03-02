@@ -58,22 +58,20 @@ def sync_language_on_login(request, user):
     - If no preference saved → save current language to profile
     Returns the activated language code so callers can set the cookie.
     """
-    if user.preferred_language:
-        lang_code = user.preferred_language
-        try:
-            translation.activate(lang_code)
-        except (UnicodeDecodeError, Exception) as e:
-            logger.error("Failed to activate language '%s' on login: %s",
-                         lang_code, e)
-            lang_code = "en"
-            translation.activate(lang_code)
-    else:
-        # BUG-24: Use request.LANGUAGE_CODE (set by SafeLocaleMiddleware from
-        # cookie/Accept-Language) rather than translation.get_language() which
-        # can be stale from a previous request's thread-local activation.
-        lang_code = getattr(request, "LANGUAGE_CODE", None) or translation.get_language() or "en"
+    # BUG-24: Use SafeLocaleMiddleware to authoritatively set and activate
+    # the language for this request context, ensuring all fallbacks are
+    # respected. We re-run it here because the middleware ran before the
+    # user was authenticated in this request.
+    from konote.middleware.safe_locale import SafeLocaleMiddleware
+    SafeLocaleMiddleware(get_response=lambda r: None).process_request(request)
+
+    lang_code = getattr(request, "LANGUAGE_CODE", "en")
+
+    # Save preference for new users (if no preference was previously saved)
+    if not user.preferred_language:
         user.preferred_language = lang_code
         user.save(update_fields=["preferred_language"])
+
     return lang_code
 
 

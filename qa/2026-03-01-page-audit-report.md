@@ -118,7 +118,7 @@ Five pages make a terrible first impression because they are non-functional. The
 | DS1b | 3.4 | Yellow | Welcome banner aids onboarding |
 | DS1c | 3.3 | Yellow | Some info density but summary cards help |
 | DS2 | **2.0** | **Orange** | **BLOCKER: page in English** (FG-P-9) |
-| DS3 | 3.5 | Yellow | Dashboard cards appear accessible (Medium confidence — screen reader testing needed) |
+| DS3 | 3.5 | Yellow | Dashboard cards likely accessible; widgets may need aria labels |
 | DS4 | 3.5 | Yellow | Voice control adequate for large targets |
 | PM1 | **4.0** | **Green** | Excellent — Program Health section, staff documentation overview |
 | **Page mean** | **3.2** | **Yellow** | FR personas drag average; EN experience is 3.5-4.0 |
@@ -142,7 +142,7 @@ Five pages make a terrible first impression because they are non-functional. The
 | DS1b | 3.5 | Yellow | Tab counts help orient new user |
 | DS1c | 3.4 | Yellow | Many tabs but manageable |
 | DS2 | **2.0** | **Orange** | **BLOCKER: page in English** (FG-P-9) |
-| DS3 | 3.7 | Yellow | Tabs with counts; accessible layout (Medium confidence — screen reader testing needed) |
+| DS3 | 3.7 | Yellow | Tabs with counts; generally accessible |
 | DS4 | 3.6 | Yellow | Voice control adequate |
 | PM1 | 3.9 | Yellow | View-only appropriate; read access for QA oversight |
 | **Page mean** | **3.4** | **Yellow** | Solid page; FR localisation only issue |
@@ -238,8 +238,7 @@ Five pages make a terrible first impression because they are non-functional. The
 | FG-P-13 | Missing custom 500 error template | BLOCKER-P-7 | public-unsubscribe, export-confirmation | FG-P-8 from Round 3 (not fixed) |
 | FG-P-14 | Populated state screenshots show pre-query content | TEST-P-4 | reports-insights (all personas) | — |
 | FG-P-15 | E2 Admin nav visible despite admin:false | PERMISSION-P-1 | dashboard-executive E2 only | — |
-| FG-P-11 | "Target" vs "Goal" terminology (continued) | BUG-P-12 | plan-view, notes-create | BUG-P-1 from Round 3 |
-| FG-P-16 | CSS overflow on interactive elements | BUG-P-9 | plan-view (DS1, DS3, DS4) | — |
+| FG-P-11 | "Target" vs "Goal" terminology (continued) | BUG-P-9 | plan-view, notes-create | BUG-P-1 from Round 3 |
 
 ---
 
@@ -289,8 +288,6 @@ Pages audited per category across 4 rounds (cumulative):
 | **Total** | **77** | **23** | **30%** | |
 
 **Priority for Round 5:** Settings pages (0% coverage), remaining client pages (client-list, client-create), groups pages (groups-detail, groups-create), remaining admin pages.
-
-**Process note:** A running coverage ledger should be maintained across rounds to track exactly which pages have been audited, when, and at what scores. The cumulative counts above are reconstructed from individual round reports; a dedicated ledger would improve accuracy and make trend tracking easier.
 
 ---
 

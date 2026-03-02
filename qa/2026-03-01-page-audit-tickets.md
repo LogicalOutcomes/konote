@@ -70,9 +70,7 @@
 
 **What's wrong:** The CASL-required email unsubscribe page STILL returns a raw Django 500 error: "A server error occurred. Please contact the administrator." This was filed as BLOCKER-P-4 in Round 3 (2026-02-21) and has not been fixed. Under Canada's Anti-Spam Legislation (CASL, S.C. 2010, c. 23, s. 6(2)(c)), every commercial electronic message must include a working unsubscribe mechanism. A non-functional unsubscribe page means the agency is sending emails without providing the legally required opt-out.
 
-**Regression from:** BLOCKER-P-4 (Round 3, 2026-02-21) — open for 8+ days
-
-**Legal risk:** This is not just a UX issue. Every commercial electronic message sent by an agency using KoNote without a working unsubscribe mechanism is a potential CASL violation. The CRTC can levy administrative monetary penalties up to $10M per violation for organizations. **Recommendation: disable outbound communications in KoNote until the unsubscribe endpoint is functional**, or ensure no emails include the broken unsubscribe URL.
+**Regression from:** BLOCKER-P-4 (Round 3, 2026-02-21)
 
 **Where to look:**
 1. `konote-app/apps/communications/views.py` — the view handling `/communications/unsubscribe/<str:token>/` is raising an unhandled exception
@@ -225,7 +223,7 @@
 - Navigation: "Participants", "Programs", "Front Desk"
 - Footer: "Powered by KoNote", "GitHub", "Privacy", "Help"
 
-**Compliance references:** Official Languages Act (for federal institutions), IRCC bilingual service delivery requirements (for federally funded settlement programs), Ontario Trillium Foundation language access expectations, agency bilingual service commitments under funder agreements
+**Compliance references:** Official Languages Act (for federally funded agencies), AODA (Ontario), agency bilingual service commitments
 
 **Where to look:**
 1. `konote-app/` — check if Django's `{% trans %}` / `{% blocktrans %}` tags are used in ANY template
@@ -243,18 +241,6 @@
 - [ ] Re-audit R2-FR and DS2 on all 5 pages — Language dimension 4.0+
 
 **Verification scenarios:** All scenarios involving R2-FR, DS2, PM2-FR
-
-**Dimension breakdown (representative — R2-FR on dashboard-staff):**
-
-| Dimension | Score |
-|-----------|-------|
-| Clarity | 2.0 |
-| Efficiency | 2.5 |
-| Feedback | 2.0 |
-| Error Recovery | 2.0 |
-| Accessibility | 3.0 |
-| Language | 1.0 |
-| Confidence | 1.0 |
 
 **Finding group:** FG-P-9 (continued from Round 1, cross-references FG-S-1 from scenario evaluation)
 
@@ -277,20 +263,14 @@
 
 **What "fixed" looks like:** "Actions" button renders horizontally as a normal dropdown, matching the top-right "Actions" dropdown style.
 
-**WCAG 2.2 violations:**
-- **1.3.1 Info and Relationships (Level A):** Visual presentation (vertical text) does not match semantic structure
-- **2.1.1 Keyboard (Level A):** Keyboard users cannot reliably identify or activate the vertically rendered element
-- **4.1.2 Name, Role, Value (Level A):** Screen readers would announce individual characters, not the button name
-
 **Acceptance criteria:**
 - [ ] "Actions" text renders horizontally in the goal table
 - [ ] Button is clickable and opens a dropdown menu
-- [ ] Screen reader announces "Actions" as a single word (WCAG 4.1.2)
+- [ ] Screen reader announces "Actions" as a single word
 - [ ] Voice control can target "Actions" button
-- [ ] Visual presentation matches semantic structure (WCAG 1.3.1)
 - [ ] Re-audit DS1 plan-view — Accessibility dimension improves to 4.0+
 
-**Finding group:** FG-P-16
+**Finding group:** FG-P-11
 
 ---
 
@@ -449,8 +429,7 @@ These patterns should be the standard for all reporting and dashboard pages.
 | Group | Root Cause | Primary Ticket | Also Affects |
 |-------|-----------|---------------|-------------|
 | FG-P-9 | French localisation not implemented (systemic, from Round 1) | BLOCKER-P-10 | dashboard-staff (R2-FR, DS2), client-detail (R2-FR, DS2), notes-create (DS2), plan-view (DS2), reports-insights (DS2). Cross-method: FG-S-1 |
-| FG-P-11 | "Target" vs "Goal" terminology inconsistency (continued from Round 3) | BUG-P-12 | Round 3: BUG-P-1 (plan-goal-create) |
-| FG-P-16 | CSS overflow on interactive elements (Actions button renders vertically) | BUG-P-9 | plan-view DS1, DS3, DS4 |
+| FG-P-11 | "Target" vs "Goal" terminology inconsistency (continued from Round 3) | BUG-P-12 | BUG-P-9 (plan-view Actions column header). Round 3: BUG-P-1 (plan-goal-create) |
 | FG-P-12 | New v2.2 pages not deployed (page-inventory updated before code) | BLOCKER-P-9 | client-export (PM1), admin-backup-settings (admin), admin-export-links (admin). Same pattern as FG-P-7 (surveys) |
 | FG-P-13 | Missing custom 500 error template + unhandled exceptions on public pages | BLOCKER-P-7 | BLOCKER-P-8 (export-confirmation). Continued from Round 3 FG-P-8. TEST-P-3 (Round 3) also not fixed |
 | FG-P-14 | Populated state screenshots show pre-query content (test data not seeded) | TEST-P-4 | reports-insights (all 9 personas) |
@@ -478,16 +457,8 @@ These patterns should be the standard for all reporting and dashboard pages.
 **Pages:** client-export, export-confirmation, admin-backup-settings, admin-export-links
 **Reason:** Four pages were added to page-inventory v2.2 (2026-03-01) before the feature code was deployed to the test environment. This is the same pattern as Round 3's FG-P-7 (surveys). Each premature entry generates a BLOCKER ticket that consumes evaluation time on pages that were never expected to work.
 
-**Fix in:** page-inventory update process — only add pages to the inventory after confirming the feature is deployed and returning 200 in the test environment.
-
-**Recommended change to page-inventory.yaml:** Add a `status` field to each page entry:
-- `planned` — feature designed but not yet deployed (excluded from capture and audit)
-- `deployed` — feature live in test environment (included in capture and audit)
-- `deprecated` — feature removed or replaced (excluded from capture)
-
-The capture script should skip pages with `status: planned` or `status: deprecated`. This prevents premature entries from generating BLOCKER tickets (this pattern has now occurred twice: Round 3 surveys, Round 4 exports/admin-backup).
-
-**Priority:** Process improvement — prevents wasted evaluation effort in future rounds. This is the second time premature page-inventory entries have consumed audit capacity on non-functional pages.
+**Fix in:** page-inventory update process — only add pages to the inventory after confirming the feature is deployed and returning 200 in the test environment. Consider adding a `status: planned | deployed | deprecated` field to page-inventory entries.
+**Priority:** Process improvement — prevents wasted evaluation effort in future rounds.
 
 ---
 

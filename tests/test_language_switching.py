@@ -164,7 +164,7 @@ class BilingualLoginPageTest(TestCase):
         self.http.cookies[settings.LANGUAGE_COOKIE_NAME] = "en"
         resp = self.http.get("/auth/login/")
         self.assertNotContains(resp, "lang-chooser")
-        self.assertContains(resp, "lang-nav")
+        self.assertContains(resp, "lang-link")
         # English page should show link to switch to French
         self.assertContains(resp, "Français")
 
