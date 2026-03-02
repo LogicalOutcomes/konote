@@ -85,8 +85,6 @@ services:
       - "443:443"
     environment:
       - DOMAIN=${DOMAIN:-localhost}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
