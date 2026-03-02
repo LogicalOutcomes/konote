@@ -17468,3 +17468,6 @@ msgid "Something went wrong generating your calendar link. Please try again."
 msgstr ""
 "Une erreur s'est produite lors de la génération de votre lien de calendrier. "
 "Veuillez réessayer."
+
+msgid "Skip to results"
+msgstr "Passer aux résultats"
