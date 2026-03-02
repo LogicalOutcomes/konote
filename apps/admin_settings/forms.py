@@ -542,19 +542,20 @@ class SetupWizardInstanceSettingsForm(forms.Form):
         ("3", _("Tier 3 — Role-based + field-level + gated grants")),
     ]
 
-    product_name = forms.CharField(
+    organization_name = forms.CharField(
         max_length=255,
         required=False,
-        initial="KoNote",
-        label=_("Product name"),
+        label=_("Organization Name"),
+        help_text=_("Your organisation's display name. Shown in the footer."),
     )
     support_email = forms.EmailField(
         required=False,
         label=_("Support email"),
     )
-    logo_url = forms.URLField(
+    organization_website = forms.URLField(
         required=False,
-        label=_("Logo URL"),
+        label=_("Organization Website"),
+        help_text=_("Your organisation's website. Links the organization name in the footer."),
     )
     brand_color = forms.CharField(
         max_length=7, required=False, label=_("Brand colour"),

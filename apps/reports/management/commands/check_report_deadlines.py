@@ -31,7 +31,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        from apps.admin_settings.models import InstanceSetting
         from apps.reports.models import ReportSchedule
 
         dry_run = options["dry_run"]
@@ -66,7 +65,7 @@ class Command(BaseCommand):
             # Send email when within reminder window and not yet sent
             if days_until <= schedule.reminder_days_before:
                 if schedule.email_sent_at is None:
-                    product_name = InstanceSetting.get("product_name", "KoNote")
+                    product_name = "KoNote"
                     # Email field is encrypted — must use property, not values_list
                     recipients = [
                         u.email for u in schedule.notify_users.filter(is_active=True)
