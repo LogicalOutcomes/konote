@@ -1351,10 +1351,12 @@ def executive_dashboard_export(request):
     engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
     goal_map = _batch_goal_completion(filtered_program_ids)
 
+    from apps.reports.csv_utils import sanitise_csv_row
+
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="executive-dashboard.csv"'
     writer = csv.writer(response)
-    writer.writerow(["Program", "Total Enrolled", "Active", "New This Period", "Notes This Week", "Engagement %", "Goal Completion %"])
+    writer.writerow(sanitise_csv_row(["Program", "Total Enrolled", "Active", "New This Period", "Notes This Week", "Engagement %", "Goal Completion %"]))
 
     for program in filtered_programs:
         pid = program.pk
@@ -1363,7 +1365,7 @@ def executive_dashboard_export(request):
         suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
         eng = None if suppress_pct else engagement_map.get(pid)
         goal = None if suppress_pct else goal_map.get(pid)
-        writer.writerow([
+        writer.writerow(sanitise_csv_row([
             program.translated_name,
             es.get("total", 0),
             active_count,
@@ -1371,7 +1373,7 @@ def executive_dashboard_export(request):
             notes_week_map.get(pid, 0),
             f"{eng}%" if eng is not None else ("suppressed" if suppress_pct else ""),
             f"{goal}%" if goal is not None else ("suppressed" if suppress_pct else ""),
-        ])
+        ]))
 
     # Audit log entry for export
     from apps.audit.models import AuditLog

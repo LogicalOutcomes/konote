@@ -835,10 +835,10 @@ def metric_export(request):
     response.write("\ufeff")
 
     writer = csv.writer(response)
-    writer.writerow(["id", "name", "name_fr", "definition", "definition_fr",
+    writer.writerow(sanitise_csv_row(["id", "name", "name_fr", "definition", "definition_fr",
                      "category", "min_value", "max_value", "unit", "unit_fr",
                      "portal_description", "portal_description_fr",
-                     "is_enabled", "status"])
+                     "is_enabled", "status"]))
 
     for m in metrics:
         writer.writerow(sanitise_csv_row([
