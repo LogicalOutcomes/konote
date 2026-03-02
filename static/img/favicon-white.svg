@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 37.25">
+  <!-- KoNote K mark — all-white variant for maskable icons on blue background -->
+  <!-- Vertical bar -->
+  <path fill="#ffffff" d="M0 0.45v36.35h6.35V0.45z"/>
+  <!-- Upper diagonal -->
+  <path fill="#ffffff" d="M29.15 0.45 13.54 12.45c1.59 1.09 3.15 2.24 4.67 3.43L39.05 0.45z"/>
+  <!-- Lower K stroke / arrow -->
+  <path fill="#ffffff" d="M10.59 14.72c-1.26 0.82-2.53 2.05-2.3 3.7-0.02 1.18 0.78 2.13 1.73 2.72l19.93 15.67h9.7C20.04 21.99 20.06 22 10.59 14.72z"/>
+</svg>
