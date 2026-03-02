@@ -2,6 +2,7 @@
 import glob
 import json
 import os
+import subprocess
 from datetime import datetime, timezone
 
 import pytest
@@ -32,11 +33,11 @@ def _resolve_holdout_dir():
         return _set_and_return(default)
 
     # Worktree fallback: resolve from the main repo, not the worktree copy
-    import subprocess
     try:
         git_common = subprocess.check_output(
             ["git", "rev-parse", "--git-common-dir"],
             cwd=project_root, text=True, stderr=subprocess.DEVNULL,
+            timeout=5,
         ).strip()
         # --git-common-dir returns the main repo's .git dir (absolute or relative)
         main_repo = os.path.dirname(os.path.normpath(
