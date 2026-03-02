@@ -2077,6 +2077,9 @@ msgstr "Type de dossier"
 msgid "Count"
 msgstr "Nombre"
 
+msgid "Progress Note"
+msgstr "Note de suivi"
+
 msgid "Progress Notes"
 msgstr "Notes de suivi"
 

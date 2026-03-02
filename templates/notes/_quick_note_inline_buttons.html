@@ -10,7 +10,7 @@
         <button class="outline"
                 hx-get="{% url 'notes:quick_note_inline' client_id=client.pk %}"
                 hx-target="#quick-note-container"
-                hx-swap="innerHTML">
+                hx-swap="outerHTML">
             {% trans "Log Contact" %}
         </button>
     </div>

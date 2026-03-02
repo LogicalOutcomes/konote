@@ -28,6 +28,8 @@
                hx-target="#client-list-container"
                hx-include="#client-filters"
                hx-indicator="#loading-bar">
+        {# QA-R8-A11Y5 / WCAG 2.4.3 — skip past filter controls directly to results #}
+        <a href="#client-list-container" class="skip-link skip-link--inline">{% trans "Skip to results" %}</a>
     </div>
     <div class="client-toolbar__filters">
         <div class="filter-field">
