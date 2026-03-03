@@ -1688,9 +1688,9 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 
         if (isBelowVU || isAboveVU) {
             var warningText = warningDiv.querySelector(".warning-text");
-            warningText.textContent =
-                "This value (" + formattedVal + ") is extremely unlikely for " + labelText +
-                ". This is almost certainly a data-entry error. Please re-check and confirm twice if correct.";
+            warningText.textContent = t("plausibility_tier2",
+                "This value ({value}) is extremely unlikely for {metric}. This is almost certainly a data-entry error. Please re-check and confirm twice if correct.")
+                .replace("{value}", formattedVal).replace("{metric}", labelText);
 
             warningDiv.style.display = "block";
             warningDiv.classList.add("tier-2");
@@ -1714,13 +1714,13 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             var warningText = warningDiv.querySelector(".warning-text");
 
             if (isAboveWarn) {
-                warningText.textContent =
-                    "This value (" + formattedVal + ") is unusually high for " + labelText +
-                    ". Please double-check. If correct, click Confirm.";
+                warningText.textContent = t("plausibility_high",
+                    "This value ({value}) is unusually high for {metric}. Please double-check. If correct, click Confirm.")
+                    .replace("{value}", formattedVal).replace("{metric}", labelText);
             } else {
-                warningText.textContent =
-                    "This value (" + formattedVal + ") is unusually low for " + labelText +
-                    ". Please double-check. If correct, click Confirm.";
+                warningText.textContent = t("plausibility_low",
+                    "This value ({value}) is unusually low for {metric}. Please double-check. If correct, click Confirm.")
+                    .replace("{value}", formattedVal).replace("{metric}", labelText);
             }
 
             warningDiv.style.display = "block";
