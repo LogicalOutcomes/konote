@@ -1,10 +1,12 @@
 """Audit log viewer — admin and program manager access."""
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models
+from django.db.models import Count, Q
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -290,3 +292,190 @@ def program_audit_log(request, program_id):
         "nav_active": "admin",
     }
     return render(request, "audit/program_audit_log.html", context)
+
+
+# ---------------------------------------------------------------------------
+# Compliance summary — aggregate audit metrics for executives (QA-R8-PERM2)
+# ---------------------------------------------------------------------------
+
+# Anomaly detection thresholds (per day). These are starting defaults for
+# small-to-medium nonprofits. Consider making these configurable per agency
+# when multi-tenancy is implemented (larger agencies need higher thresholds).
+ANOMALY_BULK_ACCESS_THRESHOLD = 50     # participant record views in one day
+ANOMALY_ACCESS_DENIED_THRESHOLD = 5    # access denied events in one day
+ANOMALY_FAILED_LOGIN_THRESHOLD = 10    # failed login attempts in one day
+
+@login_required
+@requires_permission("compliance.view_summary", allow_admin=True)
+def compliance_summary(request):
+    """Compliance summary dashboard for executives and admins.
+
+    Shows aggregate audit metrics without individual participant names
+    or staff identities.  Designed for board reporting per PIPEDA 4.1.4.
+
+    Three-tier escalation model:
+    1. This page: aggregate summary (no PII, no staff names)
+    2. Anomaly detail: nature of anomaly + role (not name)
+    3. Admin investigation: ED contacts admin for specific log entries
+
+    NOTE — tenant scoping: This view currently queries the full audit
+    database (unscoped).  This is correct for single-tenant deployments.
+    Before multi-tenancy goes live, add tenant_schema filtering here to
+    prevent cross-tenant data leakage.  See multi-tenancy DRR.
+    """
+    now = timezone.now()
+
+    # Determine reporting period from query params or default to last 90 days
+    date_from_str = request.GET.get("date_from", "")
+    date_to_str = request.GET.get("date_to", "")
+
+    if date_from_str:
+        try:
+            period_start = timezone.make_aware(
+                datetime.strptime(date_from_str, "%Y-%m-%d")
+            )
+        except ValueError:
+            period_start = now - timedelta(days=90)
+    else:
+        period_start = now - timedelta(days=90)
+
+    if date_to_str:
+        try:
+            period_end = timezone.make_aware(
+                datetime.strptime(date_to_str, "%Y-%m-%d").replace(
+                    hour=23, minute=59, second=59,
+                )
+            )
+        except ValueError:
+            period_end = now
+    else:
+        period_end = now
+
+    # Base queryset — exclude demo activity from compliance metrics
+    qs = AuditLog.objects.using("audit").filter(
+        event_timestamp__gte=period_start,
+        event_timestamp__lte=period_end,
+        is_demo_context=False,
+    )
+
+    # --- Aggregate metrics ---
+
+    total_events = qs.count()
+
+    # Access events by action type (aggregate counts, no names)
+    action_counts = dict(
+        qs.values_list("action").annotate(count=Count("id")).order_by("-count")
+    )
+
+    # Export events — count by role (from metadata), not by staff name
+    export_qs = qs.filter(action="export")
+    export_count = export_qs.count()
+
+    # Count exports by role (stored in metadata.user_role)
+    export_by_role = {}
+    for entry in export_qs.only("metadata").iterator():
+        role = "unknown"
+        if entry.metadata and isinstance(entry.metadata, dict):
+            role = entry.metadata.get("user_role", "unknown")
+        export_by_role[role] = export_by_role.get(role, 0) + 1
+
+    # Access denied events — potential security indicator
+    access_denied_count = action_counts.get("access_denied", 0)
+
+    # Failed login attempts
+    login_failed_count = action_counts.get("login_failed", 0)
+
+    # Record types accessed (aggregate — which types of data are being used)
+    resource_type_counts = dict(
+        qs.exclude(
+            action__in=["login", "logout", "login_failed"],
+        ).values_list("resource_type").annotate(
+            count=Count("id"),
+        ).order_by("-count")[:10]
+    )
+
+    # Translate resource type keys to display labels
+    resource_type_display = {}
+    for rt, count in resource_type_counts.items():
+        label = AuditLog.RESOURCE_TYPE_LABELS.get(
+            rt, rt.replace("_", " ").title()
+        )
+        resource_type_display[str(label)] = count
+
+    # Active user count (distinct users with activity, no names)
+    active_user_count = (
+        qs.exclude(user_id__isnull=True)
+        .values("user_id")
+        .distinct()
+        .count()
+    )
+
+    # --- Anomaly detection (role-level, no staff names) ---
+    anomalies = []
+
+    # Anomaly: bulk record access in a single day
+    bulk_daily = (
+        qs.filter(action="view", resource_type="clients")
+        .annotate(day=TruncDate("event_timestamp"))
+        .values("day")
+        .annotate(count=Count("id"))
+        .filter(count__gt=ANOMALY_BULK_ACCESS_THRESHOLD)
+        .order_by("-day")[:5]
+    )
+    for entry in bulk_daily:
+        anomalies.append({
+            "type": _("Bulk record access"),
+            "detail": _("%(count)s participant records viewed on %(date)s")
+            % {"count": entry["count"], "date": entry["day"].strftime("%Y-%m-%d")},
+        })
+
+    # Anomaly: access denied spikes in a day
+    denied_daily = (
+        qs.filter(action="access_denied")
+        .annotate(day=TruncDate("event_timestamp"))
+        .values("day")
+        .annotate(count=Count("id"))
+        .filter(count__gt=ANOMALY_ACCESS_DENIED_THRESHOLD)
+        .order_by("-day")[:5]
+    )
+    for entry in denied_daily:
+        anomalies.append({
+            "type": _("Access denied spike"),
+            "detail": _("%(count)s access denied events on %(date)s")
+            % {"count": entry["count"], "date": entry["day"].strftime("%Y-%m-%d")},
+        })
+
+    # Anomaly: failed login spikes in a day
+    failed_login_daily = (
+        qs.filter(action="login_failed")
+        .annotate(day=TruncDate("event_timestamp"))
+        .values("day")
+        .annotate(count=Count("id"))
+        .filter(count__gt=ANOMALY_FAILED_LOGIN_THRESHOLD)
+        .order_by("-day")[:5]
+    )
+    for entry in failed_login_daily:
+        anomalies.append({
+            "type": _("Failed login spike"),
+            "detail": _("%(count)s failed login attempts on %(date)s")
+            % {"count": entry["count"], "date": entry["day"].strftime("%Y-%m-%d")},
+        })
+
+    context = {
+        "period_start": period_start,
+        "period_end": period_end,
+        "date_from": date_from_str,
+        "date_to": date_to_str,
+        "total_events": total_events,
+        "action_counts": action_counts,
+        "export_count": export_count,
+        "export_by_role": export_by_role,
+        "access_denied_count": access_denied_count,
+        "login_failed_count": login_failed_count,
+        "resource_type_display": resource_type_display,
+        "active_user_count": active_user_count,
+        "anomalies": anomalies,
+        "anomaly_count": len(anomalies),
+        "nav_active": "compliance",
+    }
+    return render(request, "audit/compliance_summary.html", context)

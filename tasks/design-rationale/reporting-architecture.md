@@ -176,10 +176,15 @@ Separation ensures template pipeline can't accidentally fall back to flat output
 
 These apply to both template-driven and ad-hoc exports, and to any other page that displays aggregate outcome data (including the executive dashboard).
 
-**Thresholds are set in `multi-tenancy.md` (settled):**
-- Small-cell suppression: cells where n < 5 shown as "< 5" (Canadian health data de-identification standard)
-- Programs with < 50 enrolled: no demographic grouping
-- Confidential programs: no demographic grouping
+**Small-cell suppression (updated 2026-03-03, expert panel QA-R8-RPT1):**
+- Default threshold: n < 5 (CIHI Pan-Canadian De-Identification Guidelines, 2010)
+- Configurable per report template: `ReportTemplate.suppression_threshold` — choices are 5 (Standard) or 10 (Conservative). Minimum floor of 5 is system-enforced
+- **Secondary (complementary) suppression is mandatory**: when one cell in a demographic row is suppressed, the next-smallest cell is also suppressed to prevent derivation by subtraction from the row total
+- Suppression applied unconditionally in funder report exports (not just confidential programs)
+- Suppression threshold recorded in CSV metadata header for audit trail
+- Confidential programs: no demographic grouping at all (unchanged)
+
+**n=50 floor removed (2026-03-03):** Previously, programs with < 50 enrolled clients had no demographic grouping. This was removed because most nonprofits have programs with fewer than 20 participants and still need demographic breakdowns for funder reports. Small-cell suppression (with secondary suppression) protects individual cells at export time, making the blunt floor unnecessary.
 
 **Access controls:**
 - PII fields never available for grouping
@@ -235,7 +240,10 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 - **Generic fiscal year dropdown when template has period_type** — causes date boundary errors across agencies
 - **Single form for both paths** — different actions (report generation vs. data extraction) need different forms
 - **CSV download button on dashboard** — unaudited export path that bypasses template architecture, period logic, and privacy safeguards. The dashboard links to the report form; it does not produce files itself
-- **Inventing suppression thresholds per feature** — n < 5 is set in the multi-tenancy DRR as the Canadian standard. All features use that threshold, not their own
+- **Inventing suppression thresholds per feature** — n < 5 is the system default (CIHI standard). Templates may override to n < 10 via `suppression_threshold` field, but thresholds below 5 are not permitted. Do not hardcode different thresholds in different features
+- **Suppressing without secondary suppression** — primary suppression alone is defeated by subtraction. Always use `apply_secondary_suppression()` from `suppression.py`
+- **Reinstating n=50 floor** — removed 2026-03-03. Small-cell suppression with secondary suppression handles privacy at the cell level. The floor prevented useful reporting for small programs
+- **Giving executives raw audit log access** — rejected 2026-03-03 (expert panel QA-R8-PERM2). Creates surveillance dynamics, exposes PII unnecessarily. Use compliance summary page instead (`/audit/compliance/`)
 - **Bypassing consent checks in aggregate reports** — `consent_to_aggregate_reporting` must be checked. Data without consent is excluded, not suppressed
 
 ## Relationship to Other Documents

@@ -185,6 +185,21 @@ class ReportTemplate(models.Model):
         default="en",
         choices=[("en", _("English")), ("fr", _("French")), ("both", _("Bilingual"))],
     )
+    SUPPRESSION_THRESHOLD_CHOICES = [
+        (5, _("Standard (< 5)")),
+        (10, _("Conservative (< 10)")),
+    ]
+
+    suppression_threshold = models.PositiveSmallIntegerField(
+        choices=SUPPRESSION_THRESHOLD_CHOICES,
+        default=5,
+        help_text=_(
+            "Minimum cell count for demographic breakdowns. "
+            "Cells below this threshold are displayed as '< N'. "
+            "Standard (< 5) aligns with CIHI Pan-Canadian "
+            "De-Identification Guidelines."
+        ),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

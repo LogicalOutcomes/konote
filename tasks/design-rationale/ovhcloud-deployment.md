@@ -54,8 +54,10 @@ Even in the OVHcloud scenario, Azure Key Vault is used for encryption key manage
 │  └──────────┘  └──────────┘  └──────────┘  └────────┘  │
 │                                                         │
 │  ┌──────────┐  ┌──────────────────────────────────────┐ │
-│  │ Autoheal │  │ Cron: backups, log rotation, monitor │ │
-│  └──────────┘  └──────────────────────────────────────┘ │
+│  │ Autoheal │  │ Ops sidecar (containerised cron):     │ │
+│  └──────────┘  │ backups, disk check, health report,  │ │
+│                │ backup verification, Docker prune    │ │
+│                └──────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
@@ -75,16 +77,19 @@ External:
 
 ### Container Stack
 
-The existing `docker-compose.yml` runs unmodified on OVHcloud. Four application containers plus two operational containers:
+The `docker-compose.yml` runs unmodified on any Docker host (OVHcloud, Azure, FullHost). Four application containers plus two operational containers:
 
-| Container | Image | Purpose | Existing? |
-|-----------|-------|---------|-----------|
-| `web` | KoNote Dockerfile | Django + Gunicorn (2 workers, port 8000) | Yes |
-| `db` | postgres:16-alpine | Main application database | Yes |
-| `audit_db` | postgres:16-alpine | Tamper-resistant audit log (INSERT-only after lockdown) | Yes |
-| `caddy` | caddy:2-alpine | Reverse proxy, auto-HTTPS via Let's Encrypt | Yes |
-| `autoheal` | willfarrell/autoheal | Restarts unhealthy containers automatically | **New** |
-| `ollama` | ollama/ollama | Self-hosted LLM for suggestion theme tagging | **New** (separate VPS or same VPS) |
+| Container | Image | Purpose |
+|-----------|-------|---------|
+| `web` | KoNote Dockerfile | Django + Gunicorn (2 workers, port 8000) |
+| `db` | postgres:16-alpine | Main application database |
+| `audit_db` | postgres:16-alpine | Tamper-resistant audit log (INSERT-only after lockdown) |
+| `caddy` | caddy:2-alpine | Reverse proxy, auto-HTTPS via Let's Encrypt |
+| `autoheal` | willfarrell/autoheal | Restarts unhealthy containers automatically |
+| `ops` | Dockerfile.ops (Alpine) | Containerised cron: backups, disk monitoring, health reports, backup verification, Docker cleanup |
+| `ollama` | ollama/ollama | Self-hosted LLM for suggestion theme tagging (separate VPS or same VPS) |
+
+All services have Docker log rotation configured (`json-file` driver, 10 MB max, 3 files) via the `x-logging` YAML anchor to prevent log files from filling the disk.
 
 ### Extended docker-compose.yml (OVHcloud additions)
 
@@ -164,57 +169,23 @@ OVHcloud provides unmanaged VPS — no automatic container restarts, no managed 
 
 **What it does:** Prevents failures before they happen.
 
-**Cron jobs on the VPS (added to the host, not inside containers):**
+**Containerised cron in the ops sidecar** (runs automatically with `docker compose up -d` — no host-level cron needed):
 
-```cron
-# Nightly PostgreSQL backup (both databases)
-0 2 * * * /opt/konote/scripts/backup.sh >> /var/log/konote-backup.log 2>&1
+| Schedule | Script | What it does |
+|----------|--------|--------------|
+| 0 2 * * * | `ops-backup.sh` | Nightly pg_dump of both databases, compress, retention management |
+| 0 * * * * | `ops-disk-check.sh` | Hourly disk usage check (alert if >80%) |
+| 0 7 * * * | `ops-health-report.sh` | Daily health email with operational status |
+| 0 4 * * 0 | `ops-docker-prune.sh` | Weekly Docker system prune |
+| 0 5 * * 0 | `ops-backup-verify.sh` | Weekly test restore to verify backup integrity |
 
-# Nightly log rotation (prevent disk fill)
-0 3 * * * /usr/sbin/logrotate /etc/logrotate.d/konote
+The ops container connects directly to `db:5432` and `audit_db:5432` over the Docker backend network — no `docker compose exec` needed. All features are configurable via `.env` variables and work on any Docker host (not OVHcloud-specific).
 
-# Disk usage check (alert if >80%)
-0 * * * * /opt/konote/scripts/disk-check.sh
+**Log rotation** is handled by Docker's `json-file` driver with the `x-logging` anchor in `docker-compose.yml` (10 MB max, 3 files per service), replacing the need for host-level logrotate.
 
-# Docker system prune (remove dangling images/containers weekly)
-0 4 * * 0 docker system prune -f >> /var/log/docker-prune.log 2>&1
+**Dead man's switch:** The backup script pings `HEALTHCHECK_PING_URL` after each successful backup. If the ping stops arriving (e.g., ops container crashes, crond silently stops), the monitoring service alerts. Works with UptimeRobot push monitors, Healthchecks.io, or Cronitor (all free tier).
 
-# Nightly LLM batch (suggestion theme tagging)
-0 1 * * * /opt/konote/scripts/run-suggestion-batch.sh >> /var/log/konote-llm.log 2>&1
-```
-
-**backup.sh outline:**
-```bash
-#!/bin/bash
-TIMESTAMP=$(date +%Y-%m-%d_%H%M)
-BACKUP_DIR=/opt/konote/backups
-
-# Dump main database
-docker compose exec -T db pg_dump -U $POSTGRES_USER $POSTGRES_DB \
-  > $BACKUP_DIR/main_$TIMESTAMP.sql
-
-# Dump audit database
-docker compose exec -T audit_db pg_dump -U $AUDIT_POSTGRES_USER $AUDIT_POSTGRES_DB \
-  > $BACKUP_DIR/audit_$TIMESTAMP.sql
-
-# Compress
-gzip $BACKUP_DIR/main_$TIMESTAMP.sql $BACKUP_DIR/audit_$TIMESTAMP.sql
-
-# Retain 30 days of daily backups
-find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
-
-# Upload to off-site storage (e.g., OVHcloud Object Storage or separate VPS)
-# rclone copy $BACKUP_DIR remote:konote-backups/ --max-age 1d
-```
-
-**disk-check.sh outline:**
-```bash
-#!/bin/bash
-USAGE=$(df / | tail -1 | awk '{print $5}' | tr -d '%')
-if [ "$USAGE" -gt 80 ]; then
-  curl -s -X POST "https://hooks.example.com/alert" \
-    -d "KoNote VPS disk usage at ${USAGE}%"
-fi
+> **Note:** The LLM batch (suggestion theme tagging) is not yet containerised in the ops sidecar. When implemented, it should be added as another cron entry in `ops-entrypoint.sh`.
 ```
 
 **Covers:** ~4% of incidents (preventable failures: disk full, stale images, missed backups)
@@ -401,12 +372,12 @@ For the first OVHcloud deployment (single agency):
 6. **Configure `.env`** with all environment variables (see `.env.example`)
 7. **Set `DOMAIN`** in `.env` for Caddy auto-HTTPS
 8. **Configure DNS** — point agency domain to VPS IP
-9. **Deploy:** `docker compose up -d`
-10. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE)
-11. **Add autoheal container** to docker-compose.yml
-12. **Set up cron jobs:** backup, log rotation, disk check
-13. **Configure UptimeRobot** — monitor HTTPS endpoint, webhook to OVHcloud API
-14. **Test backup/restore** — dump, restore to test instance, verify data
+9. **Create backup directory:** `sudo mkdir -p /opt/konote/backups`
+10. **Deploy:** `docker compose up -d` — this starts all services including the ops sidecar (automated backups, monitoring, health reports)
+11. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE), ops container running
+12. **Configure UptimeRobot** — monitor HTTPS endpoint for external uptime monitoring
+13. **Optional:** Set `OPS_HEALTH_REPORT_TO`, `HEALTHCHECK_PING_URL`, `ALERT_WEBHOOK_URL` in `.env` for enhanced monitoring
+14. **Test backup/restore** — run `docker compose exec ops /usr/local/bin/ops-backup.sh`, verify files in `./backups/`
 15. **Document:** VPS IP, domain, Key Vault name, service principal, backup location
 
 ---

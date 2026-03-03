@@ -119,8 +119,8 @@ class CanSendTests(TestCase):
     def test_happy_path_sms(self):
         """All checks pass — can_send returns True."""
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_sms",
@@ -132,8 +132,8 @@ class CanSendTests(TestCase):
 
     def test_happy_path_email(self):
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_email",
@@ -154,18 +154,58 @@ class CanSendTests(TestCase):
         self.assertIn("Safety-First", reason)
 
     def test_record_keeping_blocks_all(self):
-        InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "record_keeping"},
-        )
+        """Neither toggle enabled — record-keeping only."""
+        # Default state: both toggles are false
         allowed, reason = can_send(self.client_file, "sms")
         self.assertFalse(allowed)
-        self.assertIn("record-keeping", reason)
+        self.assertIn("not enabled", reason)
+
+    def test_automated_happy_path(self):
+        """Automated reminders enabled + method='automated' → allowed."""
+        InstanceSetting.objects.update_or_create(
+            setting_key="automated_reminders_enabled",
+            defaults={"setting_value": "true"},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="messaging_sms",
+            defaults={"is_enabled": True},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertTrue(allowed)
+        self.assertEqual(reason, "OK")
+
+    def test_automated_disabled_blocks(self):
+        """Automated reminders disabled + method='automated' → blocked."""
+        InstanceSetting.objects.update_or_create(
+            setting_key="automated_reminders_enabled",
+            defaults={"setting_value": "false"},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertFalse(allowed)
+        self.assertIn("not enabled", reason)
+
+    def test_staff_toggle_does_not_authorize_automated(self):
+        """Staff enabled but automated disabled + method='automated' → blocked.
+
+        Verifies the two toggles are truly independent — enabling staff
+        messaging must not accidentally authorize automated sends.
+        """
+        InstanceSetting.objects.update_or_create(
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="messaging_sms",
+            defaults={"is_enabled": True},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertFalse(allowed)
+        self.assertIn("not enabled", reason)
 
     def test_sms_toggle_disabled_blocks(self):
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         # No FeatureToggle for messaging_sms
         allowed, reason = can_send(self.client_file, "sms")
@@ -174,8 +214,8 @@ class CanSendTests(TestCase):
 
     def test_no_consent_blocks(self):
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_sms",
@@ -189,8 +229,8 @@ class CanSendTests(TestCase):
 
     def test_expired_implied_consent_blocks(self):
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_sms",
@@ -205,8 +245,8 @@ class CanSendTests(TestCase):
 
     def test_no_phone_blocks_sms(self):
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_sms",
@@ -344,8 +384,8 @@ class SendReminderPreviewTests(TestCase):
         self.client.login(username="wave3_staff", password="testpass123")
         # Enable messaging
         InstanceSetting.objects.update_or_create(
-            setting_key="messaging_profile",
-            defaults={"setting_value": "staff_sent"},
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
         )
         FeatureToggle.objects.update_or_create(
             feature_key="messaging_sms",
@@ -587,22 +627,21 @@ class MessagingSettingsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Messaging Settings")
 
-    def test_post_saves_profile(self):
+    def test_post_saves_toggles(self):
         self.client.login(username="wave3_admin", password="testpass123")
         response = self.client.post("/admin/settings/messaging/", {
-            "messaging_profile": "staff_sent",
+            "staff_messaging_enabled": "on",
+            "automated_reminders_enabled": "on",
             "reminder_window_hours": "24",
         })
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            InstanceSetting.get("messaging_profile"),
-            "staff_sent",
-        )
+        self.assertEqual(InstanceSetting.get("staff_messaging_enabled"), "true")
+        self.assertEqual(InstanceSetting.get("automated_reminders_enabled"), "true")
 
     def test_post_creates_audit_log(self):
         self.client.login(username="wave3_admin", password="testpass123")
         self.client.post("/admin/settings/messaging/", {
-            "messaging_profile": "staff_sent",
+            "staff_messaging_enabled": "on",
             "reminder_window_hours": "24",
         })
         from apps.audit.models import AuditLog
@@ -611,12 +650,11 @@ class MessagingSettingsTests(TestCase):
             action="update",
         ).last()
         self.assertIsNotNone(log)
-        self.assertIn("messaging_profile", log.metadata.get("changed_fields", []))
+        self.assertIn("staff_messaging_enabled", log.metadata.get("changed_fields", []))
 
     def test_safety_first_toggle_saves(self):
         self.client.login(username="wave3_admin", password="testpass123")
         self.client.post("/admin/settings/messaging/", {
-            "messaging_profile": "record_keeping",
             "safety_first_mode": "on",
             "reminder_window_hours": "24",
         })
@@ -628,7 +666,7 @@ class MessagingSettingsTests(TestCase):
     def test_template_updates_save(self):
         self.client.login(username="wave3_admin", password="testpass123")
         self.client.post("/admin/settings/messaging/", {
-            "messaging_profile": "staff_sent",
+            "staff_messaging_enabled": "on",
             "reminder_window_hours": "24",
             "reminder_sms_en": "Custom reminder: {date} at {time}",
         })
