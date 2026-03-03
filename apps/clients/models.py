@@ -427,6 +427,15 @@ class ServiceEpisode(models.Model):
         choices=END_REASON_CHOICES,
     )
 
+    # Consortium aggregate reporting consent (per-client, per-program)
+    consent_to_aggregate_reporting = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Whether this participant has consented to their de-identified data "
+            "being included in aggregate funder reports for this program."
+        ),
+    )
+
     class Meta:
         app_label = "clients"
         db_table = "client_program_enrolments"

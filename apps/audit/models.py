@@ -104,6 +104,10 @@ class AuditLog(models.Model):
         default=False,
         help_text="True when the action involved a confidential program.",
     )
+    tenant_schema = models.CharField(
+        max_length=63, default="", blank=True,
+        help_text="PostgreSQL schema name of the agency that generated this entry.",
+    )
 
     # ImmutableAuditManager raises PermissionError on update() and delete().
     # .create() and .bulk_create() are intentionally NOT overridden — appending
