@@ -27,8 +27,7 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
-- [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
+- [ ] Legal review of data handling acknowledgement before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-LEGAL-REVIEW1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
 
 ## Do Occasionally
@@ -52,6 +51,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
+
+### Phase: AI Feature Toggle Split (approved — see tasks/design-rationale/ai-feature-toggles.md)
+
+- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — rename existing toggle, add new one with dependency, update all views/tests/templates, data migration for existing agencies, confirmation modal, audit logging (AI-TOGGLE1)
 
 ### Phase: Data Quality
 
@@ -98,7 +101,6 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
-- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
@@ -136,3 +138,5 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] QA Round 8 Tier 2 — French nav verified, form resubmission false positive, /reports/funder/ redirect, executive dashboard presets + PDF — PRs #210, #211 — 2026-03-02 (QA-R8-I18N1, QA-R8-UX10, QA-R8-UX11, QA-R8-UX8)
 - [x] Wave 1 parallel bug fixes — client search, tab order, mobile edit, skip links, quick note, calendar feed, PM nav, h1 headings — PRs #201–207 — 2026-03-02 (QA-R8-UX3 thru QA-R8-UX12)
 - [x] Permission system documentation — DV-safe mode, GATED access, field controls, access tiers — PR #147 — 2026-03-02 (DOC-PERM1 + DOC-PERM2 + DOC-PERM3)
+- [x] Data handling acknowledgement merged — PR #130 — 2026-03-03 (SEC3-AGREE1)
+- [x] SEC3-Q1 resolved — tiered model: self-hosted self-serve, SaaS via KoNote with SLA — 2026-02-27 (SEC3-Q1)
