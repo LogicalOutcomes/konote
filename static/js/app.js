@@ -1640,3 +1640,109 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         setup();
     }
 })();
+
+
+// ── Plausibility warnings for metric values (DQ1) ───────────────────
+
+(function () {
+    "use strict";
+
+    function checkPlausibility(input) {
+        var warnMin = parseFloat(input.getAttribute("data-warn-min"));
+        var warnMax = parseFloat(input.getAttribute("data-warn-max"));
+        var val = parseFloat(input.value);
+
+        var wrapper = input.closest(".metric-number-input");
+        if (!wrapper) return;
+
+        var warningDiv = wrapper.querySelector(".plausibility-warning");
+        var confirmedInput = wrapper.querySelector(".plausibility-confirmed-input");
+
+        if (!warningDiv) return;
+
+        if (isNaN(val) || input.value.trim() === "") {
+            warningDiv.style.display = "none";
+            if (confirmedInput) confirmedInput.value = "";
+            return;
+        }
+
+        var isBelowWarn = !isNaN(warnMin) && val < warnMin;
+        var isAboveWarn = !isNaN(warnMax) && val > warnMax;
+
+        if (isBelowWarn || isAboveWarn) {
+            var warningText = warningDiv.querySelector(".warning-text");
+            var metricLabel = wrapper.querySelector("label");
+            var labelText = metricLabel ? metricLabel.textContent.trim() : "this metric";
+            var formattedVal = val.toLocaleString();
+
+            if (isAboveWarn) {
+                warningText.textContent =
+                    "This value (" + formattedVal + ") is unusually high for " + labelText +
+                    ". Please double-check. If correct, click Confirm.";
+            } else {
+                warningText.textContent =
+                    "This value (" + formattedVal + ") is unusually low for " + labelText +
+                    ". Please double-check. If correct, click Confirm.";
+            }
+
+            warningDiv.style.display = "block";
+            // Reset confirmation when value changes
+            if (confirmedInput) confirmedInput.value = "";
+            var btn = warningDiv.querySelector(".plausibility-confirm-btn");
+            if (btn) {
+                btn.style.display = "";
+                warningDiv.style.color = "";
+            }
+        } else {
+            warningDiv.style.display = "none";
+            if (confirmedInput) confirmedInput.value = "";
+        }
+    }
+
+    // Handle confirm button clicks via delegation
+    document.addEventListener("click", function (e) {
+        if (!e.target.classList.contains("plausibility-confirm-btn")) return;
+
+        var warningDiv = e.target.closest(".plausibility-warning");
+        var wrapper = warningDiv ? warningDiv.closest(".metric-number-input") : null;
+        if (!wrapper) return;
+
+        var confirmedInput = wrapper.querySelector(".plausibility-confirmed-input");
+        if (confirmedInput) confirmedInput.value = "True";
+
+        var warningText = warningDiv.querySelector(".warning-text");
+        if (warningText) warningText.textContent = "Value confirmed.";
+        e.target.style.display = "none";
+        warningDiv.style.color = "var(--pico-muted-color)";
+    });
+
+    // Check on change and blur for metric number inputs with warn attributes
+    document.addEventListener("change", function (e) {
+        if (e.target.matches('input[type="number"][data-warn-min], input[type="number"][data-warn-max]')) {
+            checkPlausibility(e.target);
+        }
+    });
+    document.addEventListener("blur", function (e) {
+        if (e.target.matches('input[type="number"][data-warn-min], input[type="number"][data-warn-max]')) {
+            checkPlausibility(e.target);
+        }
+    }, true);
+
+    // Block form submit if unconfirmed plausibility warnings exist
+    document.addEventListener("submit", function (e) {
+        var warnings = e.target.querySelectorAll('.plausibility-warning[style*="block"]');
+        if (!warnings.length) return;
+
+        for (var i = 0; i < warnings.length; i++) {
+            var wrapper = warnings[i].closest(".metric-number-input");
+            if (!wrapper) continue;
+            var confirmed = wrapper.querySelector(".plausibility-confirmed-input");
+            if (!confirmed || confirmed.value !== "True") {
+                e.preventDefault();
+                warnings[i].querySelector(".warning-text").style.fontWeight = "bold";
+                warnings[i].scrollIntoView({ behavior: "smooth", block: "center" });
+                return;
+            }
+        }
+    });
+})();

@@ -111,7 +111,8 @@ class MetricDefinitionForm(forms.ModelForm):
         model = MetricDefinition
         fields = [
             "name", "name_fr", "definition", "definition_fr", "category",
-            "metric_type", "min_value", "max_value", "unit", "unit_fr",
+            "metric_type", "min_value", "max_value", "warn_min", "warn_max",
+            "unit", "unit_fr",
             "higher_is_better", "threshold_low", "threshold_high",
             "achievement_options", "achievement_success_values",
             "target_rate", "target_band_high_pct",
@@ -130,6 +131,8 @@ class MetricDefinitionForm(forms.ModelForm):
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
             "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
+            "warn_min": forms.NumberInput(attrs={"step": "any"}),
+            "warn_max": forms.NumberInput(attrs={"step": "any"}),
             "threshold_low": forms.NumberInput(attrs={"step": "any"}),
             "threshold_high": forms.NumberInput(attrs={"step": "any"}),
             "target_rate": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),

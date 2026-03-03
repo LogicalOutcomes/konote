@@ -42,13 +42,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: AI Feature Toggle Split (approved — see tasks/design-rationale/ai-feature-toggles.md)
-
-- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — rename existing toggle, add new one with dependency, update all views/tests/templates, data migration for existing agencies, confirmation modal, audit logging (AI-TOGGLE1)
-
 ### Phase: Data Quality
 
-- [ ] Entry-time plausibility warnings — soft-flag unlikely values during data entry, prioritise financial metrics (see tasks/data-validation-design.md, financial subsection added 2026-02-20) (DQ1)
+
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 

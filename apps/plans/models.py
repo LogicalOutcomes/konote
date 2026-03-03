@@ -47,6 +47,14 @@ class MetricDefinition(models.Model):
     is_enabled = models.BooleanField(default=True, help_text="Available for use in this instance.")
     min_value = models.FloatField(null=True, blank=True, help_text="Minimum valid value.")
     max_value = models.FloatField(null=True, blank=True, help_text="Maximum valid value.")
+    warn_min = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Soft warning minimum — values below this trigger a plausibility warning but are still accepted."),
+    )
+    warn_max = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Soft warning maximum — values above this trigger a plausibility warning but are still accepted."),
+    )
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
     unit_fr = models.CharField(
         max_length=50, blank=True, default="",
@@ -160,6 +168,21 @@ class MetricDefinition(models.Model):
             if self.threshold_low >= self.threshold_high:
                 raise ValidationError(
                     _("Low band threshold must be less than high band threshold.")
+                )
+        if self.warn_min is not None and self.warn_max is not None:
+            if self.warn_min >= self.warn_max:
+                raise ValidationError(
+                    _("Warning minimum must be less than warning maximum.")
+                )
+        if self.warn_min is not None and self.min_value is not None:
+            if self.warn_min < self.min_value:
+                raise ValidationError(
+                    _("Warning minimum cannot be below the hard minimum.")
+                )
+        if self.warn_max is not None and self.max_value is not None:
+            if self.warn_max > self.max_value:
+                raise ValidationError(
+                    _("Warning maximum cannot exceed the hard maximum.")
                 )
 
     @property

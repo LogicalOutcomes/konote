@@ -27,11 +27,21 @@ from konote.forms import (
 logger = logging.getLogger(__name__)
 
 
-def _ai_enabled():
-    """Check both the feature toggle and the API key."""
+def _ai_tools_enabled():
+    """Check feature toggle and API key for tools-only AI (no participant data)."""
     if not ai.is_ai_available():
         return False
-    return FeatureToggle.get_all_flags().get("ai_assist", False)
+    return FeatureToggle.get_all_flags().get("ai_assist_tools_only", True)
+
+
+def _ai_participant_data_enabled():
+    """Check feature toggle and API key for participant data AI.
+
+    Requires ai_assist_tools_only to also be enabled (dependency).
+    """
+    if not _ai_tools_enabled():
+        return False
+    return FeatureToggle.get_all_flags().get("ai_assist_participant_data", False)
 
 
 @login_required
@@ -39,7 +49,7 @@ def _ai_enabled():
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def suggest_metrics_view(request):
     """Suggest metrics for a plan target description."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     form = SuggestMetricsForm(request.POST)
@@ -68,7 +78,7 @@ def suggest_metrics_view(request):
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def improve_outcome_view(request):
     """Improve a draft outcome statement."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     form = ImproveOutcomeForm(request.POST)
@@ -88,7 +98,7 @@ def improve_outcome_view(request):
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def generate_narrative_view(request):
     """Generate an outcome narrative from aggregate metrics."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.notes.models import MetricValue
@@ -166,7 +176,7 @@ def generate_narrative_view(request):
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def suggest_note_structure_view(request):
     """Suggest a progress note structure for a plan target."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.plans.models import PlanTarget
@@ -210,7 +220,7 @@ def suggest_target_view(request):
     Takes the participant's own words and returns an AI-generated suggestion
     card with target name, SMART description, section, and recommended metrics.
     """
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     form = TargetSuggestForm(request.POST)
@@ -293,9 +303,12 @@ def outcome_insights_view(request):
     Access control: user must have an active role (staff+) in the requested
     program. Without this check, any authenticated user could POST with an
     arbitrary program_id and receive AI-processed quotes from that program.
+
+    Gated by ai_assist_participant_data (not just tools_only) because this
+    endpoint sends de-identified participant quotes to an external AI service.
     """
-    if not _ai_enabled():
-        return HttpResponseForbidden("AI features are not enabled.")
+    if not _ai_participant_data_enabled():
+        return HttpResponseForbidden("AI participant data features are not enabled.")
 
     from apps.programs.models import Program, UserProgramRole
     from apps.reports.insights import get_structured_insights, collect_quotes
@@ -515,7 +528,7 @@ def _session_key(client_id):
 @login_required
 def goal_builder_start(request, client_id):
     """Open the Goal Builder panel — GET returns the chat panel."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.clients.models import ClientFile
@@ -543,7 +556,7 @@ def goal_builder_start(request, client_id):
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def goal_builder_chat(request, client_id):
     """Process a chat message in the Goal Builder — POST returns updated panel."""
-    if not _ai_enabled():
+    if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.clients.models import ClientFile
