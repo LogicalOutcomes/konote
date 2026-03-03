@@ -15,6 +15,12 @@
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="{{ site.brand_color|default:'#3176aa' }}">
 
+    <!-- Open Graph / social sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ site.product_name|default:'KoNote' }}">
+    <meta property="og:description" content="{% trans 'Participant Outcome Management' %}">
+    <meta property="og:image" content="{% static 'img/social-preview.png' %}">
+
     <!-- Pico CSS — classless, accessible defaults -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 
@@ -83,7 +89,12 @@
     {% if not user.is_authenticated %}
     <nav class="container-fluid" aria-label="{% trans 'Main navigation' %}">
         <ul>
-            <li><a href="/" class="contrast">
+            <li><a href="/" class="contrast nav-brand">
+                {% if site.logo_url %}
+                <img src="{{ site.logo_url }}" alt="" class="nav-logo" height="28" width="28">
+                {% else %}
+                <img src="{% static 'img/konote-logo-text.svg' %}" alt="" class="nav-logo" height="28">
+                {% endif %}
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
         </ul>
@@ -97,7 +108,12 @@
     {% if user.is_authenticated %}
     <nav class="container-fluid" aria-label="{% trans 'Main navigation' %}">
         <ul>
-            <li><a href="{% if is_admin_only %}{% url 'admin_settings:dashboard' %}{% else %}/{% endif %}" class="contrast">
+            <li><a href="{% if is_admin_only %}{% url 'admin_settings:dashboard' %}{% else %}/{% endif %}" class="contrast nav-brand">
+                {% if site.logo_url %}
+                <img src="{{ site.logo_url }}" alt="" class="nav-logo" height="28" width="28">
+                {% else %}
+                <img src="{% static 'img/konote-logo-text.svg' %}" alt="" class="nav-logo" height="28">
+                {% endif %}
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
             <li>
