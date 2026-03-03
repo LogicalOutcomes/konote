@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 return
 
         # 5. Reminder is due — send it
-        product_name = InstanceSetting.get("product_name", "KoNote")
+        product_name = "KoNote"
         agency_name = profile.operating_name or profile.legal_name or product_name
         is_self_hosted = getattr(settings, "SELF_HOSTED", False)
 

@@ -289,7 +289,7 @@ class InstanceSettingsTest(TestCase):
     def test_admin_can_save_settings(self):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post("/admin/settings/instance/", {
-            "product_name": "MyApp",
+            "organization_name": "MyAgency",
             "date_format": "Y-m-d",
             "session_timeout_minutes": "60",
             "document_storage_provider": "none",
@@ -299,13 +299,13 @@ class InstanceSettingsTest(TestCase):
             "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(InstanceSetting.get("product_name"), "MyApp")
+        self.assertEqual(InstanceSetting.get("organization_name"), "MyAgency")
 
-    def test_admin_can_save_product_name_fr(self):
+    def test_admin_can_save_organization_name_fr(self):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post("/admin/settings/instance/", {
-            "product_name": "MyApp",
-            "product_name_fr": "MonAppli",
+            "organization_name": "MyAgency",
+            "organization_name_fr": "MonAgence",
             "date_format": "Y-m-d",
             "session_timeout_minutes": "60",
             "document_storage_provider": "none",
@@ -315,16 +315,16 @@ class InstanceSettingsTest(TestCase):
             "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(InstanceSetting.get("product_name_fr"), "MonAppli")
+        self.assertEqual(InstanceSetting.get("organization_name_fr"), "MonAgence")
 
-    def test_blank_product_name_fr_is_not_saved(self):
+    def test_blank_organization_name_fr_is_not_saved(self):
         self.client.login(username="admin", password="testpass123")
         InstanceSetting.objects.create(
-            setting_key="product_name_fr", setting_value="OldFrench"
+            setting_key="organization_name_fr", setting_value="OldFrench"
         )
         self.client.post("/admin/settings/instance/", {
-            "product_name": "MyApp",
-            "product_name_fr": "",
+            "organization_name": "MyAgency",
+            "organization_name_fr": "",
             "date_format": "Y-m-d",
             "session_timeout_minutes": "60",
             "document_storage_provider": "none",
@@ -333,17 +333,45 @@ class InstanceSettingsTest(TestCase):
             "meeting_time_step": "30",
             "access_tier": "1",
         })
-        self.assertEqual(InstanceSetting.get("product_name_fr"), "")
+        self.assertEqual(InstanceSetting.get("organization_name_fr"), "")
 
-    def test_context_processor_resolves_fr_product_name(self):
+    def test_save_cleans_up_old_product_name_keys(self):
+        """Saving org name should delete legacy product_name/logo_url keys."""
+        self.client.login(username="admin", password="testpass123")
+        # Simulate old keys in database
+        InstanceSetting.objects.create(
+            setting_key="product_name", setting_value="OldValue"
+        )
+        InstanceSetting.objects.create(
+            setting_key="logo_url", setting_value="https://old.example.com"
+        )
+        self.client.post("/admin/settings/instance/", {
+            "organization_name": "NewAgency",
+            "organization_website": "https://new.example.com",
+            "date_format": "Y-m-d",
+            "session_timeout_minutes": "60",
+            "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
+            "access_tier": "1",
+        })
+        # Old keys should be gone
+        self.assertEqual(InstanceSetting.get("product_name"), "")
+        self.assertEqual(InstanceSetting.get("logo_url"), "")
+        # New keys should be set
+        self.assertEqual(InstanceSetting.get("organization_name"), "NewAgency")
+        self.assertEqual(InstanceSetting.get("organization_website"), "https://new.example.com")
+
+    def test_context_processor_resolves_fr_organization_name(self):
         from konote.context_processors import instance_settings
         from django.test import RequestFactory
 
         InstanceSetting.objects.create(
-            setting_key="product_name", setting_value="MyAgency"
+            setting_key="organization_name", setting_value="MyAgency"
         )
         InstanceSetting.objects.create(
-            setting_key="product_name_fr", setting_value="MonAgence"
+            setting_key="organization_name_fr", setting_value="MonAgence"
         )
         factory = RequestFactory()
         request = factory.get("/")
@@ -351,7 +379,7 @@ class InstanceSettingsTest(TestCase):
         # English — should return English name
         activate("en")
         result = instance_settings(request)
-        self.assertEqual(result["site"]["product_name"], "MyAgency")
+        self.assertEqual(result["site"]["organization_name"], "MyAgency")
         deactivate()
 
         # French — should return French name
@@ -359,7 +387,7 @@ class InstanceSettingsTest(TestCase):
         from django.core.cache import cache
         cache.delete("instance_settings")
         result = instance_settings(request)
-        self.assertEqual(result["site"]["product_name"], "MonAgence")
+        self.assertEqual(result["site"]["organization_name"], "MonAgence")
         deactivate()
 
 

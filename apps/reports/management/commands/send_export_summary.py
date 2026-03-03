@@ -39,7 +39,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        from apps.admin_settings.models import InstanceSetting
         from apps.auth_app.models import User
         from apps.reports.models import SecureExportLink
 
@@ -115,7 +114,7 @@ class Command(BaseCommand):
             return
 
         # ── Build and send the email ─────────────────────────────────
-        product_name = InstanceSetting.get("product_name", "KoNote")
+        product_name = "KoNote"
 
         context = {
             "period_start": period_start,

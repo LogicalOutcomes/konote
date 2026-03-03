@@ -81,7 +81,7 @@
     {% endif %}
 
     {% if not user.is_authenticated %}
-    <nav class="container-fluid">
+    <nav class="container-fluid" aria-label="{% trans 'Main navigation' %}">
         <ul>
             <li><a href="/" class="contrast">
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
@@ -95,7 +95,7 @@
     {% endif %}
 
     {% if user.is_authenticated %}
-    <nav class="container-fluid">
+    <nav class="container-fluid" aria-label="{% trans 'Main navigation' %}">
         <ul>
             <li><a href="{% if is_admin_only %}{% url 'admin_settings:dashboard' %}{% else %}/{% endif %}" class="contrast">
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
@@ -140,11 +140,11 @@
             {% endif %}
             {% if can_see_reports or user.is_admin %}
             <li>
-                <details class="dropdown" role="list">
-                    <summary aria-haspopup="listbox"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
-                    <ul role="listbox">
-                        <li><a href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
-                        <li><a href="{% url 'reports:export_form' %}">{% trans "Custom Export" %}</a></li>
+                <details class="dropdown">
+                    <summary aria-haspopup="menu"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
+                    <ul role="menu">
+                        <li role="none"><a role="menuitem" href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'reports:export_form' %}">{% trans "Custom Export" %}</a></li>
                     </ul>
                 </details>
             </li>
@@ -155,27 +155,27 @@
             {% endif %}
             {% if user.is_admin %}
             <li>
-                <details class="dropdown" role="list">
-                    <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Admin" %}</summary>
-                    <ul role="listbox">
-                        <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
-                        <li><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
-                        <li><a href="{% url 'metrics:metric_library' %}">{{ term.metric_plural|default:"Metrics" }}</a></li>
-                        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
-                        <li><a href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
-                        <li><a href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>
+                <details class="dropdown">
+                    <summary aria-haspopup="menu"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Admin" %}</summary>
+                    <ul role="menu">
+                        <li role="none"><a role="menuitem" href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'metrics:metric_library' %}">{{ term.metric_plural|default:"Metrics" }}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>
                         {% if features.surveys %}
-                        <li><a href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
                         {% endif %}
-                        <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
-                        <li><a href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
-                        <li><a href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
-                        <li><a href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
-                        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
-                        <li><a href="{% url 'admin_users:invite_list' %}">{% trans "New Users" %}</a></li>
-                        <li><a href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
-                        <li><a href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
-                        <li><a href="{% url 'erasure_pending_list' %}">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "New Users" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'erasure_pending_list' %}">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
                     </ul>
                 </details>
             </li>
@@ -190,38 +190,38 @@
             {% if not is_executive_only %}
             {% if can_manage_users or can_manage_plan_templates or can_manage_note_templates or can_manage_event_types or can_manage_metrics or can_manage_registration or can_see_audit %}
             <li>
-                <details class="dropdown" role="list">
-                    <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
-                    <ul role="listbox">
-                        <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
+                <details class="dropdown">
+                    <summary aria-haspopup="menu"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
+                    <ul role="menu">
+                        <li role="none"><a role="menuitem" href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
                         {% has_permission "suggestion_theme.view" as can_see_themes %}
                         {% if can_see_themes %}
-                        <li><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
                         {% endif %}
                         {% if can_manage_users %}
-                        <li><a href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
                         {% endif %}
                         {% if can_manage_plan_templates %}
-                        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
                         {% endif %}
                         {% if can_manage_note_templates %}
-                        <li><a href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
                         {% endif %}
                         {% if can_manage_note_templates and features.surveys %}
-                        <li><a href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
                         {% endif %}
                         {% if can_manage_event_types %}
-                        <li><a href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>
                         {% endif %}
                         {% if can_manage_metrics %}
-                        <li><a href="{% url 'metrics:metric_library' %}">{{ term.metric_plural|default:"Metrics" }}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'metrics:metric_library' %}">{{ term.metric_plural|default:"Metrics" }}</a></li>
                         {% endif %}
                         {% if can_manage_registration %}
-                        <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
-                        <li><a href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         {% endif %}
                         {% if can_see_audit %}
-                        <li><a href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         {% endif %}
                     </ul>
                 </details>
@@ -231,10 +231,10 @@
             {% endif %}
             {% include "_program_switcher.html" %}
             <li class="nav-user-dropdown">
-                <details class="dropdown" role="list" dir="rtl">
-                    <summary aria-haspopup="listbox">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
-                    <ul role="listbox">
-                        <li><form method="post" action="{% url 'auth_app:logout' %}">{% csrf_token %}<button type="submit" class="nav-link-button">{% trans "Sign Out" %}</button></form></li>
+                <details class="dropdown" dir="rtl">
+                    <summary aria-haspopup="menu">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
+                    <ul role="menu">
+                        <li role="none"><form method="post" action="{% url 'auth_app:logout' %}">{% csrf_token %}<button type="submit" role="menuitem" class="nav-link-button">{% trans "Sign Out" %}</button></form></li>
                     </ul>
                 </details>
             </li>
@@ -286,10 +286,10 @@
     <footer class="container site-footer" role="contentinfo">
         <div class="site-footer-inner">
             <div class="site-footer-brand">
-                {% if org.operating_name %}
-                <strong>{% if org.website %}<a href="{{ org.website }}" target="_blank" rel="noopener">{{ org.operating_name }}</a>{% else %}{{ org.operating_name }}{% endif %}</strong>
+                {% if site.organization_name %}
+                <strong>{% if site.organization_website %}<a href="{{ site.organization_website }}" target="_blank" rel="noopener">{{ site.organization_name }}</a>{% else %}{{ site.organization_name }}{% endif %}</strong>
                 {% endif %}
-                <span>{% trans "Powered by" %} {{ site.product_name|default:"KoNote" }}</span>
+                <span>{% trans "Powered by" %} KoNote</span>
                 {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
             </div>
             <div class="site-footer-links">

@@ -6,3 +6,6 @@ class PlansConfig(AppConfig):
     name = "apps.plans"
     label = "plans"
     verbose_name = "Plans & Outcomes"
+
+    def ready(self):
+        import apps.plans.signals  # noqa: F401

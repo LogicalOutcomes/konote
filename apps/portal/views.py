@@ -144,6 +144,7 @@ def _audit_portal_event(request, action, resource_type="portal", metadata=None):
 # ---------------------------------------------------------------------------
 
 
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 @portal_feature_required
 def portal_login(request):
     """Participant login — email + password.
