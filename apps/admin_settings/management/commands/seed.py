@@ -148,7 +148,8 @@ class Command(BaseCommand):
             ("alerts", True),
             ("quick_notes", True),
             ("analysis_charts", True),
-            ("ai_assist", False),
+            ("ai_assist_tools_only", True),
+            ("ai_assist_participant_data", False),
             ("groups", True),
             ("participant_portal", False),
             ("messaging_sms", False),
@@ -173,7 +174,10 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(
                 feature_key="messaging_email"
             ).update(is_enabled=True)
-            FeatureToggle.objects.filter(feature_key="ai_assist").update(
+            FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(
+                is_enabled=True
+            )
+            FeatureToggle.objects.filter(feature_key="ai_assist_participant_data").update(
                 is_enabled=True
             )
             FeatureToggle.objects.filter(feature_key="surveys").update(
@@ -183,7 +187,7 @@ class Command(BaseCommand):
                 is_enabled=True
             )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys, circles enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles enabled."
             )
 
     def _seed_instance_settings(self):

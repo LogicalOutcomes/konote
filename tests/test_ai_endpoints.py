@@ -34,7 +34,7 @@ class AIEndpointBaseTest(TestCase):
         )
 
         # Enable the AI feature toggle
-        FeatureToggle.objects.create(feature_key="ai_assist", is_enabled=True)
+        FeatureToggle.objects.create(feature_key="ai_assist_tools_only", is_enabled=True)
 
     def tearDown(self):
         enc_module._fernet = None
@@ -63,7 +63,7 @@ class SuggestMetricsViewTest(AIEndpointBaseTest):
         self.assertContains(resp, "Please enter a target description")
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {"target_description": "Find housing"})
         self.assertEqual(resp.status_code, 403)
@@ -110,7 +110,7 @@ class ImproveOutcomeViewTest(AIEndpointBaseTest):
         self.assertContains(resp, "Please enter a draft outcome")
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {"draft_text": "Get better at stuff"})
         self.assertEqual(resp.status_code, 403)
@@ -174,7 +174,7 @@ class GenerateNarrativeViewTest(AIEndpointBaseTest):
         mock_narrative.assert_not_called()
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {
             "program_id": self.program.pk,
@@ -224,7 +224,7 @@ class SuggestNoteStructureViewTest(AIEndpointBaseTest):
         self.assertEqual(resp.status_code, 400)
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {"target_id": self.target.pk})
         self.assertEqual(resp.status_code, 403)
@@ -301,7 +301,7 @@ class SuggestTargetViewTest(AIEndpointBaseTest):
         self.assertContains(resp, "describe what the participant")
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {
             "participant_words": "I want a friend",
@@ -399,6 +399,55 @@ class SuggestTargetViewTest(AIEndpointBaseTest):
         call_args = mock_suggest.call_args[0]
         scrubbed_words = call_args[0]
         self.assertNotIn("Jayden", scrubbed_words)
+
+
+class OutcomeInsightsToggleTest(AIEndpointBaseTest):
+    """Test that outcome_insights_view requires the participant data toggle."""
+
+    def setUp(self):
+        super().setUp()
+        self.url = "/ai/outcome-insights/"
+
+    def test_tools_only_without_participant_data_returns_403(self):
+        """ai_assist_tools_only ON but ai_assist_participant_data OFF → 403."""
+        # tools_only is already enabled from base setUp
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "program_id": self.program.pk,
+            "date_from": "2026-01-01",
+            "date_to": "2026-01-31",
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    def test_participant_data_enabled_allows_access(self):
+        """Both toggles ON → endpoint proceeds (may return error for no data, not 403)."""
+        FeatureToggle.objects.create(
+            feature_key="ai_assist_participant_data", is_enabled=True,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "program_id": self.program.pk,
+            "date_from": "2026-01-01",
+            "date_to": "2026-01-31",
+        })
+        # Should NOT be 403 — it proceeds to the "not enough data" check
+        self.assertNotEqual(resp.status_code, 403)
+
+    def test_tools_off_blocks_participant_data(self):
+        """If ai_assist_tools_only is OFF, participant data is also blocked (dependency)."""
+        FeatureToggle.objects.filter(
+            feature_key="ai_assist_tools_only"
+        ).update(is_enabled=False)
+        FeatureToggle.objects.create(
+            feature_key="ai_assist_participant_data", is_enabled=True,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "program_id": self.program.pk,
+            "date_from": "2026-01-01",
+            "date_to": "2026-01-31",
+        })
+        self.assertEqual(resp.status_code, 403)
 
 
 class ValidateSuggestTargetResponseTest(SimpleTestCase):

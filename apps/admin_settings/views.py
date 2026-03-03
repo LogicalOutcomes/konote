@@ -1,7 +1,9 @@
 """Admin settings views: dashboard, terminology, features, instance settings."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.shortcuts import redirect, render
+from django.utils import timezone as tz
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required, demo_read_only
@@ -259,12 +261,33 @@ DEFAULT_FEATURES = {
         "depends_on": [],
         "used_by": [],
     },
-    "ai_assist": {
-        "label": _lazy("AI Assist"),
-        "description": _lazy("AI-powered features including goal builder and narrative generation."),
-        "when_on": [_lazy("AI Goal Builder appears on the plan page"), _lazy("AI narrative generation is available in reports")],
-        "when_off": [_lazy("AI features are hidden"), _lazy("No data is sent to AI services")],
+    "ai_assist_tools_only": {
+        "label": _lazy("AI Tools (no participant data)"),
+        "description": _lazy("AI helps staff write SMART outcomes, suggest metrics, categorise into CIDS, and generate narrative summaries from aggregate data. No participant data is ever sent to AI."),
+        "when_on": [
+            _lazy("AI Goal Builder appears on the plan page"),
+            _lazy("AI metric suggestions and narrative generation are available"),
+            _lazy("No participant data is sent to AI services"),
+        ],
+        "when_off": [
+            _lazy("All AI-powered tools are hidden"),
+            _lazy("No data is sent to AI services"),
+        ],
         "depends_on": [],
+        "used_by": ["ai_assist_participant_data"],
+    },
+    "ai_assist_participant_data": {
+        "label": _lazy("AI Participant Insights"),
+        "description": _lazy("AI summarises themes from de-identified participant feedback. Individual responses are de-identified before processing, but content is sent to an external AI service."),
+        "when_on": [
+            _lazy("Outcome Insights uses AI to summarise participant feedback themes"),
+            _lazy("De-identified participant responses are sent to an external AI service"),
+        ],
+        "when_off": [
+            _lazy("AI insight summarisation is disabled"),
+            _lazy("No participant data is sent to AI services"),
+        ],
+        "depends_on": ["ai_assist_tools_only"],
         "used_by": [],
     },
     "groups": {
@@ -357,7 +380,7 @@ DEFAULT_FEATURES = {
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources", "ai_assist_tools_only"}
 
 
 @login_required
@@ -462,6 +485,23 @@ def feature_toggle_action(request, feature_key):
         feature_key=feature_key,
         defaults={"is_enabled": new_state},
     )
+    cache.delete("feature_toggles")
+
+    # Audit log when ai_assist_participant_data is toggled
+    if feature_key == "ai_assist_participant_data":
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=tz.now(),
+            user_id=request.user.pk,
+            user_display=getattr(request.user, "display_name", str(request.user)),
+            action="update",
+            resource_type="feature_toggle",
+            resource_id=0,
+            metadata={
+                "feature_key": "ai_assist_participant_data",
+                "new_state": "enabled" if new_state else "disabled",
+            },
+        )
 
     return render(request, "admin_settings/_feature_toggle_success.html", {
         "feature_key": feature_key,
