@@ -561,6 +561,56 @@ sudo docker compose logs --tail 20 ops
 
 You should see the crontab schedule and "Ops sidecar ready. Starting crond."
 
+### Disaster recovery: restoring from a backup
+
+If your VPS fails and you need to restore to a new server:
+
+1. **Deploy a fresh KoNote instance** on a new VPS using the deploy script or this manual guide. This creates empty databases and a running application.
+
+2. **Copy your backup files** from your old VPS (or wherever you saved them) to the new server:
+
+   ```bash
+   scp main_2026-03-01_0200.dump ubuntu@NEW-VPS-IP:/opt/konote/backups/
+   scp audit_2026-03-01_0200.dump ubuntu@NEW-VPS-IP:/opt/konote/backups/
+   ```
+
+3. **Ensure the `.env` file uses the same `FIELD_ENCRYPTION_KEY`** as the original instance. If the key doesn't match, encrypted participant data (names, emails, birth dates) will be unreadable. This is the key you saved in your password manager during initial deployment.
+
+4. **Stop the web app** to prevent writes during restore:
+
+   ```bash
+   cd /opt/konote
+   sudo docker compose stop web
+   ```
+
+5. **Restore the databases** using the ops container (which has database tools and credentials pre-configured):
+
+   ```bash
+   # Restore main database (replace filename with your backup)
+   sudo docker compose exec -T ops bash -c \
+     'PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -h db -U "$POSTGRES_USER" \
+       -d "${POSTGRES_DB:-konote}" --clean --if-exists --no-owner \
+       /backups/main_2026-03-01_0200.dump'
+
+   # Restore audit database
+   sudo docker compose exec -T ops bash -c \
+     'PGPASSWORD="$AUDIT_POSTGRES_PASSWORD" pg_restore -h audit_db -U "$AUDIT_POSTGRES_USER" \
+       -d "${AUDIT_POSTGRES_DB:-konote_audit}" --clean --if-exists --no-owner \
+       /backups/audit_2026-03-01_0200.dump'
+   ```
+
+6. **Restart the web app:**
+
+   ```bash
+   sudo docker compose start web
+   ```
+
+7. **Verify** by logging in at `https://yourdomain.ca` and checking that participant data is visible.
+
+> **Important:** The `FIELD_ENCRYPTION_KEY` in your `.env` must match the key used when the data was originally encrypted. Without the correct key, encrypted fields (names, emails, birth dates) are permanently unrecoverable. This is why the deploy script warns you to save this key in your password manager.
+
+> **Note:** The `--clean --if-exists` flags tell pg_restore to drop existing tables before recreating them from the backup. This is safe for a fresh deployment. The `--no-owner` flag prevents permission errors when the restoring database user differs from the original.
+
 ---
 
 ## 12. Set Up External Monitoring
