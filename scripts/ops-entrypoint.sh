@@ -14,6 +14,12 @@ echo "  Started: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 # Configure msmtp (SMTP client for health emails)
 # ---------------------------------------------------------------------------
 if [ -n "${EMAIL_HOST:-}" ]; then
+    # Extract bare email address for SMTP envelope sender.
+    # msmtp's "from" field must be a bare address (e.g. noreply@konote.app),
+    # not a display-name format (e.g. "KoNote <noreply@konote.app>").
+    ENVELOPE_FROM=$(echo "${DEFAULT_FROM_EMAIL:-noreply@konote.app}" | sed -n 's/.*<\(.*\)>/\1/p')
+    ENVELOPE_FROM="${ENVELOPE_FROM:-${DEFAULT_FROM_EMAIL:-noreply@konote.app}}"
+
     cat > /etc/msmtprc <<MSMTP
 defaults
 auth           on
@@ -24,7 +30,7 @@ logfile        /dev/stderr
 account        default
 host           ${EMAIL_HOST}
 port           ${EMAIL_PORT:-587}
-from           ${DEFAULT_FROM_EMAIL:-noreply@konote.app}
+from           ${ENVELOPE_FROM}
 user           ${EMAIL_HOST_USER:-}
 password       ${EMAIL_HOST_PASSWORD:-}
 MSMTP
@@ -32,6 +38,14 @@ MSMTP
     echo "  Email: configured (${EMAIL_HOST}:${EMAIL_PORT:-587})"
 else
     echo "  Email: not configured (health reports will log to stdout)"
+fi
+
+# ---------------------------------------------------------------------------
+# Warn if no alerting is configured
+# ---------------------------------------------------------------------------
+if [ -z "${ALERT_WEBHOOK_URL:-}" ] && [ -z "${HEALTHCHECK_PING_URL:-}" ]; then
+    echo "  WARNING: No alerting configured. Backup failures will only appear in Docker logs."
+    echo "           Set ALERT_WEBHOOK_URL or HEALTHCHECK_PING_URL in .env for failure notifications."
 fi
 
 # ---------------------------------------------------------------------------
@@ -87,6 +101,8 @@ ${PRUNE_SCHEDULE} /usr/local/bin/ops-docker-prune.sh >> /proc/1/fd/1 2>&1
 ${VERIFY_SCHEDULE} /usr/local/bin/ops-backup-verify.sh >> /proc/1/fd/1 2>&1
 
 CRON
+
+chmod 600 /var/spool/cron/crontabs/root
 
 echo "  Crontab installed:"
 echo "    Backup:         ${BACKUP_SCHEDULE}"
