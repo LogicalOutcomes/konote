@@ -1,0 +1,46 @@
+# Local development: PostgreSQL for multi-tenancy support
+# Usage: docker compose -f docker-compose.dev.yml up -d
+#
+# This provides two PostgreSQL databases (main + audit) for local development.
+# Required because django-tenants needs PostgreSQL schemas (SQLite doesn't support them).
+#
+# After starting, set these env vars (or add to .env):
+#   DATABASE_URL=postgresql://konote:konote@localhost:5432/konote
+#   AUDIT_DATABASE_URL=postgresql://konote:konote@localhost:5433/konote_audit
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: konote
+      POSTGRES_USER: konote
+      POSTGRES_PASSWORD: konote
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U konote"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db-audit:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: konote_audit
+      POSTGRES_USER: konote
+      POSTGRES_PASSWORD: konote
+    ports:
+      - "5433:5432"
+    volumes:
+      - dev_pgdata_audit:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U konote"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  dev_pgdata:
+  dev_pgdata_audit:

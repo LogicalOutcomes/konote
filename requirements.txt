@@ -9,6 +9,9 @@ Django>=5.1,<5.2
 gunicorn>=22.0,<24.0
 psycopg[binary]>=3.2,<4.0
 
+# Multi-tenancy (schema-per-tenant isolation via PostgreSQL)
+django-tenants>=3.7,<4.0
+
 # Authentication
 authlib>=1.3,<2.0
 argon2-cffi>=23.1,<26.0
