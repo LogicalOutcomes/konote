@@ -6,7 +6,7 @@
 {% block content %}
 <article>
     <header>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{% trans 'Breadcrumb' %}">
             <ul>
                 <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
                 <li>{{ link.title }}</li>
