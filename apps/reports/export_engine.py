@@ -361,6 +361,11 @@ def get_compliance_summary(start_date, end_date):
     """
     Generate a privacy compliance summary for board reports.
     Returns a dict with aggregate counts -- no PII.
+
+    ``start_date`` and ``end_date`` are ``date`` objects.  They are
+    converted to timezone-aware ``datetime`` objects internally because
+    the underlying model fields (``completed_at``, ``requested_at``) are
+    ``DateTimeField``.
     """
     from datetime import timedelta
 
@@ -368,17 +373,21 @@ def get_compliance_summary(start_date, end_date):
 
     from apps.clients.models import ErasureRequest
 
+    # Convert date → timezone-aware datetime for DateTimeField queries
+    start_dt = timezone.make_aware(datetime.combine(start_date, time.min))
+    end_dt = timezone.make_aware(datetime.combine(end_date, time.max))
+
     # Completed erasure requests in the period
     completed = ErasureRequest.objects.filter(
         status="anonymised",
-        completed_at__range=(start_date, end_date),
+        completed_at__range=(start_dt, end_dt),
     )
     completed_count = completed.count()
 
     # Still pending at period end
     pending_at_end = ErasureRequest.objects.filter(
         status="pending",
-        requested_at__lte=end_date,
+        requested_at__lte=end_dt,
     ).count()
 
     if completed_count == 0 and pending_at_end == 0:
