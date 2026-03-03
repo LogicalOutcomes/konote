@@ -428,12 +428,33 @@ document.addEventListener("click", function (event) {
     }
 })();
 
-// --- Tab bar: arrow key navigation for ARIA tablist (BUG-14 — WCAG 2.1.1) ---
-// Left/Right arrow keys move focus between tabs; Home/End jump to first/last
+// --- Tab bar: arrow key navigation for ARIA tablist (BUG-14 / QA-R8-A11Y8 — WCAG 2.1.1) ---
+// Left/Right arrow keys move focus between tabs; Home/End jump to first/last.
+// WAI-ARIA roving tabindex: only the active tab is in the natural tab order
+// (tabindex="0"); all others use tabindex="-1" so Tab skips them.
+// This prevents ArrowRight on a tab from accidentally triggering the adjacent
+// Actions dropdown (aria-haspopup="menu") via AT toolbar navigation.
 (function () {
+    function initTabindexes(tabs) {
+        // Set roving tabindex: active tab = 0, all others = -1
+        tabs.forEach(function (tab) {
+            var isActive = tab.getAttribute("aria-selected") === "true" ||
+                           tab.classList.contains("tab-active");
+            tab.setAttribute("tabindex", isActive ? "0" : "-1");
+        });
+    }
+
     function setupTablistKeyboard() {
         var tabBar = document.querySelector("[role='tablist']");
         if (!tabBar) return;
+
+        // Guard: only attach the listener once (re-called after HTMX swaps)
+        if (tabBar.dataset.kbReady) return;
+        tabBar.dataset.kbReady = "1";
+
+        // Initialise roving tabindex on page load
+        var tabs = Array.from(tabBar.querySelectorAll("[role='tab']"));
+        initTabindexes(tabs);
 
         tabBar.addEventListener("keydown", function (e) {
             var tabs = Array.from(tabBar.querySelectorAll("[role='tab']"));
@@ -453,6 +474,10 @@ document.addEventListener("click", function (event) {
                 return;
             }
             e.preventDefault();
+            e.stopPropagation(); // prevent Actions dropdown toolbar from seeing the arrow key
+            // Update roving tabindex before moving focus
+            tabs.forEach(function (t) { t.setAttribute("tabindex", "-1"); });
+            tabs[next].setAttribute("tabindex", "0");
             tabs[next].focus();
         });
     }
@@ -463,6 +488,9 @@ document.addEventListener("click", function (event) {
         setupTablistKeyboard();
     }
     document.body.addEventListener("htmx:afterSettle", function () {
+        // Reset guard after HTMX replaces the tab bar DOM so re-init works
+        var tabBar = document.querySelector("[role='tablist']");
+        if (tabBar) { delete tabBar.dataset.kbReady; }
         setupTablistKeyboard();
     });
 })();

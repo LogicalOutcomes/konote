@@ -11,29 +11,19 @@ _QA Round 8 Tier 1 complete — see Recently Done._
 
 ### Phase: P0 — Requirements Analysis (March 31)
 
-Items from `requirements-analysis.md` that must move from "Planned" to "Fully met" before deliverable deadline.
+Items from `requirements-analysis.md` that need work before the deliverable deadline. Grouped by type: product code, deployment automation, and cost optimization.
 
-**Funder reporting (RP2, RP3):**
-- [ ] Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
+**Product code to build:**
 
-**Cross-agency rollup (RP4):**
-- [ ] Write cross-agency reporting API design doc — which metrics aggregate, API spec, how funder views data across agencies (docs/plans/2026-02-20-cross-agency-reporting-api-design.md) — GK (DOC-RP4)
-- [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
-- [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
-- [ ] Build umbrella admin dashboard — central view for [funder partner] to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
+- [ ] Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (RP2/RP3) (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
+- [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
+- [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. (SCALE-ROLLUP1)
 
-**Multi-tenancy and central management (MA3, MA4):**
-- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
-- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — PB (MT-ENCRYPT1)
-- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — PB (MT-CONSENT1)
-- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
-- [ ] Write deploy script design doc — how provisioning is automated, target: infrastructure in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — PB (DOC-MA5)
-- [ ] Build deploy script to automate infrastructure provisioning — Azure/OVHcloud resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
+**Deployment automation (ops scripting, not product code):**
+
+- [ ] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — PB (DOC-MA5)
+- [ ] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
-
-**Outcome tracking (G4):**
-- [ ] Auto-update progress metrics when goal status changes — recalculate related metrics when a goal is marked achieved/abandoned (REQ-G4)
 
 ### Phase: Launch Readiness
 
@@ -58,29 +48,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: QA Round 8b — Fixes + Test Infrastructure (see tasks/qa-action-plan-2026-03-01b.md, fix in qa-scenarios repo)
+### Phase: QA Round 8 — Remaining Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
 
-- [ ] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/`, causes only true BLOCKER (Red 1.57), fix in qa-scenarios repo (QA-R8b-YAML1)
-- [ ] Fix test runner interactive step execution — clicks, form fills, HTMX not working, produces duplicate screenshots (affects 16+ scenarios), Finding Group #1 (QA-R8b-TEST1)
-- [ ] Fix URL placeholder substitution — {group_id}, {alert_id}, {client_id} appear literally in URLs (affects SCN-075, SCN-076, SCN-084), Finding Group #2 (QA-R8b-TEST2)
-
-### Phase: QA Round 8 — Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
-
-- [ ] Verify: language middleware — ref fix-log FG-S-2, fixed 2026-02-21 in QA-R7-TIER1, check if regressed or overridden (QA-R8-LANG1)
-- [ ] Fix newly created client not searchable by other users — cross-role intake handoff (QA-R8-UX3)
-- [ ] Fix quick note entry point unreachable — selector mismatch on client profile (QA-R8-UX4)
-- [ ] Fix create form Tab order — Last Name gets focus before First Name, WCAG 1.3.2 (QA-R8-A11Y4)
-- [ ] Fix excessive Tab presses to reach search results — filter controls blocking path, WCAG 2.4.3 (QA-R8-A11Y5)
 - [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
-- [ ] Fix missing validation error + success confirmation on participant create (QA-R8-UX5)
-- [ ] Fix mobile edit navigating to wrong form — opens New Participant instead of contact edit (QA-R8-UX6)
-- [ ] Verify: offline fallback — ref fix-log entry 9, fixed 2026-02-21 Round 7 same-day, check if regressed (QA-R8-UX7)
 - [ ] Add date presets + PDF export to executive dashboard (QA-R8-UX8)
 - [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
-- [ ] Fix calendar feed URL generation failing silently (QA-R8-UX9)
 - [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
 - [ ] Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
-- [ ] Fix PM user management path missing — /manage/users/ not linked (QA-R8-UX12)
 - [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
 ### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
@@ -89,8 +63,15 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Fix duplicate landmark regions — landmark-unique (MODERATE, 60 pages, 352 nodes), likely duplicate nav or main landmarks in base template structure (AXE-LANDMARK1)
 - [ ] Fix 4 pages missing base template wrapper — export-confirmation, plan-section-edit, public-survey-link, public-unsubscribe are missing title, lang attr, landmarks, and h1 (AXE-TEMPLATE1)
 - [ ] Fix colour contrast failures — 11 pages, 257 nodes including client-detail, dashboard-staff, plan-view, notes-list, events-list, comm pages (AXE-CONTRAST1)
-- [ ] Fix missing h1 on notes-detail page (AXE-HEADING1)
 - [ ] Fix empty table headers on 4 admin pages — admin-event-types, admin-settings-terminology, admin-users, programs-list (AXE-TABLE1)
+
+### Phase: Demo Mode Safeguards (from expert panel, see tasks/design-rationale/ovhcloud-deployment.md)
+
+- [ ] Restrict demo-admin to view-only for agency settings — demo users with admin role can view but not modify terminology, feature toggles, or program config. Prevents configuration changes via demo sessions (DEMO-ADMIN-RO1)
+- [ ] Add persistent training-mode banner for demo sessions — amber banner on every page: "Training Mode — changes here do not affect real participant records" (DEMO-BANNER1)
+- [ ] Visually separate demo buttons from real login form — distinct section, labelled "Training Accounts," different styling so staff never accidentally click a demo button instead of signing in (DEMO-LOGIN-UX1)
+- [ ] Audit demo logins — log demo login events (who, when, which demo user) for operational awareness, but exclude from PHIPA audit pipeline (DEMO-AUDIT1)
+- [ ] Verify all reports and exports exclude is_demo=True records — check every report query, aggregate count, CSV/PDF export, and funder report for demo data leakage (DEMO-EXCLUDE1)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -102,8 +83,15 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
-### Phase: Multi-Agency Scaling — remaining items after P0 (see tasks/design-rationale/multi-tenancy.md)
+### Phase: Server Sharing — cost optimization, not a launch prerequisite (see tasks/design-rationale/multi-tenancy.md)
 
+Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing allows agencies to share a server while keeping data walled off, reducing costs to $4–10/agency/month. Worth doing when the network grows beyond 3–5 agencies.
+
+- [ ] Integrate django-tenants for server sharing — multiple agencies on one server with walled-off database sections (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
+- [ ] Implement per-agency encryption keys — separate encryption key per agency, encrypted by master key (see plan Task 3) — PB (MT-ENCRYPT1)
+- [ ] Create cost-sharing group data model — which agencies share a server, program-level data sharing controls, published reports (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
+- [ ] Add consent_to_aggregate_reporting field and audit agency column (see plan Tasks 5-6) — PB (MT-CONSENT1)
+- [ ] Validate existing features work across shared-server agencies — update test infrastructure, fix related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
@@ -135,9 +123,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Verify BLOCKER-10/12 data export against recent SEC3 work — routes may already exist (QA-R8-VERIFY1)
-- [ ] Fix accent stripping in client list display — "Benoît" appears as "Benoit" (QA-R8-UX13)
-- [ ] Fix profile tabs arrow key navigation — ArrowRight opens Actions dropdown instead of next tab (QA-R8-A11Y8)
+_Empty — all items moved to Recently Done after Wave 1 sprint._
 
 ## Parking Lot: Needs Review
 
@@ -166,6 +152,27 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Wave 1 Sprint — Parallel Bug Fixes (PRs #201–#207, qa-scenarios #18)
+
+- [x] Auto-update progress metrics when goal status changes — post_save signal on PlanTarget updates achievement_status — 2026-03-02 (REQ-G4)
+- [x] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/` in qa-scenarios repo — 2026-03-02 (QA-R8b-YAML1)
+- [x] Fix test runner interactive step execution — duplicate screenshot detection, HTMX waits, select action handler — 2026-03-02 (QA-R8b-TEST1)
+- [x] Fix URL placeholder substitution — pre-seed alert_id, recommendation_id, meeting_id, first-name client keys — 2026-03-02 (QA-R8b-TEST2)
+- [x] Fix newly created client not searchable — search now queries all accessible programs when search query is present — 2026-03-02 (QA-R8-UX3)
+- [x] Fix create form Tab order — added explicit field_order to ClientFileForm (First Name before Last Name) — 2026-03-02 (QA-R8-A11Y4)
+- [x] Verified: validation error + success confirmation on participant create already working — 2026-03-02 (QA-R8-UX5)
+- [x] Fix mobile edit — moved Edit to top of Actions dropdown menu — 2026-03-02 (QA-R8-UX6)
+- [x] Verified: accent display correct — _strip_accents() only used for search, display preserves original — 2026-03-02 (QA-R8-UX13)
+- [x] Fix excessive Tab presses — added "Skip to results" link on search/list pages — 2026-03-02 (QA-R8-A11Y5)
+- [x] Fix profile tabs arrow key nav — WAI-ARIA roving tabindex pattern + keyboard handler — 2026-03-02 (QA-R8-A11Y8)
+- [x] Fix quick note entry point — missing include + wrong hx-swap in notes tab — 2026-03-02 (QA-R8-UX4)
+- [x] Fix missing h1 on notes-detail page — added `<h1>{% trans "Progress Note" %}</h1>` with French — 2026-03-02 (AXE-HEADING1)
+- [x] Verified: language middleware not regressed — 24 tests pass, SafeLocaleMiddleware intact — 2026-03-02 (QA-R8-LANG1)
+- [x] Verified: offline fallback not regressed — htmx error handlers + service worker + offline banner intact — 2026-03-02 (QA-R8-UX7)
+- [x] Verified: data export routes exist — /reports/participant/<id>/export/ with PDF/CSV/JSON + SecureExportLink — 2026-03-02 (QA-R8-VERIFY1)
+- [x] Fix calendar feed URL — added error handling, POST-Redirect-GET, improved success message — 2026-03-02 (QA-R8-UX9)
+- [x] Fix PM user management nav — `/manage/` path was missing from nav_active context processor — 2026-03-02 (QA-R8-UX12)
 
 ### Phase: FHIR-Informed Data Foundations + CIDS Compliance (PR #131)
 

@@ -24,6 +24,8 @@
                hx-include="#search-filters"
                hx-indicator="#loading-bar">
     </div>
+    {# QA-R8-A11Y5 / WCAG 2.4.3 — skip link bypasses the form and jumps straight to results #}
+    <a href="#search-results-container" class="skip-link skip-link--inline">{% trans "Skip to results" %}</a>
 </form>
 
 <!-- Search results container (updated via HTMX) -->
