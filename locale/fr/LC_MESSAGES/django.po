@@ -878,7 +878,7 @@ msgstr "Rechercher %(clients)s"
 
 #, python-format
 msgid "New %(client)s"
-msgstr "Nouveau/Nouvelle %(client)s"
+msgstr "Nouveau %(client)s"
 
 #, python-format
 msgid "All %(programs)s"

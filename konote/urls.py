@@ -24,6 +24,9 @@ urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
     path("i18n/switch/", switch_language, name="switch_language"),
     path("auth/", include("apps.auth_app.urls")),
+    # Redirects for old /clients/ URLs to /participants/
+    path("clients/<path:rest>", RedirectView.as_view(url="/participants/%(rest)s", permanent=True)),
+    path("clients/", RedirectView.as_view(url="/participants/", permanent=True)),
     path("participants/", include("apps.clients.urls")),
     path("programs/", include("apps.programs.urls")),
     # Redirects for old admin URLs (BEFORE app includes so they match first)
