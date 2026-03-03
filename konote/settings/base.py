@@ -94,11 +94,12 @@ TENANT_MODEL = "tenants.Agency"
 TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
 
 MIDDLEWARE = [
-    # TenantMainMiddleware MUST be first — it sets the PostgreSQL schema
-    # search_path based on the request's subdomain before anything else runs.
-    "django_tenants.middleware.main.TenantMainMiddleware",
+    # SecurityMiddleware MUST be first for security headers
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoiseMiddleware serves static files directly, before tenant resolution
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # TenantMainMiddleware sets the PostgreSQL schema based on subdomain
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "konote.middleware.htmx_vary.HtmxVaryMiddleware",
