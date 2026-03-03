@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Remove SRE Flag" %} — {{ event }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Remove SRE Flag" %}</h1>
+    <p>{% trans "Are you sure you want to remove the Serious Reportable Event flag from this event?" %}</p>
+</hgroup>
+
+<article>
+    <header>
+        <strong>{{ event.title|default:_("Event") }}</strong>
+        — <time datetime="{{ event.start_timestamp|date:'c' }}">{{ event.start_timestamp|date }}</time>
+    </header>
+    {% if event.sre_category %}
+    <p><strong>{% trans "Category" %}:</strong> {{ event.sre_category }}</p>
+    <p><strong>{% trans "Severity" %}:</strong> {{ event.sre_category.get_severity_display }}</p>
+    {% endif %}
+    {% if event.sre_flagged_by %}
+    <p><strong>{% trans "Flagged by" %}:</strong> {{ event.sre_flagged_by.display_name|default:event.sre_flagged_by }}</p>
+    {% endif %}
+    {% if event.sre_flagged_at %}
+    <p><strong>{% trans "Flagged at" %}:</strong> {{ event.sre_flagged_at|date:"N j, Y, P" }}</p>
+    {% endif %}
+</article>
+
+<div role="alert" class="notice">
+    <p>{% trans "This action is audited. Un-flagging an SRE is recorded in the audit log." %}</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div role="group">
+        <button type="submit" class="contrast">{% trans "Remove SRE Flag" %}</button>
+        <a href="{% url 'events:event_list' client_id=event.client_file_id %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

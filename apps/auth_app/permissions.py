@@ -86,6 +86,10 @@ PERMISSIONS = {
         "alert.recommend_cancel": DENY,  # Front desk have no alert access
         "alert.review_cancel_recommendation": DENY,
 
+        "sre.flag": DENY,          # Front desk cannot flag SREs
+        "sre.unflag": DENY,        # Front desk cannot un-flag SREs
+        "sre.view_report": DENY,   # Front desk have no SRE report access
+
         "custom_field.view": PER_FIELD,  # Uses field.front_desk_access setting
         "custom_field.edit": PER_FIELD,
 
@@ -189,6 +193,11 @@ PERMISSIONS = {
         "alert.recommend_cancel": PROGRAM,  # Staff proposes cancellation; PM approves (two-person rule).
                                            # Enforced by @requires_permission
         "alert.review_cancel_recommendation": DENY,  # Only PMs review recommendations
+
+        "sre.flag": PROGRAM,       # Staff can flag events as SREs within their program.
+                                    # Enforced by @requires_permission
+        "sre.unflag": DENY,        # Un-flagging is admin-only (immutable once set)
+        "sre.view_report": DENY,   # Staff don't have SRE report access
 
         "custom_field.view": PROGRAM,
         "custom_field.edit": PROGRAM,
@@ -296,6 +305,11 @@ PERMISSIONS = {
         "alert.review_cancel_recommendation": ALLOW,  # PMs review staff recommendations.
                                                        # Enforced by @requires_permission
 
+        "sre.flag": ALLOW,         # PMs can flag events as SREs. Enforced by @requires_permission
+        "sre.unflag": DENY,        # Un-flagging is admin-only (immutable once set)
+        "sre.view_report": ALLOW,  # PMs view SRE reports for their programs.
+                                    # Enforced by @requires_permission
+
         "custom_field.view": ALLOW,  # Phase 3: GATED
         "custom_field.edit": DENY,
 
@@ -399,6 +413,11 @@ PERMISSIONS = {
         "alert.cancel": DENY,
         "alert.recommend_cancel": DENY,
         "alert.review_cancel_recommendation": DENY,
+
+        "sre.flag": DENY,          # Executives don't flag individual events
+        "sre.unflag": DENY,        # Executives don't un-flag individual events
+        "sre.view_report": ALLOW,  # Executives view aggregate SRE reports for board/funder.
+                                    # Enforced by @requires_permission
 
         "custom_field.view": DENY,
         "custom_field.edit": DENY,
@@ -560,6 +579,10 @@ def permission_to_plain_english(perm_key, perm_level):
         "alert.cancel": "Cancel safety alerts",
         "alert.recommend_cancel": "Recommend cancellation of a safety alert (for PM review)",
         "alert.review_cancel_recommendation": "Approve or reject alert cancellation recommendations",
+
+        "sre.flag": "Flag an event as a Serious Reportable Event (SRE)",
+        "sre.unflag": "Remove the SRE flag from an event (admin-only)",
+        "sre.view_report": "View the Serious Reportable Events report",
 
         "custom_field.view": "View custom fields",
         "custom_field.edit": "Edit custom fields",

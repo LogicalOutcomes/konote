@@ -6,6 +6,9 @@
     <div class="timeline-item">
         {% if entry.type == "event" %}
         <div>
+            {% if entry.obj.is_sre %}
+                <span class="badge badge-danger" title="{% trans 'Serious Reportable Event' %}">{% trans "SRE" %}</span>
+            {% endif %}
             {% if entry.obj.event_type %}
                 <span class="program-dot" style="background-color: {{ entry.obj.event_type.colour_hex }}" aria-hidden="true"></span>
                 <span class="badge" style="background-color: {{ entry.obj.event_type.colour_hex }}; color: #fff;">{{ entry.obj.event_type.name }}</span>

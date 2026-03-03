@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program, UserProgramRole
 
-from .models import Alert, Event, EventType
+from .models import Alert, Event, EventType, SRECategory
 
 
 class EventTypeForm(forms.ModelForm):
@@ -53,7 +53,10 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        fields = ["title", "description", "all_day", "start_timestamp", "end_timestamp", "event_type", "related_note"]
+        fields = [
+            "title", "description", "all_day", "start_timestamp", "end_timestamp",
+            "event_type", "related_note", "is_sre", "sre_category",
+        ]
         widgets = {
             "start_timestamp": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "end_timestamp": forms.DateTimeInput(attrs={"type": "datetime-local"}),
@@ -62,20 +65,35 @@ class EventForm(forms.ModelForm):
                 "role": "switch",
                 "aria-describedby": "all_day_help",
             }),
+            "is_sre": forms.CheckboxInput(attrs={
+                "role": "switch",
+                "aria-describedby": "sre_help",
+            }),
         }
         labels = {
             "all_day": _("All day event"),
+            "is_sre": _("Serious Reportable Event (SRE)"),
+            "sre_category": _("SRE Category"),
         }
         help_texts = {
             "all_day": _("Toggle on to hide time fields and record date only."),
+            "is_sre": _("Flag this event as a Serious Reportable Event. This will notify leadership."),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, can_flag_sre=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["event_type"].queryset = EventType.objects.filter(status="active")
         self.fields["end_timestamp"].required = False
         self.fields["related_note"].required = False
         self.fields["start_timestamp"].required = False  # Conditional based on all_day
+        self.fields["sre_category"].queryset = SRECategory.objects.filter(is_active=True)
+        self.fields["sre_category"].required = False
+
+        # Hide SRE fields if user lacks permission
+        self.can_flag_sre = can_flag_sre
+        if not can_flag_sre:
+            self.fields["is_sre"].widget = forms.HiddenInput()
+            self.fields["sre_category"].widget = forms.HiddenInput()
 
         # If editing an existing all-day event, populate date fields
         if self.instance and self.instance.pk and self.instance.all_day:
@@ -114,7 +132,38 @@ class EventForm(forms.ModelForm):
             if not cleaned_data.get("start_timestamp"):
                 self.add_error("start_timestamp", _("Start date and time is required."))
 
+        # SRE validation: category required when flagged as SRE
+        is_sre = cleaned_data.get("is_sre", False)
+        sre_category = cleaned_data.get("sre_category")
+        if is_sre and not sre_category:
+            self.add_error(
+                "sre_category",
+                _("An SRE category is required when flagging an event as a Serious Reportable Event."),
+            )
+
         return cleaned_data
+
+
+class SRECategoryForm(forms.ModelForm):
+    """Form for creating/editing SRE categories. Admin-only."""
+
+    class Meta:
+        model = SRECategory
+        fields = ["name", "name_fr", "description", "description_fr", "severity", "is_active", "display_order"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "description_fr": forms.Textarea(attrs={"rows": 3}),
+            "is_active": forms.CheckboxInput(attrs={"role": "switch"}),
+        }
+        labels = {
+            "name": _("Name (English)"),
+            "name_fr": _("Name (French)"),
+            "description": _("Description (English)"),
+            "description_fr": _("Description (French)"),
+            "severity": _("Severity level"),
+            "is_active": _("Active"),
+            "display_order": _("Display order"),
+        }
 
 
 class AlertForm(forms.Form):

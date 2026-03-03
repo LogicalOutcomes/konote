@@ -8,11 +8,14 @@ from .views import (
     alert_recommendation_review,
     calendar_feed_settings,
     event_create,
+    event_edit,
     event_list,
     meeting_create,
     meeting_list,
     meeting_status_update,
     meeting_update,
+    sre_report,
+    sre_unflag,
 )
 
 app_name = "events"
@@ -20,6 +23,7 @@ urlpatterns = [
     # Participant events
     path("participant/<int:client_id>/", event_list, name="event_list"),
     path("participant/<int:client_id>/create/", event_create, name="event_create"),
+    path("participant/<int:client_id>/<int:event_id>/edit/", event_edit, name="event_edit"),
     # Alerts
     path("participant/<int:client_id>/alerts/create/", alert_create, name="alert_create"),
     path("alerts/<int:alert_id>/cancel/", alert_cancel, name="alert_cancel"),
@@ -34,4 +38,7 @@ urlpatterns = [
     path("meetings/<int:event_id>/status/", meeting_status_update, name="meeting_status_update"),
     # Calendar feed
     path("calendar/settings/", calendar_feed_settings, name="calendar_feed_settings"),
+    # SRE
+    path("sre/<int:event_id>/unflag/", sre_unflag, name="sre_unflag"),
+    path("sre/report/", sre_report, name="sre_report"),
 ]
