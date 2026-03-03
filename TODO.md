@@ -47,9 +47,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
-- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
-- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
-- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
 - [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
 
 ### Phase: Post-Launch Communication Enhancements
@@ -138,3 +135,4 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Accessibility sweep — ARIA roles, landmarks, templates, contrast, table headers, touch targets, polish — PR #208 — 2026-03-02 (AXE-ARIA1 thru QA-R8-A11Y7)
 - [x] QA Round 8 Tier 2 — French nav verified, form resubmission false positive, /reports/funder/ redirect, executive dashboard presets + PDF — PRs #210, #211 — 2026-03-02 (QA-R8-I18N1, QA-R8-UX10, QA-R8-UX11, QA-R8-UX8)
 - [x] Wave 1 parallel bug fixes — client search, tab order, mobile edit, skip links, quick note, calendar feed, PM nav, h1 headings — PRs #201–207 — 2026-03-02 (QA-R8-UX3 thru QA-R8-UX12)
+- [x] Permission system documentation — DV-safe mode, GATED access, field controls, access tiers — PR #147 — 2026-03-02 (DOC-PERM1 + DOC-PERM2 + DOC-PERM3)
