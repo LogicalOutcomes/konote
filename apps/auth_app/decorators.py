@@ -30,6 +30,26 @@ def admin_required(view_func):
     return wrapper
 
 
+def demo_read_only(view_func):
+    """Decorator: block POST requests from demo users.
+
+    Demo users with admin role can view settings pages but cannot modify
+    them. On POST, returns a 403 with explanation. On GET, passes through
+    normally. Stack after @admin_required.
+
+    See tasks/design-rationale/ovhcloud-deployment.md — Demo Mode Safeguards.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if getattr(request.user, "is_demo", False) and request.method == "POST":
+            return HttpResponseForbidden(
+                _("Demo accounts cannot modify settings. "
+                  "Sign in with a real administrator account to make changes.")
+            )
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
 def _get_user_highest_role(user):
     """Return the user's highest client-access role across all programs.
 

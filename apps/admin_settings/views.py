@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.decorators import admin_required, demo_read_only
 
 from .forms import (
     BackupReminderForm, DemoDataForm, FeatureToggleForm, InstanceSettingsForm,
@@ -97,6 +97,7 @@ def dashboard(request):
 
 @login_required
 @admin_required
+@demo_read_only
 def terminology(request):
     # Build lookup of current overrides from database
     overrides = {
@@ -148,6 +149,7 @@ def terminology(request):
 
 @login_required
 @admin_required
+@demo_read_only
 def terminology_reset(request, term_key):
     """Delete an override, reverting to default."""
     if request.method == "POST":
@@ -360,6 +362,7 @@ FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_
 
 @login_required
 @admin_required
+@demo_read_only
 def features(request):
     if request.method == "POST":
         form = FeatureToggleForm(request.POST)
@@ -440,6 +443,7 @@ def feature_toggle_confirm(request, feature_key):
 
 @login_required
 @admin_required
+@demo_read_only
 def feature_toggle_action(request, feature_key):
     """Perform the toggle and return an HTMX success partial."""
     if request.method != "POST":
@@ -471,6 +475,7 @@ def feature_toggle_action(request, feature_key):
 
 @login_required
 @admin_required
+@demo_read_only
 def instance_settings(request):
     current_settings = InstanceSetting.get_all()
     if request.method == "POST":
@@ -488,6 +493,7 @@ def instance_settings(request):
 
 @login_required
 @admin_required
+@demo_read_only
 def messaging_settings(request):
     """Messaging configuration: profile cards, Safety-First, templates, channel status."""
     from apps.communications.models import SystemHealthCheck
@@ -810,6 +816,7 @@ def demo_data_management(request):
 
 @login_required
 @admin_required
+@demo_read_only
 def organization_profile(request):
     """Edit the singleton organisation profile for CIDS exports."""
     profile = OrganizationProfile.get_solo()
@@ -833,6 +840,7 @@ def organization_profile(request):
 
 @login_required
 @admin_required
+@demo_read_only
 def backup_settings(request):
     """Configure backup reminder settings on OrganizationProfile."""
     from .forms import BackupReminderForm
