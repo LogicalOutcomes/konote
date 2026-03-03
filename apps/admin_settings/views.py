@@ -904,3 +904,118 @@ def backup_settings(request):
         "form": form,
         "profile": profile,
     })
+
+
+# --- Plausibility Threshold Tuning Dashboard (DQ1) ---
+
+@login_required
+@admin_required
+def plausibility_tuning_dashboard(request):
+    """Dashboard showing plausibility override rates per metric to help admins tune thresholds."""
+    from datetime import timedelta
+
+    from django.db.models import Avg, Count, Q
+
+    from apps.notes.models import PlausibilityOverrideLog
+    from apps.plans.models import MetricDefinition
+    from apps.programs.models import Program
+
+    # Date range filter
+    days_param = request.GET.get("days", "90")
+    try:
+        days = int(days_param)
+    except (ValueError, TypeError):
+        days = 90
+
+    date_filter = Q()
+    if days > 0:
+        cutoff = tz.now() - timedelta(days=days)
+        date_filter = Q(created_at__gte=cutoff)
+
+    # Program filter
+    program_id = request.GET.get("program", "")
+    program_filter = Q()
+    if program_id:
+        try:
+            program_filter = Q(metric_definition__owning_program_id=int(program_id))
+        except (ValueError, TypeError):
+            pass
+
+    # Query override logs grouped by metric_definition
+    metrics_data = (
+        PlausibilityOverrideLog.objects
+        .filter(date_filter & program_filter)
+        .values(
+            "metric_definition_id",
+            "metric_definition__name",
+            "metric_definition__warn_min",
+            "metric_definition__warn_max",
+            "metric_definition__owning_program__name",
+        )
+        .annotate(
+            total_warnings=Count("id"),
+            confirmed_count=Count("id", filter=Q(action="confirmed")),
+            corrected_count=Count("id", filter=Q(action="corrected")),
+            avg_confirmed_value=Avg(
+                "entered_value",
+                filter=Q(action="confirmed"),
+            ),
+        )
+        .order_by("-total_warnings")
+    )
+
+    # Calculate override rate and status for each metric
+    metric_rows = []
+    for row in metrics_data:
+        total = row["total_warnings"]
+        confirmed = row["confirmed_count"]
+        corrected = row["corrected_count"]
+        override_rate = (confirmed / total * 100) if total > 0 else 0
+
+        # Colour coding: green (<30%), yellow (30-80%), red (>80%)
+        if override_rate < 30:
+            status = "green"
+            status_label = _("Threshold working well")
+            recommendation = _("Thresholds are appropriately set. Most flagged values are being corrected.")
+        elif override_rate <= 80:
+            status = "yellow"
+            status_label = _("Consider reviewing threshold")
+            recommendation = _("A moderate number of warnings are being confirmed. Consider widening thresholds slightly.")
+        else:
+            status = "red"
+            status_label = _("Threshold likely too tight")
+            recommendation = _("Most flagged values are confirmed as correct. Thresholds are likely too restrictive and should be widened.")
+
+        metric_rows.append({
+            "metric_name": row["metric_definition__name"],
+            "program_name": row["metric_definition__owning_program__name"] or _("Global"),
+            "warn_min": row["metric_definition__warn_min"],
+            "warn_max": row["metric_definition__warn_max"],
+            "total_warnings": total,
+            "confirmed_count": confirmed,
+            "corrected_count": corrected,
+            "override_rate": round(override_rate, 1),
+            "avg_confirmed_value": round(row["avg_confirmed_value"], 2) if row["avg_confirmed_value"] is not None else None,
+            "status": status,
+            "status_label": status_label,
+            "recommendation": recommendation,
+        })
+
+    # Available programs for filter dropdown
+    programs = Program.objects.filter(status="active").order_by("name")
+
+    # Date range options
+    date_ranges = [
+        {"value": "30", "label": _("Last 30 days")},
+        {"value": "90", "label": _("Last 90 days")},
+        {"value": "365", "label": _("Last year")},
+        {"value": "0", "label": _("All time")},
+    ]
+
+    return render(request, "admin_settings/dq_tuning.html", {
+        "metric_rows": metric_rows,
+        "programs": programs,
+        "selected_days": days_param,
+        "selected_program": program_id,
+        "date_ranges": date_ranges,
+    })

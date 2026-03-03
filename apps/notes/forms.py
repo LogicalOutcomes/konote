@@ -342,11 +342,15 @@ class MetricValueForm(forms.Form):
                         self.fields["value"].widget = forms.NumberInput(attrs=attrs)
                     self.is_scale = False
 
-            # Hidden field for plausibility override confirmation
+            # Hidden fields for plausibility override confirmation and logging
             if any(v is not None for v in (metric_def.warn_min, metric_def.warn_max, metric_def.very_unlikely_min, metric_def.very_unlikely_max)):
                 self.fields["plausibility_confirmed"] = forms.BooleanField(
                     required=False,
                     widget=forms.HiddenInput(attrs={"class": "plausibility-confirmed-input"}),
+                )
+                self.fields["plausibility_original_value"] = forms.CharField(
+                    required=False,
+                    widget=forms.HiddenInput(attrs={"class": "plausibility-original-value"}),
                 )
 
     def clean_value(self):

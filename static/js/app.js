@@ -1710,8 +1710,15 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         var isBelowWarn = !isNaN(warnMin) && val < warnMin;
         var isAboveWarn = !isNaN(warnMax) && val > warnMax;
 
+        var originalInput = wrapper.querySelector(".plausibility-original-value");
+
         if (isBelowWarn || isAboveWarn) {
             var warningText = warningDiv.querySelector(".warning-text");
+
+            // Store the original flagged value for override logging
+            if (originalInput && !originalInput.value) {
+                originalInput.value = val;
+            }
 
             if (isAboveWarn) {
                 warningText.textContent = t("plausibility_high",
@@ -1729,6 +1736,8 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             warningDiv.setAttribute("aria-live", "polite");
             // Reset confirmation when value changes
             if (confirmedInput) confirmedInput.value = "";
+            // Update original value to reflect the current flagged value
+            if (originalInput) originalInput.value = val;
             var btn = warningDiv.querySelector(".plausibility-confirm-btn");
             if (btn) {
                 btn.style.display = "";
@@ -1740,6 +1749,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             warningDiv.classList.remove("tier-2");
             warningDiv.removeAttribute("data-confirm-count");
             if (confirmedInput) confirmedInput.value = "";
+            if (originalInput) originalInput.value = "";
         }
     }
 
