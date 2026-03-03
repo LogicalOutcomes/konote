@@ -227,7 +227,7 @@ After both sessions:
 
 **Duration:** 2–4 hours
 
-**Full technical guide:** [docs/archive/deploy-azure.md](../docs/archive/deploy-azure.md)
+**Full technical guide:** [Deploy to Azure](../docs/deploying-konote.md#deploy-to-azure) (in deploying-konote.md)
 
 ---
 
@@ -252,7 +252,7 @@ Before touching Azure, confirm all inputs are ready:
 
 ### Setup Steps
 
-Follow the [Azure deployment guide](../docs/archive/deploy-azure.md) for detailed instructions. Summary:
+Follow the [Azure deployment guide](../docs/deploying-konote.md#deploy-to-azure) for detailed instructions. Summary:
 
 **Infrastructure (Steps 1–3):**
 1. Create resource group in Canada Central
@@ -805,7 +805,7 @@ Walk through the "Before You Enter Real Data" checklist from [deploying-konote.m
 |----------|----------|---------|
 | Document Integration Design | [tasks/design-rationale/document-integration.md](design-rationale/document-integration.md) | Phase 0, 3, 4 |
 | Permissions Interview | [tasks/agency-permissions-interview.md](agency-permissions-interview.md) | Phase 1 |
-| Azure Deployment Guide | [docs/archive/deploy-azure.md](../docs/archive/deploy-azure.md) | Phase 2 |
+| Azure Deployment Guide | [docs/deploying-konote.md — Deploy to Azure](../docs/deploying-konote.md#deploy-to-azure) | Phase 2 |
 | Deploying KoNote (all platforms) | [docs/deploying-konote.md](../docs/deploying-konote.md) | Phase 2, 4 |
 | Administering KoNote | [docs/administering-konote.md](../docs/administering-konote.md) | Phase 3, 4 |
 | Data Offboarding | [tasks/agency-data-offboarding.md](agency-data-offboarding.md) | Post-deployment (if needed) |
