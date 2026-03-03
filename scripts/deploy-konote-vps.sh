@@ -242,6 +242,32 @@ ADMIN_PASSWORD=$(python3 -c "import secrets; print(secrets.token_urlsafe(16))")
 
 ok_msg "All credentials generated (Django secret, encryption key, 2 DB passwords, admin password)"
 
+# Save credentials locally for disaster recovery
+CREDS_FILE="konote-credentials-${DOMAIN}-$(date +%Y%m%d_%H%M%S).txt"
+cat > "$CREDS_FILE" <<CREDS
+# KoNote Credentials for ${DOMAIN}
+# Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+#
+# KEEP THIS FILE SECURE — it contains all keys needed to access
+# and decrypt your data.
+#
+# Save these in your password manager, then delete this file.
+
+DOMAIN=${DOMAIN}
+ADMIN_USER=${ADMIN_USER}
+ADMIN_PASSWORD=${ADMIN_PASSWORD}
+SECRET_KEY=${SECRET_KEY}
+FIELD_ENCRYPTION_KEY=${FIELD_ENCRYPTION_KEY}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+AUDIT_POSTGRES_PASSWORD=${AUDIT_POSTGRES_PASSWORD}
+CREDS
+chmod 600 "$CREDS_FILE"
+ok_msg "Credentials saved to ./${CREDS_FILE}"
+warn_msg "Save this file in your password manager, then delete it"
+
+# Capture version for health reports (local repo commit being deployed)
+DEPLOY_VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
 # ==============================================================================
 # Step 1/9: Secure the VPS
 # ==============================================================================
@@ -368,8 +394,22 @@ DEMO_MODE=true
 # EMAIL_HOST_PASSWORD=re_your_resend_api_key
 # DEFAULT_FROM_EMAIL=KoNote <noreply@${DOMAIN}>
 
+# --- Ops Sidecar (optional — see deploy-ovhcloud.md Section 11) ---
+# Dead man's switch: alerts you if backups STOP running
+# HEALTHCHECK_PING_URL=https://hc-ping.com/your-uuid-here
+# Alert webhook: notifies on backup failure or disk warnings
+# ALERT_WEBHOOK_URL=https://ntfy.sh/your-topic
+# Daily health email recipient (requires email configured above)
+# OPS_HEALTH_REPORT_TO=admin@youragency.ca
+# Backup retention (defaults: 30 days main, 90 days audit)
+# BACKUP_RETENTION_DAYS=30
+# AUDIT_RETENTION_DAYS=90
+
 # --- AI Features (optional) ---
 # OPENROUTER_API_KEY=sk-or-...
+
+# --- Version (set during deploy for health reports) ---
+KONOTE_VERSION=${DEPLOY_VERSION:-unknown}
 ENVFILE
     fi
 
