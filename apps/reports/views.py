@@ -1931,11 +1931,12 @@ def team_meeting_view(request):
     else:
         filter_program_ids = user_program_ids
 
-    # Get staff members in filtered programs
+    # Get staff members in filtered programs (exclude demo users)
     staff_roles = UserProgramRole.objects.filter(
         program_id__in=filter_program_ids,
         role__in=["staff", "program_manager"],
         status="active",
+        user__is_demo=False,
     ).select_related("user", "program").order_by("user__display_name")
 
     # Deduplicate by user and collect role/program info
@@ -1957,6 +1958,7 @@ def team_meeting_view(request):
         author_program_id__in=filter_program_ids,
         created_at__gte=cutoff,
         status="default",
+        client_file__is_demo=False,
     ).values("author_id").annotate(
         count=Count("pk"), last_date=Max("created_at"),
     ):
@@ -1967,6 +1969,7 @@ def team_meeting_view(request):
         logged_by_id__in=staff_user_ids,
         author_program_id__in=filter_program_ids,
         created_at__gte=cutoff,
+        client_file__is_demo=False,
     ).values("logged_by_id").annotate(
         count=Count("pk"), last_date=Max("created_at"),
     ):
