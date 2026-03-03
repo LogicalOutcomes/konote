@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self._seed_feature_toggles()
         self._seed_instance_settings()
         self._seed_event_types()
+        self._seed_sre_categories()
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
@@ -64,6 +65,12 @@ class Command(BaseCommand):
         from django.core.management import call_command
 
         call_command("seed_event_types", stdout=self.stdout)
+
+    def _seed_sre_categories(self):
+        """Seed default Serious Reportable Event categories."""
+        from django.core.management import call_command
+
+        call_command("seed_sre_categories", stdout=self.stdout)
 
     def _seed_intake_fields(self):
         """Seed default custom fields for client intake forms."""
