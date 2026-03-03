@@ -2682,6 +2682,12 @@ input[type="radio"] {
     min-width: 24px;
     min-height: 24px;
 }
+/* Enlarge click/tap area for labels containing checkboxes or radios */
+label:has(input[type="checkbox"]),
+label:has(input[type="radio"]) {
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
 .filter-bar select,
 .filter-actions a[role="button"],
 .filter-actions button {
