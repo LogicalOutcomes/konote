@@ -239,6 +239,29 @@ class DemoAdminReadOnlyTest(TestCase):
         # Should not be 403 — real admins can modify
         self.assertNotEqual(resp.status_code, 403)
 
+    def test_all_protected_endpoints_block_demo_post(self):
+        """Parameterised: all 8 @demo_read_only endpoints return 403 on POST."""
+        protected_urls = [
+            "/admin/settings/terminology/",
+            "/admin/settings/terminology/reset/client/",
+            "/admin/settings/features/",
+            "/admin/settings/features/participant_portal/toggle/",
+            "/admin/settings/instance/",
+            "/admin/settings/messaging/",
+            "/admin/settings/organization/",
+            "/admin/settings/backup/",
+        ]
+        self.http_client.login(username="demo-admin", password="testpass123")
+        for url in protected_urls:
+            with self.subTest(url=url):
+                resp = self.http_client.post(url, {})
+                self.assertEqual(resp.status_code, 403, f"Expected 403 for demo POST to {url}")
+                self.assertIn(
+                    b"Demo accounts cannot modify settings",
+                    resp.content,
+                    f"Expected helpful message in 403 response for {url}",
+                )
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class IsDemoImmutableTest(TestCase):
