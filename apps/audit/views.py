@@ -1,6 +1,7 @@
 """Audit log viewer — admin and program manager access."""
 import csv
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -13,9 +14,58 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import admin_required, requires_permission
+from apps.programs.access import get_user_program_ids
 from apps.reports.csv_utils import sanitise_csv_row
 
 from .models import AuditLog
+
+# Filter keys supported by the admin audit log views.
+_ADMIN_FILTER_KEYS = ("date_from", "date_to", "user_display", "action", "resource_type", "demo_filter")
+# Filter keys supported by the program-scoped audit log view.
+_PROGRAM_FILTER_KEYS = ("date_from", "date_to", "user_display", "action")
+
+
+def _apply_audit_filters(qs, request, filter_keys=_ADMIN_FILTER_KEYS):
+    """Apply GET-parameter filters to an audit log queryset.
+
+    Returns (filtered_qs, filter_values, filter_query) where:
+    - filtered_qs: the queryset with all applicable filters applied
+    - filter_values: dict of raw filter values (for sticky form fields)
+    - filter_query: URL-encoded query string for pagination links
+    """
+    vals = {key: request.GET.get(key, "") for key in filter_keys}
+
+    if vals.get("demo_filter") == "real":
+        qs = qs.filter(is_demo_context=False)
+    elif vals.get("demo_filter") == "demo":
+        qs = qs.filter(is_demo_context=True)
+
+    if vals.get("date_from"):
+        try:
+            dt = datetime.strptime(vals["date_from"], "%Y-%m-%d")
+            qs = qs.filter(event_timestamp__gte=timezone.make_aware(dt))
+        except ValueError:
+            pass
+
+    if vals.get("date_to"):
+        try:
+            dt = datetime.strptime(vals["date_to"], "%Y-%m-%d")
+            dt = dt.replace(hour=23, minute=59, second=59)
+            qs = qs.filter(event_timestamp__lte=timezone.make_aware(dt))
+        except ValueError:
+            pass
+
+    if vals.get("user_display"):
+        qs = qs.filter(user_display__icontains=vals["user_display"])
+
+    if vals.get("action"):
+        qs = qs.filter(action=vals["action"])
+
+    if vals.get("resource_type"):
+        qs = qs.filter(resource_type__icontains=vals["resource_type"])
+
+    filter_query = urlencode({k: v for k, v in vals.items() if v})
+    return qs, vals, filter_query
 
 
 def _scoped_audit_qs(request):
@@ -26,8 +76,6 @@ def _scoped_audit_qs(request):
     without PM roles are already blocked by the @requires_permission
     decorator, so this function only needs to handle admin vs PM scoping.
     """
-    from apps.programs.models import UserProgramRole
-
     qs = AuditLog.objects.using("audit").all()
 
     if not getattr(request.user, "is_admin", False):
@@ -35,11 +83,7 @@ def _scoped_audit_qs(request):
         # request.user_program_role is only set by middleware for
         # client-scoped URLs, so we query program IDs directly
         # (consistent with all other admin views).
-        user_program_ids = list(
-            UserProgramRole.objects.filter(
-                user=request.user, status="active",
-            ).values_list("program_id", flat=True)
-        )
+        user_program_ids = get_user_program_ids(request.user)
         qs = qs.filter(program_id__in=user_program_ids)
 
     return qs
@@ -51,53 +95,7 @@ def audit_log_list(request):
     """Display paginated, filterable audit log."""
 
     qs = _scoped_audit_qs(request)
-
-    # Collect filter values
-    date_from = request.GET.get("date_from", "")
-    date_to = request.GET.get("date_to", "")
-    user_display = request.GET.get("user_display", "")
-    action = request.GET.get("action", "")
-    resource_type = request.GET.get("resource_type", "")
-    demo_filter = request.GET.get("demo_filter", "")
-
-    # Apply filters
-    if demo_filter == "real":
-        qs = qs.filter(is_demo_context=False)
-    elif demo_filter == "demo":
-        qs = qs.filter(is_demo_context=True)
-
-    if date_from:
-        try:
-            dt = datetime.strptime(date_from, "%Y-%m-%d")
-            qs = qs.filter(event_timestamp__gte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if date_to:
-        try:
-            dt = datetime.strptime(date_to, "%Y-%m-%d")
-            # Include the entire day
-            dt = dt.replace(hour=23, minute=59, second=59)
-            qs = qs.filter(event_timestamp__lte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if user_display:
-        qs = qs.filter(user_display__icontains=user_display)
-
-    if action:
-        qs = qs.filter(action=action)
-
-    if resource_type:
-        qs = qs.filter(resource_type__icontains=resource_type)
-
-    # Build filter query string for pagination links (exclude 'page')
-    filter_params = []
-    for key in ("date_from", "date_to", "user_display", "action", "resource_type", "demo_filter"):
-        val = request.GET.get(key, "")
-        if val:
-            filter_params.append(f"{key}={val}")
-    filter_query = "&".join(filter_params)
+    qs, vals, filter_query = _apply_audit_filters(qs, request)
 
     # Paginate
     paginator = Paginator(qs, 50)
@@ -109,12 +107,12 @@ def audit_log_list(request):
         "filter_query": filter_query,
         "action_choices": AuditLog.ACTION_CHOICES,
         # Sticky filter values
-        "date_from": date_from,
-        "date_to": date_to,
-        "user_display": user_display,
-        "action_filter": action,
-        "resource_type": resource_type,
-        "demo_filter": demo_filter,
+        "date_from": vals["date_from"],
+        "date_to": vals["date_to"],
+        "user_display": vals["user_display"],
+        "action_filter": vals["action"],
+        "resource_type": vals["resource_type"],
+        "demo_filter": vals["demo_filter"],
         "nav_active": "admin",
     }
     return render(request, "audit/log_list.html", context)
@@ -126,43 +124,7 @@ def audit_log_export(request):
     """Export filtered audit log as CSV."""
 
     qs = _scoped_audit_qs(request)
-
-    # Apply same filters as list view
-    date_from = request.GET.get("date_from", "")
-    date_to = request.GET.get("date_to", "")
-    user_display = request.GET.get("user_display", "")
-    action = request.GET.get("action", "")
-    resource_type = request.GET.get("resource_type", "")
-    demo_filter = request.GET.get("demo_filter", "")
-
-    if demo_filter == "real":
-        qs = qs.filter(is_demo_context=False)
-    elif demo_filter == "demo":
-        qs = qs.filter(is_demo_context=True)
-
-    if date_from:
-        try:
-            dt = datetime.strptime(date_from, "%Y-%m-%d")
-            qs = qs.filter(event_timestamp__gte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if date_to:
-        try:
-            dt = datetime.strptime(date_to, "%Y-%m-%d")
-            dt = dt.replace(hour=23, minute=59, second=59)
-            qs = qs.filter(event_timestamp__lte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if user_display:
-        qs = qs.filter(user_display__icontains=user_display)
-
-    if action:
-        qs = qs.filter(action=action)
-
-    if resource_type:
-        qs = qs.filter(resource_type__icontains=resource_type)
+    qs, vals, _ = _apply_audit_filters(qs, request)
 
     # Build CSV response
     today = timezone.now().strftime("%Y-%m-%d")
@@ -185,11 +147,7 @@ def audit_log_export(request):
         ]))
 
     # Log the export action
-    filters_used = {k: v for k, v in {
-        "date_from": date_from, "date_to": date_to,
-        "user_display": user_display, "action": action,
-        "resource_type": resource_type,
-    }.items() if v}
+    filters_used = {k: v for k, v in vals.items() if v and k != "demo_filter"}
 
     AuditLog.objects.using("audit").create(
         event_timestamp=timezone.now(),
@@ -238,41 +196,7 @@ def program_audit_log(request, program_id):
         models.Q(resource_type="clients", resource_id__in=client_ids)
     )
 
-    # Collect filter values
-    date_from = request.GET.get("date_from", "")
-    date_to = request.GET.get("date_to", "")
-    user_display = request.GET.get("user_display", "")
-    action = request.GET.get("action", "")
-
-    # Apply filters
-    if date_from:
-        try:
-            dt = datetime.strptime(date_from, "%Y-%m-%d")
-            qs = qs.filter(event_timestamp__gte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if date_to:
-        try:
-            dt = datetime.strptime(date_to, "%Y-%m-%d")
-            dt = dt.replace(hour=23, minute=59, second=59)
-            qs = qs.filter(event_timestamp__lte=timezone.make_aware(dt))
-        except ValueError:
-            pass
-
-    if user_display:
-        qs = qs.filter(user_display__icontains=user_display)
-
-    if action:
-        qs = qs.filter(action=action)
-
-    # Build filter query string for pagination
-    filter_params = []
-    for key in ("date_from", "date_to", "user_display", "action"):
-        val = request.GET.get(key, "")
-        if val:
-            filter_params.append(f"{key}={val}")
-    filter_query = "&".join(filter_params)
+    qs, vals, filter_query = _apply_audit_filters(qs, request, _PROGRAM_FILTER_KEYS)
 
     # Paginate
     paginator = Paginator(qs, 50)
@@ -285,10 +209,10 @@ def program_audit_log(request, program_id):
         "filter_query": filter_query,
         "action_choices": AuditLog.ACTION_CHOICES,
         # Sticky filter values
-        "date_from": date_from,
-        "date_to": date_to,
-        "user_display": user_display,
-        "action_filter": action,
+        "date_from": vals["date_from"],
+        "date_to": vals["date_to"],
+        "user_display": vals["user_display"],
+        "action_filter": vals["action"],
         "nav_active": "admin",
     }
     return render(request, "audit/program_audit_log.html", context)
