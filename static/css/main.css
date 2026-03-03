@@ -943,7 +943,8 @@ output.form-output {
     align-items: center;
     gap: var(--kn-space-sm);
     padding: var(--kn-space-base);
-    background: var(--kn-primary-subtle);
+    background: var(--kn-card-bg);
+    border: 1px solid var(--kn-border-light);
     border-radius: var(--kn-radius-card);
     font-size: 0.8125rem;
 }
