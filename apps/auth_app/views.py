@@ -349,6 +349,7 @@ def demo_login(request, role):
     login(request, user)
     user.last_login_at = timezone.now()
     user.save(update_fields=["last_login_at"])
+    _audit_login(request, user)
     lang_code = sync_language_on_login(request, user)
     response = _login_redirect(user, request.session)
     return _set_language_cookie(response, lang_code)
@@ -407,6 +408,22 @@ def demo_portal_login(request):
     participant.last_login = timezone.now()
     participant.save(update_fields=["last_login"])
     request.session["_portal_participant_id"] = str(participant.pk)
+
+    # Log demo portal login for operational awareness (excluded from PHIPA
+    # audit pipeline via is_demo_context=True)
+    try:
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=None,
+            user_display=f"Demo Portal: {participant.pk}",
+            ip_address=_get_client_ip(request),
+            action="demo_portal_login",
+            resource_type="session",
+            is_demo_context=True,
+        )
+    except Exception as e:
+        logger.error("Audit logging failed for demo portal login: %s", e)
 
     return redirect("/my/")
 

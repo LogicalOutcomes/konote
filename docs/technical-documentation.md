@@ -429,6 +429,78 @@ The portal is a separate interface for participants (clients). It uses its own a
 - All portal actions are audit-logged with `[portal]` user_display prefix
 - Feature-gated: the entire `/my/` URL namespace returns 404 if the `participant_portal` toggle is disabled
 
+### surveys
+**Purpose:** Structured feedback forms with sections, scoring, conditional branching, trigger rules, shareable links, and bilingual support
+
+| Model | Description |
+|-------|-------------|
+| `Survey` | Survey definition — name (EN/FR), status (draft/active/closed/archived), anonymity flag, portal visibility, score display preference. |
+| `SurveySection` | A group of questions within a survey. Supports scoring (sum/average), page breaks, and conditional display (show only when a trigger question has a specific answer). |
+| `SurveyQuestion` | A single question. Types: `single_choice`, `multiple_choice`, `rating_scale`, `short_text`, `long_text`, `yes_no`. Options stored as JSON with value, label (EN/FR), and score. |
+| `SurveyTriggerRule` | Automatic assignment rule. Trigger types: `event` (event created), `enrolment` (program enrolment), `time` (N days from anchor), `characteristic` (program membership). Repeat policies: once per participant, once per enrolment, recurring. |
+| `SurveyAssignment` | Tracks assignment of a survey to a participant. Statuses: `awaiting_approval`, `pending`, `in_progress`, `completed`, `dismissed`. Links to the trigger rule that created it (if any). |
+| `SurveyResponse` | A completed submission. Channels: `link` (shareable link), `portal` (participant portal), `staff_entered` (staff data entry). |
+| `SurveyAnswer` | A single answer. Free-text value is **Fernet-encrypted** (`_value_encrypted`). `numeric_value` is stored as a plain integer for aggregation and scoring. |
+| `SurveyLink` | Shareable link token for public survey access (no login required). Supports expiry dates and optional respondent name collection. Token generated via `secrets.token_urlsafe(32)`. |
+| `PartialAnswer` | In-progress answer for auto-save. Value is Fernet-encrypted. Moved to `SurveyAnswer` on submission. Unique constraint on (assignment, question). |
+
+**Management Views (at `/manage/surveys/`, admin + PM):**
+- `survey_list` — List all surveys with status indicators
+- `survey_create` / `survey_edit` — Create and edit surveys with inline section formset
+- `survey_detail` — Survey overview with sections, recent responses, and trigger rules
+- `survey_questions` — Add, edit, and delete questions; activate survey
+- `survey_status` — Change survey status (activate, close, archive). Closing auto-deactivates trigger rules.
+- `survey_response_detail` — View a single response with decrypted answers
+- `survey_links` — Create and deactivate shareable links
+- `survey_rules_list` / `survey_rule_create` / `survey_rule_deactivate` — Manage trigger rules
+- `csv_import` — Import a survey from CSV (creates survey, sections, and questions in a transaction)
+- `condition_values` — HTMX endpoint returning option values for conditional section configuration
+
+**Participant-Level Views (at `/surveys/participant/<id>/`, staff):**
+- `client_surveys` — Show surveys assigned to a participant; evaluates trigger rules on load
+- `assign_survey` — Manually assign a survey to a participant (requires portal account)
+- `staff_data_entry` — Staff fills in a survey on behalf of a participant (respects conditional sections)
+- `client_response_detail` — View a single response on a participant's file
+- `approve_assignment` / `dismiss_assignment` — Approve or dismiss awaiting-approval assignments
+
+**Public Views (no login required):**
+- `public_survey_form` — Render and process a survey via shareable link token. Includes honeypot anti-spam.
+- `public_survey_thank_you` — Thank-you page after public submission
+
+**Portal Views (at `/my/surveys/`, participant-facing):**
+- `portal_surveys_list` — Participant's assigned surveys
+- `portal_survey_fill` — Multi-page survey form with auto-save
+- `portal_survey_autosave` — HTMX auto-save endpoint for partial answers
+- `portal_survey_review` — Review answers before final submission
+- `portal_survey_thank_you` — Thank-you page with optional section scores
+
+**Survey Engine (`apps/surveys/engine.py`):**
+- `is_surveys_enabled()` — Checks the `surveys` feature toggle (cached)
+- `evaluate_survey_rules(client_file, participant_user)` — Evaluates time and characteristic rules on page load
+- `evaluate_event_rules(client_file, participant_user, event)` — Evaluates event-type rules (called via signal)
+- `evaluate_enrolment_rules(client_file, participant_user, enrolment)` — Evaluates enrolment-type rules (called via signal)
+- Overload protection: maximum 5 pending/in-progress surveys per participant (`MAX_PENDING_SURVEYS`)
+- Precondition checks: skips discharged clients, inactive accounts
+
+**Security & Encryption:**
+- Free-text answers (`SurveyAnswer._value_encrypted`, `PartialAnswer.value_encrypted`) are Fernet-encrypted at rest
+- Numeric values (`SurveyAnswer.numeric_value`) are stored as plain integers for aggregation — they are not PII
+- Feature-gated: all survey views call `_surveys_or_404()` which raises 404 if the `surveys` toggle is disabled
+- Management views require the `template.note.manage` permission (admin and PM roles)
+- Participant-level views use `get_client_or_403()` for program-scoped access control
+- Public survey forms (shareable links) include honeypot anti-spam fields
+
+**HTMX Patterns:**
+- Conditional section configuration: selecting a trigger question dynamically loads available answer values via `hx-get` to the `condition_values` endpoint
+- Portal auto-save: each question change fires `hx-post` to `portal_survey_autosave`, saving the answer as a `PartialAnswer` without page reload
+- Staff data entry: conditional sections show/hide dynamically based on answers (client-side JavaScript evaluates `condition_question` and `condition_value`)
+
+**Templates:**
+- `templates/surveys/admin/` — Management templates (survey list, form, detail, questions, links, rules, CSV import, response detail)
+- `templates/surveys/` — Staff-side templates (client surveys tab, assign survey, staff data entry, response detail)
+- `templates/surveys/public_form.html` / `public_thank_you.html` / `public_expired.html` — Public shareable link templates
+- `apps/portal/templates/portal/surveys_list.html` / `survey_fill.html` / `survey_review.html` / `survey_thank_you.html` — Portal participant-facing survey templates
+
 ---
 
 ## Models Reference
@@ -973,6 +1045,32 @@ MIDDLEWARE = [
 /merge/<client_a_id>/<client_b_id>/                 GET, POST   Compare and merge clients
 ```
 
+### Surveys
+
+```
+/manage/surveys/                                        GET         Survey list (admin/PM)
+/manage/surveys/new/                                    GET, POST   Create survey
+/manage/surveys/<id>/                                   GET         Survey detail
+/manage/surveys/<id>/edit/                              GET, POST   Edit survey
+/manage/surveys/<id>/questions/                         GET, POST   Manage questions
+/manage/surveys/<id>/status/                            POST        Change survey status
+/manage/surveys/<id>/condition-values/<question_id>/    GET         Condition value options (HTMX)
+/manage/surveys/<id>/responses/<response_id>/           GET         View response detail
+/manage/surveys/<id>/links/                             GET, POST   Manage shareable links
+/manage/surveys/<id>/rules/                             GET         Trigger rule list
+/manage/surveys/<id>/rules/new/                         GET, POST   Create trigger rule
+/manage/surveys/<id>/rules/<rule_id>/deactivate/        POST        Deactivate trigger rule
+/manage/surveys/import/                                 GET, POST   CSV import
+/surveys/participant/<client_id>/                       GET         Participant's surveys (staff)
+/surveys/participant/<client_id>/assign/                GET, POST   Assign survey to participant
+/surveys/participant/<client_id>/enter/<survey_id>/     GET, POST   Staff data entry
+/surveys/participant/<client_id>/response/<response_id>/ GET       View response on participant file
+/surveys/assignment/<id>/approve/                       POST        Approve assignment
+/surveys/assignment/<id>/dismiss/                       POST        Dismiss assignment
+/survey/<token>/                                        GET, POST   Public survey form (no login)
+/survey/<token>/thanks/                                 GET         Public survey thank-you
+```
+
 ### Participant Portal (at `/my/`)
 
 ```
@@ -984,6 +1082,7 @@ MIDDLEWARE = [
 /my/mfa/setup/                                      GET, POST   TOTP MFA setup
 /my/mfa/verify/                                     GET, POST   MFA verification
 /my/safety/                                         GET         Safety help page (pre-auth)
+/my/staff-login/<token>/                            GET         Staff-assisted login
 /my/password/change/                                GET, POST   Change password
 /my/password/reset/                                 GET, POST   Request password reset
 /my/password/reset/confirm/                         GET, POST   Confirm password reset
@@ -993,21 +1092,30 @@ MIDDLEWARE = [
 /my/goals/<target_id>/                              GET         Goal detail with charts
 /my/progress/                                       GET         Overall progress charts
 /my/milestones/                                     GET         Completed goals
+/my/my-words/                                       GET         Participant reflections
 /my/correction/new/                                 GET, POST   Request data correction
 /my/journal/                                        GET         Journal entries
 /my/journal/new/                                    GET, POST   New journal entry
 /my/journal/disclosure/                             GET, POST   Journal privacy notice
 /my/message/                                        GET, POST   Message to worker
 /my/discuss-next/                                   GET, POST   Pre-session discussion topics
+/my/resources/                                      GET         Resource links
+/my/surveys/                                        GET         Assigned surveys list
+/my/surveys/<assignment_id>/fill/                   GET, POST   Fill in a survey
+/my/surveys/<assignment_id>/save/                   POST        Auto-save partial answer (HTMX)
+/my/surveys/<assignment_id>/review/                 GET, POST   Review and submit survey
+/my/surveys/<assignment_id>/thanks/                 GET         Survey thank-you page
 ```
 
 ### HTMX Endpoints
 
 ```
-/ai/suggest-metrics/            POST        Metric suggestions
-/ai/improve-outcome/            POST        Outcome improvement
-/participants/search/            GET         Participant search (partial)
-/notes/<id>/preview/            GET         Note preview (partial)
+/ai/suggest-metrics/                                        POST    Metric suggestions
+/ai/improve-outcome/                                        POST    Outcome improvement
+/participants/search/                                        GET     Participant search (partial)
+/notes/<id>/preview/                                        GET     Note preview (partial)
+/manage/surveys/<id>/condition-values/<question_id>/        GET     Survey condition value options
+/my/surveys/<assignment_id>/save/                           POST    Portal survey auto-save
 ```
 
 ---

@@ -29,7 +29,7 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
+- [x] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — 2026-03-03 (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
@@ -88,7 +88,7 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
-- [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
+- [x] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" — renamed ParsedBreakdown.bins to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -103,15 +103,15 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 
 ### Phase: Documentation & Website Updates
 
-- [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
-- [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
+- [x] Create deployment documentation for surveys and portal features — 2026-03-03 (DOC-DEPLOY1)
+- [x] Update technical documentation in GitHub for surveys and portal architecture — 2026-03-03 (DOC-TECH1)
 - [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
 - [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
 - [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
 - [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
-- [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
+- [x] Add new features and capabilities to the web site as they are built — 2026-03-03 (WEBSITE-UPDATE1)
 
 ## Parking Lot: Ready to Build
 
@@ -146,6 +146,14 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Session 4 — Documentation & Cleanup
+
+- [x] Create 9 admin toolkit decision documents (01-09) in docs/agency-setup-guide/ — 2026-03-03 (DEPLOY-TOOLKIT1)
+- [x] Add surveys and portal deployment docs to deploying-konote.md — 2026-03-03 (DOC-DEPLOY1)
+- [x] Add surveys and portal technical architecture to technical-documentation.md — 2026-03-03 (DOC-TECH1)
+- [x] Update konote-website with new features, security, and FAQ — 2026-03-03 (WEBSITE-UPDATE1)
+- [x] Align ParsedBreakdown.bins field naming to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
 
 ### Multi-Tenancy Infrastructure (PR #220)
 

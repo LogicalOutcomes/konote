@@ -315,6 +315,7 @@ def _batch_notes_this_week(filtered_program_ids, week_start):
             author_program_id__in=filtered_program_ids,
             created_at__gte=week_start,
             status="default",
+            client_file__is_demo=False,
         )
         .values("author_program_id")
         .annotate(cnt=Count("id"))
@@ -334,6 +335,7 @@ def _batch_engagement_quality(filtered_program_ids, month_start):
             author_program_id__in=filtered_program_ids,
             created_at__gte=month_start,
             status="default",
+            client_file__is_demo=False,
         )
         .exclude(engagement_observation__in=["", "no_interaction"])
         .values("author_program_id")
@@ -366,6 +368,7 @@ def _batch_goal_completion(filtered_program_ids):
         PlanTarget.objects.filter(
             plan_section__program_id__in=filtered_program_ids,
             status__in=["default", "completed"],
+            client_file__is_demo=False,
         )
         .values("plan_section__program_id")
         .annotate(

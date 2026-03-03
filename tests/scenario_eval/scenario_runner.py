@@ -185,8 +185,10 @@ class ScenarioRunner(BrowserTestBase):
             pass  # If it times out, proceed — screenshot may show mid-transition
 
     def _create_test_data(self):
-        """Extend base test data with extra users needed by scenarios."""
+        """Extend base test data with extra users, groups, and messages."""
         super()._create_test_data()
+        self._create_group_data()
+        self._create_message_data()
 
         from apps.auth_app.models import User
         from apps.programs.models import UserProgramRole
@@ -434,6 +436,211 @@ class ScenarioRunner(BrowserTestBase):
             ("Grace", "Ibrahim"), ("Henry", "Lavoie"),
         ]:
             _ensure_client(first, last, program=self.program_a)
+
+    # ------------------------------------------------------------------
+    # QA-PA-TEST1: Group data for SCN-076, groups-attendance page
+    # ------------------------------------------------------------------
+
+    def _create_group_data(self):
+        """Create group with 8+ members and 12+ sessions for attendance.
+
+        QA-PA-TEST1: The groups-attendance page needs a populated attendance
+        matrix (8 members x 12 sessions = 96 cells) so scenario evaluations
+        can resolve {group_id} and show a realistic attendance report.
+
+        Mirrors the same seed data in test_page_capture.py.
+        """
+        import random
+        from datetime import date, timedelta
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.groups.models import (
+            Group,
+            GroupMembership,
+            GroupSession,
+            GroupSessionAttendance,
+        )
+
+        # Skip if a group already exists (idempotent)
+        if Group.objects.exists():
+            return
+
+        group = Group.objects.create(
+            name="Weekly Check-In",
+            group_type="group",
+            program=self.program_a,
+            description="Weekly peer support session",
+        )
+
+        # --- 8 group members (2 existing clients + 6 new) ---
+        member_a = GroupMembership.objects.create(
+            group=group, client_file=self.client_a, role="member",
+        )
+        member_b = GroupMembership.objects.create(
+            group=group, client_file=self.client_b, role="member",
+        )
+
+        extra_names = [
+            ("Amara", "Osei"),
+            ("Jean-Luc", "Bergeron"),
+            ("Priya", "Sharma"),
+            ("Marcus", "Williams"),
+            ("Fatima", "Hassan"),
+            ("Riley", "Chen"),
+        ]
+        all_memberships = [member_a, member_b]
+        for first, last in extra_names:
+            cf = ClientFile.objects.create(is_demo=False)
+            cf.first_name = first
+            cf.last_name = last
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.program_a,
+            )
+            m = GroupMembership.objects.create(
+                group=group, client_file=cf, role="member",
+            )
+            all_memberships.append(m)
+
+        # Make one member a leader for variety
+        all_memberships[0].role = "leader"
+        all_memberships[0].save()
+
+        # --- 12 weekly sessions over the past 12 weeks ---
+        rng = random.Random(42)  # deterministic for reproducible captures
+        vibes = ["rough", "low", "solid", "great", "solid", "great"]
+        session_notes = [
+            "Good energy today. Several members shared updates.",
+            "Quieter session — two members absent.",
+            "Great discussion on housing barriers.",
+            "New member introduced themselves.",
+            "Follow-up on referrals from last week.",
+            "Group discussed coping strategies.",
+            "Short session due to holiday schedule.",
+            "Facilitator covered budgeting basics.",
+            "Peer mentoring pairs formed.",
+            "Mid-program check-in — goals reviewed.",
+            "Guest speaker on employment readiness.",
+            "Wrap-up and celebration of milestones.",
+        ]
+
+        sessions = []
+        today = date.today()
+        for i in range(12):
+            session_date = today - timedelta(weeks=11 - i)
+            gs = GroupSession.objects.create(
+                group=group,
+                facilitator=self.staff_user,
+                session_date=session_date,
+                group_vibe=vibes[i % len(vibes)],
+            )
+            gs.notes = session_notes[i]
+            gs.save()
+            sessions.append(gs)
+
+        # --- Attendance records: ~80% attendance rate ---
+        for gs in sessions:
+            for membership in all_memberships:
+                present = rng.random() < 0.80
+                GroupSessionAttendance.objects.create(
+                    group_session=gs,
+                    membership=membership,
+                    present=present,
+                )
+
+    # ------------------------------------------------------------------
+    # QA-PA-TEST2: Staff messages for comm-my-messages page
+    # ------------------------------------------------------------------
+
+    def _create_message_data(self):
+        """Create staff messages so My Messages page shows populated state.
+
+        QA-PA-TEST2: The comm-my-messages page needs actual StaffMessage
+        records so scenario evaluations see a realistic inbox with unread
+        and urgent messages, rather than the empty state.
+
+        Mirrors the same seed data in test_page_capture.py.
+        """
+        from apps.auth_app.models import User
+        from apps.communications.models import StaffMessage
+
+        # Skip if messages already exist (idempotent)
+        if StaffMessage.objects.exists():
+            return
+
+        # Messages for the main staff user (DS1 = "staff" username)
+        messages_for_staff = [
+            {
+                "left_by": self.receptionist_user,
+                "content": "Mike Thompson called — wants to reschedule Wednesday appointment to Friday.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Jane's mother dropped off completed intake forms at front desk.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.manager_user,
+                "content": "Please update Jane Doe's plan before the monthly review on Friday.",
+                "is_urgent": True,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Voicemail from CMHA — returning your call about housing referral.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Bob Smith is here for his 2pm appointment, waiting in the lobby.",
+                "is_urgent": True,
+            },
+        ]
+
+        for msg_data in messages_for_staff:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=self.staff_user,
+                left_by=msg_data["left_by"],
+                author_program=self.program_a,
+                is_urgent=msg_data["is_urgent"],
+            )
+            msg.content = msg_data["content"]
+            msg.save()
+
+        # Messages for other personas so their "populated" captures work
+        staff_new = User.objects.filter(username="staff_new").first()
+        if staff_new:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=staff_new,
+                left_by=self.receptionist_user,
+                author_program=self.program_a,
+            )
+            msg.content = "Welcome note: your first client file is ready for review."
+            msg.save()
+
+        staff_fr = User.objects.filter(username="staff_fr").first()
+        if staff_fr:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=staff_fr,
+                left_by=self.receptionist_user,
+                author_program=self.program_a,
+            )
+            msg.content = "Message from reception — appel de la famille de Jane Doe."
+            msg.save()
+
+        # Message for manager (PM1 sees all programme messages)
+        msg = StaffMessage(
+            client_file=self.client_b,
+            for_user=self.manager_user,
+            left_by=self.staff_user,
+            author_program=self.program_a,
+        )
+        msg.content = "Monthly statistics are ready for your review."
+        msg.save()
 
     # ------------------------------------------------------------------
     # QA-ISO1: Fresh context per scenario with locale from persona
