@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from django.db.models import DateTimeField, F, Q
 from django.db.models.functions import Coalesce
 from django.http import FileResponse, HttpResponse, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -38,7 +38,7 @@ from .demographics import (
 )
 from .models import DemographicBreakdown, ReportTemplate, SecureExportLink
 from .suppression import suppress_small_cell
-from .forms import FunderReportForm, MetricExportForm, TemplateExportForm, build_period_choices
+from .forms import FunderReportApprovalForm, FunderReportForm, MetricExportForm, TemplateExportForm, build_period_choices
 from .aggregations import aggregate_metrics, _stats_from_list
 from .utils import (
     can_create_export,
@@ -1167,30 +1167,57 @@ def funder_report_form(request):
         if not can_create_export(request.user, "funder_report", program=program):
             return HttpResponseForbidden("You do not have permission to export data for this program.")
 
-    program_display_name = (
-        _("All Programs \u2014 Organisation Summary") if all_programs_mode
-        else program.name
-    )
-
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
     report_template = form.cleaned_data.get("report_template")
 
+    # Store form parameters in session for the preview/approve flow
+    request.session["funder_report_preview"] = {
+        "program_id": program.pk if not all_programs_mode else "__all__",
+        "all_programs": all_programs_mode,
+        "date_from": str(date_from),
+        "date_to": str(date_to),
+        "fiscal_year_label": fiscal_year_label,
+        "export_format": export_format,
+        "report_template_id": report_template.pk if report_template else None,
+        "recipient": form.get_recipient_display(),
+    }
+
+    return redirect("reports:funder_report_preview")
+
+
+def _generate_funder_preview_data(session_params, user):
+    """Regenerate funder report data from session parameters.
+
+    Returns (report_data_or_sections, raw_client_count, program_display_name)
+    where report_data_or_sections is either a single dict or a list of
+    (program, report_data) tuples for all-programs mode.
+    """
+    from apps.programs.models import Program
+
+    all_programs_mode = session_params["all_programs"]
+    date_from = dt.date.fromisoformat(session_params["date_from"])
+    date_to = dt.date.fromisoformat(session_params["date_to"])
+    fiscal_year_label = session_params["fiscal_year_label"]
+    report_template = None
+    if session_params.get("report_template_id"):
+        report_template = ReportTemplate.objects.filter(
+            pk=session_params["report_template_id"]
+        ).first()
+
     if all_programs_mode:
-        # Generate per-program reports and merge into a combined CSV
-        accessible_programs = get_manageable_programs(request.user)
+        accessible_programs = get_manageable_programs(user)
         all_report_sections = []
         total_raw_client_count = 0
         for ap in accessible_programs:
             rd = generate_funder_report_data(
                 ap, date_from=date_from, date_to=date_to,
                 fiscal_year_label=fiscal_year_label,
-                user=request.user, report_template=report_template,
+                user=user, report_template=report_template,
             )
             total_raw_client_count += rd.get("total_individuals_served", 0)
-            # Suppression per-program
             if ap.is_confidential:
                 rd["total_individuals_served"] = suppress_small_cell(
                     rd["total_individuals_served"], ap,
@@ -1199,39 +1226,34 @@ def funder_report_form(request):
                     rd["new_clients_this_period"], ap,
                 )
             all_report_sections.append((ap, rd))
-        raw_client_count = total_raw_client_count
+        program_display_name = _("All Programs \u2014 Organisation Summary")
+        return all_report_sections, total_raw_client_count, program_display_name
     else:
-        # Generate report data for single program
-        # Security: Pass user for demo/real filtering
+        try:
+            program = Program.objects.get(pk=session_params["program_id"])
+        except Program.DoesNotExist:
+            return None  # Signal caller to redirect
         report_data = generate_funder_report_data(
             program,
             date_from=date_from,
             date_to=date_to,
             fiscal_year_label=fiscal_year_label,
-            user=request.user,
+            user=user,
             report_template=report_template,
         )
-
-        # Capture raw integer count before suppression — needed for
-        # client_count (PositiveIntegerField) and is_elevated check.
         raw_client_count = report_data.get("total_individuals_served", 0)
 
-        # Apply small-cell suppression for confidential programs
+        # Apply small-cell suppression
         report_data["total_individuals_served"] = suppress_small_cell(
             report_data["total_individuals_served"], program,
         )
         report_data["new_clients_this_period"] = suppress_small_cell(
             report_data["new_clients_this_period"], program,
         )
-        # Suppress age demographic counts individually
         if program.is_confidential and "age_demographics" in report_data:
             for age_group, count in report_data["age_demographics"].items():
                 if isinstance(count, int):
                     report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
-
-        # Suppress custom demographic section counts for confidential programs.
-        # Without this, reporting-template breakdowns (e.g. Gender Identity) could
-        # leak small-cell counts that enable re-identification — a PIPEDA issue.
         if program.is_confidential and "custom_demographic_sections" in report_data:
             for section in report_data["custom_demographic_sections"]:
                 any_suppressed = False
@@ -1241,20 +1263,139 @@ def funder_report_form(request):
                         if suppressed != count:
                             any_suppressed = True
                         section["data"][cat_label] = suppressed
-                # If any cell was suppressed, suppress the total too —
-                # otherwise total minus visible sum reveals the suppressed aggregate.
                 if any_suppressed:
                     section["total"] = "suppressed"
 
-    recipient = form.get_recipient_display()
+        return report_data, raw_client_count, program.name
+
+
+@login_required
+@requires_permission("report.funder_report", allow_admin=True)
+def funder_report_preview(request):
+    """
+    Preview page for funder report approval (RPT-APPROVE1 Phase A).
+
+    Shows a summary of the report data and an agency notes textarea.
+    The user can approve (POST to approve endpoint) or go back.
+    """
+    session_params = request.session.get("funder_report_preview")
+    if not session_params:
+        return redirect("reports:funder_report")
+
+    result = _generate_funder_preview_data(session_params, request.user)
+    if result is None:
+        del request.session["funder_report_preview"]
+        return redirect("reports:funder_report")
+    data_or_sections, raw_client_count, program_display_name = result
+
+    all_programs_mode = session_params["all_programs"]
+    approval_form = FunderReportApprovalForm()
+
+    # Build preview summary for the template
+    if all_programs_mode:
+        # Summarise across programs
+        total_served = sum(
+            rd.get("total_individuals_served", 0)
+            for _, rd in data_or_sections
+            if isinstance(rd.get("total_individuals_served"), int)
+        )
+        total_contacts = sum(
+            rd.get("total_contacts", 0) for _, rd in data_or_sections
+        )
+        program_summaries = [
+            {
+                "name": ap.name,
+                "individuals_served": rd.get("total_individuals_served", 0),
+                "total_contacts": rd.get("total_contacts", 0),
+            }
+            for ap, rd in data_or_sections
+        ]
+        preview_context = {
+            "is_all_programs": True,
+            "total_served": total_served,
+            "total_contacts": total_contacts,
+            "program_summaries": program_summaries,
+            "program_count": len(data_or_sections),
+        }
+    else:
+        report_data = data_or_sections
+        preview_context = {
+            "is_all_programs": False,
+            "total_served": report_data.get("total_individuals_served", 0),
+            "new_clients": report_data.get("new_clients_this_period", 0),
+            "total_contacts": report_data.get("total_contacts", 0),
+            "age_demographics": report_data.get("age_demographics", {}),
+            "custom_demographic_sections": report_data.get("custom_demographic_sections", []),
+            "primary_outcome": report_data.get("primary_outcome"),
+            "secondary_outcomes": report_data.get("secondary_outcomes", []),
+            "achievement_summary": report_data.get("achievement_summary", {}),
+        }
+
+    context = {
+        "program_name": program_display_name,
+        "date_from": session_params["date_from"],
+        "date_to": session_params["date_to"],
+        "fiscal_year_label": session_params["fiscal_year_label"],
+        "export_format": session_params["export_format"],
+        "report_template_name": (
+            ReportTemplate.objects.filter(pk=session_params["report_template_id"]).values_list("name", flat=True).first()
+            if session_params.get("report_template_id") else None
+        ),
+        "approval_form": approval_form,
+        **preview_context,
+    }
+    return render(request, "reports/funder_report_preview.html", context)
+
+
+@login_required
+@requires_permission("report.funder_report", allow_admin=True)
+def funder_report_approve(request):
+    """
+    Approve and export the funder report (RPT-APPROVE1 Phase A).
+
+    Reads preview parameters from session, generates the export file,
+    creates a SecureExportLink with approval metadata, and shows confirmation.
+    """
+    if request.method != "POST":
+        return redirect("reports:funder_report")
+
+    session_params = request.session.get("funder_report_preview")
+    if not session_params:
+        return redirect("reports:funder_report")
+
+    approval_form = FunderReportApprovalForm(request.POST)
+    if not approval_form.is_valid():
+        return redirect("reports:funder_report_preview")
+
+    agency_notes = approval_form.cleaned_data["agency_notes"]
+
+    # Regenerate report data
+    result = _generate_funder_preview_data(session_params, request.user)
+    if result is None:
+        del request.session["funder_report_preview"]
+        return redirect("reports:funder_report")
+    data_or_sections, raw_client_count, program_display_name = result
+
+    all_programs_mode = session_params["all_programs"]
+    date_from = session_params["date_from"]
+    date_to = session_params["date_to"]
+    fiscal_year_label = session_params["fiscal_year_label"]
+    export_format = session_params["export_format"]
+    recipient = session_params["recipient"]
+    report_template_id = session_params.get("report_template_id")
+
     safe_name = sanitise_filename(str(program_display_name).replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
     try:
         if all_programs_mode:
-            # Build combined CSV with one section per program
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
+            # Agency notes header
+            if agency_notes:
+                writer.writerow(sanitise_csv_row([_("AGENCY NOTES")]))
+                writer.writerow(sanitise_csv_row([agency_notes]))
+                writer.writerow([])
             writer.writerow(sanitise_csv_row([
                 f"# All Programs \u2014 Organisation Summary"
             ]))
@@ -1263,25 +1404,31 @@ def funder_report_form(request):
                 f"# Date Range: {date_from} to {date_to}"
             ]))
             writer.writerow([])
-            for ap, rd in all_report_sections:
+            for ap, rd in data_or_sections:
                 writer.writerow(sanitise_csv_row([
                     f"# ===== {ap.name} ====="
                 ]))
                 csv_rows = generate_funder_report_csv_rows(rd)
                 for row in csv_rows:
                     writer.writerow(sanitise_csv_row(row))
-                writer.writerow([])  # blank separator between programs
+                writer.writerow([])
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
             content = csv_buffer.getvalue()
         elif export_format == "pdf":
             from .pdf_views import generate_funder_report_pdf
+            report_data = data_or_sections
             pdf_response = generate_funder_report_pdf(request, report_data)
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
             content = pdf_response.content
         else:
-            # Build CSV in memory buffer
+            report_data = data_or_sections
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
+            # Agency notes header
+            if agency_notes:
+                writer.writerow(sanitise_csv_row([_("AGENCY NOTES")]))
+                writer.writerow(sanitise_csv_row([agency_notes]))
+                writer.writerow([])
             csv_rows = generate_funder_report_csv_rows(report_data)
             for row in csv_rows:
                 writer.writerow(sanitise_csv_row(row))
@@ -1290,14 +1437,10 @@ def funder_report_form(request):
     except Exception:
         logger.exception("Failed to generate funder report export")
         from django.contrib import messages
-        messages.error(request, "Something went wrong generating the report. Please try again or contact support.")
-        return render(request, "reports/funder_report_form.html", {
-            "form": form,
-            "export_error": True,
-        })
+        messages.error(request, _("Something went wrong generating the report. Please try again or contact support."))
+        return redirect("reports:funder_report_preview")
 
     # Save to file and create secure download link
-    # Funder reports are always aggregate — no individual client data
     link = _save_export_and_create_link(
         request=request,
         content=content,
@@ -1310,18 +1453,29 @@ def funder_report_form(request):
             "program": str(program_display_name),
             "all_programs": all_programs_mode,
             "fiscal_year": fiscal_year_label,
-            "date_from": str(date_from),
-            "date_to": str(date_to),
+            "date_from": date_from,
+            "date_to": date_to,
         },
         contains_pii=False,
     )
 
-    # Audit log with recipient tracking
+    # Populate approval fields on the link
+    link.agency_notes = agency_notes
+    link.approved_by = request.user
+    link.approved_at = timezone.now()
+    link.save(update_fields=["agency_notes", "approved_by", "approved_at"])
+
+    # Look up report template name for audit
+    report_template = None
+    if report_template_id:
+        report_template = ReportTemplate.objects.filter(pk=report_template_id).first()
+
+    # Audit log with approval tracking
     AuditLog.objects.using("audit").create(
         event_timestamp=timezone.now(),
         user_id=request.user.pk,
         user_display=request.user.display_name,
-        action="export",
+        action="report_approved",
         resource_type="funder_report",
         ip_address=_get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
@@ -1329,32 +1483,33 @@ def funder_report_form(request):
             "program": str(program_display_name),
             "all_programs": all_programs_mode,
             "fiscal_year": fiscal_year_label,
-            "date_from": str(date_from),
-            "date_to": str(date_to),
+            "date_from": date_from,
+            "date_to": date_to,
             "format": export_format,
-            "total_individuals_served": (
-                raw_client_count if all_programs_mode
-                else report_data["total_individuals_served"]
-            ),
+            "total_individuals_served": raw_client_count,
             "recipient": recipient,
             "secure_link_id": str(link.id),
+            "agency_notes": agency_notes[:200] if agency_notes else "",
             "report_template": report_template.name if report_template else None,
             "partner": report_template.partner.name if report_template and report_template.partner else None,
         },
     )
 
+    # Clear session data
+    del request.session["funder_report_preview"]
+
     download_url = request.build_absolute_uri(
         reverse("reports:download_export", args=[link.id])
     )
     download_path = reverse("reports:download_export", args=[link.id])
-    return render(request, "reports/export_link_created.html", {
+    return render(request, "reports/funder_report_approved.html", {
         "link": link,
         "download_url": download_url,
         "download_path": download_path,
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
+        "agency_notes": agency_notes,
     })
-
 
 
 # ─── Template-driven report generation (DRR: reporting-architecture.md) ─────
