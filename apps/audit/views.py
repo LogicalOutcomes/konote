@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Q
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
@@ -297,6 +298,13 @@ def program_audit_log(request, program_id):
 # Compliance summary — aggregate audit metrics for executives (QA-R8-PERM2)
 # ---------------------------------------------------------------------------
 
+# Anomaly detection thresholds (per day). These are starting defaults for
+# small-to-medium nonprofits. Consider making these configurable per agency
+# when multi-tenancy is implemented (larger agencies need higher thresholds).
+ANOMALY_BULK_ACCESS_THRESHOLD = 50     # participant record views in one day
+ANOMALY_ACCESS_DENIED_THRESHOLD = 5    # access denied events in one day
+ANOMALY_FAILED_LOGIN_THRESHOLD = 10    # failed login attempts in one day
+
 @login_required
 @requires_permission("compliance.view_summary", allow_admin=True)
 def compliance_summary(request):
@@ -309,6 +317,11 @@ def compliance_summary(request):
     1. This page: aggregate summary (no PII, no staff names)
     2. Anomaly detail: nature of anomaly + role (not name)
     3. Admin investigation: ED contacts admin for specific log entries
+
+    NOTE — tenant scoping: This view currently queries the full audit
+    database (unscoped).  This is correct for single-tenant deployments.
+    Before multi-tenancy goes live, add tenant_schema filtering here to
+    prevent cross-tenant data leakage.  See multi-tenancy DRR.
     """
     now = timezone.now()
 
@@ -400,25 +413,13 @@ def compliance_summary(request):
     # --- Anomaly detection (role-level, no staff names) ---
     anomalies = []
 
-    # Anomaly: bulk record access (>50 participant views in a single day by one user role)
-    from django.db.models.functions import TruncDate
-    bulk_access = (
-        qs.filter(action="view", resource_type="clients")
-        .annotate(day=TruncDate("event_timestamp"))
-        .values("day", "metadata__user_role")
-        .annotate(count=Count("id"))
-        .filter(count__gt=50)
-        .order_by("-day")[:5]
-    )
-    # Note: metadata__user_role lookup may not work with JSONField on all
-    # backends; fall back to Python-side grouping if needed.
-    # For now, do a simpler per-day aggregate.
+    # Anomaly: bulk record access in a single day
     bulk_daily = (
         qs.filter(action="view", resource_type="clients")
         .annotate(day=TruncDate("event_timestamp"))
         .values("day")
         .annotate(count=Count("id"))
-        .filter(count__gt=50)
+        .filter(count__gt=ANOMALY_BULK_ACCESS_THRESHOLD)
         .order_by("-day")[:5]
     )
     for entry in bulk_daily:
@@ -428,13 +429,13 @@ def compliance_summary(request):
             % {"count": entry["count"], "date": entry["day"].strftime("%Y-%m-%d")},
         })
 
-    # Anomaly: access denied spikes (>5 in a day)
+    # Anomaly: access denied spikes in a day
     denied_daily = (
         qs.filter(action="access_denied")
         .annotate(day=TruncDate("event_timestamp"))
         .values("day")
         .annotate(count=Count("id"))
-        .filter(count__gt=5)
+        .filter(count__gt=ANOMALY_ACCESS_DENIED_THRESHOLD)
         .order_by("-day")[:5]
     )
     for entry in denied_daily:
@@ -444,13 +445,13 @@ def compliance_summary(request):
             % {"count": entry["count"], "date": entry["day"].strftime("%Y-%m-%d")},
         })
 
-    # Anomaly: failed login spikes (>10 in a day)
+    # Anomaly: failed login spikes in a day
     failed_login_daily = (
         qs.filter(action="login_failed")
         .annotate(day=TruncDate("event_timestamp"))
         .values("day")
         .annotate(count=Count("id"))
-        .filter(count__gt=10)
+        .filter(count__gt=ANOMALY_FAILED_LOGIN_THRESHOLD)
         .order_by("-day")[:5]
     )
     for entry in failed_login_daily:
