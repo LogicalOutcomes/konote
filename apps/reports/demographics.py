@@ -41,31 +41,7 @@ def get_age_range(birth_date: date | str | None, as_of_date: date | None = None)
     Returns:
         Age range string (e.g., "25-34") or "Unknown" if birth_date is missing/invalid.
     """
-    if not birth_date:
-        return _("Unknown")
-
-    # Handle string dates (from encrypted field)
-    if isinstance(birth_date, str):
-        try:
-            birth_date = date.fromisoformat(birth_date)
-        except (ValueError, TypeError):
-            return _("Unknown")
-
-    if as_of_date is None:
-        as_of_date = date.today()
-
-    # Calculate age
-    age = as_of_date.year - birth_date.year
-    # Adjust if birthday hasn't occurred yet this year
-    if (as_of_date.month, as_of_date.day) < (birth_date.month, birth_date.day):
-        age -= 1
-
-    # Find matching range
-    for min_age, max_age, label in AGE_RANGES:
-        if min_age <= age <= max_age:
-            return label
-
-    return _("Unknown")
+    return _find_age_bin(birth_date, as_of_date, AGE_RANGES)
 
 
 def group_clients_by_age(
