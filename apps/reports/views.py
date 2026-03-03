@@ -1229,7 +1229,10 @@ def _generate_funder_preview_data(session_params, user):
         program_display_name = _("All Programs \u2014 Organisation Summary")
         return all_report_sections, total_raw_client_count, program_display_name
     else:
-        program = Program.objects.get(pk=session_params["program_id"])
+        try:
+            program = Program.objects.get(pk=session_params["program_id"])
+        except Program.DoesNotExist:
+            return None  # Signal caller to redirect
         report_data = generate_funder_report_data(
             program,
             date_from=date_from,
@@ -1280,6 +1283,9 @@ def funder_report_preview(request):
         return redirect("reports:funder_report")
 
     result = _generate_funder_preview_data(session_params, request.user)
+    if result is None:
+        del request.session["funder_report_preview"]
+        return redirect("reports:funder_report")
     data_or_sections, raw_client_count, program_display_name = result
 
     all_programs_mode = session_params["all_programs"]
@@ -1365,6 +1371,9 @@ def funder_report_approve(request):
 
     # Regenerate report data
     result = _generate_funder_preview_data(session_params, request.user)
+    if result is None:
+        del request.session["funder_report_preview"]
+        return redirect("reports:funder_report")
     data_or_sections, raw_client_count, program_display_name = result
 
     all_programs_mode = session_params["all_programs"]
