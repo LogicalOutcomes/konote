@@ -153,6 +153,22 @@
       "fixed_in": "QA-R8-UX2 (closed, no code change needed)",
       "verified_date": "2026-03-01",
       "notes": "Template uses explicit name= bindings per field. No mechanism for Last Name migrating to Preferred Name. Likely browser autofill artifact or stale screenshot."
+    },
+    {
+      "description": "/reports/funder/ returning 404 — added permanent redirect to /reports/funder-report/",
+      "finding_group": null,
+      "fixed_date": "2026-03-02",
+      "fixed_in": "QA-R8-UX11",
+      "verified_date": null,
+      "notes": "RedirectView with permanent=True in reports/urls.py."
+    },
+    {
+      "description": "Executive dashboard missing date presets and PDF export",
+      "finding_group": null,
+      "fixed_date": "2026-03-02",
+      "fixed_in": "QA-R8-UX8",
+      "verified_date": null,
+      "notes": "Added date preset buttons (30/90/365 days, fiscal year, custom) and PDF export via WeasyPrint with HTML fallback."
     }
   ]
 }
