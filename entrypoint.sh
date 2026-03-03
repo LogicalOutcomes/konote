@@ -10,6 +10,14 @@ echo "Running migrations..."
 python manage.py migrate --noinput
 echo "Migrations complete."
 
+# Bootstrap single-tenant deployments: register the domain in the agency_domains
+# table so TenantMainMiddleware can route requests.  Safe to re-run (idempotent).
+# Uses ALLOWED_HOSTS env var for the domain; does nothing if already registered.
+echo ""
+echo "Registering tenant domain..."
+python manage.py setup_public_tenant 2>&1 || echo "WARNING: setup_public_tenant failed (see above). Site may not be accessible."
+echo "Tenant domain registration complete."
+
 echo "Running audit migrations..."
 # migrate_audit is a custom command that bypasses the django-tenants migrate_schemas
 # override; the audit DB uses the standard PostgreSQL backend which does not have
