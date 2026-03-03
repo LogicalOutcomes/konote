@@ -59,7 +59,7 @@ External clients:
 
 | Factor | Per-agency LLM | Shared LLM server |
 |--------|---------------|-------------------|
-| Cost (10 agencies) | $400 CAD/mo (10 × VPS-4) | **~$40 CAD/mo** (1 × VPS-4) |
+| Cost (10 agencies, CAD/mo) | ~$400 (10 × VPS-4) | **~$40** (1 × VPS-4) |
 | Model updates | Update 10 servers | **Update 1 server** |
 | Utilisation | ~1% each (nightly batch) | **~10–20%** (aggregated) |
 | Data isolation | Complete | **Per-request isolation** (see below) |
@@ -100,6 +100,12 @@ The Qwen3.5-35B-A3B is a **Mixture of Experts (MoE)** model released February 24
 - **SWE-bench 69.2** — not our primary use but shows strong instruction-following
 - **262K context window** — can process long survey responses and multiple quotes in a single call
 - **Surpasses Qwen3-235B-A22B** — a model with 7× more active parameters. Architecture + training quality > parameter count.
+
+### Model Provenance Note
+
+Qwen3.5-35B-A3B is developed by Alibaba's Qwen team (China) and released under the Apache 2.0 licence. **No data of any kind flows to Alibaba during inference** — the model weights are downloaded once and run entirely on the Canadian VPS. The Apache 2.0 licence imposes no data obligations, usage restrictions, or reporting requirements. This is equivalent to using any other open-source software (like PostgreSQL or Linux).
+
+However, some Canadian funders and nonprofit boards may have concerns about using a model from a Chinese tech company, regardless of the technical facts. If model provenance is a concern for a specific agency or funder, **Llama 3.3** (Meta, US) and **Mistral Small 3.2** (Mistral AI, France) are drop-in alternatives available via Ollama. The model swap is a single command with no code changes.
 
 ### Why MoE for CPU Inference
 
@@ -152,22 +158,24 @@ The 20 GB headroom accommodates:
 
 ### VPS Specs and Cost
 
-| Tier | vCPUs | RAM | Storage | Cost (USD/mo) | Cost (CAD/mo est.) | Use Case |
-|------|-------|-----|---------|---------------|---------------------|----------|
-| VPS-3 | 8 | 24 GB | 200 GB | $16.62 | ~$23 | Minimum viable (35B-A3B only, no OpenWebUI) |
-| **VPS-4** | **12** | **48 GB** | **300 GB** | **$29.68** | **~$40** | **Recommended (35B-A3B + OpenWebUI + headroom)** |
-| VPS-5 | 16 | 64 GB | 350 GB | $43.93 | ~$59 | Upgrade (122B-A10B or heavy concurrent use) |
-| VPS-6 | 24 | 96 GB | 400 GB | $58.18 | ~$79 | Maximum (122B-A10B + OpenWebUI + heavy use) |
+All prices in CAD (converted from USD at 1 USD ≈ 1.35 CAD; verify current rate at time of purchase).
+
+| Tier | vCPUs | RAM | Storage | Cost (CAD/mo) | Use Case |
+|------|-------|-----|---------|---------------|----------|
+| VPS-3 | 8 | 24 GB | 200 GB | ~$23 | Minimum viable (35B-A3B only, no OpenWebUI) |
+| **VPS-4** | **12** | **48 GB** | **300 GB** | **~$40** | **Recommended (35B-A3B + OpenWebUI + headroom)** |
+| VPS-5 | 16 | 64 GB | 350 GB | ~$59 | Upgrade (122B-A10B or heavy concurrent use) |
+| VPS-6 | 24 | 96 GB | 400 GB | ~$79 | Maximum (122B-A10B + OpenWebUI + heavy use) |
 
 **Start with VPS-4.** Upgrade to VPS-5/6 only if quality requirements or concurrency demand it.
 
 ### Cost in Context
 
-| Scenario | Monthly cost |
-|----------|-------------|
-| OpenRouter API (current, 10 agencies) | ~$20–50 (usage-based, unpredictable) |
-| Self-hosted VPS-4 (10 agencies + OpenWebUI) | **~$40 CAD** (fixed, unlimited use) |
-| Self-hosted VPS-4 + off-site backup VPS | ~$51 CAD |
+| Scenario | Monthly cost (CAD) |
+|----------|-------------------|
+| OpenRouter API (current, 10 agencies) | ~$27–68 (usage-based, unpredictable) |
+| Self-hosted VPS-4 (10 agencies + OpenWebUI) | **~$40** (fixed, unlimited use) |
+| Self-hosted VPS-4 + off-site backup VPS | ~$51 |
 
 The self-hosted option becomes **cheaper than cloud API** at ~5 agencies and provides **unlimited inference** with no per-token cost.
 
@@ -189,7 +197,7 @@ services:
       - OLLAMA_MAX_LOADED_MODELS=1     # save RAM — load one model at a time
       - OLLAMA_KEEP_ALIVE=10m          # unload model after 10 min idle
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      test: ["CMD-SHELL", "ollama list || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -441,6 +449,23 @@ OpenWebUI conversations are stored in its own SQLite/PostgreSQL database on the 
 
 > "You are an assistant for nonprofit staff. Never ask for client names, dates of birth, or identifying information. If a user shares identifying information, remind them to use de-identified data only."
 
+### Data Retention Policy
+
+OpenWebUI stores conversations in its own database on the LLM VPS. This data is **not encrypted at rest** and has **no PII scrubbing pipeline**. A retention policy limits exposure if staff accidentally paste identifying content.
+
+| Setting | Default | Rationale |
+|---------|---------|-----------|
+| Conversation retention | 90 days | Long enough for staff reference, short enough to limit PII exposure |
+| Purge mechanism | Cron job or OpenWebUI admin setting | Automated — don't rely on manual cleanup |
+| Backup retention | Same as conversation retention | If OpenWebUI backups are enabled, apply the same 90-day limit |
+
+**Accidental PII incident procedure:**
+1. Staff reports (or admin discovers) participant-identifying content in an OpenWebUI conversation
+2. Admin deletes the specific conversation immediately via OpenWebUI admin panel
+3. Admin documents the incident (date, what was exposed, how it was discovered)
+4. If the conversation was included in a backup, delete the backup copy
+5. Remind staff of the acceptable use policy
+
 ---
 
 ## Security Architecture
@@ -475,15 +500,32 @@ Internet
 
 ### Firewall Rules (Optional Hardening)
 
-For additional security beyond API key auth, restrict Ollama API access to known KoNote VPS IPs:
+Two approaches — choose one, not both:
+
+**Option A: IP-restricted (if all client IPs are known)**
 
 ```bash
-# UFW rules on the LLM VPS
+# Only allow traffic from known KoNote VPS IPs and office IPs
+ufw default deny incoming
+ufw allow ssh
 ufw allow from <konote-vps-1-ip> to any port 443
 ufw allow from <konote-vps-2-ip> to any port 443
-# Allow OpenWebUI access from anywhere (has its own auth)
-ufw allow 443/tcp  # or restrict to office IPs
+ufw allow from <office-ip> to any port 443
+ufw enable
 ```
+
+**Option B: Open with API key auth (relying on Caddy)**
+
+```bash
+# Allow all HTTPS traffic — Caddy enforces API key auth
+ufw default deny incoming
+ufw allow ssh
+ufw allow 80/tcp    # Caddy HTTP → HTTPS redirect
+ufw allow 443/tcp   # Caddy HTTPS with API key check
+ufw enable
+```
+
+Option A is more secure (two layers: firewall + API key). Option B is simpler when client IPs change or are unknown.
 
 ### Data Residency
 
@@ -605,6 +647,105 @@ Ollama processes requests sequentially by default. With `OLLAMA_NUM_PARALLEL=2`,
 
 ---
 
+## Provider Consolidation Path: Eliminating OpenRouter
+
+### The Goal
+
+Long-term, KoNote should run **all AI features on the self-hosted Ollama endpoint**, eliminating the OpenRouter dependency entirely. This gives agencies a single, truthful claim: "No data of any kind is sent to any external AI service."
+
+### Batch vs Interactive Split
+
+The key insight is that most tools-only features don't need interactive speed — they can run as overnight batch jobs on the self-hosted model.
+
+| Function | Category | Current Provider | Can Batch? | Notes |
+|----------|----------|-----------------|------------|-------|
+| `suggest_metrics()` | Tools-only | OpenRouter | **Yes** | Pre-compute for each target against metric catalogue |
+| `generate_narrative()` | Tools-only | OpenRouter | **Yes** | Report summaries, generated before report is viewed |
+| CIDS categorisation | Tools-only | OpenRouter | **Yes** | Map metrics/targets to taxonomy codes |
+| FHIR metadata enrichment | Tools-only | OpenRouter | **Yes** | Enrich service episodes, plan targets |
+| French translation | Tools-only | OpenRouter | **Yes** | `translate_strings` management command, already batch |
+| Outcome insights + themes | Participant data | Self-hosted | **Yes** | Already planned as nightly batch |
+| `suggest_target()` | Tools-only | OpenRouter | No | Staff enters participant words, waits for structured goal |
+| `improve_outcome()` | Tools-only | OpenRouter | No | Staff enters draft, waits for SMART version |
+| `build_goal_chat()` | Tools-only | OpenRouter | No | Multi-turn conversation, staff waiting each turn |
+| `suggest_note_structure()` | Tools-only | OpenRouter | No | Staff clicks button, waits for note sections |
+
+**7 of 10 AI functions can move to self-hosted immediately** — they run overnight and no one is waiting. Only 4 interactive functions need real-time response speed.
+
+### Validation-Retry Cycle
+
+Currently, all AI functions make a single call and return `None` on failure. Adding a validation-retry cycle would significantly improve structured output reliability with any model:
+
+```
+Attempt 1: Call model → parse JSON → validate fields
+  If valid: return result (most requests stop here)
+  If invalid: build error message listing specific failures
+Attempt 2: Re-prompt with "Your response had errors: [X].
+            Return corrected JSON only." → parse → validate
+  If valid: return result
+  If still invalid: return None (graceful failure)
+```
+
+**Estimated reliability with current open-source MoE models:**
+- First-attempt structured output success: ~75–85% (vs ~95%+ for Claude Sonnet)
+- After one retry with error feedback: ~92–97%
+- Net effect: comparable reliability, ~25% of requests take 2x latency
+
+This pattern is useful regardless of provider — it makes both OpenRouter and self-hosted paths more resilient. It also provides a defence-in-depth layer: the retry validation can include a PII scan on model responses, catching any identifying content that leaked through the input scrubbing.
+
+**Build this before the first agency deployment.** It's a prerequisite for consolidation and independently valuable.
+
+### Trigger Conditions for Full Consolidation
+
+Test every 6 months with the latest open-source MoE model:
+
+| Condition | How to Test | Target |
+|-----------|-------------|--------|
+| Structured output first-attempt success | Run 50 test prompts against self-hosted model | >85% |
+| Structured output with one retry | Same test, with validation-retry | >95% |
+| Interactive response speed | Median response time for 200-token generation | <30 seconds |
+| Staff satisfaction | Usage metrics or survey from deployed agencies | No decline after switch |
+
+When **all four conditions are met**, consolidate by removing `OPENROUTER_API_KEY` from the default `.env` template and routing all functions through `INSIGHTS_API_BASE`.
+
+### Keep the OpenRouter Code Path
+
+Consolidation should be **operational** (no agency configures OpenRouter by default) rather than **architectural** (removing the code). The `OPENROUTER_API_KEY` and `_call_openrouter()` path in `ai.py` should remain permanently:
+
+- Costs near zero to maintain (a few lines of code)
+- Provides an instant fallback if a model version disappoints
+- Allows specific agencies to opt into cloud AI if they choose
+- One environment variable to re-enable
+
+### Model Swap Process
+
+When a better open-source model is released:
+
+```bash
+# Pull new model
+docker compose exec ollama ollama pull <new-model-tag>
+
+# Update KoNote .env files
+INSIGHTS_MODEL=<new-model-tag>
+
+# No code changes needed — same OpenAI-compatible API
+```
+
+The MoE architecture trend (more knowledge in fewer active parameters per year) suggests models released in 2027–2028 with 1–2B active parameters could match current Claude Sonnet quality on structured output tasks.
+
+### Recommended Sequence
+
+| When | Action |
+|------|--------|
+| **Now** | Document this path (done) |
+| **Before first deployment** | Build validation-retry cycle in `ai.py` |
+| **At first deployment** | Move batch-capable functions to self-hosted; keep interactive on OpenRouter |
+| **After first agency is live** | Collect real usage data on AI feature frequency and speed tolerance |
+| **Every 6 months** | Test latest MoE model against trigger conditions |
+| **When conditions met** | Switch default to self-hosted only; keep OpenRouter as documented fallback |
+
+---
+
 ## Alternatives Considered
 
 ### GPU VPS / Dedicated GPU Server
@@ -613,7 +754,7 @@ OVHcloud offers GPU instances (T4, L40S, H100) in their Public Cloud, but:
 
 | Factor | GPU Instance | CPU VPS |
 |--------|-------------|---------|
-| Cost | ~$500–2,000+ CAD/mo | **~$40 CAD/mo** |
+| Cost (CAD/mo) | ~$500–2,000+ | **~$40** |
 | Speed | ~30–50 tokens/sec | ~2–5 tokens/sec |
 | Availability | Limited regions | **Beauharnois available** |
 
