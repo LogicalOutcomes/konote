@@ -49,8 +49,10 @@
            value="{{ posted.respondent_name|default:'' }}">
     {% endif %}
 
+    <div id="section-announce" role="status" aria-live="polite" class="visually-hidden"></div>
+
     {% for section in sections %}
-    <fieldset>
+    <fieldset{% if section.condition_question_id %} data-condition-question="q_{{ section.condition_question_id }}" data-condition-value="{{ section.condition_value }}" hidden{% endif %}>
         <legend>{{ section.title|bilingual:section.title_fr }}</legend>
         {% if section.instructions %}<p><small>{{ section.instructions|bilingual:section.instructions_fr }}</small></p>{% endif %}
 
@@ -127,5 +129,40 @@
 </form>
 
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var conditionals = document.querySelectorAll('[data-condition-question]');
+    if (!conditionals.length) return;
+
+    var announce = document.getElementById('section-announce');
+
+    conditionals.forEach(function(fieldset) {
+        var qName = fieldset.dataset.conditionQuestion;
+        var expected = fieldset.dataset.conditionValue;
+        var inputs = document.querySelectorAll('[name="' + qName + '"]');
+
+        function check() {
+            var val = '';
+            inputs.forEach(function(inp) {
+                if (inp.type === 'radio' || inp.type === 'checkbox') {
+                    if (inp.checked) val = inp.value;
+                } else {
+                    val = inp.value;
+                }
+            });
+            var wasHidden = fieldset.hidden;
+            fieldset.hidden = (val !== expected);
+            if (wasHidden && !fieldset.hidden && announce) {
+                announce.textContent = '{% trans "Additional questions appeared below." %}';
+                setTimeout(function() { announce.textContent = ''; }, 3000);
+            }
+        }
+
+        inputs.forEach(function(inp) {
+            inp.addEventListener('change', check);
+        });
+    });
+});
+</script>
 </body>
 </html>

@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.utils.translation import gettext as _
 
+from apps.portal.survey_helpers import filter_visible_sections
+
 from .models import (
     SurveyAnswer,
     SurveyLink,
@@ -46,7 +48,12 @@ def public_survey_form(request, token):
     survey = link.survey
     sections = survey.sections.filter(
         is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+    ).prefetch_related("questions").select_related(
+        "condition_question",
+    ).order_by("sort_order")
+
+    # Materialise queryset once to support conditional filtering
+    sections_list = list(sections)
 
     if request.method == "POST":
         # Honeypot anti-spam check
@@ -54,10 +61,9 @@ def public_survey_form(request, token):
             # Bots fill in hidden fields; real users won't see it
             return redirect("public_survey_thank_you", token=link.token)
 
-        errors = []
-        answers_data = []
-
-        for section in sections:
+        # 1. Collect all submitted answers
+        all_answers = {}
+        for section in sections_list:
             for question in section.questions.all().order_by("sort_order"):
                 field_name = f"q_{question.pk}"
                 if question.question_type == "multiple_choice":
@@ -65,8 +71,22 @@ def public_survey_form(request, token):
                     raw_value = ";".join(raw_values) if raw_values else ""
                 else:
                     raw_value = request.POST.get(field_name, "").strip()
+                if raw_value:
+                    all_answers[question.pk] = raw_value
 
-                if question.required and not raw_value:
+        # 2. Determine which sections are visible based on answers
+        visible_sections = filter_visible_sections(sections_list, all_answers)
+        visible_section_pks = {s.pk for s in visible_sections}
+
+        # 3. Validate required fields only in visible sections
+        errors = []
+        answers_data = []
+        for section in sections_list:
+            for question in section.questions.all().order_by("sort_order"):
+                raw_value = all_answers.get(question.pk, "")
+                if (question.required
+                        and not raw_value
+                        and section.pk in visible_section_pks):
                     errors.append(question.question_text)
                 if raw_value:
                     answers_data.append((question, raw_value))
@@ -74,7 +94,7 @@ def public_survey_form(request, token):
         if errors:
             # Build repopulation dict keyed by question PK
             repopulate = {}
-            for section in sections:
+            for section in sections_list:
                 for q in section.questions.all():
                     field_name = f"q_{q.pk}"
                     if q.question_type == "multiple_choice":
@@ -83,7 +103,7 @@ def public_survey_form(request, token):
                         repopulate[q.pk] = request.POST.get(field_name, "")
             return render(request, "surveys/public_form.html", {
                 "survey": survey,
-                "sections": sections,
+                "sections": sections_list,
                 "link": link,
                 "posted": request.POST,
                 "repopulate": repopulate,
@@ -122,9 +142,12 @@ def public_survey_form(request, token):
 
         return redirect("public_survey_thank_you", token=link.token)
 
+    # GET: only show unconditional sections initially
+    visible_sections = filter_visible_sections(sections_list, {})
+
     return render(request, "surveys/public_form.html", {
         "survey": survey,
-        "sections": sections,
+        "sections": sections_list,
         "link": link,
         "posted": {},
         "repopulate": {},
