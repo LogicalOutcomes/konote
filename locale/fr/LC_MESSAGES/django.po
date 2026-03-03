@@ -17720,3 +17720,37 @@ msgstr "Le minimum d'avertissement ne peut pas être inférieur au minimum absol
 
 msgid "Warning minimum must be less than warning maximum."
 msgstr "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+
+
+msgid ""
+"Hard ceiling — "
+"values above this are almost certainly data-entry errors. Requires two confirmations."
+msgstr ""
+"Plafond absolu — "
+"les valeurs au-dessus sont presque certainement des erreurs de saisie. Nécessite deux confirmations."
+
+msgid ""
+"Hard floor — "
+"values below this are almost certainly data-entry errors. Requires two confirmations."
+msgstr ""
+"Plancher absolu — "
+"les valeurs en dessous sont presque certainement des erreurs de saisie. Nécessite deux confirmations."
+
+msgid "Very unlikely maximum cannot exceed the hard maximum."
+msgstr "Le maximum très improbable ne peut pas dépasser le maximum absolu."
+
+msgid "Very unlikely maximum must be at or above the warning maximum."
+msgstr ""
+"Le maximum très improbable doit être égal ou supérieur au maximum d'avertissement."
+
+msgid "Very unlikely minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum très improbable ne peut pas être inférieur au minimum absolu."
+
+msgid "Very unlikely minimum must be at or below the warning minimum."
+msgstr ""
+"Le minimum très improbable doit être égal ou inférieur au minimum d'avertissement."
+
+msgid "Very unlikely minimum must be less than very unlikely maximum."
+msgstr ""
+"Le minimum très improbable doit être inférieur au maximum très improbable."
