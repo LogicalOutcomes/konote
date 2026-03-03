@@ -19,6 +19,27 @@ import os
 from django.core.management.base import BaseCommand
 
 
+def _pick_domain_from_allowed_hosts():
+    """Return the best public domain from the ALLOWED_HOSTS env var.
+
+    When multiple hosts are listed (e.g. the Azure Container Apps internal FQDN
+    AND the custom public domain), pick the one that looks like a real custom
+    domain by skipping *.azurecontainerapps.io, localhost, and bare IPs.
+    Falls back to the first value if nothing better is found.
+    """
+    raw = os.environ.get("ALLOWED_HOSTS", "")
+    candidates = [h.strip() for h in raw.split(",") if h.strip()]
+    for candidate in candidates:
+        if (
+            candidate
+            and not candidate.endswith(".azurecontainerapps.io")
+            and candidate not in ("localhost", "127.0.0.1", "0.0.0.0")
+            and not candidate.startswith(".")
+        ):
+            return candidate
+    return candidates[0] if candidates else ""
+
+
 class Command(BaseCommand):
     help = (
         "Bootstrap single-agency deployments: create an Agency + AgencyDomain "
@@ -28,9 +49,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--domain",
-            default=os.environ.get("ALLOWED_HOSTS", "").split(",")[0].strip(),
+            default=_pick_domain_from_allowed_hosts(),
             help="Primary domain for this agency (e.g. konote.logicaloutcomes.net). "
-                 "Defaults to the first value in ALLOWED_HOSTS.",
+                 "Defaults to the best-matching value in ALLOWED_HOSTS (prefers "
+                 "custom domains over *.azurecontainerapps.io).",
         )
         parser.add_argument(
             "--name",
