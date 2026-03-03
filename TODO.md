@@ -81,15 +81,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
-### Phase: Server Sharing — cost optimization, not a launch prerequisite (see tasks/design-rationale/multi-tenancy.md)
+### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
 
-Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing allows agencies to share a server while keeping data walled off, reducing costs to $4–10/agency/month. Worth doing when the network grows beyond 3–5 agencies.
+Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
 
-- [x] Integrate django-tenants for server sharing — multiple agencies on one server with walled-off database sections (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — 2026-03-03 (MT-CORE1)
-- [x] Implement per-agency encryption keys — separate encryption key per agency, encrypted by master key (see plan Task 3) — 2026-03-03 (MT-ENCRYPT1)
-- [x] Create cost-sharing group data model — which agencies share a server, program-level data sharing controls, published reports (see plan Task 4) — 2026-03-03 (MT-CONSORT1)
-- [x] Add consent_to_aggregate_reporting field and audit agency column (see plan Tasks 5-6) — 2026-03-03 (MT-CONSENT1)
-- [x] Validate existing features work across shared-server agencies — update test infrastructure, fix related test failures (see plan Tasks 7-8) — 2026-03-03 (MT-VALIDATE1)
+Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
+
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
