@@ -9669,8 +9669,59 @@ msgstr ""
 msgid "Staff-Sent Messages"
 msgstr "Messages envoyés par le personnel"
 
+msgid "Staff-sent messages"
+msgstr "Messages envoyés par le personnel"
+
 msgid "Staff-sent messages enabled"
 msgstr "Messages envoyés par le personnel activés"
+
+msgid "Staff messaging is not enabled"
+msgstr "La messagerie du personnel n'est pas activée"
+
+msgid ""
+"Staff can compose and send individual messages to participants from within "
+"KoNote. Every message requires a person to review and click send."
+msgstr ""
+"Le personnel peut rédiger et envoyer des messages individuels aux "
+"participants depuis KoNote. Chaque message doit être révisé et envoyé "
+"manuellement."
+
+msgid "Staff messages + automated reminders"
+msgstr "Messages du personnel + rappels automatisés"
+
+msgid "Automated system reminders"
+msgstr "Rappels système automatisés"
+
+msgid "Automated reminders enabled"
+msgstr "Rappels automatisés activés"
+
+msgid "Automated reminders are not enabled"
+msgstr "Les rappels automatisés ne sont pas activés"
+
+msgid ""
+"KoNote automatically sends appointment reminders from a no-reply address "
+"before scheduled meetings. No staff action required."
+msgstr ""
+"KoNote envoie automatiquement des rappels de rendez-vous depuis une adresse "
+"sans réponse avant les réunions planifiées. Aucune action du personnel "
+"requise."
+
+msgid "Messaging Capabilities"
+msgstr "Capacités de messagerie"
+
+msgid ""
+"Select the messaging options your organisation needs. You can enable both."
+msgstr ""
+"Sélectionnez les options de messagerie dont votre organisation a besoin. "
+"Vous pouvez activer les deux."
+
+msgid ""
+"Neither option is enabled — KoNote is in record-keeping mode. Staff can "
+"schedule meetings and log communications, but nothing is sent."
+msgstr ""
+"Aucune option n'est activée — KoNote est en mode tenue de dossiers. Le "
+"personnel peut planifier des réunions et consigner les communications, mais "
+"rien n'est envoyé."
 
 msgid "Support Contact Name"
 msgstr "Nom du contact de soutien"
@@ -10700,6 +10751,14 @@ msgstr "Messages"
 
 msgid "My Messages"
 msgstr "Mes messages"
+
+#, python-format
+msgid ""
+"To leave a message for a colleague about a %(client)s, open the "
+"%(client)s's file and select \"Leave a Message.\""
+msgstr ""
+"Pour laisser un message à un collègue au sujet d'un(e) %(client)s, ouvrez "
+"le dossier du/de la %(client)s et sélectionnez « Laisser un message »."
 
 msgid "No messages."
 msgstr "Aucun message."
