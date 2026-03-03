@@ -165,9 +165,12 @@ class PortalAuthTests(TestCase):
         # Log in first
         session = self.client.session
         session["_portal_participant_id"] = str(self.participant.id)
+        from apps.portal.views import SESSION_EMERGENCY_LOGOUT_TOKEN
+        token = "testtoken"
+        session[SESSION_EMERGENCY_LOGOUT_TOKEN] = token
         session.save()
 
-        response = self.client.post("/my/emergency-logout/")
+        response = self.client.post("/my/emergency-logout/", {"token": token})
 
         # Should return 204 No Content (no redirect, no page to see)
         self.assertEqual(response.status_code, 204)
