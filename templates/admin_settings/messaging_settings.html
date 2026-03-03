@@ -46,7 +46,7 @@
             <strong>{% trans "Staff-sent messages" %}</strong>
         </label>
         <p class="secondary" style="font-size: 0.875rem;">
-            {% trans "Staff can send appointment reminders and messages directly from KoNote. Every message requires a person to click send." %}
+            {% trans "Staff can compose and send individual messages to participants from within KoNote. Every message requires a person to review and click send." %}
         </p>
         {% if not email_configured and not sms_configured %}
         <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
@@ -60,7 +60,7 @@
             <strong>{% trans "Automated system reminders" %}</strong>
         </label>
         <p class="secondary" style="font-size: 0.875rem;">
-            {% trans "KoNote automatically sends appointment reminders from a no-reply address before scheduled meetings." %}
+            {% trans "KoNote automatically sends appointment reminders from a no-reply address before scheduled meetings. No staff action required." %}
         </p>
         {% if not email_configured and not sms_configured %}
         <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">

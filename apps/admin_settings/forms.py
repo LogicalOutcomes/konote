@@ -413,8 +413,8 @@ class MessagingSettingsForm(forms.Form):
         required=False,
         label=_("Staff-sent messages"),
         help_text=_(
-            "Staff can send appointment reminders and messages from KoNote. "
-            "Every message requires a person to click send."
+            "Staff can compose and send individual messages to participants "
+            "from within KoNote. Every message requires a person to review and click send."
         ),
     )
     automated_reminders_enabled = forms.BooleanField(
@@ -422,7 +422,7 @@ class MessagingSettingsForm(forms.Form):
         label=_("Automated system reminders"),
         help_text=_(
             "KoNote automatically sends appointment reminders from a no-reply "
-            "address before scheduled meetings."
+            "address before scheduled meetings. No staff action required."
         ),
     )
     safety_first_mode = forms.BooleanField(
