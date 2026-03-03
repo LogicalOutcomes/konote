@@ -263,6 +263,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     showPage(0);
 });
+
+/* Report height to parent for iframe embed resizing */
+if (window.parent !== window) {
+    new ResizeObserver(function() {
+        window.parent.postMessage({
+            type: 'konote-embed-resize',
+            height: document.body.scrollHeight
+        }, '*');
+    }).observe(document.body);
+}
 </script>
 </body>
 </html>
