@@ -15,8 +15,8 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 
 **Product code to build:**
 
-- [ ] 🔨 Add partner report approval workflow — quality review, agency annotations, explicit publish step before sharing with partners (RP2/RP3) (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
-- [ ] 🔨 Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
+- [x] Add partner report approval workflow — preview, agency notes, explicit approve step before export — 2026-03-02 (RPT-APPROVE1)
+- [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
 - [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. (SCALE-ROLLUP1)
 
 **Deployment automation (ops scripting, not product code):**
@@ -51,10 +51,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: QA Round 8 — Remaining Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
 
 - [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
-- [ ] 🔨 Add date presets + PDF export to executive dashboard (QA-R8-UX8)
+- [x] Add date presets + PDF export to executive dashboard — 2026-03-02 (QA-R8-UX8)
 - [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
 - [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
-- [ ] 🔨 Fix /reports/funder/ returning 404 — funder report URL missing (QA-R8-UX11)
+- [x] Fix /reports/funder/ returning 404 — added permanent redirect to /reports/funder-report/ — 2026-03-02 (QA-R8-UX11)
 - [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
 
 ### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
