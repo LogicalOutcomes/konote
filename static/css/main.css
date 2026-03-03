@@ -2089,6 +2089,19 @@ label {
     margin-bottom: var(--kn-space-sm);
 }
 
+/* ---- Plausibility warnings (DQ1 + DQ1-TIER2) ---- */
+.plausibility-warning .warning-text {
+    color: var(--pico-del-color);
+}
+.plausibility-warning.tier-2 .warning-text {
+    color: var(--pico-form-element-invalid-border-color);
+    font-weight: bold;
+}
+.plausibility-warning.tier-2 .plausibility-confirm-btn {
+    border-color: var(--pico-form-element-invalid-border-color);
+    color: var(--pico-form-element-invalid-border-color);
+}
+
 /* ---- The Session Overall (Two-Lens Layout) ---- */
 .session-overall {
     margin-top: var(--kn-space-xl);
