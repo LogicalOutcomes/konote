@@ -1,5 +1,39 @@
 # Deploying KoNote on OVHcloud VPS
 
+## Two Paths: Automated or Manual
+
+| Path | Time | Best for |
+|------|------|----------|
+| **Automated** (`scripts/deploy-konote-vps.sh`) | ~30 minutes | Production deployments, operators comfortable with SSH |
+| **Manual** (this guide) | 45–90 minutes | Learning, troubleshooting, or when the script can't run |
+
+### Automated Path (Recommended)
+
+The deploy script automates 9 of 15 steps below — from securing the OS through verifying the running instance. You need SSH access and a domain pointing to your VPS IP.
+
+```bash
+./scripts/deploy-konote-vps.sh \
+  --host 141.227.151.7 \
+  --domain konote.youragency.ca \
+  --admin-email admin@youragency.ca \
+  --org-name "Your Agency Name"
+```
+
+The script generates all credentials, SSHes into the VPS, hardens the OS, installs Docker, clones the repo, writes `.env`, starts the containers, creates the admin user, and sets up backup cron jobs. It prints credentials and a post-deploy checklist at the end.
+
+- **Safe to re-run** — skips already-completed steps
+- **Dry-run mode** — add `--dry-run` to preview without executing
+- **Full options** — run `./scripts/deploy-konote-vps.sh --help`
+- **Design doc** — see [deploy script design](plans/2026-02-20-deploy-script-design.md) for architecture decisions
+
+After the script finishes, skip to [Section 7: Point Your Domain to the VPS](#7-point-your-domain-to-the-vps) (if DNS isn't already configured) or [Section 12: Set Up Monitoring](#12-set-up-monitoring) to complete the remaining manual steps.
+
+### Manual Path
+
+Follow the full guide below step by step. This is useful for understanding what the script does, or for environments where the script can't run (e.g., non-Ubuntu servers, restricted SSH access).
+
+---
+
 This guide walks you through deploying KoNote on an OVHcloud VPS from scratch. It assumes:
 
 - You have an OVHcloud VPS with Ubuntu 24.04 or 25.04 (fresh install)
@@ -7,7 +41,7 @@ This guide walks you through deploying KoNote on an OVHcloud VPS from scratch. I
 - You are working from a Windows computer
 - You have Claude Code available to help if you get stuck
 
-**Time estimate:** 45-90 minutes for a first deployment.
+**Time estimate:** 45–90 minutes for a first deployment (manual path).
 
 ---
 
@@ -847,6 +881,26 @@ Open `https://konote-dev.yourdomain.ca` in your browser. You should see the logi
 
 When a new version is released:
 
+### Before You Update
+
+1. **Back up both databases** — in case the update introduces problems:
+
+```bash
+sudo /opt/konote/scripts/backup-vps.sh
+```
+
+2. **Note the current commit** — so you can roll back if needed:
+
+```bash
+cd /opt/konote
+sudo git log --oneline -1
+# Example output: a1b2c3d Fix dashboard layout
+```
+
+Save that commit hash (e.g., `a1b2c3d`). You'll need it if you want to undo the update.
+
+### Apply the Update
+
 ```bash
 cd /opt/konote
 
@@ -858,6 +912,31 @@ sudo docker compose up -d --build
 ```
 
 The entrypoint script handles database migrations automatically. Downtime is typically under 2 minutes.
+
+### Verify the Update
+
+1. Visit your KoNote URL — the login page should load
+2. Log in and check a few pages (dashboard, a client page, a report)
+3. Check container health: `sudo docker compose ps` — all should show "healthy"
+
+### If Something Goes Wrong (Rollback)
+
+If the update breaks your instance:
+
+```bash
+cd /opt/konote
+
+# Revert to the previous commit
+sudo git checkout a1b2c3d -- .
+# (Replace a1b2c3d with the hash you saved before updating)
+
+# Rebuild with the old code
+sudo docker compose up -d --build
+```
+
+If the broken update ran database migrations (new tables or columns), you may also need to restore from the backup you took. See [Troubleshooting: Restore from backup](#restore-from-backup) below.
+
+For detailed procedures, see the [Update and Rollback Guide](update-and-rollback.md).
 
 ### Update the dev instance too
 

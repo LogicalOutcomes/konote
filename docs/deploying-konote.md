@@ -12,6 +12,7 @@ This guide covers everything you need to get KoNote running — from local devel
 | Deploy to Elestio | [Deploy to Elestio](#deploy-to-elestio) |
 | Deploy to FullHost | [Deploy to FullHost](#deploy-to-fullhost) |
 | Deploy to OVHcloud VPS | [Deploy to OVHcloud](deploy-ovhcloud.md) |
+| Update or roll back a deployment | [Update and Rollback Guide](update-and-rollback.md) |
 | Set up PDF reports | [PDF Report Setup](#pdf-report-setup) |
 | Go live with real data | [Before You Enter Real Data](#before-you-enter-real-data) |
 
@@ -250,6 +251,7 @@ KoNote automatically detects which platform it's running on and configures itsel
 |----------|-------------------|------------------------|
 | **Railway** | `RAILWAY_ENVIRONMENT` variable | Production settings, `.railway.app` domains allowed |
 | **Azure App Service** | `WEBSITE_SITE_NAME` variable | Production settings, `.azurewebsites.net` domains allowed |
+| **Azure Container Apps** | `CONTAINER_APP_NAME` variable | Production settings, `.azurecontainerapps.io` domains allowed |
 | **Elestio** | `ELESTIO_VM_NAME` variable | Production settings, `.elest.io` domains allowed |
 | **Docker/Self-hosted** | `DATABASE_URL` is set | Production settings, localhost allowed by default |
 
@@ -564,6 +566,105 @@ To let users log in with Microsoft credentials:
    - `AZURE_TENANT_ID=...`
    - `AZURE_REDIRECT_URI=https://your-domain/auth/callback/`
 
+### Railway CLI Operations
+
+The Railway CLI lets you run management commands on your production instance from your local machine. Install it from [docs.railway.app/guides/cli](https://docs.railway.app/guides/cli).
+
+**Link to your project (one-time setup):**
+
+```bash
+railway login
+railway link
+```
+
+**Run management commands:**
+
+```bash
+# Create an admin user (if you didn't use DEMO_MODE)
+railway run python manage.py createsuperuser
+
+# Run database migrations manually
+railway run python manage.py migrate
+railway run python manage.py migrate --database=audit
+
+# Check deployment health
+railway run python manage.py startup_check
+
+# Rotate the encryption key
+railway run python manage.py rotate_encryption_key --dry-run
+```
+
+**Manual database backup:**
+
+```bash
+# Back up the main database
+railway run pg_dump $DATABASE_URL > backup_main_$(date +%Y-%m-%d).sql
+
+# Back up the audit database
+railway run pg_dump $AUDIT_DATABASE_URL > backup_audit_$(date +%Y-%m-%d).sql
+```
+
+Store these backups securely — and always store your `FIELD_ENCRYPTION_KEY` separately from backups (you need both to restore encrypted data).
+
+### Data Residency Warning
+
+Railway's servers are in the United States. US-hosted data is subject to the [CLOUD Act](https://en.wikipedia.org/wiki/CLOUD_Act), which allows US authorities to request access to data stored by US companies — even if the data belongs to Canadian residents.
+
+**What this means for your organisation:**
+
+- **If you serve vulnerable populations** (health, mental health, domestic violence, children) — provincial health privacy laws (PHIPA in Ontario, HIA in Alberta) may require Canadian data residency. Railway may not meet this requirement.
+- **If your funder requires Canadian hosting** — some government contracts specify data must stay in Canada. Check your funding agreement.
+- **If neither applies** — Railway is fine for most small nonprofits. KoNote encrypts all PII fields (names, emails, birth dates, phone numbers) with a key you control. Even if data were accessed, the encrypted fields are unreadable without your `FIELD_ENCRYPTION_KEY`.
+
+**If you need Canadian data residency**, choose [OVHcloud VPS](deploy-ovhcloud.md) (Beauharnois, QC) or [Azure](https://portal.azure.com) (Canada Central region) instead.
+
+### Railway Troubleshooting
+
+**Deployment fails — "Build Error"**
+
+Check the **Logs** tab in the Railway dashboard. Common causes:
+
+- `ModuleNotFoundError: No module named '...'` — A Python package is missing from `requirements.txt`. This shouldn't happen with the main repository; report it as a bug.
+- `ERROR: could not translate host name '...'` — The database URL is incorrect. Copy `DATABASE_URL` directly from the PostgreSQL service (don't type it manually).
+
+**App starts but won't load — "502 Bad Gateway"**
+
+The app crashed shortly after starting:
+
+1. Click **Logs** in the Railway dashboard and scroll to startup messages
+2. Common causes: missing environment variables, database migrations failed, invalid `SECRET_KEY` or `FIELD_ENCRYPTION_KEY`
+3. Verify all required variables are set in the Variables tab
+
+**Login page loads but can't sign in**
+
+1. Check **Logs** for authentication errors
+2. Verify `AUTH_MODE` is set correctly (`local` for username/password, `azure` for SSO)
+3. If using Azure AD: verify `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_REDIRECT_URI` are correct
+
+**"ALLOWED_HOSTS Invalid" or "DisallowedHost" error**
+
+Railway domains are auto-detected, but custom domains must be added manually:
+
+1. Go to **Variables** in the Railway dashboard
+2. Update `ALLOWED_HOSTS` to include your custom domain: `myapp.railway.app,outcomes.myorg.ca`
+3. Also update `CSRF_TRUSTED_ORIGINS`: `https://myapp.railway.app,https://outcomes.myorg.ca`
+4. Click **Redeploy**
+
+### Railway Scaling and Costs
+
+| Component | Monthly Cost (CAD) |
+|-----------|-------------------|
+| Railway Pro plan (removes limits) | ~$27 |
+| PostgreSQL — main database | ~$13–20 |
+| PostgreSQL — audit database | ~$13–20 |
+| **Total** | **~$45–55** |
+
+Railway's free tier provides ~$5 worth of compute per month — enough for testing but not production.
+
+To upgrade: click **Settings** in your Railway project → **Plan** → **Pro**.
+
+> **Note:** Railway cannot run multi-container stacks like ODK Central. If your agency needs [offline field collection](../docs/plans/2026-02-24-offline-field-collection-design.md), choose OVHcloud VPS instead.
+
 ---
 
 ## Deploy to Azure
@@ -728,6 +829,96 @@ Once logged in, you can invite additional staff through the web interface using 
 2. Add your domain
 3. Follow Azure's DNS validation instructions
 4. Azure automatically provisions an SSL certificate
+
+### Azure Operations
+
+Once your instance is running, here's how to manage it day-to-day.
+
+**Viewing logs:**
+
+In Azure Portal, go to your Container App → **Monitoring** → **Log stream** to see real-time output. For historical logs, use **Monitoring** → **Logs** with this query:
+
+```
+ContainerAppConsoleLogs_CL
+| where ContainerName_s == "konote-web"
+| order by TimeGenerated desc
+| take 100
+```
+
+**Running management commands:**
+
+Use a temporary Azure Container Instance (same pattern as migrations in Step 7):
+
+```bash
+az container create \
+  --resource-group KoNote-prod \
+  --name konote-cmd \
+  --image konoteregistry.azurecr.io/konote:latest \
+  --environment-variables DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
+  --command-line "/bin/bash -c 'python manage.py <command>'"
+```
+
+Delete the container after it completes: `az container delete --resource-group KoNote-prod --name konote-cmd --yes`
+
+**Database backups:**
+
+Azure PostgreSQL Flexible Server includes automatic backups with configurable retention (7–35 days). To verify:
+
+1. Go to Azure Portal → your PostgreSQL server → **Settings** → **Backup**
+2. Confirm retention period (recommend 30 days for production)
+3. Point-in-time restore is available within the retention window
+
+**Scaling:**
+
+If the app feels slow under load, increase the Container App resources:
+
+```bash
+az containerapp update \
+  --name konote-web \
+  --resource-group KoNote-prod \
+  --cpu 0.5 \
+  --memory 1.0Gi
+```
+
+Start with 0.25 CPU / 0.5 GB (default). For 50+ concurrent users, try 0.5 CPU / 1 GB. Monitor using **Metrics** → **CPU Usage** and **Memory Usage** in the Container App blade.
+
+**Cost monitoring:**
+
+Set up a budget alert so you're notified before costs exceed your plan:
+
+1. Go to Azure Portal → **Cost Management** → **Budgets**
+2. Create a budget for your resource group
+3. Set alerts at 80% and 100% of your monthly target
+
+**Encryption key storage:**
+
+For production, consider storing your `FIELD_ENCRYPTION_KEY` in [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) rather than as a plain environment variable. This adds access control and audit logging around the most sensitive credential.
+
+### Azure Troubleshooting
+
+**Container App won't start:**
+
+1. Check **Log stream** for startup errors
+2. Verify all environment variables are set (especially `DATABASE_URL`, `FIELD_ENCRYPTION_KEY`)
+3. Test database connectivity: the PostgreSQL firewall must allow Azure services (`az postgres flexible-server firewall-rule create --rule-name AllowAzure --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0`)
+
+**"DisallowedHost" or "400 Bad Request":**
+
+Your domain isn't in `ALLOWED_HOSTS`. For Container Apps, set this environment variable explicitly — unlike App Service, Container Apps does not auto-detect domains.
+
+**"CSRF verification failed" on form submissions:**
+
+Set `CSRF_TRUSTED_ORIGINS` to include your full HTTPS domain:
+
+```
+CSRF_TRUSTED_ORIGINS=https://konote.youragency.ca,https://konote-web.happywave-abc123.canadacentral.azurecontainerapps.io
+```
+
+**"Permission denied" connecting to PostgreSQL:**
+
+1. Check that the PostgreSQL firewall allows your Container App's outbound IPs
+2. Verify the connection string uses the correct server name (`.postgres.database.azure.com`)
+3. For new servers, add `sslmode=require` to the connection string if not already present
 
 ---
 
