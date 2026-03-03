@@ -6,11 +6,11 @@
 {% block content %}
 <article>
     <header>
-        <nav aria-label="breadcrumb">
+        <nav aria-label="{% trans 'Breadcrumb' %}" class="breadcrumb">
             <ul>
                 <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
                 <li>{{ link.title }}</li>
-                <li>{% trans "Embed Code" %}</li>
+                <li><span aria-current="page">{% trans "Embed Code" %}</span></li>
             </ul>
         </nav>
         <h1>{% trans "Embed Code" %}</h1>

@@ -47,3 +47,42 @@ jobs:
           DATABASE_URL: "sqlite:///ci-test.db"
           AUDIT_DATABASE_URL: "sqlite:///ci-audit-test.db"
           FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
+
+  a11y:
+    name: Accessibility (axe-core)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Clean up any stale test databases
+        run: rm -f ci-test.db ci-audit-test.db
+
+      - name: Run axe-core accessibility tests
+        run: pytest tests/test_a11y_ci.py tests/test_blocker_a11y.py -v --tb=short --override-ini="addopts=-v --tb=short"
+        env:
+          DJANGO_SETTINGS_MODULE: konote.settings.test
+          SECRET_KEY: ci-secret-key-not-for-production
+          DATABASE_URL: "sqlite:///ci-test.db"
+          AUDIT_DATABASE_URL: "sqlite:///ci-audit-test.db"
+          FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
