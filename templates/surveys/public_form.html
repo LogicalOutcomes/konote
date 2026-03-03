@@ -44,8 +44,8 @@
     </div>
 
     {% if link.collect_name %}
-    <label for="respondent_name">{% trans "Your name (optional)" %}</label>
-    <input type="text" id="respondent_name" name="respondent_name"
+    <label for="respondent_name">{% trans "First name or nickname (optional)" %}</label>
+    <input type="text" id="respondent_name" name="respondent_name" maxlength="50"
            value="{{ posted.respondent_name|default:'' }}">
     {% endif %}
 

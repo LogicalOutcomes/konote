@@ -693,6 +693,9 @@ msgstr "Aucun personnel assigné pour le moment."
 msgid "Add"
 msgstr "Ajouter"
 
+msgid "Additional questions appeared below."
+msgstr "Des questions supplémentaires sont apparues ci-dessous."
+
 msgid "Select user"
 msgstr "Sélectionner un utilisateur"
 
@@ -12843,6 +12846,9 @@ msgstr "Vos réponses sont sauvegardées automatiquement."
 msgid "Your name (optional)"
 msgstr "Votre nom (facultatif)"
 
+msgid "First name or nickname (optional)"
+msgstr "Prénom ou surnom (facultatif)"
+
 msgid "is answered"
 msgstr "a reçu une réponse"
 
@@ -17682,12 +17688,12 @@ msgid ""
 "response content is processed externally. Please confirm your agency has "
 "reviewed this with your privacy officer or board."
 msgstr ""
-"L'activation de cette fonctionnalité signifie que les réponses dépersonnalisées "
-"des participants seront envoyées à un service d'IA externe pour analyse. Les "
-"noms individuels sont retirés, mais le contenu des réponses est traité à "
-"l'externe. Veuillez confirmer que votre organisme a examiné cette question "
-"avec votre responsable de la protection de la vie privée ou votre conseil "
-"d'administration."
+"L'activation de cette fonctionnalité signifie que les réponses "
+"dépersonnalisées des participants seront envoyées à un service d'IA externe "
+"pour analyse. Les noms individuels sont retirés, mais le contenu des "
+"réponses est traité à l'externe. Veuillez confirmer que votre organisme a "
+"examiné cette question avec votre responsable de la protection de la vie "
+"privée ou votre conseil d'administration."
 
 msgid "Privacy governance notice"
 msgstr "Avis de gouvernance en matière de vie privée"
@@ -17716,7 +17722,105 @@ msgid "Warning maximum cannot exceed the hard maximum."
 msgstr "Le maximum d'avertissement ne peut pas dépasser le maximum absolu."
 
 msgid "Warning minimum cannot be below the hard minimum."
-msgstr "Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
+msgstr ""
+"Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
 
 msgid "Warning minimum must be less than warning maximum."
-msgstr "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+msgstr ""
+"Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+
+msgid "%(count)s access denied events on %(date)s"
+msgstr ""
+
+msgid "%(count)s failed login attempts on %(date)s"
+msgstr ""
+
+msgid "%(count)s participant records viewed on %(date)s"
+msgstr ""
+
+msgid "Access denied spike"
+msgstr ""
+
+msgid "Active users"
+msgstr ""
+
+msgid ""
+"Aggregate privacy and access metrics for board accountability (PIPEDA "
+"4.1.4). No individual participant or staff names are shown."
+msgstr ""
+
+msgid "Anomaly Flags"
+msgstr ""
+
+msgid "Anomaly flags"
+msgstr ""
+
+msgid "Bulk record access"
+msgstr ""
+
+msgid "Compliance Summary"
+msgstr ""
+
+msgid "Conservative (< 10)"
+msgstr ""
+
+msgid ""
+"Contact your administrator to investigate specific incidents. They have "
+"access to detailed audit log entries."
+msgstr ""
+
+msgid "Data exports"
+msgstr ""
+
+msgid "Export events by role"
+msgstr ""
+
+msgid "Exports by Role"
+msgstr ""
+
+msgid "Failed login spike"
+msgstr ""
+
+msgid "Failed logins"
+msgstr ""
+
+msgid "How to use this report"
+msgstr ""
+
+msgid "If an anomaly needs investigation, note the date and type."
+msgstr ""
+
+msgid "No anomalies detected during this period."
+msgstr ""
+
+msgid "Overview"
+msgstr ""
+
+msgid "Record access by type"
+msgstr ""
+
+msgid "Records Accessed by Type"
+msgstr ""
+
+msgid "Review the overview statistics and anomaly flags above."
+msgstr ""
+
+msgid "Standard (< 5)"
+msgstr ""
+
+msgid ""
+"The following unusual patterns were detected during this period. Contact "
+"your administrator to investigate specific incidents."
+msgstr ""
+
+msgid ""
+"This summary shows aggregate compliance metrics — no individual participant "
+"or staff names are displayed. This is by design (PIPEDA principle of "
+"limiting collection)."
+msgstr ""
+
+msgid "Total audit events"
+msgstr ""
+
+msgid "Use the Print button to include this summary in board reports."
+msgstr ""
