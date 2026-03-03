@@ -50,10 +50,11 @@ class TestPageCapture(BrowserTestBase):
     """Capture screenshots of all pages for all authorized personas."""
 
     def _create_test_data(self):
-        """Extend base test data with all persona users + groups."""
+        """Extend base test data with all persona users + groups + messages."""
         super()._create_test_data()
         self._create_extra_persona_users()
         self._create_group_data()
+        self._create_message_data()
 
     # ------------------------------------------------------------------
     # Extra persona users (mirrors scenario_runner.py lines 123-218)
@@ -173,9 +174,22 @@ class TestPageCapture(BrowserTestBase):
     # ------------------------------------------------------------------
 
     def _create_group_data(self):
-        from datetime import date
+        """Create group with 8+ members and 12+ sessions for attendance grid.
 
-        from apps.groups.models import Group, GroupMembership, GroupSession
+        QA-PA-TEST1: The groups-attendance page needs a populated attendance
+        matrix (8 members x 12 sessions = 96 cells) so page captures show
+        a realistic attendance report rather than a sparse grid.
+        """
+        import random
+        from datetime import date, timedelta
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.groups.models import (
+            Group,
+            GroupMembership,
+            GroupSession,
+            GroupSessionAttendance,
+        )
 
         self.group = Group.objects.create(
             name="Weekly Check-In",
@@ -183,16 +197,178 @@ class TestPageCapture(BrowserTestBase):
             program=self.program_a,
             description="Weekly peer support session",
         )
-        GroupMembership.objects.create(
+
+        # --- 8 group members (2 existing clients + 6 named non-clients) ---
+        member_a = GroupMembership.objects.create(
             group=self.group, client_file=self.client_a, role="member",
         )
-        self.group_session = GroupSession.objects.create(
-            group=self.group,
-            facilitator=self.staff_user,
-            session_date=date.today(),
+        member_b = GroupMembership.objects.create(
+            group=self.group, client_file=self.client_b, role="member",
         )
-        self.group_session.notes = "Good session today."
-        self.group_session.save()
+
+        # Create 6 additional clients for realistic member names
+        extra_names = [
+            ("Amara", "Osei"),
+            ("Jean-Luc", "Bergeron"),
+            ("Priya", "Sharma"),
+            ("Marcus", "Williams"),
+            ("Fatima", "Hassan"),
+            ("Riley", "Chen"),
+        ]
+        extra_memberships = [member_a, member_b]
+        for first, last in extra_names:
+            cf = ClientFile.objects.create(is_demo=False)
+            cf.first_name = first
+            cf.last_name = last
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.program_a,
+            )
+            m = GroupMembership.objects.create(
+                group=self.group, client_file=cf, role="member",
+            )
+            extra_memberships.append(m)
+
+        # Make one member a leader for variety
+        extra_memberships[0].role = "leader"
+        extra_memberships[0].save()
+
+        all_memberships = extra_memberships  # 8 total
+
+        # --- 12 weekly sessions over the past 12 weeks ---
+        rng = random.Random(42)  # deterministic for reproducible captures
+        vibes = ["rough", "low", "solid", "great", "solid", "great"]
+        session_notes = [
+            "Good energy today. Several members shared updates.",
+            "Quieter session — two members absent.",
+            "Great discussion on housing barriers.",
+            "New member introduced themselves.",
+            "Follow-up on referrals from last week.",
+            "Group discussed coping strategies.",
+            "Short session due to holiday schedule.",
+            "Facilitator covered budgeting basics.",
+            "Peer mentoring pairs formed.",
+            "Mid-program check-in — goals reviewed.",
+            "Guest speaker on employment readiness.",
+            "Wrap-up and celebration of milestones.",
+        ]
+
+        sessions = []
+        today = date.today()
+        for i in range(12):
+            session_date = today - timedelta(weeks=11 - i)
+            gs = GroupSession.objects.create(
+                group=self.group,
+                facilitator=self.staff_user,
+                session_date=session_date,
+                group_vibe=vibes[i % len(vibes)],
+            )
+            gs.notes = session_notes[i]
+            gs.save()
+            sessions.append(gs)
+
+        # --- Attendance records: realistic pattern (mostly present) ---
+        for gs in sessions:
+            for membership in all_memberships:
+                # ~80% attendance rate with some variation per member
+                present = rng.random() < 0.80
+                GroupSessionAttendance.objects.create(
+                    group_session=gs,
+                    membership=membership,
+                    present=present,
+                )
+
+        # Keep reference to first session for backward compatibility
+        self.group_session = sessions[0]
+
+    # ------------------------------------------------------------------
+    # Staff message data (for comm-my-messages populated state)
+    # ------------------------------------------------------------------
+
+    def _create_message_data(self):
+        """Create staff messages so the My Messages page shows populated state.
+
+        QA-PA-TEST2: The comm-my-messages page needs actual StaffMessage
+        records so the populated state screenshot shows a realistic inbox
+        with unread and urgent messages, rather than the empty state.
+        """
+        from apps.auth_app.models import User
+        from apps.communications.models import StaffMessage
+
+        # Messages for the main staff user (DS1 = "staff" username)
+        messages_for_staff = [
+            {
+                "left_by": self.receptionist_user,
+                "content": "Mike Thompson called — wants to reschedule Wednesday appointment to Friday.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Jane's mother dropped off completed intake forms at front desk.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.manager_user,
+                "content": "Please update Jane Doe's plan before the monthly review on Friday.",
+                "is_urgent": True,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Voicemail from CMHA — returning your call about housing referral.",
+                "is_urgent": False,
+            },
+            {
+                "left_by": self.receptionist_user,
+                "content": "Bob Smith is here for his 2pm appointment, waiting in the lobby.",
+                "is_urgent": True,
+            },
+        ]
+
+        for msg_data in messages_for_staff:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=self.staff_user,
+                left_by=msg_data["left_by"],
+                author_program=self.program_a,
+                is_urgent=msg_data["is_urgent"],
+            )
+            msg.content = msg_data["content"]
+            msg.save()
+
+        # Also create messages for other personas so their "populated" captures work
+        # DS1b (staff_new), DS2 (staff_fr), PM1 (manager)
+        staff_new = User.objects.filter(username="staff_new").first()
+        if staff_new:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=staff_new,
+                left_by=self.receptionist_user,
+                author_program=self.program_a,
+            )
+            msg.content = "Welcome note: your first client file is ready for review."
+            msg.save()
+
+        staff_fr = User.objects.filter(username="staff_fr").first()
+        if staff_fr:
+            msg = StaffMessage(
+                client_file=self.client_a,
+                for_user=staff_fr,
+                left_by=self.receptionist_user,
+                author_program=self.program_a,
+            )
+            msg.content = "Message from reception — appel de la famille de Jane Doe."
+            msg.save()
+
+        # Message for manager (PM1 sees all programme messages)
+        msg = StaffMessage(
+            client_file=self.client_b,
+            for_user=self.manager_user,
+            left_by=self.staff_user,
+            author_program=self.program_a,
+        )
+        msg.content = "Monthly statistics are ready for your review."
+        msg.save()
 
     # ------------------------------------------------------------------
     # Main capture test
