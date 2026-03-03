@@ -1321,7 +1321,7 @@ class BulkOperationsTest(TestCase):
         UserProgramRole.objects.create(user=user_b, program=self.prog_a, role="staff")
 
         # Create a client enrolled in Program A only
-        client_a = self._create_client("Unique", "Testname", [self.prog_a])
+        self._create_client("Unique", "Testname", [self.prog_a])
 
         # User B searches for the client by name
         self.client.login(username="staff_b", password="testpass123")
