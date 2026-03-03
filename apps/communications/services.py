@@ -96,13 +96,18 @@ def check_consent(client_file, channel):
     return True, "OK"
 
 
-def can_send(client_file, channel):
+def can_send(client_file, channel, method="staff"):
     """Check all prerequisites before sending a message.
+
+    Args:
+        client_file: The client to send to.
+        channel: "sms" or "email".
+        method: "staff" (manual send by a person) or "automated" (cron job).
 
     Returns (allowed: bool, reason: str).
     Checks are ordered from broadest restriction to narrowest:
     1. Safety-First mode — blocks everything
-    2. Messaging profile — record_keeping blocks all outbound
+    2. Messaging capability — check the relevant toggle for the method
     3. Channel capability — FeatureToggle must be enabled
     4. Client consent — CASL compliance
     5. Consent expiry — implied consent 2-year rule
@@ -114,9 +119,14 @@ def can_send(client_file, channel):
     if InstanceSetting.get("safety_first_mode", "false") == "true":
         return False, _("Safety-First mode is enabled — no outbound messages")
 
-    # 2. Messaging profile
-    profile = InstanceSetting.get("messaging_profile", "record_keeping")
-    if profile == "record_keeping":
+    # 2. Messaging capability
+    staff_ok = InstanceSetting.get("staff_messaging_enabled", "false") == "true"
+    auto_ok = InstanceSetting.get("automated_reminders_enabled", "false") == "true"
+    if method == "staff" and not staff_ok:
+        return False, _("Staff messaging is not enabled")
+    if method == "automated" and not auto_ok:
+        return False, _("Automated reminders are not enabled")
+    if not staff_ok and not auto_ok:
         return False, _("Messaging is set to record-keeping only")
 
     # 3. Channel capability
@@ -279,7 +289,7 @@ def send_staff_email(client_file, subject, body_text, logged_by, author_program=
 
     Returns (success: bool, error_or_none: str|None).
     """
-    allowed, reason = can_send(client_file, "email")
+    allowed, reason = can_send(client_file, "email", method="staff")
     if not allowed:
         return False, reason
 
@@ -360,14 +370,16 @@ def send_reminder(meeting, logged_by=None, personal_note=""):
         _record_reminder_status(meeting, "no_consent", _("Client has not consented to reminders"))
         return False, "No consent"
 
-    # Pre-check with can_send() — checks safety mode, profile, toggles, consent
+    # Pre-check with can_send() — checks safety mode, capabilities, toggles, consent
+    # When logged_by is None, this is an automated cron job; otherwise staff-initiated
+    method = "automated" if logged_by is None else "staff"
     send_channel = "sms" if channel in ("sms", "both") else "email"
-    allowed, block_reason = can_send(client_file, send_channel)
+    allowed, block_reason = can_send(client_file, send_channel, method=method)
     if not allowed:
         # Try the other channel if "both"
         if channel == "both":
             alt_channel = "email" if send_channel == "sms" else "sms"
-            allowed, block_reason = can_send(client_file, alt_channel)
+            allowed, block_reason = can_send(client_file, alt_channel, method=method)
             if allowed:
                 send_channel = alt_channel
 
