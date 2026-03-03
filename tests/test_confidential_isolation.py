@@ -913,3 +913,66 @@ class SmallCellSuppressionTest(TestCase):
     def test_custom_threshold(self):
         self.assertEqual(suppress_small_cell(4, self.conf_prog, threshold=5), "< 5")
         self.assertEqual(suppress_small_cell(5, self.conf_prog, threshold=5), 5)
+
+    def test_unconditional_suppression_no_program(self):
+        """Funder report path: suppress unconditionally when no program."""
+        self.assertEqual(suppress_small_cell(3), "< 5")
+        self.assertEqual(suppress_small_cell(5), 5)
+        self.assertEqual(suppress_small_cell(0), "< 5")
+
+    def test_unconditional_suppression_with_threshold_10(self):
+        """Conservative threshold suppresses counts < 10."""
+        self.assertEqual(suppress_small_cell(7, threshold=10), "< 10")
+        self.assertEqual(suppress_small_cell(10, threshold=10), 10)
+
+
+class SecondarySuppresionTest(TestCase):
+    """Test apply_secondary_suppression for complementary suppression."""
+
+    def test_no_suppression_needed(self):
+        """All cells above threshold — no changes."""
+        from apps.reports.suppression import apply_secondary_suppression
+        cells = [("All", 30), ("Age 18-24", 15), ("Age 25-44", 10), ("Age 45+", 5)]
+        result = apply_secondary_suppression(cells, threshold=5)
+        self.assertEqual(result, cells)
+
+    def test_one_cell_triggers_secondary(self):
+        """One cell below threshold → next-smallest also suppressed."""
+        from apps.reports.suppression import apply_secondary_suppression
+        cells = [("All", 20), ("Age 18-24", 12), ("Age 25-44", 5), ("Age 45+", 3)]
+        result = apply_secondary_suppression(cells, threshold=5)
+        # Age 45+ is primary (3 < 5), Age 25-44 is secondary (smallest remaining)
+        self.assertEqual(result[0], ("All", 20))
+        self.assertEqual(result[1], ("Age 18-24", 12))
+        self.assertEqual(result[2], ("Age 25-44", "< 5"))
+        self.assertEqual(result[3], ("Age 45+", "< 5"))
+
+    def test_two_cells_below_no_secondary(self):
+        """Two cells already suppressed — no additional suppression needed."""
+        from apps.reports.suppression import apply_secondary_suppression
+        cells = [("All", 20), ("Age 18-24", 12), ("Age 25-44", 2), ("Age 45+", 3)]
+        result = apply_secondary_suppression(cells, threshold=5)
+        self.assertEqual(result[0], ("All", 20))
+        self.assertEqual(result[1], ("Age 18-24", 12))
+        self.assertEqual(result[2], ("Age 25-44", "< 5"))
+        self.assertEqual(result[3], ("Age 45+", "< 5"))
+
+    def test_single_demo_column(self):
+        """Only one demographic column — suppress if below threshold."""
+        from apps.reports.suppression import apply_secondary_suppression
+        cells = [("All", 3), ("Youth", 3)]
+        result = apply_secondary_suppression(cells, threshold=5)
+        # Both suppressed — with only two cells, both below threshold
+        self.assertEqual(result[0], ("All", "< 5"))
+        self.assertEqual(result[1], ("Youth", "< 5"))
+
+    def test_conservative_threshold(self):
+        """Threshold of 10 suppresses cells < 10."""
+        from apps.reports.suppression import apply_secondary_suppression
+        cells = [("All", 30), ("Group A", 15), ("Group B", 7), ("Group C", 8)]
+        result = apply_secondary_suppression(cells, threshold=10)
+        # Both Group B (7) and Group C (8) are below threshold
+        self.assertEqual(result[0], ("All", 30))
+        self.assertEqual(result[1], ("Group A", 15))
+        self.assertEqual(result[2], ("Group B", "< 10"))
+        self.assertEqual(result[3], ("Group C", "< 10"))
