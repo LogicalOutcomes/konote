@@ -373,26 +373,33 @@ class MetricValueForm(forms.Form):
                 raise forms.ValidationError(
                     _("Value must be at most %(max_value)s.") % {"max_value": self.metric_def.max_value}
                 )
-            # Plausibility check — require confirmation for out-of-range values
-            confirmed = self.cleaned_data.get("plausibility_confirmed", False)
-            if not confirmed:
-                is_outside_tier2 = (
-                    (self.metric_def.very_unlikely_min is not None and numeric < self.metric_def.very_unlikely_min)
-                    or (self.metric_def.very_unlikely_max is not None and numeric > self.metric_def.very_unlikely_max)
-                )
-                is_outside_tier1 = (
-                    (self.metric_def.warn_min is not None and numeric < self.metric_def.warn_min)
-                    or (self.metric_def.warn_max is not None and numeric > self.metric_def.warn_max)
-                )
-                if is_outside_tier2:
-                    raise forms.ValidationError(
-                        _("This value is extremely unlikely. Please confirm it is correct.")
-                    )
-                if is_outside_tier1:
-                    raise forms.ValidationError(
-                        _("This value is outside the expected range. Please confirm it is correct.")
-                    )
         return val
+
+    def clean(self):
+        cleaned = super().clean()
+        val = cleaned.get("value", "").strip()
+        if not val or not hasattr(self, "metric_def") or self.metric_def.metric_type == "achievement":
+            return cleaned
+        try:
+            numeric = float(val)
+        except ValueError:
+            return cleaned
+        # Plausibility check — require confirmation for out-of-range values
+        confirmed = cleaned.get("plausibility_confirmed", False)
+        if not confirmed:
+            is_outside_tier2 = (
+                (self.metric_def.very_unlikely_min is not None and numeric < self.metric_def.very_unlikely_min)
+                or (self.metric_def.very_unlikely_max is not None and numeric > self.metric_def.very_unlikely_max)
+            )
+            is_outside_tier1 = (
+                (self.metric_def.warn_min is not None and numeric < self.metric_def.warn_min)
+                or (self.metric_def.warn_max is not None and numeric > self.metric_def.warn_max)
+            )
+            if is_outside_tier2:
+                self.add_error("value", _("This value is extremely unlikely. Please confirm it is correct."))
+            elif is_outside_tier1:
+                self.add_error("value", _("This value is outside the expected range. Please confirm it is correct."))
+        return cleaned
 
 
 class NoteTemplateForm(forms.ModelForm):
