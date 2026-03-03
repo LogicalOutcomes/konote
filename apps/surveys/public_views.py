@@ -6,6 +6,7 @@ link token can view and submit a survey response.
 import logging
 
 from django.db import transaction
+from django_ratelimit.decorators import ratelimit
 from django.http import Http404, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
@@ -24,6 +25,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+@ratelimit(key="ip", rate="30/h", method="POST", block=True)
 def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
     try:
