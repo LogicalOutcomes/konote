@@ -77,6 +77,7 @@ def calculate_section_scores(sections, answers_dict):
                         break
         scores.append({
             "title": section.title,
+            "title_fr": getattr(section, "title_fr", "") or "",
             "score": total,
             "max_score": section.max_score,
         })

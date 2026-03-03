@@ -4,7 +4,7 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev after merging PR #239 and #240. The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
+- [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
 
@@ -32,7 +32,6 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [x] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — 2026-03-03 (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
@@ -51,12 +50,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Session 7 Prep — Admin UX & Configuration
 
-- [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
-- [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
-
-### Phase: Data Quality
-
-- [x] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection — 2026-03-03 (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
 ### Phase: Post-Launch Communication Enhancements
@@ -69,7 +62,7 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
-- [x] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" — renamed ParsedBreakdown.bins to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
+- [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -78,21 +71,9 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
-### Phase: Surveys Future Work
-
-- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-
 ### Phase: Documentation & Website Updates
 
-- [x] Create deployment documentation for surveys and portal features — 2026-03-03 (DOC-DEPLOY1)
-- [x] Update technical documentation in GitHub for surveys and portal architecture — 2026-03-03 (DOC-TECH1)
-- [x] Write client-facing guide for demo data engine — verified existing guide against code (7 claims checked), fixed spelling — 2026-03-03 (DOC-DEMO1)
-- [x] Document DV-safe mode and GATED clinical access for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM1)
-- [x] Document per-field front desk access controls for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM2)
-- [x] Document access tiers (3-tier RBAC model) for deployment runbook — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM3)
-- [x] Seed groups-attendance test data with 8+ members and 12+ sessions — verified existing seed functions correct (8 members, 12 sessions, 96 attendance records) — 2026-03-03 (QA-PA-TEST1)
-- [x] Seed comm-my-messages populated state with actual messages — verified existing seed functions correct (8 messages across 4 personas) — 2026-03-03 (QA-PA-TEST2)
-- [x] Add new features and capabilities to the web site as they are built — 2026-03-03 (WEBSITE-UPDATE1)
+_All documentation tasks completed — see Recently Done._
 
 ## Parking Lot: Ready to Build
 
@@ -119,6 +100,13 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 7 — PR Cleanup + Survey Links Merge
+
+- [x] Resolve merge conflicts and merge PR #236 (DQ1-TIER2 + docs verification) — 2026-03-03 (DQ1-TIER2)
+- [x] Resolve merge conflicts and merge PR #239 (survey shareable links) — 2026-03-03 (SURVEY-LINK1)
+- [x] Add missing French translations for survey link strings (6 entries) — 2026-03-03 (SURVEY-LINK1)
+- [x] Clean up TODO.md — remove completed items from Coming Up, update flags — 2026-03-03
 
 ### Session 6 — Data Quality + Documentation + QA Verification
 
@@ -148,4 +136,4 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Update konote-website with new features, security, and FAQ — 2026-03-03 (WEBSITE-UPDATE1)
 - [x] Align ParsedBreakdown.bins field naming to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
 
-_Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md) on 2026-03-03._
+_Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
