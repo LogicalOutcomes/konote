@@ -46,7 +46,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Data Quality
 
 
-- [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
+- [x] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection — 2026-03-03 (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
 ### Phase: Post-Launch Communication Enhancements
@@ -77,12 +77,12 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 
 - [x] Create deployment documentation for surveys and portal features — 2026-03-03 (DOC-DEPLOY1)
 - [x] Update technical documentation in GitHub for surveys and portal architecture — 2026-03-03 (DOC-TECH1)
-- [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
-- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
-- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
-- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
+- [x] Write client-facing guide for demo data engine — verified existing guide against code (7 claims checked), fixed spelling — 2026-03-03 (DOC-DEMO1)
+- [x] Document DV-safe mode and GATED clinical access for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM1)
+- [x] Document per-field front desk access controls for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM2)
+- [x] Document access tiers (3-tier RBAC model) for deployment runbook — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM3)
+- [x] Seed groups-attendance test data with 8+ members and 12+ sessions — verified existing seed functions correct (8 members, 12 sessions, 96 attendance records) — 2026-03-03 (QA-PA-TEST1)
+- [x] Seed comm-my-messages populated state with actual messages — verified existing seed functions correct (8 messages across 4 personas) — 2026-03-03 (QA-PA-TEST2)
 - [x] Add new features and capabilities to the web site as they are built — 2026-03-03 (WEBSITE-UPDATE1)
 
 ## Parking Lot: Ready to Build
@@ -117,6 +117,17 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Session 6 — Data Quality + Documentation + QA Verification
+
+- [x] Add second-tier "very unlikely" plausibility thresholds — model fields, validation, migrations, JS two-click confirm, CSS, admin form, 17 new tests — 2026-03-03 (DQ1-TIER2)
+- [x] Verify demo data engine guide — 7 claims checked against code, fixed "programme" spelling — 2026-03-03 (DOC-DEMO1)
+- [x] Verify DV-safe mode documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM1)
+- [x] Verify per-field front desk access documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM2)
+- [x] Verify access tiers documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM3)
+- [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
+- [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
+- [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 

@@ -3,8 +3,8 @@
 Covers the post_save signal on PlanTarget that auto-updates achievement_status
 when a goal's lifecycle status changes.
 """
-import pytest
 from cryptography.fernet import Fernet
+from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -252,3 +252,305 @@ class PlanTargetSignalTest(TestCase):
         target.save()
         target.refresh_from_db()
         self.assertEqual(target.achievement_status, "not_achieved")
+
+
+# ────────────────────────────────────────────────────────────────────
+# DQ1-TIER2: Very unlikely plausibility threshold tests
+# ────────────────────────────────────────────────────────────────────
+
+
+class MetricDefinitionTier2ValidationTest(TestCase):
+    """Tests for very_unlikely_min/max validation on MetricDefinition."""
+
+    def _make_metric(self, **kwargs):
+        defaults = {
+            "name": "Test Metric",
+            "definition": "Test definition",
+            "category": "general",
+            "metric_type": "scale",
+        }
+        defaults.update(kwargs)
+        return MetricDefinition(**defaults)
+
+    def test_very_unlikely_min_must_be_less_than_very_unlikely_max(self):
+        """very_unlikely_min >= very_unlikely_max should raise ValidationError."""
+        m = self._make_metric(very_unlikely_min=100, very_unlikely_max=50)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely minimum must be less than very unlikely maximum", str(ctx.exception))
+
+    def test_very_unlikely_min_equal_to_very_unlikely_max_is_invalid(self):
+        """very_unlikely_min == very_unlikely_max should raise ValidationError."""
+        m = self._make_metric(very_unlikely_min=50, very_unlikely_max=50)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely minimum must be less than very unlikely maximum", str(ctx.exception))
+
+    def test_very_unlikely_min_must_be_at_or_above_min_value(self):
+        """very_unlikely_min < min_value should raise ValidationError."""
+        m = self._make_metric(min_value=0, very_unlikely_min=-10)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely minimum cannot be below the hard minimum", str(ctx.exception))
+
+    def test_very_unlikely_max_must_be_at_or_below_max_value(self):
+        """very_unlikely_max > max_value should raise ValidationError."""
+        m = self._make_metric(max_value=100, very_unlikely_max=200)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely maximum cannot exceed the hard maximum", str(ctx.exception))
+
+    def test_very_unlikely_min_must_be_at_or_below_warn_min(self):
+        """very_unlikely_min > warn_min should raise ValidationError."""
+        m = self._make_metric(warn_min=10, very_unlikely_min=20)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely minimum must be at or below the warning minimum", str(ctx.exception))
+
+    def test_very_unlikely_max_must_be_at_or_above_warn_max(self):
+        """very_unlikely_max < warn_max should raise ValidationError."""
+        m = self._make_metric(warn_max=90, very_unlikely_max=80)
+        with self.assertRaises(ValidationError) as ctx:
+            m.clean()
+        self.assertIn("Very unlikely maximum must be at or above the warning maximum", str(ctx.exception))
+
+    def test_very_unlikely_min_less_than_very_unlikely_max_is_valid(self):
+        """very_unlikely_min < very_unlikely_max should pass validation."""
+        m = self._make_metric(very_unlikely_min=10, very_unlikely_max=200)
+        m.clean()  # Should not raise
+
+    def test_very_unlikely_min_equal_to_min_value_is_valid(self):
+        """very_unlikely_min == min_value should pass validation."""
+        m = self._make_metric(min_value=0, very_unlikely_min=0)
+        m.clean()  # Should not raise
+
+    def test_very_unlikely_max_equal_to_max_value_is_valid(self):
+        """very_unlikely_max == max_value should pass validation."""
+        m = self._make_metric(max_value=100, very_unlikely_max=100)
+        m.clean()  # Should not raise
+
+    def test_very_unlikely_min_equal_to_warn_min_is_valid(self):
+        """very_unlikely_min == warn_min should pass validation."""
+        m = self._make_metric(warn_min=10, very_unlikely_min=10)
+        m.clean()  # Should not raise
+
+    def test_very_unlikely_max_equal_to_warn_max_is_valid(self):
+        """very_unlikely_max == warn_max should pass validation."""
+        m = self._make_metric(warn_max=90, very_unlikely_max=90)
+        m.clean()  # Should not raise
+
+    def test_full_ordering_valid(self):
+        """min_value <= very_unlikely_min <= warn_min <= warn_max <= very_unlikely_max <= max_value."""
+        m = self._make_metric(
+            min_value=0,
+            very_unlikely_min=5,
+            warn_min=20,
+            warn_max=80,
+            very_unlikely_max=95,
+            max_value=100,
+        )
+        m.clean()  # Should not raise
+
+    def test_full_ordering_with_equal_boundaries_valid(self):
+        """All equal boundaries should pass validation."""
+        m = self._make_metric(
+            min_value=0,
+            very_unlikely_min=0,
+            warn_min=0,
+            warn_max=100,
+            very_unlikely_max=100,
+            max_value=100,
+        )
+        m.clean()  # Should not raise
+
+    def test_none_fields_do_not_trigger_validation(self):
+        """When tier-2 fields are None, no tier-2 validation should fire."""
+        m = self._make_metric(
+            min_value=0,
+            max_value=100,
+            warn_min=10,
+            warn_max=90,
+            very_unlikely_min=None,
+            very_unlikely_max=None,
+        )
+        m.clean()  # Should not raise
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricValueFormTier2Test(TestCase):
+    """Tests that MetricValueForm renders tier-2 data attributes."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_form_renders_very_unlikely_data_attributes(self):
+        """Number input should have data-very-unlikely-min and data-very-unlikely-max."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="Test Financial",
+            definition="Financial metric",
+            category="custom",
+            metric_type="scale",
+            min_value=None,
+            max_value=None,
+            warn_min=0,
+            warn_max=15000,
+            very_unlikely_min=-1000,
+            very_unlikely_max=150000,
+        )
+        form = MetricValueForm(metric_def=metric_def)
+        html = str(form["value"])
+        self.assertIn("data-very-unlikely-min", html)
+        self.assertIn("data-very-unlikely-max", html)
+
+    def test_form_renders_plausibility_confirmed_with_tier2_only(self):
+        """plausibility_confirmed should appear even if only tier-2 thresholds are set."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="Test Tier2 Only",
+            definition="Tier 2 only metric",
+            category="custom",
+            metric_type="scale",
+            warn_min=None,
+            warn_max=None,
+            very_unlikely_min=-1000,
+            very_unlikely_max=150000,
+        )
+        form = MetricValueForm(metric_def=metric_def)
+        self.assertIn("plausibility_confirmed", form.fields)
+
+    def test_form_does_not_render_tier2_attrs_when_not_set(self):
+        """No tier-2 data attrs when very_unlikely fields are None."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="Test No Tier2",
+            definition="No tier 2",
+            category="custom",
+            metric_type="scale",
+            min_value=0,
+            max_value=100,
+            warn_min=10,
+            warn_max=90,
+            very_unlikely_min=None,
+            very_unlikely_max=None,
+        )
+        form = MetricValueForm(metric_def=metric_def)
+        html = str(form["value"])
+        self.assertNotIn("data-very-unlikely-min", html)
+        self.assertNotIn("data-very-unlikely-max", html)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricValueFormPlausibilityCleanTest(TestCase):
+    """Tests for server-side plausibility validation in MetricValueForm.clean()."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _make_metric_def(self):
+        return MetricDefinition.objects.create(
+            name="Test Plausibility",
+            definition="For plausibility tests",
+            category="custom",
+            metric_type="scale",
+            min_value=None,
+            max_value=None,
+            warn_min=10,
+            warn_max=500,
+            very_unlikely_min=-1000,
+            very_unlikely_max=150000,
+        )
+
+    def test_tier2_value_rejected_without_confirmation(self):
+        """Value outside tier-2 bounds should fail without plausibility_confirmed."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "-5000"},
+            metric_def=md,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("extremely unlikely", str(form.errors["value"]))
+
+    def test_tier1_value_rejected_without_confirmation(self):
+        """Value outside tier-1 bounds should fail without plausibility_confirmed."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "5"},
+            metric_def=md,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("outside the expected range", str(form.errors["value"]))
+
+    def test_tier2_value_accepted_with_confirmation(self):
+        """Value outside tier-2 bounds should pass with plausibility_confirmed=True."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "-5000", "plausibility_confirmed": "True"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_tier1_value_accepted_with_confirmation(self):
+        """Value outside tier-1 bounds should pass with plausibility_confirmed=True."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "5", "plausibility_confirmed": "True"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_in_range_value_accepted_without_confirmation(self):
+        """Value within all bounds should pass without confirmation."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "100"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+
+class Tier2DataMigrationTest(TestCase):
+    """Test that the data migration constants are correctly defined."""
+
+    def test_financial_tier2_thresholds_are_wider_than_tier1(self):
+        """Tier-2 thresholds should be wider than tier-1 thresholds."""
+        import importlib
+        mod18 = importlib.import_module("apps.plans.migrations.0018_set_financial_warn_thresholds")
+        FINANCIAL_THRESHOLDS = mod18.FINANCIAL_THRESHOLDS
+        mod20 = importlib.import_module("apps.plans.migrations.0020_set_financial_tier2_thresholds")
+        FINANCIAL_TIER2_THRESHOLDS = mod20.FINANCIAL_TIER2_THRESHOLDS
+
+        for name in FINANCIAL_THRESHOLDS:
+            self.assertIn(name, FINANCIAL_TIER2_THRESHOLDS)
+            t1 = FINANCIAL_THRESHOLDS[name]
+            t2 = FINANCIAL_TIER2_THRESHOLDS[name]
+            self.assertLessEqual(
+                t2["very_unlikely_min"], t1["warn_min"],
+            )
+            self.assertGreaterEqual(
+                t2["very_unlikely_max"], t1["warn_max"],
+            )
+
