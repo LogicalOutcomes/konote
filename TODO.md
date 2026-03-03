@@ -112,10 +112,15 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md for full analysis — GK reviews (AI-SELFHOST1)
-- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
-- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
-
 ## Recently Done
+
+### Session 5 — Small-Cell Suppression + Compliance Summary
+
+- [x] Add configurable suppression threshold to ReportTemplate (5 or 10) — 2026-03-03 (QA-R8-RPT1)
+- [x] Add secondary (complementary) suppression to prevent derivation by subtraction — 2026-03-03 (QA-R8-RPT1)
+- [x] Remove n=50 floor for demographic grouping (small-cell suppression handles privacy) — 2026-03-03 (QA-R8-RPT1)
+- [x] Build compliance summary page for executives (aggregate audit metrics, no PII) — 2026-03-03 (QA-R8-PERM2)
+- [x] Update reporting-architecture DRR with suppression and compliance decisions — 2026-03-03 (QA-R8-RPT1, QA-R8-PERM2)
 
 ### Session 4 — Documentation & Cleanup
 
