@@ -64,7 +64,8 @@
 
     {% if user.is_authenticated and user.is_demo %}
     <div class="demo-banner" role="alert" aria-live="polite">
-        <strong>{% trans "Demo Mode:" %}</strong> {% blocktrans with name=user.display_name %}You are logged in as {{ name }}. Changes affect demo data only.{% endblocktrans %}
+        <strong>{% trans "Training Mode" %}</strong> — {% trans "changes here do not affect real participant records." %}
+        <span class="demo-banner-user">{% blocktrans with name=user.display_name %}Signed in as {{ name }}.{% endblocktrans %}</span>
     </div>
     {% endif %}
 

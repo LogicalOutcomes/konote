@@ -105,6 +105,10 @@
     top: 0;
     z-index: 1000;
 }
+.demo-banner-user {
+    font-weight: 400;
+    opacity: 0.85;
+}
 @media (prefers-color-scheme: dark) {
     .demo-banner {
         background-color: #3d2e0a;
