@@ -939,6 +939,102 @@ class ExecutiveDashboardExportTest(TestCase):
         self.assertIn("/login/", resp.url)
 
 
+class ExecutiveDashboardPdfExportTest(TestCase):
+    """Tests for executive dashboard PDF export."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+
+        # Executive user
+        self.executive = User.objects.create_user(
+            username="exec", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.executive, program=self.prog, role="executive",
+        )
+
+        # PM user
+        self.pm = User.objects.create_user(
+            username="pm", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.prog, role="program_manager",
+        )
+
+        # Frontline staff (should be blocked)
+        self.staff = User.objects.create_user(
+            username="staff", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.prog, role="staff",
+        )
+
+        # Admin user
+        self.admin = User.objects.create_user(
+            username="admin", password="pass", is_admin=True,
+        )
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.prog, role="program_manager",
+        )
+
+        # Create some clients
+        for i in range(6):
+            cf = ClientFile()
+            cf.first_name = f"Client{i}"
+            cf.last_name = "Test"
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.prog,
+            )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_executive_dashboard_pdf_permission(self):
+        """Frontline staff cannot access the PDF export."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/participants/executive/pdf/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_executive_dashboard_pdf_success(self):
+        """Executive/PM user can download the PDF export."""
+        self.http.login(username="exec", password="pass")
+        resp = self.http.get("/participants/executive/pdf/")
+        self.assertEqual(resp.status_code, 200)
+        # WeasyPrint may not be installed in the test environment, so the
+        # view falls back to HTML.  Accept either content type.
+        self.assertIn(
+            resp["Content-Type"],
+            ("application/pdf", "text/html"),
+        )
+        self.assertIn("Content-Disposition", resp)
+        self.assertIn("executive-dashboard", resp["Content-Disposition"])
+
+    def test_executive_dashboard_pdf_with_program_filter(self):
+        """PDF export accepts a program query parameter."""
+        self.http.login(username="exec", password="pass")
+        resp = self.http.get(
+            "/participants/executive/pdf/",
+            {"program": self.prog.pk},
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_executive_dashboard_pdf_with_start_date(self):
+        """PDF export accepts a start_date query parameter."""
+        self.http.login(username="exec", password="pass")
+        resp = self.http.get(
+            "/participants/executive/pdf/",
+            {"start_date": "2025-01-01"},
+        )
+        self.assertEqual(resp.status_code, 200)
+
+
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class StatisticalDisclosureGuardTest(TestCase):
     """Tests for small-program percentage suppression."""
