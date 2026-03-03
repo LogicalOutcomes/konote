@@ -21,15 +21,14 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 
 **Deployment automation (ops scripting, not product code):**
 
-- [ ] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — PB (DOC-MA5)
-- [ ] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
+- [x] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DOC-MA5)
+- [x] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
@@ -116,7 +115,7 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
 - [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
-- [ ] Use KoNote logos from `Logo/brand/` folder across app and website (see PR #100) — PB (LOGO1)
+- [x] Use KoNote logos from `Logo/brand/` folder across app and website (see PR #100) — 2026-03-02 (LOGO1)
 
 ## Parking Lot: Ready to Build
 
@@ -151,6 +150,13 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### PB Tasks Sprint — Deploy Script + Logo Integration
+
+- [x] Write deploy script design doc — automated provisioning plan for OVHcloud VPS — 2026-03-02 (DOC-MA5)
+- [x] Build deploy script — scripts/deploy-konote-vps.sh automates 9 of 15 manual steps — 2026-03-02 (DEPLOY-SCRIPT1)
+- [x] Add KoNote logo to navigation and social sharing meta tags — 2026-03-02 (LOGO1)
+- [x] Remove stale OPS4 — backup restore was already completed 2026-02-26 (see ARCHIVE.md) — 2026-03-02 (OPS4-CLEANUP)
 
 ### Wave 2 Sprint — Accessibility Sweep (PR #208)
 
