@@ -5,6 +5,7 @@
 
 {% block content %}
 <h1>{% trans "My Messages" %}</h1>
+<p class="secondary">{% blocktrans with client=term.client %}To leave a message for a colleague about a {{ client }}, open the {{ client }}'s file and select "Leave a Message."{% endblocktrans %}</p>
 
 {% if staff_messages %}
     <p>{% blocktrans count count=staff_messages|length %}You have {{ count }} unread message.{% plural %}You have {{ count }} unread messages.{% endblocktrans %}</p>

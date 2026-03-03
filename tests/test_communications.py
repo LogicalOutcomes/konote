@@ -358,11 +358,11 @@ class CommunicationPermissionTest(TestCase):
 # -----------------------------------------------------------------------
 
 def _enable_messaging():
-    """Enable messaging feature toggles and profile for tests."""
+    """Enable messaging feature toggles for tests."""
     from apps.admin_settings.models import FeatureToggle, InstanceSetting
     InstanceSetting.objects.update_or_create(
-        setting_key="messaging_profile",
-        defaults={"setting_value": "staff_sent"},
+        setting_key="staff_messaging_enabled",
+        defaults={"setting_value": "true"},
     )
     FeatureToggle.objects.update_or_create(
         feature_key="messaging_email",

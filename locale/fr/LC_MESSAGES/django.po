@@ -9563,33 +9563,17 @@ msgid "Enable in Features, then configure Twilio credentials."
 msgstr ""
 "Activez dans Fonctionnalités, puis configurez les identifiants Twilio."
 
-msgid "Full Automation"
-msgstr "Automatisation complète"
-
-msgid "Full automation enabled"
-msgstr "Automatisation complète activée"
-
 msgid "How many hours before a meeting to send the reminder."
 msgstr "Nombre d'heures avant une réunion pour envoyer le rappel."
 
 msgid "If you change your mind, please contact the organisation directly."
 msgstr "Si vous changez d'avis, veuillez contacter l'organisme directement."
 
-msgid ""
-"KoNote automatically sends reminders before meetings. Requires email or SMS "
-"setup."
-msgstr ""
-"KoNote envoie automatiquement des rappels avant les réunions. Nécessite la "
-"configuration du courriel ou des SMS."
-
 msgid "Message Templates"
 msgstr "Modèles de message"
 
 msgid "Messaging"
 msgstr "Messagerie"
-
-msgid "Messaging Profile"
-msgstr "Profil de messagerie"
 
 msgid "Messaging Settings"
 msgstr "Paramètres de messagerie"
@@ -9605,9 +9589,6 @@ msgstr "Non configuré"
 
 msgid "Personal note (optional)"
 msgstr "Note personnelle (facultatif)"
-
-msgid "Record-Keeping Only"
-msgstr "Tenue de dossiers uniquement"
 
 msgid "Record-keeping only"
 msgstr "Tenue de dossiers uniquement"
@@ -9651,26 +9632,59 @@ msgstr "Nom d'affichage de l'expéditeur"
 msgid "Shown in error messages when messaging fails."
 msgstr "Affiché dans les messages d'erreur lorsque la messagerie échoue."
 
-msgid ""
-"Staff can schedule meetings and log communications. Nothing is sent from "
-"KoNote."
-msgstr ""
-"Le personnel peut planifier des réunions et enregistrer des communications. "
-"Aucun message n'est envoyé depuis KoNote."
-
-msgid ""
-"Staff can send appointment reminders and messages directly from KoNote. "
-"Every message requires a person to click send."
-msgstr ""
-"Le personnel peut envoyer des rappels de rendez-vous et des messages "
-"directement depuis KoNote. Chaque message nécessite qu'une personne clique "
-"sur envoyer."
-
-msgid "Staff-Sent Messages"
+msgid "Staff-sent messages"
 msgstr "Messages envoyés par le personnel"
 
 msgid "Staff-sent messages enabled"
 msgstr "Messages envoyés par le personnel activés"
+
+msgid "Staff messaging is not enabled"
+msgstr "La messagerie du personnel n'est pas activée"
+
+msgid ""
+"Staff can compose and send individual messages to participants from within "
+"KoNote. Every message requires a person to review and click send."
+msgstr ""
+"Le personnel peut rédiger et envoyer des messages individuels aux "
+"participants depuis KoNote. Chaque message doit être révisé et envoyé "
+"manuellement."
+
+msgid "Staff messages + automated reminders"
+msgstr "Messages du personnel + rappels automatisés"
+
+msgid "Automated system reminders"
+msgstr "Rappels système automatisés"
+
+msgid "Automated reminders enabled"
+msgstr "Rappels automatisés activés"
+
+msgid "Automated reminders are not enabled"
+msgstr "Les rappels automatisés ne sont pas activés"
+
+msgid ""
+"KoNote automatically sends appointment reminders from a no-reply address "
+"before scheduled meetings. No staff action required."
+msgstr ""
+"KoNote envoie automatiquement des rappels de rendez-vous depuis une adresse "
+"sans réponse avant les réunions planifiées. Aucune action du personnel "
+"requise."
+
+msgid "Messaging Capabilities"
+msgstr "Capacités de messagerie"
+
+msgid ""
+"Select the messaging options your organisation needs. You can enable both."
+msgstr ""
+"Sélectionnez les options de messagerie dont votre organisation a besoin. "
+"Vous pouvez activer les deux."
+
+msgid ""
+"Neither option is enabled — KoNote is in record-keeping mode. Staff can "
+"schedule meetings and log communications, but nothing is sent."
+msgstr ""
+"Aucune option n'est activée — KoNote est en mode tenue de dossiers. Le "
+"personnel peut planifier des réunions et consigner les communications, mais "
+"rien n'est envoyé."
 
 msgid "Support Contact Name"
 msgstr "Nom du contact de soutien"
@@ -10700,6 +10714,14 @@ msgstr "Messages"
 
 msgid "My Messages"
 msgstr "Mes messages"
+
+#, python-format
+msgid ""
+"To leave a message for a colleague about a %(client)s, open the %(client)s's"
+" file and select \"Leave a Message.\""
+msgstr ""
+"Pour laisser un message à un collègue au sujet d'un(e) %(client)s, ouvrez le"
+" dossier du/de la %(client)s et sélectionnez « Laisser un message »."
 
 msgid "No messages."
 msgstr "Aucun message."
@@ -17682,12 +17704,12 @@ msgid ""
 "response content is processed externally. Please confirm your agency has "
 "reviewed this with your privacy officer or board."
 msgstr ""
-"L'activation de cette fonctionnalité signifie que les réponses dépersonnalisées "
-"des participants seront envoyées à un service d'IA externe pour analyse. Les "
-"noms individuels sont retirés, mais le contenu des réponses est traité à "
-"l'externe. Veuillez confirmer que votre organisme a examiné cette question "
-"avec votre responsable de la protection de la vie privée ou votre conseil "
-"d'administration."
+"L'activation de cette fonctionnalité signifie que les réponses "
+"dépersonnalisées des participants seront envoyées à un service d'IA externe "
+"pour analyse. Les noms individuels sont retirés, mais le contenu des "
+"réponses est traité à l'externe. Veuillez confirmer que votre organisme a "
+"examiné cette question avec votre responsable de la protection de la vie "
+"privée ou votre conseil d'administration."
 
 msgid "Privacy governance notice"
 msgstr "Avis de gouvernance en matière de vie privée"
@@ -17716,7 +17738,12 @@ msgid "Warning maximum cannot exceed the hard maximum."
 msgstr "Le maximum d'avertissement ne peut pas dépasser le maximum absolu."
 
 msgid "Warning minimum cannot be below the hard minimum."
-msgstr "Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
+msgstr ""
+"Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
 
 msgid "Warning minimum must be less than warning maximum."
-msgstr "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+msgstr ""
+"Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+
+msgid "Invalid send method"
+msgstr "Méthode d'envoi non valide"
