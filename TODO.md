@@ -7,23 +7,19 @@
 
 ## Active Work
 
-_QA Round 8 Tier 1 complete — see Recently Done._
-
 ### Phase: P0 — Requirements Analysis (March 31)
 
-Items from `requirements-analysis.md` that need work before the deliverable deadline. Grouped by type: product code, deployment automation, and cost optimization.
+Items from `requirements-analysis.md` that need work before the deliverable deadline.
 
 **Product code to build:**
 
-- [x] Add partner report approval workflow — preview, agency notes, explicit approve step before export — 2026-03-02 (RPT-APPROVE1)
 - [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
-- [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. (SCALE-ROLLUP1)
+- [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. Depends on DOC-RP4 (SCALE-ROLLUP1)
 
-**Deployment automation (ops scripting, not product code):**
+**Ops & business model:**
 
-- [x] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DOC-MA5)
-- [x] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -46,40 +42,19 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: QA Round 8 — Remaining Tier 2 Fixes (see tasks/qa-action-plan-2026-03-01.md)
+### Phase: AI Feature Toggle Split (approved — see tasks/design-rationale/ai-feature-toggles.md)
 
-- [ ] Fix checkbox touch target size for tablet — below WCAG 2.5.8 minimum 24px (QA-R8-A11Y6)
-- [x] Add date presets + PDF export to executive dashboard — 2026-03-02 (QA-R8-UX8)
-- [ ] Fix French navigation — create participant + /clients/create/ URL broken in French (QA-R8-I18N1)
-- [ ] Fix form resubmission navigating to help page — broken redirect after POST (QA-R8-UX10)
-- [x] Fix /reports/funder/ returning 404 — added permanent redirect to /reports/funder-report/ — 2026-03-02 (QA-R8-UX11)
-- [ ] Accessibility polish bundle — language toggle confirmation, breadcrumb targets, field visibility, icon labels (QA-R8-A11Y7)
-
-### Phase: Axe-core Accessibility Fixes (from page capture 2026-03-02, see axe-a11y-report.json)
-
-- [ ] Fix systemic ARIA role violations — aria-required-children (CRITICAL, 59 pages, 512 nodes) + aria-allowed-role (MINOR, 59 pages, 546 nodes), likely a shared component or base template pattern (AXE-ARIA1)
-- [ ] Fix duplicate landmark regions — landmark-unique (MODERATE, 60 pages, 352 nodes), likely duplicate nav or main landmarks in base template structure (AXE-LANDMARK1)
-- [ ] Fix 4 pages missing base template wrapper — export-confirmation, plan-section-edit, public-survey-link, public-unsubscribe are missing title, lang attr, landmarks, and h1 (AXE-TEMPLATE1)
-- [ ] Fix colour contrast failures — 11 pages, 257 nodes including client-detail, dashboard-staff, plan-view, notes-list, events-list, comm pages (AXE-CONTRAST1)
-- [ ] Fix empty table headers on 4 admin pages — admin-event-types, admin-settings-terminology, admin-users, programs-list (AXE-TABLE1)
-
-### Phase: Demo Mode Safeguards (from expert panel, see tasks/design-rationale/ovhcloud-deployment.md)
-
-- [ ] Restrict demo-admin to view-only for agency settings — demo users with admin role can view but not modify terminology, feature toggles, or program config. Prevents configuration changes via demo sessions (DEMO-ADMIN-RO1)
-- [ ] Add persistent training-mode banner for demo sessions — amber banner on every page: "Training Mode — changes here do not affect real participant records" (DEMO-BANNER1)
-- [ ] Visually separate demo buttons from real login form — distinct section, labelled "Training Accounts," different styling so staff never accidentally click a demo button instead of signing in (DEMO-LOGIN-UX1)
-- [ ] Audit demo logins — log demo login events (who, when, which demo user) for operational awareness, but exclude from PHIPA audit pipeline (DEMO-AUDIT1)
-- [ ] Verify all reports and exports exclude is_demo=True records — check every report query, aggregate count, CSV/PDF export, and funder report for demo data leakage (DEMO-EXCLUDE1)
-
-### Phase: Post-Launch Communication Enhancements
-
-- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
+- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — rename existing toggle, add new one with dependency, update all views/tests/templates, data migration for existing agencies, confirmation modal, audit logging (AI-TOGGLE1)
 
 ### Phase: Data Quality
 
 - [ ] Entry-time plausibility warnings — soft-flag unlikely values during data entry, prioritise financial metrics (see tasks/data-validation-design.md, financial subsection added 2026-02-20) (DQ1)
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
+
+### Phase: Post-Launch Communication Enhancements
+
+- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
 
 ### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
 
@@ -117,7 +92,7 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Empty — all items moved to Recently Done after Wave 1 sprint._
+_Empty — all items moved to Recently Done._
 
 ## Parking Lot: Needs Review
 
@@ -132,7 +107,6 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
-- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
