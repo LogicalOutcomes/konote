@@ -7,6 +7,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Count, F, Q
 from django.forms import inlineformset_factory
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -771,7 +772,12 @@ def survey_links(request, survey_id):
             messages.success(request, _("Link deactivated."))
         return redirect("survey_manage:survey_links", survey_id=survey.pk)
 
-    links = SurveyLink.objects.filter(survey=survey).order_by("-created_at")
+    links = SurveyLink.objects.filter(survey=survey).annotate(
+        response_count=Count(
+            "survey__responses",
+            filter=Q(survey__responses__token=F("token")),
+        ),
+    ).order_by("-created_at")
     return render(request, "surveys/admin/survey_links.html", {
         "survey": survey,
         "links": links,
