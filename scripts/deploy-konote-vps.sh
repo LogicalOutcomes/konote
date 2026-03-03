@@ -454,50 +454,38 @@ else
 fi
 
 # ==============================================================================
-# Step 8/9: Set up automated backups
+# Step 8/9: Verify ops sidecar (automated backups + monitoring)
 # ==============================================================================
 STEP=8
-step_msg "Step ${STEP}/${TOTAL}: Setting up automated backups..."
+step_msg "Step ${STEP}/${TOTAL}: Verifying ops sidecar..."
 
-# Make scripts executable
-run_remote "sudo chmod +x ${DEPLOY_DIR}/scripts/backup-vps.sh ${DEPLOY_DIR}/scripts/disk-check.sh 2>/dev/null" || true
-
-# Create backup directory
+# Create backup directory on host (bind-mounted into ops container)
 run_remote "sudo mkdir -p ${DEPLOY_DIR}/backups"
 
-# Install crontab entries (idempotent — checks before adding)
-CRON_BACKUP="0 2 * * * ${DEPLOY_DIR}/scripts/backup-vps.sh >> /var/log/konote-backup.log 2>&1"
-CRON_DISK="0 * * * * ${DEPLOY_DIR}/scripts/disk-check.sh >> /var/log/konote-disk.log 2>&1"
-CRON_PRUNE="0 4 * * 0 docker system prune -f >> /var/log/docker-prune.log 2>&1"
+# The ops container handles all scheduled tasks automatically:
+#   - Nightly database backups (2 AM)
+#   - Hourly disk usage checks
+#   - Daily health report emails (7 AM)
+#   - Weekly Docker cleanup (Sundays 4 AM)
+#   - Weekly backup verification (Sundays 5 AM)
+# No host-level cron jobs needed.
 
 if [[ "$DRY_RUN" == true ]]; then
-    info_msg "[DRY RUN] Would install cron entries"
+    info_msg "[DRY RUN] Would verify ops container started"
 else
-    # Get existing crontab (may be empty)
-    EXISTING_CRON=$(run_remote "sudo crontab -l 2>/dev/null" || true)
+    OPS_STATUS=$(run_remote "cd ${DEPLOY_DIR} && sudo docker compose ps ops --format json 2>/dev/null | grep -o '\"State\":\"[^\"]*\"' | head -1" || true)
 
-    NEW_CRON="$EXISTING_CRON"
-
-    # Add each entry only if not already present
-    if ! echo "$EXISTING_CRON" | grep -qF "backup-vps.sh"; then
-        NEW_CRON="${NEW_CRON}
-${CRON_BACKUP}"
+    if echo "$OPS_STATUS" | grep -q "running"; then
+        ok_msg "Ops sidecar running (automated backups, monitoring, health reports)"
+    else
+        warn_msg "Ops container may still be starting"
+        info_msg "Check: ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo docker compose logs ops'"
     fi
-
-    if ! echo "$EXISTING_CRON" | grep -qF "disk-check.sh"; then
-        NEW_CRON="${NEW_CRON}
-${CRON_DISK}"
-    fi
-
-    if ! echo "$EXISTING_CRON" | grep -qF "docker system prune"; then
-        NEW_CRON="${NEW_CRON}
-${CRON_PRUNE}"
-    fi
-
-    # Install updated crontab
-    echo "$NEW_CRON" | run_remote "sudo crontab -"
-    ok_msg "Cron jobs installed (nightly backup at 2 AM, hourly disk check, weekly Docker prune)"
 fi
+
+info_msg "Backups run automatically at 2 AM (configurable via .env)"
+info_msg "Set OPS_HEALTH_REPORT_TO in .env for daily health emails"
+info_msg "Set HEALTHCHECK_PING_URL in .env for dead man's switch monitoring"
 
 # ==============================================================================
 # Step 9/9: Verify deployment
@@ -557,11 +545,19 @@ echo -e "    2. Verify DNS: nslookup ${DOMAIN} (should return ${HOST})"
 echo -e "    3. Log in at https://${DOMAIN} and set org name + terminology"
 echo -e "    4. Set up UptimeRobot monitoring: https://uptimerobot.com/"
 echo -e "    5. Set up email relay (Resend/Brevo) — see deploy-ovhcloud.md Step 13"
-echo -e "    6. Test a backup: ssh ${SSH_TARGET} 'sudo ${DEPLOY_DIR}/scripts/backup-vps.sh'"
+echo -e "    6. Set OPS_HEALTH_REPORT_TO in .env for daily health emails"
+echo -e "    7. Set HEALTHCHECK_PING_URL in .env for backup dead man's switch"
+echo ""
+echo -e "  ${GREEN}Automated by ops sidecar (no action needed):${NC}"
+echo -e "    - Nightly database backups at 2 AM"
+echo -e "    - Hourly disk usage monitoring"
+echo -e "    - Weekly Docker cleanup (Sundays 4 AM)"
+echo -e "    - Weekly backup verification (Sundays 5 AM)"
 echo ""
 echo -e "  ${CYAN}Useful commands:${NC}"
 echo -e "    View logs:     ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo docker compose logs -f web'"
+echo -e "    Ops logs:      ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo docker compose logs --tail 50 ops'"
 echo -e "    Restart:       ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo docker compose up -d'"
 echo -e "    Update:        ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo git pull && sudo docker compose up -d --build'"
-echo -e "    Manual backup: ssh ${SSH_TARGET} 'sudo ${DEPLOY_DIR}/scripts/backup-vps.sh'"
+echo -e "    Manual backup: ssh ${SSH_TARGET} 'cd ${DEPLOY_DIR} && sudo docker compose exec ops /usr/local/bin/ops-backup.sh'"
 echo ""
