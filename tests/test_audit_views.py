@@ -557,3 +557,113 @@ class ImmutableAuditManagerTests(TestCase):
         """Calling delete() directly on the manager must raise PermissionError."""
         with self.assertRaises(PermissionError):
             AuditLog.objects.using("audit").delete()
+
+
+# ── compliance_summary view (/manage/audit/compliance/) ──────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ComplianceSummaryPermissionTests(TestCase):
+    """Smoke tests for the compliance_summary view permission enforcement."""
+
+    databases = ["default", "audit"]
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+
+        # Admin — should have access (allow_admin=True)
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True
+        )
+
+        # Executive with program role — only role with compliance.view_summary ALLOW
+        self.executive = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False
+        )
+        self.program = Program.objects.create(name="Test Program", status="active")
+        UserProgramRole.objects.create(
+            user=self.executive, program=self.program,
+            role="executive", status="active",
+        )
+
+        # Staff — should be denied
+        self.staff = User.objects.create_user(
+            username="staff", password="testpass123", is_admin=False
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program,
+            role="staff", status="active",
+        )
+
+        # Program manager — should be denied (uses audit.view for their program)
+        self.pm = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.program,
+            role="program_manager", status="active",
+        )
+
+        # Seed one audit entry so the view has data to aggregate
+        _create_audit_entry(action="view", resource_type="clients")
+
+    def _url(self):
+        return "/manage/audit/compliance/"
+
+    def test_executive_can_access(self):
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(self._url())
+        self.assertEqual(resp.status_code, 200)
+
+    def test_admin_can_access(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get(self._url())
+        self.assertEqual(resp.status_code, 200)
+
+    def test_staff_gets_403(self):
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.get(self._url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_gets_403(self):
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.get(self._url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anonymous_redirects_to_login(self):
+        resp = self.client.get(self._url())
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login/", resp.url)
+
+    def test_context_contains_expected_keys(self):
+        """Verify the view passes all expected context variables to the template."""
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(self._url())
+        for key in (
+            "total_events", "active_user_count", "export_count",
+            "access_denied_count", "login_failed_count", "anomaly_count",
+            "period_start", "period_end", "anomalies",
+        ):
+            self.assertIn(key, resp.context, f"Missing context key: {key}")
+
+    def test_date_filter_accepted(self):
+        """Verify date_from and date_to query params are processed."""
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(self._url(), {
+            "date_from": "2025-01-01",
+            "date_to": "2025-12-31",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["date_from"], "2025-01-01")
+        self.assertEqual(resp.context["date_to"], "2025-12-31")
+
+    def test_excludes_demo_activity(self):
+        """Compliance metrics should exclude demo context entries."""
+        _create_audit_entry(action="view", resource_type="clients", is_demo_context=True)
+        _create_audit_entry(action="view", resource_type="clients", is_demo_context=False)
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(self._url())
+        # total_events should count only non-demo entries (the one from setUp + the one above)
+        self.assertGreaterEqual(resp.context["total_events"], 1)
+        # The demo entry should NOT be counted

@@ -48,9 +48,10 @@ def dashboard(request):
     partner_count = Partner.objects.count()
     report_template_count = ReportTemplate.objects.count()
 
-    # Messaging profile for dashboard card
+    # Messaging capabilities for dashboard card
     current_settings = InstanceSetting.get_all()
-    messaging_profile = current_settings.get("messaging_profile", "record_keeping")
+    staff_messaging_enabled = current_settings.get("staff_messaging_enabled", "false") == "true"
+    automated_reminders_enabled = current_settings.get("automated_reminders_enabled", "false") == "true"
 
     # Field access card (Tier 2+ only)
     from apps.admin_settings.models import get_access_tier
@@ -87,7 +88,8 @@ def dashboard(request):
         "demo_users": demo_users,
         "partner_count": partner_count,
         "report_template_count": report_template_count,
-        "messaging_profile": messaging_profile,
+        "staff_messaging_enabled": staff_messaging_enabled,
+        "automated_reminders_enabled": automated_reminders_enabled,
         "access_tier": access_tier,
         "field_access_count": field_access_count,
         "active_grant_count": active_grant_count,
@@ -570,7 +572,8 @@ def messaging_settings(request):
     # Health status
     health_checks = {h.channel: h for h in SystemHealthCheck.objects.all()}
 
-    current_profile = current_settings.get("messaging_profile", "record_keeping")
+    staff_messaging_enabled = current_settings.get("staff_messaging_enabled", "false") == "true"
+    automated_reminders_enabled = current_settings.get("automated_reminders_enabled", "false") == "true"
     safety_first = current_settings.get("safety_first_mode", "false") == "true"
 
     return render(request, "admin_settings/messaging_settings.html", {
@@ -578,7 +581,8 @@ def messaging_settings(request):
         "email_configured": email_configured,
         "sms_configured": sms_configured,
         "health_checks": health_checks,
-        "current_profile": current_profile,
+        "staff_messaging_enabled": staff_messaging_enabled,
+        "automated_reminders_enabled": automated_reminders_enabled,
         "safety_first": safety_first,
     })
 
