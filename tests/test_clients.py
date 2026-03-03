@@ -1400,3 +1400,27 @@ class BulkOperationsTest(TestCase):
             client_file=c1, program=self.prog_b,
         ).count()
         self.assertEqual(final_count, 1)
+
+    def test_cross_program_search_finds_client_ux3(self):
+        """QA-R8-UX3: User in Program B can search for client created in Program A.
+
+        Regression test for PR #207. The fix sets search_active_ids = None
+        when a search query is present, so the search spans all programs
+        the user has access to — not just the active program context.
+        """
+        # Create a user in Program B only
+        user_b = User.objects.create_user(
+            username="staff_b", password="testpass123", is_admin=False
+        )
+        UserProgramRole.objects.create(user=user_b, program=self.prog_b, role="staff")
+        # Also give user_b access to Program A (different role)
+        UserProgramRole.objects.create(user=user_b, program=self.prog_a, role="staff")
+
+        # Create a client enrolled in Program A only
+        self._create_client("Unique", "Testname", [self.prog_a])
+
+        # User B searches for the client by name
+        self.client.login(username="staff_b", password="testpass123")
+        resp = self.client.get("/participants/?q=Unique")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Unique")

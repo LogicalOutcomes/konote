@@ -124,21 +124,21 @@ class InstanceSettingsForm(forms.Form):
         widget=forms.RadioSelect,
     )
 
-    product_name = forms.CharField(
-        max_length=255, required=False, label=_("Product Name (English)"),
-        help_text=_("Shown in the header, footer, and page titles. Use your short, recognizable name."),
+    organization_name = forms.CharField(
+        max_length=255, required=False, label=_("Organization Name"),
+        help_text=_("Your organisation's display name. Shown in the footer."),
     )
-    product_name_fr = forms.CharField(
-        max_length=255, required=False, label=_("Product Name (French)"),
+    organization_name_fr = forms.CharField(
+        max_length=255, required=False, label=_("Organization Name (French)"),
         help_text=_("French version. Leave blank to use the English name."),
     )
     support_email = forms.EmailField(
         required=False, label=_("Support Email"),
         help_text=_("Displayed in the footer or help pages."),
     )
-    logo_url = forms.URLField(
-        required=False, label=_("Logo URL"),
-        help_text=_("URL to your organisation's logo image."),
+    organization_website = forms.URLField(
+        required=False, label=_("Organization Website"),
+        help_text=_("Your organisation's website. Links the organization name in the footer."),
     )
     brand_color = forms.CharField(
         max_length=7, required=False, label=_("Brand Colour"),
@@ -247,7 +247,7 @@ class InstanceSettingsForm(forms.Form):
 
     SETTING_KEYS = [
         "access_tier",
-        "product_name", "product_name_fr", "support_email", "logo_url", "brand_color",
+        "organization_name", "organization_name_fr", "support_email", "organization_website", "brand_color",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
@@ -257,12 +257,23 @@ class InstanceSettingsForm(forms.Form):
         "meeting_time_end", "meeting_time_step",
     ]
 
+    # Map old InstanceSetting keys to new form field names (migration path)
+    _OLD_KEY_MAP = {
+        "product_name": "organization_name",
+        "product_name_fr": "organization_name_fr",
+        "logo_url": "organization_website",
+    }
+
     def __init__(self, *args, **kwargs):
         current_settings = kwargs.pop("current_settings", {})
         super().__init__(*args, **kwargs)
         for key in self.SETTING_KEYS:
             if key in current_settings:
                 self.fields[key].initial = current_settings[key]
+        # Fall back to old keys if new ones aren't set yet
+        for old_key, new_field in self._OLD_KEY_MAP.items():
+            if not self.fields[new_field].initial and old_key in current_settings:
+                self.fields[new_field].initial = current_settings[old_key]
 
     def clean(self):
         cleaned = super().clean()
@@ -333,6 +344,10 @@ class InstanceSettingsForm(forms.Form):
                 )
             else:
                 InstanceSetting.objects.filter(setting_key=key).delete()
+
+        # Clean up old setting keys replaced by new field names
+        for old_key in self._OLD_KEY_MAP:
+            InstanceSetting.objects.filter(setting_key=old_key).delete()
 
         # Save derived brand colour variants
         if derived:
@@ -527,19 +542,20 @@ class SetupWizardInstanceSettingsForm(forms.Form):
         ("3", _("Tier 3 — Role-based + field-level + gated grants")),
     ]
 
-    product_name = forms.CharField(
+    organization_name = forms.CharField(
         max_length=255,
         required=False,
-        initial="KoNote",
-        label=_("Product name"),
+        label=_("Organization Name"),
+        help_text=_("Your organisation's display name. Shown in the footer."),
     )
     support_email = forms.EmailField(
         required=False,
         label=_("Support email"),
     )
-    logo_url = forms.URLField(
+    organization_website = forms.URLField(
         required=False,
-        label=_("Logo URL"),
+        label=_("Organization Website"),
+        help_text=_("Your organisation's website. Links the organization name in the footer."),
     )
     brand_color = forms.CharField(
         max_length=7, required=False, label=_("Brand colour"),

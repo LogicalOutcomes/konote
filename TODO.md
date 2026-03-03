@@ -153,6 +153,19 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+### Wave 2 Sprint — Accessibility Sweep (PR #208)
+
+- [x] Fix ARIA role violations in nav dropdowns — menu pattern replaces incorrect listbox — 2026-03-02 (AXE-ARIA1)
+- [x] Fix duplicate landmark regions — aria-labels on both nav elements — 2026-03-02 (AXE-LANDMARK1)
+- [x] Fix public survey form accessibility — skip link, title, main.css — 2026-03-02 (AXE-TEMPLATE1)
+- [x] Fix colour contrast failures — --kn-text-faint corrected to #697888, feedback badge darkened — 2026-03-02 (AXE-CONTRAST1)
+- [x] Fix empty table headers on 8 admin pages — screen-reader "Actions" text — 2026-03-02 (AXE-TABLE1)
+- [x] Fix checkbox/radio label touch targets — CSS :has() padding — 2026-03-02 (QA-R8-A11Y6)
+- [x] Accessibility polish bundle — breadcrumb padding, aria-hidden on icons, link_embed consistency — 2026-03-02 (QA-R8-A11Y7)
+- [x] Verified: French navigation uses {% url %} tags correctly — no hardcoded paths found — 2026-03-02 (QA-R8-I18N1)
+- [x] Verified: form resubmission → help page is a QA false positive — no code path exists — 2026-03-02 (QA-R8-UX10)
+- [x] Add axe-core accessibility smoke tests to CI — new a11y job in ci.yml — 2026-03-02 (CI-A11Y1)
+
 ### Wave 1 Sprint — Parallel Bug Fixes (PRs #201–#207, qa-scenarios #18)
 
 - [x] Auto-update progress metrics when goal status changes — post_save signal on PlanTarget updates achievement_status — 2026-03-02 (REQ-G4)
