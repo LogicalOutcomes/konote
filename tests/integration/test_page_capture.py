@@ -217,7 +217,7 @@ class TestPageCapture(BrowserTestBase):
         ]
         extra_memberships = [member_a, member_b]
         for first, last in extra_names:
-            cf = ClientFile.objects.create(is_demo=False)
+            cf = ClientFile.objects.create(is_demo=False)  # test DB only — not production
             cf.first_name = first
             cf.last_name = last
             cf.status = "active"
