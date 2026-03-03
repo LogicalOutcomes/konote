@@ -18,7 +18,7 @@ if [ "${OPS_VERIFY_BACKUPS:-true}" != "true" ]; then
 fi
 
 TEMP_DB="_backup_verify_$(date +%Y%m%d)"
-LATEST_BACKUP=$(ls -1t /backups/main_*.sql.gz 2>/dev/null | head -1)
+LATEST_BACKUP=$(ls -1t /backups/main_*.dump 2>/dev/null | head -1)
 
 if [ -z "${LATEST_BACKUP:-}" ]; then
     echo "[$(date)] WARNING: No backup files found in /backups/ -- skipping verification"
@@ -47,7 +47,8 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql -h db -U "${POSTGRES_USER}" -d "${POSTGRE
 
 # Restore backup into it (suppress NOTICE messages)
 echo "  Restoring backup..."
-gunzip -c "$LATEST_BACKUP" | PGPASSWORD="${POSTGRES_PASSWORD}" psql -h db -U "${POSTGRES_USER}" -d "${TEMP_DB}" --quiet 2>/dev/null
+PGPASSWORD="${POSTGRES_PASSWORD}" pg_restore -h db -U "${POSTGRES_USER}" -d "${TEMP_DB}" \
+    --no-owner --no-privileges "$LATEST_BACKUP" 2>/dev/null
 
 # Verify: count tables (should match production)
 PROD_TABLES=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h db -U "${POSTGRES_USER}" -d "${POSTGRES_DB:-konote}" -t -A \
