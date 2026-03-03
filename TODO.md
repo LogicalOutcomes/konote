@@ -85,11 +85,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing allows agencies to share a server while keeping data walled off, reducing costs to $4–10/agency/month. Worth doing when the network grows beyond 3–5 agencies.
 
-- [ ] Integrate django-tenants for server sharing — multiple agencies on one server with walled-off database sections (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
-- [ ] Implement per-agency encryption keys — separate encryption key per agency, encrypted by master key (see plan Task 3) — PB (MT-ENCRYPT1)
-- [ ] Create cost-sharing group data model — which agencies share a server, program-level data sharing controls, published reports (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit agency column (see plan Tasks 5-6) — PB (MT-CONSENT1)
-- [ ] Validate existing features work across shared-server agencies — update test infrastructure, fix related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
+- [x] Integrate django-tenants for server sharing — multiple agencies on one server with walled-off database sections (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — 2026-03-03 (MT-CORE1)
+- [x] Implement per-agency encryption keys — separate encryption key per agency, encrypted by master key (see plan Task 3) — 2026-03-03 (MT-ENCRYPT1)
+- [x] Create cost-sharing group data model — which agencies share a server, program-level data sharing controls, published reports (see plan Task 4) — 2026-03-03 (MT-CONSORT1)
+- [x] Add consent_to_aggregate_reporting field and audit agency column (see plan Tasks 5-6) — 2026-03-03 (MT-CONSENT1)
+- [x] Validate existing features work across shared-server agencies — update test infrastructure, fix related test failures (see plan Tasks 7-8) — 2026-03-03 (MT-VALIDATE1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
@@ -150,6 +150,14 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Multi-Tenancy Infrastructure (PR #220)
+
+- [x] Integrate django-tenants for server sharing — schema-per-tenant, SHARED_APPS/TENANT_APPS split — 2026-03-03 (MT-CORE1)
+- [x] Implement per-agency encryption keys — KEK pattern, thread-local cache, management commands — 2026-03-03 (MT-ENCRYPT1)
+- [x] Create cost-sharing group data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport — 2026-03-03 (MT-CONSORT1)
+- [x] Add consent_to_aggregate_reporting field and audit tenant_schema column — 2026-03-03 (MT-CONSENT1)
+- [x] Validate existing features work with multi-tenancy — NoOpTenantRouter for SQLite, 12 new tests, no regressions — 2026-03-03 (MT-VALIDATE1)
 
 ### PB Tasks Sprint — Deploy Script + Logo Integration
 
