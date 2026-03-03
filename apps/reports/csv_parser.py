@@ -36,7 +36,7 @@ class ParsedBreakdown:
     label: str
     source_type: str                     # "age" or "custom_field"
     source_field_name: str = ""          # Name of the CustomFieldDefinition
-    bins: list[dict] = field(default_factory=list)     # [{"min": int, "max": int, "label": str}]
+    bins_json: list[dict] = field(default_factory=list)  # [{"min": int, "max": int, "label": str}]
     merge_map: dict[str, list[str]] = field(default_factory=dict)  # {target: [sources]}
     keep_all: bool = False
 
@@ -120,7 +120,7 @@ def parse_report_template_csv(csv_content: str) -> tuple[ParsedProfile | None, l
 
     # Validate each breakdown
     for label, bd in breakdowns_by_label.items():
-        if bd.source_type == "age" and not bd.bins:
+        if bd.source_type == "age" and not bd.bins_json:
             errors.append(f"Breakdown '{label}': Age breakdown requires at least one bin row.")
         if bd.source_type == "custom_field" and not bd.source_field_name:
             errors.append(f"Breakdown '{label}': Custom field breakdown requires a field name.")
@@ -136,7 +136,7 @@ def parse_report_template_csv(csv_content: str) -> tuple[ParsedProfile | None, l
             label=bd.label,
             source_type=bd.source_type,
             source_field_name=bd.source_field_name,
-            bins=bd.bins,
+            bins_json=bd.bins_json,
             merge_map=bd.merge_map,
             keep_all=bd.keep_all,
         )
@@ -223,7 +223,7 @@ def _parse_bin_row(
         errors.append(f"Line {line_num}: min age ({min_age}) > max age ({max_age}).")
         return
 
-    bd.bins.append({"min": min_age, "max": max_age, "label": bin_label})
+    bd.bins_json.append({"min": min_age, "max": max_age, "label": bin_label})
 
 
 def _parse_merge_row(
@@ -337,7 +337,7 @@ def save_parsed_profile(parsed: ParsedProfile, created_by, partner=None) -> "Rep
             label=bd.label,
             source_type=bd.source_type,
             custom_field=custom_field,
-            bins_json=bd.bins if bd.source_type == "age" else [],
+            bins_json=bd.bins_json if bd.source_type == "age" else [],
             merge_categories_json=bd.merge_map if bd.merge_map else {},
             keep_all_categories=bd.keep_all,
             sort_order=i,
