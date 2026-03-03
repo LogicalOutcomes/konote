@@ -65,8 +65,11 @@ class BlockerA11yTests(StaticLiveServerTestCase):
 
         # Create tables in the file-based databases
         from django.core.management import call_command
-        call_command("migrate", "--run-syncdb", verbosity=0)
-        call_command("migrate", "--database=audit", "--run-syncdb", verbosity=0)
+        from django.core.management.commands.migrate import Command as _DjangoMigrate
+        # Pass the Command class directly so django_tenants' migrate_schemas
+        # override (which requires set_schema, absent on SQLite) is bypassed.
+        call_command(_DjangoMigrate(), run_syncdb=True, verbosity=0)
+        call_command(_DjangoMigrate(), database="audit", run_syncdb=True, verbosity=0)
 
         cls.pw = sync_playwright().start()
         cls.browser = cls.pw.chromium.launch(headless=True)
