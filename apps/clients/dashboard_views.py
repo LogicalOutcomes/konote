@@ -1395,6 +1395,142 @@ def executive_dashboard_export(request):
     return response
 
 
+@login_required
+def executive_dashboard_pdf(request):
+    """Export executive dashboard as a PDF report."""
+    from django.http import HttpResponse, HttpResponseForbidden
+    from django.template.loader import render_to_string
+    from apps.programs.models import Program, UserProgramRole
+    from .views import get_client_queryset
+
+    # Role gate: only executives, PMs, and admins may export
+    from apps.auth_app.decorators import _get_user_highest_role_any
+    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
+    is_admin = getattr(request.user, "is_admin", False)
+    if user_role not in ("executive", "program_manager") and not is_admin:
+        return HttpResponseForbidden("Access restricted to management roles.")
+
+    user_program_ids = list(
+        UserProgramRole.objects.filter(
+            user=request.user, status="active"
+        ).values_list("program_id", flat=True)
+    )
+    if not user_program_ids:
+        return HttpResponseForbidden("No programs assigned.")
+
+    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
+
+    selected_program_id = request.GET.get("program")
+    if selected_program_id:
+        try:
+            selected_program_id = int(selected_program_id)
+            if selected_program_id not in user_program_ids:
+                selected_program_id = None
+        except (ValueError, TypeError):
+            selected_program_id = None
+
+    filtered_programs = programs.filter(pk=selected_program_id) if selected_program_id else programs
+
+    now = timezone.now()
+    today = now.date()
+    month_start, custom_start = _parse_date_range(request, now)
+    week_start = now - timedelta(days=now.weekday())
+
+    base_clients = get_client_queryset(request.user)
+    base_client_ids = set(base_clients.values_list("pk", flat=True))
+    filtered_program_ids = list(filtered_programs.values_list("pk", flat=True))
+
+    # Top-line summary cards
+    all_enrolled_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            program__in=filtered_programs, status="active"
+        ).values_list("client_file_id", flat=True)
+    )
+    all_active_ids = set(
+        base_clients.filter(
+            pk__in=all_enrolled_ids, status="active"
+        ).values_list("pk", flat=True)
+    )
+    all_client_ids = set(
+        base_clients.filter(
+            pk__in=all_enrolled_ids
+        ).values_list("pk", flat=True)
+    )
+
+    total_active = len(all_active_ids)
+    without_notes = _count_without_notes(all_active_ids, filtered_program_ids, month_start)
+    overdue_followups = _count_overdue_followups(all_client_ids, today)
+
+    # Per-program data (same batch queries as CSV export)
+    enrolment_stats = _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start)
+    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
+    engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
+    goal_map = _batch_goal_completion(filtered_program_ids)
+
+    program_data = []
+    for program in filtered_programs:
+        pid = program.pk
+        es = enrolment_stats.get(pid, {})
+        active_count = es.get("active", 0)
+        suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
+        eng = None if suppress_pct else engagement_map.get(pid)
+        goal = None if suppress_pct else goal_map.get(pid)
+        program_data.append({
+            "name": program.translated_name,
+            "total": es.get("total", 0),
+            "active": active_count,
+            "new_this_period": es.get("new_this_month", 0),
+            "notes_this_week": notes_week_map.get(pid, 0),
+            "engagement_pct": eng,
+            "goal_completion_pct": goal,
+            "suppress_pct": suppress_pct,
+        })
+
+    generated_by = getattr(request.user, "display_name", str(request.user))
+
+    context = {
+        "programs": filtered_programs,
+        "program_data": program_data,
+        "total_active": total_active,
+        "without_notes": without_notes,
+        "overdue_followups": overdue_followups,
+        "start_date": custom_start,
+        "generated_at": now,
+        "generated_by": generated_by,
+    }
+
+    html_content = render_to_string("reports/pdf_executive_dashboard.html", context, request=request)
+
+    # Attempt PDF conversion via WeasyPrint; fall back to HTML if unavailable
+    try:
+        from weasyprint import HTML as WeasyHTML
+        pdf_bytes = WeasyHTML(string=html_content).write_pdf()
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="executive-dashboard.pdf"'
+    except ImportError:
+        response = HttpResponse(html_content, content_type="text/html")
+        response["Content-Disposition"] = 'attachment; filename="executive-dashboard.html"'
+
+    # Audit log entry for PDF export
+    from apps.audit.models import AuditLog
+    AuditLog.objects.using("audit").create(
+        event_timestamp=now,
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="export",
+        resource_type="executive_dashboard",
+        resource_id=0,
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "format": "pdf",
+            "programs": filtered_program_ids,
+            "start_date": str(month_start.date()),
+        },
+    )
+
+    return response
+
+
 # ---------------------------------------------------------------------------
 # Alert overview by program
 # ---------------------------------------------------------------------------
