@@ -409,14 +409,21 @@ def _derive_brand_colours(hex_color):
 class MessagingSettingsForm(forms.Form):
     """Form for the messaging settings page — profile selection, Safety-First, templates."""
 
-    messaging_profile = forms.ChoiceField(
-        choices=[
-            ("record_keeping", _("Record-Keeping Only")),
-            ("staff_sent", _("Staff-Sent Messages")),
-            ("full_automation", _("Full Automation")),
-        ],
-        label=_("Messaging Profile"),
-        widget=forms.RadioSelect,
+    staff_messaging_enabled = forms.BooleanField(
+        required=False,
+        label=_("Staff-sent messages"),
+        help_text=_(
+            "Staff can send appointment reminders and messages from KoNote. "
+            "Every message requires a person to click send."
+        ),
+    )
+    automated_reminders_enabled = forms.BooleanField(
+        required=False,
+        label=_("Automated system reminders"),
+        help_text=_(
+            "KoNote automatically sends appointment reminders from a no-reply "
+            "address before scheduled meetings."
+        ),
     )
     safety_first_mode = forms.BooleanField(
         required=False,
@@ -473,8 +480,11 @@ class MessagingSettingsForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 5}),
     )
 
+    _BOOLEAN_KEYS = {"safety_first_mode", "staff_messaging_enabled", "automated_reminders_enabled"}
+
     SETTING_KEYS = [
-        "messaging_profile", "safety_first_mode", "reminder_window_hours",
+        "staff_messaging_enabled", "automated_reminders_enabled",
+        "safety_first_mode", "reminder_window_hours",
         "sender_display_name", "support_contact_name", "support_contact_phone",
         "reminder_sms_en", "reminder_sms_fr",
         "reminder_email_body_en", "reminder_email_body_fr",
@@ -485,7 +495,7 @@ class MessagingSettingsForm(forms.Form):
         super().__init__(*args, **kwargs)
         for key in self.SETTING_KEYS:
             if key in current_settings:
-                if key == "safety_first_mode":
+                if key in self._BOOLEAN_KEYS:
                     self.fields[key].initial = current_settings[key] == "true"
                 else:
                     self.fields[key].initial = current_settings[key]
@@ -494,15 +504,15 @@ class MessagingSettingsForm(forms.Form):
         from .models import InstanceSetting
         for key in self.SETTING_KEYS:
             value = self.cleaned_data.get(key, "")
-            if key == "safety_first_mode":
+            if key in self._BOOLEAN_KEYS:
                 value = "true" if value else "false"
             value = str(value).strip()
             if value and value != "false":
                 InstanceSetting.objects.update_or_create(
                     setting_key=key, defaults={"setting_value": value}
                 )
-            elif key == "safety_first_mode":
-                # Always store safety_first_mode so it's explicit
+            elif key in self._BOOLEAN_KEYS:
+                # Always store boolean keys so they're explicit
                 InstanceSetting.objects.update_or_create(
                     setting_key=key, defaults={"setting_value": "false"}
                 )
