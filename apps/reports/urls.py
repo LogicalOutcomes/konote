@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 from . import pdf_views
@@ -8,6 +9,8 @@ from . import preview_views
 
 app_name = "reports"
 urlpatterns = [
+    # Legacy URL redirect (QA-R8-UX11)
+    path("funder/", RedirectView.as_view(pattern_name="reports:funder_report", permanent=True)),
     # Outcome Insights
     path("insights/", insights_views.program_insights, name="program_insights"),
     path("participant/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),

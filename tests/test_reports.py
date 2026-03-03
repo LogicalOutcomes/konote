@@ -1774,6 +1774,12 @@ class FunderReportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
+    def test_legacy_funder_url_redirects(self):
+        """QA-R8-UX11: /reports/funder/ should 301 redirect to /reports/funder-report/."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/reports/funder/")
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp["Location"], "/reports/funder-report/")
 
 
 # =============================================================================
