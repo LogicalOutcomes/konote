@@ -1,7 +1,7 @@
 # Design Rationale: Data Access Residency Policy
 
 *Last updated: 2026-02-26*
-*Status: DRAFT — needs GK review and team decision*
+*Status: Decided — GK reviewed 2026-03-02*
 
 ## Context
 
@@ -66,64 +66,35 @@ These roles never touch production systems or participant data. **No residency r
 | Website, marketing, communications | Content creator | No access to the application |
 | Project management tools | PM, coordinator | Task tracking, not data access |
 
-## Open Questions — Need Team Decision
+## Resolved Questions — GK Decision 2026-03-02
 
-These questions don't have clear legal answers. The team needs to decide based on risk tolerance and practicality.
+These questions were raised as risk-mitigation considerations. After review, GK decided that **no personnel residency requirements are needed**. The rationale:
 
-### Q1: Is VPN-from-Canada sufficient, or do we require actual residency?
+- Canadian privacy law (PHIPA, PIPEDA) regulates **where data is stored** and **which corporate jurisdictions can compel disclosure** — neither statute requires personnel to be Canadian residents
+- The foreign subpoena risk for individual contractors is narrow (requires the individual to be specifically targeted) and theoretical
+- Data sovereignty is already addressed by hosting choices: OVHcloud Beauharnois (French-incorporated parent, not subject to US CLOUD Act) and Azure Canada Central
+- Contractual safeguards in the SaaS service agreement (data processing terms, breach notification) provide the relevant legal protections
+- Imposing residency requirements would limit the hiring pool without a corresponding legal benefit
 
-A Canadian VPN exit node means the SSH connection originates from a Canadian IP, but the person and their device are still physically in another jurisdiction.
+### Q1: VPN-from-Canada vs actual residency?
+**Decision:** Neither required. No personnel residency requirement.
 
-| Option | Pros | Cons |
-|--------|------|------|
-| **Actual Canadian residency required** | Strongest position for agency agreements; no ambiguity; device is in Canadian jurisdiction | Limits hiring pool; hard to verify continuously |
-| **VPN-from-Canada acceptable** | Broader hiring pool; technically the connection is "from Canada" | Doesn't address foreign subpoena risk on the individual; device is in foreign jurisdiction; agencies may not accept this |
+### Q2: Temporary travel policy?
+**Decision:** No restriction. Personnel may travel freely. Standard device security practices (encrypted devices, strong authentication) apply regardless of location.
 
-**Recommendation:** Require actual Canadian residency for Tier 1. The foreign subpoena risk and agency agreement language both attach to the *person and their device*, not the IP address.
+### Q3: Freelance sysadmin retainer?
+**Decision:** No residency requirement. The retainer agreement should include standard data-processing terms (confidentiality, compliance with applicable privacy law, notification of security incidents) but not a residency clause.
 
-### Q2: What about temporary travel?
-
-A Canadian-resident team member travelling abroad for two weeks still has production credentials on their laptop.
-
-| Option | Pros | Cons |
-|--------|------|------|
-| **Revoke access during travel** | Eliminates risk entirely | Operationally disruptive; single-person teams can't do this |
-| **Accept the risk for short trips (<30 days)** | Practical; the person is still Canadian-resident | Device is temporarily in foreign jurisdiction |
-| **Require encrypted device + VPN during travel** | Reasonable middle ground | Doesn't address foreign subpoena risk during the trip |
-
-**Recommendation:** Accept short-term travel (<30 days) with encrypted device and VPN. Document the policy so it's a conscious decision, not an oversight.
-
-### Q3: How do we handle the freelance sysadmin retainer?
-
-The OVHcloud DRR recommends a freelance sysadmin on retainer for early growth (Option 2 in the second-level support section). That person would have Tier 1 access.
-
-**Requirement:** The retainer agreement must specify:
-- Individual is Canadian-resident
-- SSH access originates from Canada
-- No subcontracting of access to non-Canadian parties
-- Compliance with the agency's data-sharing agreement terms
-- Notification if residency status changes
-
-### Q4: What about the MSP option?
-
-When KoNote scales to 5+ agencies, the OVHcloud DRR suggests transitioning to a Canadian MSP. The same residency requirements apply to MSP personnel who access KoNote infrastructure.
-
-**Requirement:** The MSP contract must specify:
-- MSP is Canadian-incorporated
-- Personnel with access to KoNote systems are Canadian-resident
-- Logs and monitoring data stay in Canada
-- MSP will not use offshore NOC (Network Operations Centre) staff for KoNote systems
+### Q4: MSP requirements?
+**Decision:** No residency requirement for MSP personnel. The MSP contract should include standard data-processing terms. Preference for Canadian-incorporated MSPs where available, but not a hard requirement.
 
 ## Implementation Checklist
 
-Once the team decides on the open questions, these are the concrete steps:
-
-- [ ] Add residency requirements to contractor/freelancer agreement templates
-- [ ] Add residency clause to agency data-sharing agreement templates
 - [ ] Document which team members currently hold Tier 1 and Tier 2 access
 - [ ] Review CI/CD pipeline for Tier 2 mitigations (deploy service accounts, synthetic staging data)
-- [ ] Add to the Agency Permissions Interview: "Do you require all personnel with data access to be Canadian-resident?" (some agencies may have stricter requirements than our baseline)
+- [ ] Add to the Agency Permissions Interview: "Do you require all personnel with data access to be Canadian-resident?" (some agencies may have stricter requirements than our baseline — respect their choice)
 - [ ] Add to the deployment runbook: access tier classification for each credential
+- [ ] Include standard data-processing terms in contractor and MSP agreements (confidentiality, privacy compliance, incident notification)
 
 ## Anti-Patterns
 

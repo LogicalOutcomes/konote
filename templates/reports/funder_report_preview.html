@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Review Report" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'reports:funder_report' %}">{% trans "Funder Report" %}</a></li>
+        <li aria-current="page">{% trans "Preview" %}</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>{% trans "Review Report Before Approving" %}</h1>
+    <p>{% trans "Review the data below, add any context notes, then approve to generate the export file." %}</p>
+</hgroup>
+
+{# Report metadata #}
+<article aria-label="{% trans 'Report Details' %}">
+    <h2>{% trans "Report Details" %}</h2>
+    <dl>
+        <dt>{% trans "Program" %}</dt>
+        <dd>{{ program_name }}</dd>
+
+        <dt>{% trans "Reporting Period" %}</dt>
+        <dd>{{ fiscal_year_label }} ({{ date_from }} — {{ date_to }})</dd>
+
+        <dt>{% trans "Export Format" %}</dt>
+        <dd>{{ export_format|upper }}</dd>
+
+        {% if report_template_name %}
+        <dt>{% trans "Report Template" %}</dt>
+        <dd>{{ report_template_name }}</dd>
+        {% endif %}
+    </dl>
+</article>
+
+{# Data summary #}
+<article aria-label="{% trans 'Data Summary' %}">
+    <h2>{% trans "Data Summary" %}</h2>
+
+    {% if is_all_programs %}
+    <p>{% blocktrans with count=program_count %}This report covers {{ count }} programs.{% endblocktrans %}</p>
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <article class="stat-card" style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold;">{{ total_served }}</div>
+            <div>{% trans "Individuals Served" %}</div>
+        </article>
+        <article class="stat-card" style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold;">{{ total_contacts }}</div>
+            <div>{% trans "Total Contacts" %}</div>
+        </article>
+    </div>
+
+    {% if program_summaries %}
+    <h3>{% trans "Per-Program Breakdown" %}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Program" %}</th>
+                <th scope="col">{% trans "Individuals Served" %}</th>
+                <th scope="col">{% trans "Total Contacts" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ps in program_summaries %}
+            <tr>
+                <td>{{ ps.name }}</td>
+                <td>{{ ps.individuals_served }}</td>
+                <td>{{ ps.total_contacts }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% else %}
+    {# Single program preview #}
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <article class="stat-card" style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold;">{{ total_served }}</div>
+            <div>{% trans "Individuals Served" %}</div>
+        </article>
+        <article class="stat-card" style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold;">{{ new_clients }}</div>
+            <div>{% trans "New Clients" %}</div>
+        </article>
+        <article class="stat-card" style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold;">{{ total_contacts }}</div>
+            <div>{% trans "Total Contacts" %}</div>
+        </article>
+    </div>
+
+    {# Age demographics #}
+    {% if age_demographics %}
+    <h3>{% trans "Age Demographics" %}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Age Group" %}</th>
+                <th scope="col">{% trans "Count" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group, count in age_demographics.items %}
+            <tr>
+                <td>{{ group }}</td>
+                <td>{{ count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {# Custom demographic sections #}
+    {% for section in custom_demographic_sections %}
+    <h3>{{ section.label }}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Category" %}</th>
+                <th scope="col">{% trans "Count" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat_label, cat_count in section.data.items %}
+            <tr>
+                <td>{{ cat_label }}</td>
+                <td>{{ cat_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+
+    {# Outcome indicators #}
+    {% if primary_outcome %}
+    <h3>{% trans "Primary Outcome" %}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Indicator" %}</th>
+                <th scope="col">{% trans "Target" %}</th>
+                <th scope="col">{% trans "Measured" %}</th>
+                <th scope="col">{% trans "Achieved" %}</th>
+                <th scope="col">{% trans "Rate" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ primary_outcome.name }}</td>
+                <td>{{ primary_outcome.target_value }}</td>
+                <td>{{ primary_outcome.clients_measured }}</td>
+                <td>{{ primary_outcome.clients_achieved }}</td>
+                <td>{{ primary_outcome.achievement_rate }}%</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if secondary_outcomes %}
+    <h3>{% trans "Secondary Outcomes" %}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Indicator" %}</th>
+                <th scope="col">{% trans "Target" %}</th>
+                <th scope="col">{% trans "Measured" %}</th>
+                <th scope="col">{% trans "Achieved" %}</th>
+                <th scope="col">{% trans "Rate" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for so in secondary_outcomes %}
+            <tr>
+                <td>{{ so.name }}</td>
+                <td>{{ so.target_value }}</td>
+                <td>{{ so.clients_measured }}</td>
+                <td>{{ so.clients_achieved }}</td>
+                <td>{{ so.achievement_rate }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if achievement_summary.total_clients > 0 %}
+    <h3>{% trans "Overall Summary" %}</h3>
+    <p>{% blocktrans with total=achievement_summary.total_clients met=achievement_summary.clients_met_any_target rate=achievement_summary.overall_rate %}{{ met }} of {{ total }} clients met at least one target ({{ rate }}%).{% endblocktrans %}</p>
+    {% endif %}
+
+    {% endif %}
+</article>
+
+{# Approval form #}
+<article aria-label="{% trans 'Approve Report' %}">
+    <h2>{% trans "Approve and Export" %}</h2>
+    <form method="post" action="{% url 'reports:funder_report_approve' %}">
+        {% csrf_token %}
+
+        <label for="{{ approval_form.agency_notes.id_for_label }}">
+            {{ approval_form.agency_notes.label }}
+            {{ approval_form.agency_notes }}
+            {% if approval_form.agency_notes.help_text %}
+            <small>{{ approval_form.agency_notes.help_text }}</small>
+            {% endif %}
+        </label>
+
+        <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem;">
+            <button type="submit">{% trans "Approve and Export" %}</button>
+            <a href="{% url 'reports:funder_report' %}" role="button" class="outline">{% trans "Back to Form" %}</a>
+        </div>
+    </form>
+</article>
+{% endblock %}

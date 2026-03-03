@@ -9,7 +9,7 @@
     <h1>{% if editing %}{% blocktrans with first=client.display_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
-<form method="post" novalidate>
+<form method="post" action="{% if editing %}{% url 'clients:client_edit' client_id=client.pk %}{% else %}{% url 'clients:client_create' %}{% endif %}" novalidate>
     {% csrf_token %}
 
     {% include "includes/_form_errors.html" %}

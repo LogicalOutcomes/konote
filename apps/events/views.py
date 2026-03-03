@@ -855,32 +855,58 @@ def calendar_feed_settings(request):
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action in ("generate", "regenerate"):
-            if feed_token:
-                # Regenerate: update existing token
-                feed_token.token = secrets.token_urlsafe(32)
-                feed_token.is_active = True
-                feed_token.save()
-                messages.success(request, _("Calendar feed URL regenerated. Update your calendar app with the new URL."))
-            else:
-                # Generate: create new token
-                feed_token = CalendarFeedToken.objects.create(
-                    user=request.user,
-                    token=secrets.token_urlsafe(32),
+            try:
+                new_token = secrets.token_urlsafe(32)
+                if feed_token:
+                    # Regenerate: update existing token
+                    feed_token.token = new_token
+                    feed_token.is_active = True
+                    feed_token.save()
+                    messages.success(
+                        request,
+                        _("Calendar feed URL regenerated. Update your calendar app with the new URL."),
+                    )
+                else:
+                    # Generate: create new token
+                    feed_token = CalendarFeedToken.objects.create(
+                        user=request.user,
+                        token=new_token,
+                    )
+                    messages.success(
+                        request,
+                        _("Calendar link created. Copy the link below and add it to your calendar app."),
+                    )
+            except Exception:
+                messages.error(
+                    request,
+                    _("Something went wrong generating your calendar link. Please try again."),
                 )
-                messages.success(request, _("Calendar feed generated."))
+        # POST-Redirect-GET: redirect after any POST to prevent form re-submission on browser reload
+        return redirect("events:calendar_feed_settings")
 
     # Build feed URL
     feed_url = None
     outlook_subscribe_url = None
     if feed_token and feed_token.is_active:
-        feed_url = request.build_absolute_uri(
-            reverse("calendar_feed", kwargs={"token": feed_token.token})
-        )
-        parsed = urlparse(feed_url)
-        if parsed.scheme in ("http", "https"):
-            outlook_subscribe_url = urlunparse(parsed._replace(scheme="webcal"))
-        else:
-            outlook_subscribe_url = feed_url
+        try:
+            raw_url = request.build_absolute_uri(
+                reverse("calendar_feed", kwargs={"token": feed_token.token})
+            )
+            parsed = urlparse(raw_url)
+            # Validate that the URL has a usable scheme and netloc before showing it
+            if parsed.scheme in ("http", "https") and parsed.netloc:
+                feed_url = raw_url
+                outlook_subscribe_url = urlunparse(parsed._replace(scheme="webcal"))
+            else:
+                messages.error(
+                    request,
+                    _("Could not build your calendar link. Please contact support."),
+                )
+        except Exception:
+            messages.error(
+                request,
+                _("Could not build your calendar link. Please contact support."),
+            )
 
     breadcrumbs = [
         {"url": reverse("events:meeting_list"), "label": _("My Meetings")},

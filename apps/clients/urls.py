@@ -12,7 +12,7 @@ from apps.portal.staff_views import (
 )
 
 from . import erasure_views, views
-from .dashboard_views import alert_overview_by_program, executive_dashboard, executive_dashboard_export
+from .dashboard_views import alert_overview_by_program, executive_dashboard, executive_dashboard_export, executive_dashboard_pdf
 from .data_access_views import data_access_log
 from .dv_views import dv_safe_enable, dv_safe_request_remove, dv_safe_review_remove
 
@@ -22,6 +22,7 @@ app_name = "clients"
 urlpatterns = [
     path("executive/", executive_dashboard, name="executive_dashboard"),
     path("executive/export/", executive_dashboard_export, name="executive_dashboard_export"),
+    path("executive/pdf/", executive_dashboard_pdf, name="executive_dashboard_pdf"),
     path("executive/alerts/", alert_overview_by_program, name="alert_overview"),
     path("", views.client_list, name="client_list"),
     path("bulk-status/", views.bulk_status, name="bulk_status"),

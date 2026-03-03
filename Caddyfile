@@ -1,3 +1,7 @@
+# Single-instance Caddyfile — uses the DOMAIN env var from docker-compose.yml.
+# For multi-instance setups (prod + dev on one VPS), replace this file with
+# hardcoded domain blocks and explicit container names. See Step 14 of
+# docs/deploy-ovhcloud.md for the multi-domain Caddyfile template.
 {$DOMAIN:localhost} {
     reverse_proxy web:8000
 

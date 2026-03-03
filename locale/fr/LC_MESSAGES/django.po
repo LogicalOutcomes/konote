@@ -878,7 +878,7 @@ msgstr "Rechercher %(clients)s"
 
 #, python-format
 msgid "New %(client)s"
-msgstr "Nouveau/Nouvelle %(client)s"
+msgstr "Nouveau %(client)s"
 
 #, python-format
 msgid "All %(programs)s"
@@ -2076,6 +2076,9 @@ msgstr "Type de dossier"
 
 msgid "Count"
 msgstr "Nombre"
+
+msgid "Progress Note"
+msgstr "Note de suivi"
 
 msgid "Progress Notes"
 msgstr "Notes de suivi"
@@ -3601,27 +3604,17 @@ msgstr "SharePoint / OneDrive"
 msgid "Google Drive"
 msgstr "Google Drive"
 
-msgid "Product Name"
-msgstr "Nom du produit"
+msgid "Organization Name"
+msgstr "Nom de l'organisme"
 
-msgid "Product Name (English)"
-msgstr "Nom du produit (anglais)"
+msgid "Your organisation's display name. Shown in the footer."
+msgstr "Nom d'affichage de votre organisme. Affiché dans le pied de page."
 
-msgid ""
-"Shown in the header, footer, and page titles. Use your short, recognizable "
-"name."
-msgstr ""
-"Affiché dans l'en-tête, le pied de page et les titres de page. Utilisez "
-"votre nom court et reconnaissable."
-
-msgid "Product Name (French)"
-msgstr "Nom du produit (français)"
+msgid "Organization Name (French)"
+msgstr "Nom de l'organisme (français)"
 
 msgid "French version. Leave blank to use the English name."
 msgstr "Version française. Laissez vide pour utiliser le nom anglais."
-
-msgid "Shown in the header and page titles."
-msgstr "Affiché dans l'en-tête et les titres de page."
 
 msgid "Support Email"
 msgstr "Courriel de soutien"
@@ -3629,11 +3622,14 @@ msgstr "Courriel de soutien"
 msgid "Displayed in the footer or help pages."
 msgstr "Affiché dans le pied de page ou les pages d'aide."
 
-msgid "Logo URL"
-msgstr "URL du logo"
+msgid "Organization Website"
+msgstr "Site Web de l'organisme"
 
-msgid "URL to your organisation's logo image."
-msgstr "URL de l'image du logo de votre organisme."
+msgid ""
+"Your organisation's website. Links the organization name in the footer."
+msgstr ""
+"Le site Web de votre organisme. Lie le nom de l'organisme dans le pied de "
+"page."
 
 msgid "Date Format"
 msgstr "Format de date"
@@ -17302,150 +17298,340 @@ msgstr ""
 "laissé vide."
 
 msgid "Brand Colour"
-msgstr ""
+msgstr "Couleur de la marque"
 
 msgid "Brand colour"
-msgstr ""
+msgstr "Couleur de la marque"
 
 msgid "Domain must be one of: %(domains)s"
-msgstr ""
+msgstr "Le domaine doit être l'un des suivants : %(domains)s"
 
 msgid "Enter a valid hex colour (e.g. #3176aa)."
-msgstr ""
+msgstr "Entrez une couleur hexadécimale valide (p. ex. #3176aa)."
 
 msgid "Powered by"
 msgstr "Propulsé par"
 
 msgid "URL template contains a disallowed protocol."
-msgstr ""
+msgstr "Le modèle d'URL contient un protocole non autorisé."
 
 msgid "URL template is required when a provider is selected."
-msgstr ""
+msgstr "Un modèle d'URL est requis lorsqu'un fournisseur est sélectionné."
 
 msgid "URL template must contain {record_id} placeholder."
-msgstr ""
+msgstr "Le modèle d'URL doit contenir l'espace réservé {record_id}."
 
 msgid "URL template must use HTTPS."
-msgstr ""
+msgstr "Le modèle d'URL doit utiliser HTTPS."
 
 msgid "Your organisation's accent colour for buttons and links."
 msgstr ""
+"La couleur d'accentuation de votre organisme pour les boutons et les liens."
 
 msgid "Annually (365 days)"
-msgstr ""
+msgstr "Annuellement (365 jours)"
 
 msgid "Backup & Export Settings"
-msgstr ""
+msgstr "Paramètres de sauvegarde et d'exportation"
 
 msgid "Backup Reminder"
-msgstr ""
+msgstr "Rappel de sauvegarde"
 
 msgid "Backup Reminders"
-msgstr ""
+msgstr "Rappels de sauvegarde"
 
 msgid "Backup reminder settings updated."
-msgstr ""
+msgstr "Les paramètres de rappel de sauvegarde ont été mis à jour."
 
 msgid ""
 "Click the button below to download your file. This link expires in 24 hours."
 msgstr ""
+"Cliquez sur le bouton ci-dessous pour télécharger votre fichier. Ce lien "
+"expire dans 24 heures."
 
 msgid ""
 "Configure automated backup reminders to protect against encryption key loss."
 msgstr ""
+"Configurez les rappels de sauvegarde automatisés pour protéger contre la "
+"perte de clé de chiffrement."
 
 msgid "Contact KoNote support to request a backup export."
 msgstr ""
+"Communiquez avec le soutien de KoNote pour demander une exportation de "
+"sauvegarde."
 
 msgid "Download Export"
-msgstr ""
+msgstr "Télécharger l'exportation"
 
 msgid "Download available"
-msgstr ""
+msgstr "Téléchargement disponible"
 
 msgid "Enable backup reminders"
-msgstr ""
+msgstr "Activer les rappels de sauvegarde"
 
 msgid "Every 2 months (60 days)"
-msgstr ""
+msgstr "Tous les 2 mois (60 jours)"
 
 msgid "Every 6 months (180 days)"
-msgstr ""
+msgstr "Tous les 6 mois (180 jours)"
 
 msgid "Export Ready"
-msgstr ""
+msgstr "Exportation prête"
 
 msgid "Frequency must be a positive number."
-msgstr ""
+msgstr "La fréquence doit être un nombre positif."
 
 msgid "How often to send backup reminders."
-msgstr ""
+msgstr "La fréquence d'envoi des rappels de sauvegarde."
 
 msgid "Individual Client Export"
-msgstr ""
+msgstr "Exportation individuelle de participant"
 
 msgid "Invalid request."
-msgstr ""
+msgstr "Demande invalide."
 
 msgid "JSON (machine-readable)"
-msgstr ""
+msgstr "JSON (lisible par machine)"
 
 msgid ""
 "KoNote can send periodic email reminders when a backup export is due. The "
 "system reminds — a human acts."
 msgstr ""
+"KoNote peut envoyer des rappels périodiques par courriel lorsqu’une "
+"exportation de sauvegarde est requise. Le système rappelle — un humain agit."
 
 msgid "Last backup export"
-msgstr ""
+msgstr "Dernière exportation de sauvegarde"
 
 msgid "Last reminder sent"
-msgstr ""
+msgstr "Dernier rappel envoyé"
 
 msgid "Monthly (30 days)"
-msgstr ""
+msgstr "Mensuellement (30 jours)"
 
 msgid "Quarterly (90 days)"
-msgstr ""
+msgstr "Trimestriellement (90 jours)"
 
 msgid ""
 "Regular backups protect your data in case of encryption key loss or other "
 "technical issues. Without a recent backup, participant records could become "
 "permanently inaccessible."
 msgstr ""
+"Les sauvegardes régulières protègent vos données en cas de perte de clé de "
+"chiffrement ou d'autres problèmes techniques. Sans sauvegarde récente, les "
+"dossiers des participants pourraient devenir définitivement inaccessibles."
 
 msgid "Reminder Frequency"
-msgstr ""
+msgstr "Fréquence des rappels"
 
 msgid "Return to Participant"
-msgstr ""
+msgstr "Retour au participant"
 
 msgid "Run the backup command on your server:"
-msgstr ""
+msgstr "Exécutez la commande de sauvegarde sur votre serveur :"
 
 msgid "Security Information"
-msgstr ""
+msgstr "Renseignements de sécurité"
 
 msgid "Security notice"
-msgstr ""
+msgstr "Avis de sécurité"
 
 msgid "The email address that will receive backup reminders."
-msgstr ""
+msgstr "L'adresse courriel qui recevra les rappels de sauvegarde."
 
 msgid ""
 "This export contains participant-identifying information — handle securely."
 msgstr ""
+"Cette exportation contient des renseignements permettant d’identifier les "
+"participants — manipulez-la de façon sécuritaire."
 
 msgid "This export has been logged for audit purposes."
-msgstr ""
+msgstr "Cette exportation a été consignée à des fins de vérification."
 
 msgid "This link expires in 24 hours and cannot be reused after expiry."
 msgstr ""
+"Ce lien expire dans 24 heures et ne peut être réutilisé après expiration."
 
 msgid "What to do"
-msgstr ""
+msgstr "Que faire"
 
 msgid "Why this matters"
-msgstr ""
+msgstr "Pourquoi c'est important"
 
 msgid "Your export has been generated"
+msgstr "Votre exportation a été générée"
+
+msgid ""
+"Calendar link created. Copy the link below and add it to your calendar app."
 msgstr ""
+"Lien de calendrier créé. Copiez le lien ci-dessous et ajoutez-le à votre "
+"application de calendrier."
+
+msgid "Could not build your calendar link. Please contact support."
+msgstr ""
+"Impossible de générer votre lien de calendrier. Veuillez contacter le "
+"support."
+
+msgid "Something went wrong generating your calendar link. Please try again."
+msgstr ""
+"Une erreur s'est produite lors de la génération de votre lien de calendrier."
+" Veuillez réessayer."
+
+msgid "Skip to results"
+msgstr "Passer aux résultats"
+
+msgid "AGENCY NOTES"
+msgstr "NOTES DE L'ORGANISME"
+
+msgid "Agency Notes"
+msgstr "Notes de l'organisme"
+
+msgid "Agency context notes accompanying this export."
+msgstr "Notes contextuelles de l'organisme accompagnant cette exportation."
+
+msgid "Approval Details"
+msgstr "Détails de l'approbation"
+
+msgid "Approve Report"
+msgstr "Approuver le rapport"
+
+msgid "Approve and Export"
+msgstr "Approuver et exporter"
+
+msgid "Approved At"
+msgstr "Approuvé le"
+
+msgid "Back to Form"
+msgstr "Retour au formulaire"
+
+msgid "Download Link Expires"
+msgstr "Le lien de téléchargement expire"
+
+msgid "Download Report"
+msgstr "Télécharger le rapport"
+
+msgid "Export Format"
+msgstr "Format d'exportation"
+
+msgid "Generate Preview"
+msgstr "Générer l'aperçu"
+
+msgid "Individuals Served"
+msgstr "Personnes desservies"
+
+msgid "New Clients"
+msgstr "Nouveaux clients"
+
+msgid "Per-Program Breakdown"
+msgstr "Répartition par programme"
+
+msgid "Report Approved"
+msgstr "Rapport approuvé"
+
+msgid "Report Approved and Exported"
+msgstr "Rapport approuvé et exporté"
+
+msgid "Report Details"
+msgstr "Détails du rapport"
+
+msgid "Review Report"
+msgstr "Réviser le rapport"
+
+msgid "Review Report Before Approving"
+msgstr "Réviser le rapport avant l'approbation"
+
+msgid ""
+"Review the data below, add any context notes, then approve to generate the "
+"export file."
+msgstr ""
+"Révisez les données ci-dessous, ajoutez des notes contextuelles au besoin, "
+"puis approuvez pour générer le fichier d'exportation."
+
+msgid ""
+"Something went wrong generating the report. Please try again or contact "
+"support."
+msgstr ""
+"Un problème est survenu lors de la génération du rapport. Veuillez réessayer"
+" ou contacter le soutien technique."
+
+msgid ""
+"The report has been approved and a secure download link has been created."
+msgstr ""
+"Le rapport a été approuvé et un lien de téléchargement sécurisé a été créé."
+
+msgid "This link will expire in 24 hours. You can also share this link:"
+msgstr ""
+"Ce lien expirera dans 24 heures. Vous pouvez également partager ce lien :"
+
+msgid "Total Contacts"
+msgstr "Total des contacts"
+
+msgid "Your CSV report is ready for download."
+msgstr "Votre rapport CSV est prêt à télécharger."
+
+msgid "Your PDF report is ready for download."
+msgstr "Votre rapport PDF est prêt à télécharger."
+
+msgid ""
+"e.g., Q1 debt figures include a large legal settlement for one participant. "
+"This is accurate, not a data entry error."
+msgstr ""
+"p. ex., les chiffres de dette du T1 comprennent un règlement juridique "
+"important pour un participant. Il s'agit d'une donnée exacte, pas d'une "
+"erreur de saisie."
+
+#. blocktrans from funder_report_preview.html
+msgid "This report covers %(count)s programs."
+msgstr "Ce rapport couvre %(count)s programmes."
+
+#. blocktrans from funder_report_preview.html
+msgid "%(met)s of %(total)s clients met at least one target (%(rate)s%%)."
+msgstr ""
+"%(met)s des %(total)s clients ont atteint au moins une cible (%(rate)s %%)."
+
+#. blocktrans from funder_report_preview.html — approval form help text
+msgid ""
+"Optional context notes to accompany this report. For example: explain "
+"outlier values or unusual patterns."
+msgstr ""
+"Notes contextuelles facultatives pour accompagner ce rapport. Par exemple : "
+"expliquer des valeurs aberrantes ou des tendances inhabituelles."
+
+msgid "Date range presets"
+msgstr "Présélections de période"
+
+msgid "Engagement %"
+msgstr "Engagement %"
+
+msgid "Goal Completion %"
+msgstr "Atteinte des objectifs %"
+
+msgid "Last 365 days"
+msgstr "365 derniers jours"
+
+msgid "Last 90 days"
+msgstr "90 derniers jours"
+
+msgid "New This Period"
+msgstr "Nouveaux cette période"
+
+msgid "No program data available."
+msgstr "Aucune donnée de programme disponible."
+
+msgid "Notes This Week"
+msgstr "Notes cette semaine"
+
+msgid "Period start"
+msgstr "Début de la période"
+
+msgid "Start date"
+msgstr "Date de début"
+
+msgid "This fiscal year"
+msgstr "Cet exercice financier"
+
+msgid "Without Notes This Period"
+msgstr "Sans notes cette période"
+
+msgid "suppressed"
+msgstr "supprimé"

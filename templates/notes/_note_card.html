@@ -52,7 +52,7 @@
     {% endif %}
     {% if note.follow_up_date %}
         <span class="note-chip note-chip--followup{% if note.follow_up_completed_at %} note-chip--done{% endif %}">
-            {% if note.follow_up_completed_at %}&#10003; {% endif %}{% trans "Follow-up" %} {{ note.follow_up_date|date:"M d" }}
+            {% if note.follow_up_completed_at %}<span aria-hidden="true">&#10003;</span> {% endif %}{% trans "Follow-up" %} {{ note.follow_up_date|date:"M d" }}
         </span>
     {% endif %}
 </div>

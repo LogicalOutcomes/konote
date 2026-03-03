@@ -83,7 +83,20 @@ class ClientContactForm(forms.Form):
 
 
 class ClientFileForm(forms.Form):
-    """Form for client PII — plain form since fields are encrypted properties."""
+    """Form for client PII — plain form since fields are encrypted properties.
+
+    field_order mirrors the template layout (QA-R8-A11Y4 / WCAG 1.3.2):
+    first_name before last_name so the error summary links follow visual order.
+    """
+
+    # Explicit field_order so the error summary ({% for field in form %}) follows
+    # the same left-to-right, top-to-bottom order as the template (WCAG 1.3.2).
+    field_order = [
+        "first_name", "last_name", "preferred_name", "middle_name",
+        "phone", "birth_date", "record_id", "status",
+        "email", "preferred_language", "sms_consent", "email_consent",
+        "programs",
+    ]
 
     first_name = forms.CharField(max_length=255, label=_("First Name"))
     last_name = forms.CharField(max_length=255, label=_("Last Name"))

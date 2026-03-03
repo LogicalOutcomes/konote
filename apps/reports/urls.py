@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 from . import pdf_views
@@ -8,6 +9,8 @@ from . import preview_views
 
 app_name = "reports"
 urlpatterns = [
+    # Legacy URL redirect (QA-R8-UX11)
+    path("funder/", RedirectView.as_view(pattern_name="reports:funder_report", permanent=True)),
     # Outcome Insights
     path("insights/", insights_views.program_insights, name="program_insights"),
     path("participant/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
@@ -20,6 +23,8 @@ urlpatterns = [
     path("export/preview/", preview_views.adhoc_report_preview, name="adhoc_report_preview"),
     path("export/template-autofill/", views.adhoc_template_autofill, name="adhoc_template_autofill"),
     path("funder-report/", views.funder_report_form, name="funder_report"),
+    path("funder-report/preview/", views.funder_report_preview, name="funder_report_preview"),
+    path("funder-report/approve/", views.funder_report_approve, name="funder_report_approve"),
     path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
     path("participant/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
     path("participant/<int:client_id>/export/", pdf_views.client_export, name="client_export"),

@@ -269,11 +269,21 @@ class AdminRoutePermissionTest(TestCase):
         self.staff = User.objects.create_user(
             username="staff", password="pass", display_name="Staff"
         )
+        self.pm = User.objects.create_user(
+            username="pm", password="pass", display_name="Program Manager"
+        )
         self.program = Program.objects.create(name="Test")
         UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
 
     def tearDown(self):
         enc_module._fernet = None
+
+    def test_pm_can_access_user_list(self):
+        """Program Managers must be able to reach /manage/users/ (QA-R8-UX12)."""
+        self.http.login(username="pm", password="pass")
+        resp = self.http.get("/manage/users/")
+        self.assertEqual(resp.status_code, 200)
 
     def test_admin_can_access_user_list(self):
         self.http.login(username="admin", password="pass")

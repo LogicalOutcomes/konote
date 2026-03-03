@@ -104,9 +104,9 @@ def _handle_instance_settings(request, context, wizard_data):
         form = SetupWizardInstanceSettingsForm(request.POST)
         if form.is_valid():
             wizard_data["instance_settings"] = {
-                "product_name": form.cleaned_data["product_name"] or "KoNote",
+                "organization_name": form.cleaned_data["organization_name"] or "",
                 "support_email": form.cleaned_data["support_email"] or "",
-                "logo_url": form.cleaned_data["logo_url"] or "",
+                "organization_website": form.cleaned_data["organization_website"] or "",
                 "date_format": form.cleaned_data["date_format"],
                 "access_tier": form.cleaned_data.get("access_tier") or "1",
             }

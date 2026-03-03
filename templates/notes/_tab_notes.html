@@ -8,6 +8,8 @@
 </p>
 {% endif %}
 {% include "_consent_banner.html" %}
+<!-- Inline quick note entry point (Log Contact) -->
+{% include "notes/_quick_note_inline_buttons.html" %}
 <!-- Search and filters -->
 <form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
     <div class="note-search-field">

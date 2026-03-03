@@ -1161,3 +1161,23 @@ class SessionReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form)
             raise forms.ValidationError(_("'Date from' must be before 'Date to'."))
 
         return cleaned
+
+
+class FunderReportApprovalForm(forms.Form):
+    """Form for the funder report preview/approval step (RPT-APPROVE1).
+
+    Captures optional agency notes before the report is approved and exported.
+    """
+
+    agency_notes = forms.CharField(
+        required=False,
+        label=_("Agency Notes"),
+        help_text=_(
+            "Optional context notes to accompany this report. "
+            "For example: explain outlier values or unusual patterns."
+        ),
+        widget=forms.Textarea(attrs={
+            "rows": 4,
+            "placeholder": _("e.g., Q1 debt figures include a large legal settlement for one participant. This is accurate, not a data entry error."),
+        }),
+    )

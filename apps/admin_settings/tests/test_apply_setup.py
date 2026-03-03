@@ -89,7 +89,7 @@ class ApplySetupTests(TestCase):
         from apps.programs.models import Program
 
         config = {
-            "instance_settings": {"product_name": "Test Agency"},
+            "instance_settings": {"organization_name": "Test Agency"},
             "terminology": {"client": "Participant"},
             "features": {"programs": True},
             "programs": [{"name": "Test Program", "colour_hex": "#FF0000"}],
@@ -121,7 +121,7 @@ class ApplySetupTests(TestCase):
         self.assertIn("no changes were made", output.lower())
 
         # Verify nothing was actually created
-        self.assertEqual(InstanceSetting.objects.filter(setting_key="product_name").count(), 0)
+        self.assertEqual(InstanceSetting.objects.filter(setting_key="organization_name").count(), 0)
         self.assertEqual(TerminologyOverride.objects.filter(term_key="client").count(), 0)
         self.assertEqual(FeatureToggle.objects.filter(feature_key="programs").count(), 0)
         self.assertEqual(Program.objects.filter(name="Test Program").count(), 0)
@@ -139,7 +139,7 @@ class ApplySetupTests(TestCase):
 
         config = {
             "instance_settings": {
-                "product_name": "Youth Services - KoNote",
+                "organization_name": "Youth Services",
                 "support_email": "tech@youth.ca",
             }
         }
@@ -149,8 +149,8 @@ class ApplySetupTests(TestCase):
         call_command("apply_setup", path, stdout=out)
 
         self.assertEqual(
-            InstanceSetting.objects.get(setting_key="product_name").setting_value,
-            "Youth Services - KoNote",
+            InstanceSetting.objects.get(setting_key="organization_name").setting_value,
+            "Youth Services",
         )
         self.assertEqual(
             InstanceSetting.objects.get(setting_key="support_email").setting_value,
@@ -486,7 +486,7 @@ class ApplySetupTests(TestCase):
         from apps.programs.models import Program
 
         config = {
-            "instance_settings": {"product_name": "Test Agency"},
+            "instance_settings": {"organization_name": "Test Agency"},
             "terminology": {"client": "Participant"},
             "features": {"programs": True},
             "programs": [{"name": "Test Program", "colour_hex": "#FF0000"}],
@@ -520,7 +520,7 @@ class ApplySetupTests(TestCase):
         call_command("apply_setup", path, stdout=out2)
 
         # Verify no duplicates
-        self.assertEqual(InstanceSetting.objects.filter(setting_key="product_name").count(), 1)
+        self.assertEqual(InstanceSetting.objects.filter(setting_key="organization_name").count(), 1)
         self.assertEqual(TerminologyOverride.objects.filter(term_key="client").count(), 1)
         self.assertEqual(FeatureToggle.objects.filter(feature_key="programs").count(), 1)
         self.assertEqual(Program.objects.filter(name="Test Program").count(), 1)
@@ -558,7 +558,7 @@ class ApplySetupTests(TestCase):
         from apps.programs.models import Program
 
         config = {
-            "instance_settings": {"product_name": "Partial Test"},
+            "instance_settings": {"organization_name": "Partial Test"},
             "features": {"events": True},
         }
         path = self._write_config(config)
@@ -568,7 +568,7 @@ class ApplySetupTests(TestCase):
 
         # These should exist
         self.assertEqual(
-            InstanceSetting.objects.get(setting_key="product_name").setting_value,
+            InstanceSetting.objects.get(setting_key="organization_name").setting_value,
             "Partial Test",
         )
         self.assertTrue(FeatureToggle.objects.get(feature_key="events").is_enabled)

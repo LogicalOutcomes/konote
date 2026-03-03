@@ -23,8 +23,8 @@
       "finding_group": "FG-S-2",
       "fixed_date": "2026-02-21",
       "fixed_in": "QA-R7-TIER1",
-      "verified_date": null,
-      "notes": "UserLanguageMiddleware makes user profile preferred_language authoritative. First fixed in Round 1 (BUG-4, 2026-02-07/08), re-fixed in QA-R7-TIER1."
+      "verified_date": "2026-03-02",
+      "notes": "UserLanguageMiddleware makes user profile preferred_language authoritative. First fixed in Round 1 (BUG-4, 2026-02-07/08), re-fixed in QA-R7-TIER1. Verified QA-R8-LANG1: 24 tests pass, SafeLocaleMiddleware intact."
     },
     {
       "description": "htmx syntax errors on create-participant page",
@@ -71,8 +71,8 @@
       "finding_group": null,
       "fixed_date": "2026-02-21",
       "fixed_in": "Round 7 same-day (BUG-17)",
-      "verified_date": null,
-      "notes": null
+      "verified_date": "2026-03-02",
+      "notes": "Verified QA-R8-UX7: htmx:responseError handler, htmx:sendError handler, offline banner, sw.js, and offline.html all present. No regression."
     },
     {
       "description": "Group creation pre-selects programme for single-programme users",
@@ -95,16 +95,16 @@
       "finding_group": "FG-S-8",
       "fixed_date": "2026-02-28",
       "fixed_in": "QA-R7-PRIVACY1",
-      "verified_date": null,
-      "notes": "PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating."
+      "verified_date": "2026-03-02",
+      "notes": "PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating. Verified QA-R8-VERIFY1: route at /reports/participant/<id>/export/ (reports app), client_export view wired, individual_client export type present."
     },
     {
       "description": "Secure download link infrastructure (SecureExportLink)",
       "finding_group": "FG-S-8",
       "fixed_date": "2026-02-28",
       "fixed_in": "QA-R7-PRIVACY1 + SEC3",
-      "verified_date": null,
-      "notes": "Single-use, time-limited, audit-trailed download links."
+      "verified_date": "2026-03-02",
+      "notes": "Single-use, time-limited, audit-trailed download links. Verified QA-R8-VERIFY1: SecureExportLink model present, download/<uuid> route present."
     },
     {
       "description": "Service episode lifecycle (data model)",
@@ -153,6 +153,22 @@
       "fixed_in": "QA-R8-UX2 (closed, no code change needed)",
       "verified_date": "2026-03-01",
       "notes": "Template uses explicit name= bindings per field. No mechanism for Last Name migrating to Preferred Name. Likely browser autofill artifact or stale screenshot."
+    },
+    {
+      "description": "/reports/funder/ returning 404 — added permanent redirect to /reports/funder-report/",
+      "finding_group": null,
+      "fixed_date": "2026-03-02",
+      "fixed_in": "QA-R8-UX11",
+      "verified_date": null,
+      "notes": "RedirectView with permanent=True in reports/urls.py."
+    },
+    {
+      "description": "Executive dashboard missing date presets and PDF export",
+      "finding_group": null,
+      "fixed_date": "2026-03-02",
+      "fixed_in": "QA-R8-UX8",
+      "verified_date": null,
+      "notes": "Added date preset buttons (30/90/365 days, fiscal year, custom) and PDF export via WeasyPrint with HTML fallback."
     }
   ]
 }
