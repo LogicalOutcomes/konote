@@ -200,9 +200,27 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPage = idx;
         pages.forEach(function(pageFieldsets, i) {
             pageFieldsets.forEach(function(fs) {
-                // Don't override conditional hiding
-                if (fs.dataset.conditionQuestion && fs.hidden) return;
-                fs.hidden = (i !== currentPage);
+                if (i !== currentPage) {
+                    fs.hidden = true;
+                } else if (!fs.dataset.conditionQuestion) {
+                    fs.hidden = false;
+                } else {
+                    // Re-evaluate the condition so navigating back restores visible sections
+                    var qName = fs.dataset.conditionQuestion;
+                    var expected = fs.dataset.conditionValue;
+                    var inputs = document.querySelectorAll('[name="' + qName + '"]');
+                    var val = '';
+                    inputs.forEach(function(inp) {
+                        if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) val = inp.value;
+                        else if (inp.type !== 'radio' && inp.type !== 'checkbox') val = inp.value;
+                    });
+                    var wasHidden = fs.hidden;
+                    fs.hidden = (val !== expected);
+                    if (wasHidden && !fs.hidden && announce) {
+                        announce.textContent = '{% trans "Additional questions appeared below." %}';
+                        setTimeout(function() { announce.textContent = ''; }, 3000);
+                    }
+                }
             });
         });
         progress.textContent = '{% trans "Page" %} ' + (currentPage + 1) + ' {% trans "of" %} ' + pages.length;

@@ -60,7 +60,7 @@ def public_survey_form(request, token):
         try:
             request.get_signed_cookie(cookie_key)
             already_responded = True
-        except Exception:
+        except Exception:  # BadSignature, KeyError, etc. — any failure means "not yet responded"
             already_responded = False
     else:
         already_responded = False
@@ -196,9 +196,6 @@ def public_survey_form(request, token):
             )
 
         return resp
-
-    # GET: only show unconditional sections initially
-    visible_sections = filter_visible_sections(sections_list, {})
 
     return render(request, "surveys/public_form.html", {
         "survey": survey,
