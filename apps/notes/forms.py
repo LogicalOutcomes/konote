@@ -328,11 +328,22 @@ class MetricValueForm(forms.Form):
                         attrs["min"] = metric_def.min_value
                     if metric_def.max_value is not None:
                         attrs["max"] = metric_def.max_value
+                    if metric_def.warn_min is not None:
+                        attrs["data-warn-min"] = metric_def.warn_min
+                    if metric_def.warn_max is not None:
+                        attrs["data-warn-max"] = metric_def.warn_max
                     if attrs:
                         attrs["type"] = "number"
                         attrs["step"] = "any"
                         self.fields["value"].widget = forms.NumberInput(attrs=attrs)
                     self.is_scale = False
+
+            # Hidden field for plausibility override confirmation
+            if metric_def.warn_min is not None or metric_def.warn_max is not None:
+                self.fields["plausibility_confirmed"] = forms.BooleanField(
+                    required=False,
+                    widget=forms.HiddenInput(attrs={"class": "plausibility-confirmed-input"}),
+                )
 
     def clean_value(self):
         val = self.cleaned_data.get("value", "").strip()

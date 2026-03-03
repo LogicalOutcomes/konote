@@ -401,6 +401,16 @@ class MetricValue(models.Model):
     )
     metric_def = models.ForeignKey("plans.MetricDefinition", on_delete=models.CASCADE)
     value = models.CharField(max_length=100, default="")
+    plausibility_confirmed = models.BooleanField(
+        default=False,
+        help_text=_("True if staff confirmed a value outside the plausibility warning range."),
+    )
+    plausibility_confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="plausibility_overrides",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

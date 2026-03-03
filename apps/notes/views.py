@@ -651,10 +651,13 @@ def note_create(request, client_id):
                         else:
                             val = mf.cleaned_data.get("value", "")
                             if val:
+                                plaus_confirmed = mf.cleaned_data.get("plausibility_confirmed", False)
                                 MetricValue.objects.create(
                                     progress_note_target=pnt,
                                     metric_def_id=mf.cleaned_data["metric_def_id"],
                                     value=val,
+                                    plausibility_confirmed=bool(plaus_confirmed),
+                                    plausibility_confirmed_by=request.user if plaus_confirmed else None,
                                 )
 
                 # Auto-complete any pending follow-ups from this author for this client
