@@ -36,20 +36,15 @@
     {% endif %}
 </article>
 
-{# ---- Section 2: Messaging Profile ---- #}
-<h2>{% trans "Messaging Profile" %}</h2>
+{# ---- Section 2: Messaging Capabilities ---- #}
+<h2>{% trans "Messaging Capabilities" %}</h2>
+<p class="secondary" style="font-size: 0.875rem; margin-bottom: 1rem;">{% trans "Select the messaging options your organisation needs. You can enable both." %}</p>
 <div class="grid">
-    {% for radio in form.messaging_profile %}
-    <article style="{% if radio.data.value == current_profile %}border-color: var(--kn-primary, #3b82f6); border-width: 2px;{% endif %}">
+    <article style="{% if staff_messaging_enabled %}border-color: var(--kn-primary, #3b82f6); border-width: 2px;{% endif %}">
         <label style="cursor: pointer;">
-            {{ radio.tag }}
-            <strong>{{ radio.choice_label }}</strong>
+            {{ form.staff_messaging_enabled }}
+            <strong>{% trans "Staff-sent messages" %}</strong>
         </label>
-        {% if radio.data.value == "record_keeping" %}
-        <p class="secondary" style="font-size: 0.875rem;">
-            {% trans "Staff can schedule meetings and log communications. Nothing is sent from KoNote." %}
-        </p>
-        {% elif radio.data.value == "staff_sent" %}
         <p class="secondary" style="font-size: 0.875rem;">
             {% trans "Staff can send appointment reminders and messages directly from KoNote. Every message requires a person to click send." %}
         </p>
@@ -58,19 +53,27 @@
             {% trans "Requires email or SMS to be set up first." %}
         </p>
         {% endif %}
-        {% elif radio.data.value == "full_automation" %}
+    </article>
+    <article style="{% if automated_reminders_enabled %}border-color: var(--kn-primary, #3b82f6); border-width: 2px;{% endif %}">
+        <label style="cursor: pointer;">
+            {{ form.automated_reminders_enabled }}
+            <strong>{% trans "Automated system reminders" %}</strong>
+        </label>
         <p class="secondary" style="font-size: 0.875rem;">
-            {% trans "KoNote automatically sends reminders before meetings. Requires email or SMS setup." %}
+            {% trans "KoNote automatically sends appointment reminders from a no-reply address before scheduled meetings." %}
         </p>
         {% if not email_configured and not sms_configured %}
         <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
             {% trans "Requires email or SMS to be set up first." %}
         </p>
         {% endif %}
-        {% endif %}
     </article>
-    {% endfor %}
 </div>
+{% if not staff_messaging_enabled and not automated_reminders_enabled %}
+<p class="secondary" style="font-size: 0.875rem;">
+    <em>{% trans "Neither option is enabled — KoNote is in record-keeping mode. Staff can schedule meetings and log communications, but nothing is sent." %}</em>
+</p>
+{% endif %}
 
 {# ---- Section 3: Channel Status ---- #}
 <h2>{% trans "Channels" %}</h2>
