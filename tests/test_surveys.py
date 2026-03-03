@@ -1487,6 +1487,189 @@ class PublicSurveySubmissionTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveyBilingualTests(TestCase):
+    """Test bilingual filter renders FR content when language is French."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="biling_staff", password="testpass123",
+            display_name="Bilingual Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="English Name", name_fr="Nom français",
+            description="English desc", description_fr="Description française",
+            status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Section EN", title_fr="Section FR",
+            sort_order=1,
+        )
+        self.q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Q EN",
+            question_text_fr="Q FR",
+            question_type="short_text", sort_order=1,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def test_public_survey_bilingual_content(self):
+        """When language is French, survey content renders in FR."""
+        self.client.cookies.load({"django_language": "fr"})
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Nom français")
+        self.assertContains(resp, "Description française")
+        self.assertContains(resp, "Section FR")
+        self.assertContains(resp, "Q FR")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveyConditionalTests(TestCase):
+    """Test conditional section visibility in public form."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="cond_staff", password="testpass123",
+            display_name="Conditional Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Cond Survey", status="active", created_by=self.staff,
+        )
+        self.section1 = SurveySection.objects.create(
+            survey=self.survey, title="Main", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.section1, question_text="Do you have pets?",
+            question_type="single_choice", sort_order=1, required=True,
+            options_json=[
+                {"value": "yes", "label": "Yes"},
+                {"value": "no", "label": "No"},
+            ],
+        )
+        self.section2 = SurveySection.objects.create(
+            survey=self.survey, title="Pet Details", sort_order=2,
+            condition_question=self.trigger_q, condition_value="yes",
+        )
+        self.cond_q = SurveyQuestion.objects.create(
+            section=self.section2, question_text="Pet name?",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def test_public_survey_conditional_sections(self):
+        """GET hides conditional section; POST with trigger shows it."""
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        # Conditional section fieldset should be hidden
+        self.assertContains(resp, 'data-condition-question="q_')
+        self.assertContains(resp, "hidden")
+
+    def test_public_survey_conditional_validation(self):
+        """POST without trigger answer: no error for conditional required fields."""
+        resp = self.client.post(f"/s/{self.link.token}/", {
+            f"q_{self.trigger_q.pk}": "no",
+        })
+        # Should succeed (redirect) — "Pet name?" is required but section is hidden
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyResponse.objects.filter(channel="link").count(), 1)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveyAuditTests(TestCase):
+    """Test audit trail for public survey submissions."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="audit_staff", password="testpass123",
+            display_name="Audit Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Audit Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Q1",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def test_public_survey_audit_trail(self):
+        from apps.audit.models import AuditLog
+        self.client.post(f"/s/{self.link.token}/", {
+            f"q_{self.q.pk}": "Test answer",
+        })
+        logs = AuditLog.objects.using("audit").filter(
+            action="post", resource_type="survey",
+        )
+        self.assertEqual(logs.count(), 1)
+        log = logs.first()
+        self.assertEqual(log.metadata["survey_id"], self.survey.pk)
+        self.assertEqual(log.metadata["channel"], "public_link")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveySingleResponseTests(TestCase):
+    """Test single_response cookie behaviour."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="single_staff", password="testpass123",
+            display_name="Single Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Single Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Q1",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+            single_response=True,
+        )
+
+    def test_single_response_sets_cookie(self):
+        resp = self.client.post(f"/s/{self.link.token}/", {
+            f"q_{self.q.pk}": "Answer",
+        })
+        self.assertEqual(resp.status_code, 302)
+        cookie_key = f"survey_done_{self.link.token[:8]}"
+        self.assertIn(cookie_key, resp.cookies)
+
+    def test_single_response_blocks_second_attempt(self):
+        # First submission
+        self.client.post(f"/s/{self.link.token}/", {
+            f"q_{self.q.pk}": "Answer",
+        })
+        # Second visit should show "already responded"
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Already Responded")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleManagementTests(TestCase):
     """Test staff UI for managing trigger rules."""
 

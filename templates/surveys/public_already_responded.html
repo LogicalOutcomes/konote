@@ -1,12 +1,11 @@
 {% load i18n %}
 {% load static %}
-{% load survey_tags %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans "Thank You" %}</title>
+    <title>{% trans "Already Responded" %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     {% include "_lang_toggle_styles.html" %}
@@ -16,29 +15,7 @@
 <main class="container" style="max-width:720px; padding-top:2rem; text-align:center">
 
 <h1>{% trans "Thank you!" %}</h1>
-<p>{% blocktrans with name=survey.name %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
-
-{% if scores %}
-<section style="text-align:left; margin-top:2rem">
-    <h2>{% trans "Your Scores" %}</h2>
-    <table aria-label="{% trans 'Survey scores' %}">
-        <thead>
-            <tr>
-                <th scope="col">{% trans "Section" %}</th>
-                <th scope="col">{% trans "Score" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for s in scores %}
-            <tr>
-                <td>{{ s.title|bilingual:s.title_fr }}</td>
-                <td>{{ s.score }} / {{ s.max_score }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</section>
-{% endif %}
+<p>{% blocktrans with name=survey.name %}You have already submitted a response to "{{ name }}".{% endblocktrans %}</p>
 
 </main>
 <script>

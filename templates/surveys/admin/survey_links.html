@@ -24,6 +24,7 @@
         <tr>
             <th scope="col">{% trans "Token" %}</th>
             <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Responses" %}</th>
             <th scope="col">{% trans "Expires" %}</th>
             <th scope="col">{% trans "Created" %}</th>
             <th scope="col">{% trans "Link URL" %}</th>
@@ -43,6 +44,7 @@
                     <span class="badge badge-success">{% trans "Active" %}</span>
                 {% endif %}
             </td>
+            <td>{{ link.response_count }}</td>
             <td>
                 {% if link.expires_at %}
                     {{ link.expires_at|date:"N j, Y" }}
@@ -53,11 +55,16 @@
             <td>{{ link.created_at|date:"N j, Y" }}</td>
             <td>
                 {% if link.is_active and not link.is_expired %}
-                    <input type="text"
-                           readonly
-                           value="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
-                           aria-label="{% trans 'Survey link URL' %}"
-                           style="margin-bottom:0">
+                    <div style="display:flex; gap:0.5rem; align-items:center">
+                        <input type="text"
+                               readonly
+                               value="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
+                               aria-label="{% trans 'Survey link URL' %}"
+                               style="margin-bottom:0">
+                        <button type="button" class="outline secondary copy-btn"
+                                data-url="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
+                                style="margin-bottom:0; white-space:nowrap">{% trans "Copy" %}</button>
+                    </div>
                 {% else %}
                     <small class="secondary">—</small>
                 {% endif %}
@@ -101,11 +108,32 @@
                 <input type="checkbox" name="collect_name" id="collect_name">
                 {% trans "Ask respondents for their name (optional, not encrypted)" %}
             </label>
+            <label>
+                <input type="checkbox" name="single_response" id="single_response">
+                {% trans "Limit to one response per browser (uses a cookie)" %}
+            </label>
         </fieldset>
 
         <button type="submit">{% trans "Create Link" %}</button>
     </form>
 </article>
 
+<div id="copy-status" role="status" aria-live="polite"></div>
+
 <p><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">&#8592; {% trans "Back to survey" %}</a></p>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var url = this.dataset.url;
+            navigator.clipboard.writeText(url).then(function() {
+                var status = document.getElementById('copy-status');
+                status.textContent = '{% trans "Copied!" %}';
+                setTimeout(function() { status.textContent = ''; }, 2000);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

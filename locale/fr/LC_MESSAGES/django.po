@@ -17745,6 +17745,80 @@ msgid "Warning minimum must be less than warning maximum."
 msgstr ""
 "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
 
+msgid ""
+"Hard ceiling — values above this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plafond absolu — les valeurs au-dessus sont presque certainement des erreurs"
+" de saisie. Nécessite deux confirmations."
+
+msgid ""
+"Hard floor — values below this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plancher absolu — les valeurs en dessous sont presque certainement des "
+"erreurs de saisie. Nécessite deux confirmations."
+
+msgid "Very unlikely maximum cannot exceed the hard maximum."
+msgstr "Le maximum très improbable ne peut pas dépasser le maximum absolu."
+
+msgid "Very unlikely maximum must be at or above the warning maximum."
+msgstr ""
+"Le maximum très improbable doit être égal ou supérieur au maximum "
+"d'avertissement."
+
+msgid "Very unlikely minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum très improbable ne peut pas être inférieur au minimum absolu."
+
+msgid "Very unlikely minimum must be at or below the warning minimum."
+msgstr ""
+"Le minimum très improbable doit être égal ou inférieur au minimum "
+"d'avertissement."
+
+msgid "Very unlikely minimum must be less than very unlikely maximum."
+msgstr ""
+"Le minimum très improbable doit être inférieur au maximum très improbable."
+
+msgid "Click again to confirm"
+msgstr "Cliquez de nouveau pour confirmer"
+
+msgid ""
+"This value ({value}) is extremely unlikely for {metric}. This is almost "
+"certainly a data-entry error. Please re-check and confirm twice if correct."
+msgstr ""
+"Cette valeur ({value}) est extrêmement improbable pour {metric}. Il s'agit "
+"presque certainement d'une erreur de saisie. Veuillez revérifier et "
+"confirmer deux fois si elle est correcte."
+
+msgid ""
+"This value ({value}) is unusually high for {metric}. Please double-check. If"
+" correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement élevée pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid ""
+"This value ({value}) is unusually low for {metric}. Please double-check. If "
+"correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement basse pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid "This value is extremely unlikely. Please confirm it is correct."
+msgstr ""
+"Cette valeur est extrêmement improbable. Veuillez confirmer qu'elle est "
+"correcte."
+
+msgid ""
+"This value is outside the expected range. Please confirm it is correct."
+msgstr ""
+"Cette valeur est en dehors de la plage attendue. Veuillez confirmer qu'elle "
+"est correcte."
+
+msgid "Value confirmed."
+msgstr "Valeur confirmée."
+
 msgid "Invalid send method"
 msgstr "Méthode d'envoi non valide"
 
@@ -17925,7 +17999,8 @@ msgstr ""
 "notifications ont été envoyées."
 
 msgid "Flag this event as a Serious Reportable Event (SRE)."
-msgstr "Signaler cet événement comme événement à déclarer obligatoirement (ÉDO)."
+msgstr ""
+"Signaler cet événement comme événement à déclarer obligatoirement (ÉDO)."
 
 msgid ""
 "Flag this event as a Serious Reportable Event. This will notify leadership."
@@ -18070,7 +18145,8 @@ msgid "This event is not flagged as an SRE."
 msgstr "Cet événement n'est pas signalé comme ÉDO."
 
 msgid "This will notify program leadership and site administrators."
-msgstr "Cela notifiera la direction du programme et les administrateurs du site."
+msgstr ""
+"Cela notifiera la direction du programme et les administrateurs du site."
 
 msgid "View all SREs in a date range, by program and category."
 msgstr "Voir tous les ÉDO dans une période, par programme et catégorie."
@@ -18083,3 +18159,201 @@ msgstr "activée"
 
 msgid "archived"
 msgstr "archivée"
+
+msgid ""
+"A moderate number of warnings are being confirmed. Consider widening "
+"thresholds slightly."
+msgstr ""
+"Un nombre modéré d'avertissements sont confirmés. Envisagez d'élargir "
+"légèrement les seuils."
+
+msgid "Above maximum"
+msgstr "Au-dessus du maximum"
+
+msgid "Avg Confirmed Value"
+msgstr "Valeur confirmée moyenne"
+
+msgid "Below minimum"
+msgstr "En dessous du minimum"
+
+msgid "Confirmed"
+msgstr "Confirmés"
+
+msgid "Consider reviewing threshold"
+msgstr "Envisager de réviser le seuil"
+
+msgid "Current Thresholds"
+msgstr "Seuils actuels"
+
+msgid "Filter override logs"
+msgstr "Filtrer les journaux de dérogation"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "Green (< 30% override rate)"
+msgstr "Vert (< 30 % taux de dérogation)"
+
+msgid "How to Read This Dashboard"
+msgstr "Comment lire ce tableau de bord"
+
+msgid "Last year"
+msgstr "Dernière année"
+
+msgid ""
+"Most flagged values are confirmed as correct. Thresholds are likely too "
+"restrictive and should be widened."
+msgstr ""
+"La plupart des valeurs signalées sont confirmées comme correctes. Les seuils"
+" sont probablement trop restrictifs et devraient être élargis."
+
+msgid ""
+"Most flagged values are correct. Thresholds are too tight and should be "
+"widened to avoid staff ignoring warnings."
+msgstr ""
+"La plupart des valeurs signalées sont correctes. Les seuils sont trop "
+"stricts et devraient être élargis pour éviter que le personnel ignore les "
+"avertissements."
+
+msgid "No plausibility override data yet."
+msgstr "Aucune donnée de dérogation de plausibilité pour le moment."
+
+msgid "Override Rate"
+msgstr "Taux de dérogation"
+
+msgid ""
+"Override logs are recorded when staff encounter plausibility warnings during"
+" note entry and either confirm or correct flagged values. Data will appear "
+"here once warnings have been triggered."
+msgstr ""
+"Les journaux de dérogation sont enregistrés lorsque le personnel rencontre "
+"des avertissements de plausibilité lors de la saisie de notes et confirme ou"
+" corrige les valeurs signalées. Les données apparaîtront ici une fois les "
+"avertissements déclenchés."
+
+msgid "Plausibility Threshold Tuning"
+msgstr "Ajustement des seuils de plausibilité"
+
+msgid "Plausibility override rates by metric"
+msgstr "Taux de dérogation de plausibilité par indicateur"
+
+msgid "Recommendation"
+msgstr "Recommandation"
+
+msgid "Red (> 80% override rate)"
+msgstr "Rouge (> 80 % taux de dérogation)"
+
+msgid ""
+"Some warnings are unnecessary. Consider widening thresholds slightly to "
+"reduce alert fatigue."
+msgstr ""
+"Certains avertissements sont inutiles. Envisagez d'élargir légèrement les "
+"seuils pour réduire la fatigue des alertes."
+
+msgid "Staff confirmed the value"
+msgstr "Le personnel a confirmé la valeur"
+
+msgid "Staff corrected the value"
+msgstr "Le personnel a corrigé la valeur"
+
+msgid "The corrected value, if changed"
+msgstr "La valeur corrigée, si modifiée"
+
+msgid "The value that triggered the plausibility warning"
+msgstr "La valeur qui a déclenché l'avertissement de plausibilité"
+
+msgid "The warn_min or warn_max value that was breached"
+msgstr "La valeur warn_min ou warn_max qui a été dépassée"
+
+msgid ""
+"This dashboard shows how often plausibility warnings are triggered and "
+"whether staff confirm or correct flagged values. High override rates suggest"
+" thresholds may be too tight."
+msgstr ""
+"Ce tableau de bord montre la fréquence des avertissements de plausibilité et"
+" si le personnel confirme ou corrige les valeurs signalées. Des taux de "
+"dérogation élevés suggèrent que les seuils sont peut-être trop stricts."
+
+msgid "Threshold likely too tight"
+msgstr "Seuil probablement trop strict"
+
+msgid "Threshold working well"
+msgstr "Seuil fonctionnel"
+
+msgid ""
+"Thresholds are appropriately set. Most flagged values are being corrected."
+msgstr ""
+"Les seuils sont correctement définis. La plupart des valeurs signalées sont "
+"corrigées."
+
+msgid ""
+"Thresholds are working well. Most flagged values are genuine errors that "
+"staff correct."
+msgstr ""
+"Les seuils fonctionnent bien. La plupart des valeurs signalées sont de "
+"véritables erreurs que le personnel corrige."
+
+msgid "Total Warnings"
+msgstr "Total d'avertissements"
+
+msgid "Yellow (30% - 80% override rate)"
+msgstr "Jaune (30 % - 80 % taux de dérogation)"
+
+msgid "plausibility override log"
+msgstr "journal de dérogation de plausibilité"
+
+msgid "plausibility override logs"
+msgstr "journaux de dérogation de plausibilité"
+
+msgid " — %(pending)d still pending at period end"
+msgstr " — %(pending)d toujours en attente à la fin de la période"
+
+msgid "%(overdue)d exceeded 30-day statutory deadline"
+msgstr "%(overdue)d ont dépassé le délai légal de 30 jours"
+
+msgid "No privacy requests were received this period."
+msgstr "Aucune demande de confidentialité n'a été reçue durant cette période."
+
+msgid "all within statutory deadline"
+msgstr "toutes dans les délais légaux"
+
+msgid ""
+"Privacy requests processed: %(count)d (average %(days)d days, %(deadline)s)"
+msgstr ""
+"Demandes de confidentialité traitées : %(count)d (moyenne de %(days)d jours,"
+" %(deadline)s)"
+
+msgid ""
+"If true, use a cookie to discourage multiple submissions from the same "
+"browser."
+msgstr ""
+"Si vrai, utiliser un témoin pour décourager les soumissions multiples depuis"
+" le même navigateur."
+
+msgid "Limit to one response per browser (uses a cookie)"
+msgstr "Limiter à une réponse par navigateur (utilise un témoin)"
+
+msgid "Already Responded"
+msgstr "Déjà répondu"
+
+msgid "First name or nickname (optional)"
+msgstr "Prénom ou surnom (facultatif)"
+
+msgid "Additional questions appeared below."
+msgstr "Des questions supplémentaires sont apparues ci-dessous."
+
+msgid "You have already submitted a response to \"%(name)s\"."
+msgstr "Vous avez déjà soumis une réponse à « %(name)s »."
+
+msgid "Page"
+msgstr "Page"
+
+msgid ""
+"Event updated and flagged as a Serious Reportable Event. Notifications have "
+"been sent."
+msgstr ""
+"Événement mis à jour et signalé comme un événement indésirable grave. Des "
+"notifications ont été envoyées."
+
+msgid "Event updated."
+msgstr "Événement mis à jour."

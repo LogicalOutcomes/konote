@@ -355,3 +355,81 @@ def generate_template_report(template, date_from, date_to, period_label,
         content = csv_buffer.getvalue()
 
     return content, filename, total_client_count
+
+
+def get_compliance_summary(start_date, end_date):
+    """
+    Generate a privacy compliance summary for board reports.
+    Returns a dict with aggregate counts -- no PII.
+
+    ``start_date`` and ``end_date`` are ``date`` objects.  They are
+    converted to timezone-aware ``datetime`` objects internally because
+    the underlying model fields (``completed_at``, ``requested_at``) are
+    ``DateTimeField``.
+    """
+    from datetime import timedelta
+
+    from django.db.models import Avg, F
+
+    from apps.clients.models import ErasureRequest
+
+    # Convert date → timezone-aware datetime for DateTimeField queries
+    start_dt = timezone.make_aware(datetime.combine(start_date, time.min))
+    end_dt = timezone.make_aware(datetime.combine(end_date, time.max))
+
+    # Completed erasure requests in the period
+    completed = ErasureRequest.objects.filter(
+        status="anonymised",
+        completed_at__range=(start_dt, end_dt),
+    )
+    completed_count = completed.count()
+
+    # Still pending at period end
+    pending_at_end = ErasureRequest.objects.filter(
+        status="pending",
+        requested_at__lte=end_dt,
+    ).count()
+
+    if completed_count == 0 and pending_at_end == 0:
+        return {"summary_text": _("No privacy requests were received this period.")}
+
+    # Average processing time for completed requests
+    avg_days = None
+    if completed_count > 0:
+        avg_result = completed.annotate(
+            processing_time=F("completed_at") - F("requested_at")
+        ).aggregate(avg=Avg("processing_time"))["avg"]
+        avg_days = avg_result.days if avg_result else 0
+
+    # Check if all completed within 30-day statutory deadline
+    overdue_count = 0
+    if completed_count > 0:
+        overdue_count = completed.filter(
+            completed_at__gt=F("requested_at") + timedelta(days=30)
+        ).count()
+
+    return {
+        "completed_count": completed_count,
+        "pending_at_end": pending_at_end,
+        "avg_processing_days": avg_days,
+        "overdue_count": overdue_count,
+        "all_within_deadline": overdue_count == 0,
+        "summary_text": _(
+            "Privacy requests processed: %(count)d "
+            "(average %(days)d days, %(deadline)s)"
+        ) % {
+            "count": completed_count,
+            "days": avg_days or 0,
+            "deadline": (
+                _("all within statutory deadline")
+                if overdue_count == 0
+                else _("%(overdue)d exceeded 30-day statutory deadline")
+                % {"overdue": overdue_count}
+            ),
+        } + (
+            _(" — %(pending)d still pending at period end")
+            % {"pending": pending_at_end}
+            if pending_at_end > 0
+            else ""
+        ),
+    }
