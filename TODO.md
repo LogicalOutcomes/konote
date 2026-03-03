@@ -4,7 +4,6 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Merge 3 open PRs: #222 (VPS provisioning docs), #224 (QA seed data), #225 (demo safeguards) (MERGE-OPEN-PRS)
 
 ## Active Work
 
@@ -26,7 +25,6 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
 - [ ] Legal review of data handling acknowledgement before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-LEGAL-REVIEW1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
 
@@ -42,16 +40,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: Documentation & Website Updates
-
-- [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
-- [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
-- [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
-
-### Phase: Post-Launch Communication Enhancements
-
-- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
-
 ### Phase: AI Feature Toggle Split (approved — see tasks/design-rationale/ai-feature-toggles.md)
 
 - [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — rename existing toggle, add new one with dependency, update all views/tests/templates, data migration for existing agencies, confirmation modal, audit logging (AI-TOGGLE1)
@@ -62,6 +50,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
+### Phase: Post-Launch Communication Enhancements
+
+- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
+
 ### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
 
 Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
@@ -69,7 +61,6 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
-- [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -115,28 +106,36 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
-### Demo Mode Safeguards (PR #225 — open, code complete)
+### Session 4 — Documentation, Website & Cleanup (PR #226)
 
-- [x] Restrict demo-admin to view-only for agency settings — demo users cannot POST to settings views — 2026-03-03 (DEMO-ADMIN-RO1)
-- [x] Add persistent training-mode banner for demo sessions — amber banner on every page — 2026-03-03 (DEMO-BANNER1)
-- [x] Visually separate demo buttons from real login — section labelled "Training Accounts" — 2026-03-03 (DEMO-LOGIN-UX1)
-- [x] Audit demo logins — log demo login events with is_demo_context=True, excluded from PHIPA pipeline — 2026-03-03 (DEMO-AUDIT1)
-- [x] Verify all reports/exports exclude is_demo=True — explicit filters on team meeting, dashboard aggregates — 2026-03-03 (DEMO-EXCLUDE1)
+- [x] Create 9 admin toolkit decision documents (01-09) in docs/agency-setup-guide/ — 2026-03-03 (DEPLOY-TOOLKIT1)
+- [x] Add surveys and portal deployment docs to deploying-konote.md — 2026-03-03 (DOC-DEPLOY1)
+- [x] Add surveys and portal technical architecture to technical-documentation.md — 2026-03-03 (DOC-TECH1)
+- [x] Update konote-website with new features, security, and FAQ — 2026-03-03 (WEBSITE-UPDATE1)
+- [x] Align ParsedBreakdown.bins field naming to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
+
+### Demo Mode Safeguards (PRs #225, #227)
+
+- [x] Restrict demo-admin to view-only for agency settings — @demo_read_only decorator — 2026-03-03 (DEMO-ADMIN-RO1)
+- [x] Add persistent training-mode banner for demo sessions — 2026-03-03 (DEMO-BANNER1)
+- [x] Visually separate demo buttons from real login — "Training Accounts" section — 2026-03-03 (DEMO-LOGIN-UX1)
+- [x] Audit demo logins — is_demo_context=True, excluded from PHIPA pipeline — 2026-03-03 (DEMO-AUDIT1)
+- [x] Verify all reports/exports exclude is_demo=True — team meeting, dashboard aggregates — 2026-03-03 (DEMO-EXCLUDE1)
 
 ### Recently merged to develop (2026-03-02/03)
 
-- [x] Add partner report approval workflow — preview, agency notes, explicit approve step before export — 2026-03-02 (RPT-APPROVE1)
-- [x] Multi-tenancy infrastructure — django-tenants, per-agency encryption, consortium model, 12 tests — PR #220 — 2026-03-03 (MT-CORE1 thru MT-VALIDATE1)
-- [x] Deploy script + VPS provisioning — scripts/deploy-konote-vps.sh, docs/plans/ — PR #217 — 2026-03-02 (DOC-MA5 + DEPLOY-SCRIPT1)
+- [x] Add partner report approval workflow — preview, agency notes, approve step — 2026-03-02 (RPT-APPROVE1)
+- [x] Multi-tenancy infrastructure — django-tenants, per-agency encryption, consortium model — PR #220 — 2026-03-03 (MT-CORE1 thru MT-VALIDATE1)
+- [x] Deploy script + VPS provisioning — scripts/deploy-konote-vps.sh — PR #217 — 2026-03-02 (DOC-MA5 + DEPLOY-SCRIPT1)
 - [x] Add KoNote logo to navigation and social preview — 2026-03-02 (LOGO1)
-- [x] Seed groups-attendance + comm-my-messages test data in scenario runner — PR #212 — 2026-03-02 (QA-PA-TEST1 + QA-PA-TEST2)
+- [x] Seed groups-attendance + comm-my-messages test data — PR #212 — 2026-03-02 (QA-PA-TEST1 + QA-PA-TEST2)
 - [x] Write client-facing demo data engine guide — PR #213 — 2026-03-02 (DOC-DEMO1)
-- [x] Add rate limit to portal login endpoint — Sentinel security fix — PR #214 — 2026-03-02 (SEC-RATELIMIT1)
+- [x] Add rate limit to portal login endpoint — PR #214 — 2026-03-02 (SEC-RATELIMIT1)
 - [x] Fix quick links contrast + login form a11y — PR #216 — 2026-03-02 (QA-R8-CONTRAST2)
 - [x] Audit migration set schema fix — PR #223 — 2026-03-03 (MT-AUDIT-FIX1)
-- [x] Accessibility sweep — ARIA roles, landmarks, templates, contrast, table headers, touch targets, polish — PR #208 — 2026-03-02 (AXE-ARIA1 thru QA-R8-A11Y7)
-- [x] QA Round 8 Tier 2 — French nav verified, form resubmission false positive, /reports/funder/ redirect, executive dashboard presets + PDF — PRs #210, #211 — 2026-03-02 (QA-R8-I18N1, QA-R8-UX10, QA-R8-UX11, QA-R8-UX8)
-- [x] Wave 1 parallel bug fixes — client search, tab order, mobile edit, skip links, quick note, calendar feed, PM nav, h1 headings — PRs #201–207 — 2026-03-02 (QA-R8-UX3 thru QA-R8-UX12)
-- [x] Permission system documentation — DV-safe mode, GATED access, field controls, access tiers — PR #147 — 2026-03-02 (DOC-PERM1 + DOC-PERM2 + DOC-PERM3)
+- [x] Accessibility sweep — ARIA, landmarks, contrast, touch targets, polish — PR #208 — 2026-03-02 (AXE-ARIA1 thru QA-R8-A11Y7)
+- [x] QA Round 8 Tier 2 — French nav, form resubmission, funder redirect, exec dashboard — PRs #210, #211 — 2026-03-02 (QA-R8-I18N1 thru QA-R8-UX8)
+- [x] Wave 1 bug fixes — client search, tab order, mobile edit, skip links, quick note — PRs #201–207 — 2026-03-02 (QA-R8-UX3 thru QA-R8-UX12)
+- [x] Permission system documentation — DV-safe, GATED access, field controls, access tiers — PR #147 — 2026-03-02 (DOC-PERM1 + DOC-PERM2 + DOC-PERM3)
 - [x] Data handling acknowledgement merged — PR #130 — 2026-03-03 (SEC3-AGREE1)
 - [x] SEC3-Q1 resolved — tiered model: self-hosted self-serve, SaaS via KoNote with SLA — 2026-02-27 (SEC3-Q1)
