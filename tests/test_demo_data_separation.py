@@ -188,6 +188,59 @@ class ImpersonationGuardTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DemoAdminReadOnlyTest(TestCase):
+    """Test that demo admin users cannot modify agency settings (DEMO-ADMIN-RO1)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+        self.demo_admin = User.objects.create_user(
+            username="demo-admin", password="testpass123", is_admin=True, is_demo=True
+        )
+        self.real_admin = User.objects.create_user(
+            username="real-admin", password="testpass123", is_admin=True, is_demo=False
+        )
+
+    def test_demo_admin_can_view_terminology(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.get("/admin/settings/terminology/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_demo_admin_cannot_post_terminology(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.post("/admin/settings/terminology/", {})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_demo_admin_can_view_features(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.get("/admin/settings/features/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_demo_admin_cannot_post_features(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.post("/admin/settings/features/", {})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_demo_admin_can_view_instance_settings(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.get("/admin/settings/instance/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_demo_admin_cannot_post_instance_settings(self):
+        self.http_client.login(username="demo-admin", password="testpass123")
+        resp = self.http_client.post("/admin/settings/instance/", {})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_real_admin_can_post_terminology(self):
+        self.http_client.login(username="real-admin", password="testpass123")
+        resp = self.http_client.post("/admin/settings/terminology/", {})
+        # Should not be 403 — real admins can modify
+        self.assertNotEqual(resp.status_code, 403)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class IsDemoImmutableTest(TestCase):
     """Test that is_demo field cannot be changed after creation."""
 
