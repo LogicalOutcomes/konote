@@ -97,9 +97,9 @@
 
         {% if demo_mode %}
         <hr class="demo-divider">
-        <section class="demo-section">
-            <p class="demo-heading">{% trans "Try the Demo" %}</p>
-            <p class="demo-subtext">{% trans "Sign in instantly as a demo user to explore the system" %}</p>
+        <section class="demo-section" aria-label="{% trans "Training Accounts" %}">
+            <p class="demo-heading">{% trans "Training Accounts" %}</p>
+            <p class="demo-subtext">{% trans "Sign in as a demo user to explore the system. Changes do not affect real data." %}</p>
             {% if demo_users %}
             <div class="demo-grid">
                 {% for u in demo_users %}

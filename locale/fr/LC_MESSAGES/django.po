@@ -80,10 +80,18 @@ msgstr "Se connecter avec Microsoft"
 msgid "Try the Demo"
 msgstr "Essayer la démo"
 
+msgid "Training Accounts"
+msgstr "Comptes de formation"
+
 msgid "Sign in instantly as a demo user to explore the system"
 msgstr ""
 "Connectez-vous instantanément en tant qu'utilisateur démo pour explorer le "
 "système"
+
+msgid "Sign in as a demo user to explore the system. Changes do not affect real data."
+msgstr ""
+"Connectez-vous en tant qu'utilisateur démo pour explorer le système. "
+"Les modifications n'affectent pas les vraies données."
 
 msgid "Manager"
 msgstr "Gestionnaire"
@@ -4211,6 +4219,24 @@ msgid "You are logged in as %(name)s. Changes affect demo data only."
 msgstr ""
 "Vous êtes connecté(e) en tant que %(name)s. Les modifications n'affectent "
 "que les données de démonstration."
+
+#: templates/base.html (training mode banner)
+msgid "Training Mode"
+msgstr "Mode formation"
+
+msgid "changes here do not affect real participant records."
+msgstr "les modifications ici n'affectent pas les vrais dossiers des participants."
+
+msgid "Signed in as %(name)s."
+msgstr "Connecté(e) en tant que %(name)s."
+
+msgid ""
+"Demo accounts cannot modify settings. Sign in with a real administrator "
+"account to make changes."
+msgstr ""
+"Les comptes de démonstration ne peuvent pas modifier les paramètres. "
+"Connectez-vous avec un vrai compte administrateur pour apporter des "
+"modifications."
 
 msgid "Diagnosis"
 msgstr "Diagnostic"

@@ -169,6 +169,14 @@
       "fixed_in": "QA-R8-UX8",
       "verified_date": null,
       "notes": "Added date preset buttons (30/90/365 days, fiscal year, custom) and PDF export via WeasyPrint with HTML fallback."
+    },
+    {
+      "description": "Demo mode safeguards — admin read-only, banner, login UX, audit, data exclusion",
+      "finding_group": null,
+      "fixed_date": "2026-03-03",
+      "fixed_in": "DEMO-ADMIN-RO1, DEMO-BANNER1, DEMO-LOGIN-UX1, DEMO-AUDIT1, DEMO-EXCLUDE1",
+      "verified_date": null,
+      "notes": "5 safeguards: demo admin cannot POST to settings views, banner says 'Training Mode', login section labelled 'Training Accounts', demo logins audited with is_demo_context=True, explicit is_demo=False filters on team meeting view and dashboard aggregates."
     }
   ]
 }
