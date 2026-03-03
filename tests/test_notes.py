@@ -1195,15 +1195,16 @@ class PlausibilityOverrideLogTest(TestCase):
             author_program=self.prog,
         )
 
-        # Simulate a form with plausibility data
+        # Simulate a form with plausibility data (prefix must be in data keys)
+        prefix = "metric_1_1"
         form = MetricValueForm(
             data={
-                "metric_def_id": str(self.metric_def.pk),
-                "value": "500000",
-                "plausibility_confirmed": "True",
-                "plausibility_original_value": "500000",
+                f"{prefix}-metric_def_id": str(self.metric_def.pk),
+                f"{prefix}-value": "500000",
+                f"{prefix}-plausibility_confirmed": "True",
+                f"{prefix}-plausibility_original_value": "500000",
             },
-            prefix="metric_1_1",
+            prefix=prefix,
             metric_def=self.metric_def,
         )
         form.is_valid()
@@ -1233,14 +1234,15 @@ class PlausibilityOverrideLogTest(TestCase):
         )
 
         # Simulate a form where original value was 700000 but submitted as 700
+        prefix = "metric_1_1"
         form = MetricValueForm(
             data={
-                "metric_def_id": str(self.metric_def.pk),
-                "value": "700",
-                "plausibility_confirmed": "True",
-                "plausibility_original_value": "700000",
+                f"{prefix}-metric_def_id": str(self.metric_def.pk),
+                f"{prefix}-value": "700",
+                f"{prefix}-plausibility_confirmed": "True",
+                f"{prefix}-plausibility_original_value": "700000",
             },
-            prefix="metric_1_1",
+            prefix=prefix,
             metric_def=self.metric_def,
         )
         form.is_valid()
@@ -1285,20 +1287,20 @@ class PlausibilityTuningDashboardTest(TestCase):
     def test_dashboard_accessible_to_admin(self):
         """Admin can access the plausibility tuning dashboard."""
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/plausibility-tuning/")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Plausibility Threshold Tuning")
 
     def test_dashboard_returns_403_for_staff(self):
         """Non-admin staff cannot access the dashboard."""
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/admin/plausibility-tuning/")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
         self.assertEqual(resp.status_code, 403)
 
     def test_dashboard_empty_state(self):
         """Dashboard shows empty state message when no logs exist."""
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/plausibility-tuning/")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
         self.assertContains(resp, "No plausibility override data yet")
 
     def test_dashboard_override_rate_calculation(self):
@@ -1343,7 +1345,7 @@ class PlausibilityTuningDashboardTest(TestCase):
             )
 
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/plausibility-tuning/")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
         self.assertContains(resp, "Total Debt")
         # 8 out of 10 = 80% override rate
         self.assertContains(resp, "80.0%")
@@ -1380,11 +1382,11 @@ class PlausibilityTuningDashboardTest(TestCase):
         self.http.login(username="admin", password="pass")
 
         # 30 days should include it
-        resp = self.http.get("/admin/plausibility-tuning/?days=30")
+        resp = self.http.get("/admin/settings/plausibility-tuning/?days=30")
         self.assertContains(resp, "Total Debt")
 
         # All time should include it too
-        resp = self.http.get("/admin/plausibility-tuning/?days=0")
+        resp = self.http.get("/admin/settings/plausibility-tuning/?days=0")
         self.assertContains(resp, "Total Debt")
 
     def test_dashboard_metric_with_zero_overrides_not_shown(self):
@@ -1401,7 +1403,7 @@ class PlausibilityTuningDashboardTest(TestCase):
         )
 
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/plausibility-tuning/")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
         # Neither metric should appear since both have 0 overrides
         self.assertNotContains(resp, "Credit Score")
         self.assertNotContains(resp, "Total Debt")
