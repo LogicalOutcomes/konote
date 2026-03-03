@@ -23,6 +23,14 @@ from apps.reports.insights_views import _compute_trend_direction
 from apps.reports.metric_insights import get_data_completeness
 
 
+# Check WeasyPrint availability once at import time.
+try:
+    from weasyprint import HTML as _WeasyHTML  # noqa: F401
+    _WEASYPRINT_AVAILABLE = True
+except (ImportError, OSError):
+    _WEASYPRINT_AVAILABLE = False
+
+
 # Minimum active participants before percentage metrics are shown.
 # Below this threshold, percentages could identify individuals.
 SMALL_PROGRAM_THRESHOLD = 5
@@ -1299,6 +1307,7 @@ def executive_dashboard(request):
         "start_date": custom_start,
         "data_refreshed_at": now,
         "nav_active": "executive",
+        "pdf_export_available": _WEASYPRINT_AVAILABLE,
     })
 
 

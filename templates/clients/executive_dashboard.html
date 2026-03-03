@@ -15,7 +15,9 @@
         </div>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <a href="{% url 'clients:executive_dashboard_export' %}?start_date={{ start_date|date:'Y-m-d' }}{% if selected_program_id %}&program={{ selected_program_id }}{% endif %}" role="button" class="outline small">{% trans "Export CSV" %}</a>
+            {% if pdf_export_available %}
             <a href="{% url 'clients:executive_dashboard_pdf' %}?start_date={{ start_date|date:'Y-m-d' }}{% if selected_program_id %}&program={{ selected_program_id }}{% endif %}" role="button" class="outline small">{% trans "Export PDF" %}</a>
+            {% endif %}
         </div>
     </div>
 </header>
@@ -92,6 +94,12 @@
         return year + '-04-01';
     }
 
+    function datesWithinOneDay(a, b) {
+        // Allow 1-day tolerance for client/server timezone differences
+        var da = new Date(a), db = new Date(b);
+        return Math.abs(da - db) <= 86400000; // 24 hours in ms
+    }
+
     function markActive() {
         var presets = {
             '30': getDateDaysAgo(30),
@@ -104,9 +112,9 @@
             var days = btn.getAttribute('data-days');
             var preset = btn.getAttribute('data-preset');
             var isMatch = false;
-            if (days && presets[days] === currentStart) {
+            if (days && datesWithinOneDay(presets[days], currentStart)) {
                 isMatch = true;
-            } else if (preset === 'fiscal-year' && presets['fiscal-year'] === currentStart) {
+            } else if (preset === 'fiscal-year' && datesWithinOneDay(presets['fiscal-year'], currentStart)) {
                 isMatch = true;
             }
             if (isMatch) {
