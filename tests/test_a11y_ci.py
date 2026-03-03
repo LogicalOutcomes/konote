@@ -132,7 +132,8 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
 
         self.page.locator("#username").fill("a11y_staff")
         self.page.locator("#password").fill("testpass123")
-        self.page.locator('form[action*="login"] button[type="submit"]').click()
+        login_form = self.page.locator("form:has(#username)")
+        login_form.locator('button[type="submit"]').click()
         self.page.wait_for_load_state("networkidle")
 
     def _inject_axe(self):

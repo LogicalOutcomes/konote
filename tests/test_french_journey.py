@@ -558,7 +558,7 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         resp = self.http.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Mod\u00e8le de rapport sur les r\u00e9sultats du programme")
-        self.assertContains(resp, "G\u00e9n\u00e9rer le rapport des r\u00e9sultats")
+        self.assertContains(resp, "G\u00e9n\u00e9rer l'aper\u00e7u")
 
     def test_analysis_tab_in_french(self):
         """Client analysis tab shows French labels."""
