@@ -79,29 +79,29 @@
     {# ---- Summary stats ---- #}
     <h2>{% trans "Overview" %}</h2>
     <div class="compliance-stats">
-        <div class="stat-card">
-            <div class="stat-value">{{ total_events }}</div>
-            <div class="stat-label">{% trans "Total audit events" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Total audit events' %}: {{ total_events }}">
+            <div class="stat-value" id="stat-total-events">{{ total_events }}</div>
+            <div class="stat-label" id="stat-total-events-label">{% trans "Total audit events" %}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ active_user_count }}</div>
-            <div class="stat-label">{% trans "Active users" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Active users' %}: {{ active_user_count }}">
+            <div class="stat-value" id="stat-active-users">{{ active_user_count }}</div>
+            <div class="stat-label" id="stat-active-users-label">{% trans "Active users" %}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ export_count }}</div>
-            <div class="stat-label">{% trans "Data exports" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Data exports' %}: {{ export_count }}">
+            <div class="stat-value" id="stat-exports">{{ export_count }}</div>
+            <div class="stat-label" id="stat-exports-label">{% trans "Data exports" %}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ access_denied_count }}</div>
-            <div class="stat-label">{% trans "Access denied" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Access denied' %}: {{ access_denied_count }}">
+            <div class="stat-value" id="stat-access-denied">{{ access_denied_count }}</div>
+            <div class="stat-label" id="stat-access-denied-label">{% trans "Access denied" %}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ login_failed_count }}</div>
-            <div class="stat-label">{% trans "Failed logins" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Failed logins' %}: {{ login_failed_count }}">
+            <div class="stat-value" id="stat-failed-logins">{{ login_failed_count }}</div>
+            <div class="stat-label" id="stat-failed-logins-label">{% trans "Failed logins" %}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ anomaly_count }}</div>
-            <div class="stat-label">{% trans "Anomaly flags" %}</div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Anomaly flags' %}: {{ anomaly_count }}">
+            <div class="stat-value" id="stat-anomalies">{{ anomaly_count }}</div>
+            <div class="stat-label" id="stat-anomalies-label">{% trans "Anomaly flags" %}</div>
         </div>
     </div>
 
