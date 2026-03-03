@@ -14,6 +14,8 @@ This guide covers everything you need to get KoNote running — from local devel
 | Deploy to OVHcloud VPS | [Deploy to OVHcloud](deploy-ovhcloud.md) |
 | Update or roll back a deployment | [Update and Rollback Guide](update-and-rollback.md) |
 | Set up PDF reports | [PDF Report Setup](#pdf-report-setup) |
+| Enable surveys | [Surveys Setup](#surveys-setup) |
+| Enable the participant portal | [Participant Portal Setup](#participant-portal-setup) |
 | Go live with real data | [Before You Enter Real Data](#before-you-enter-real-data) |
 
 ---
@@ -1061,6 +1063,128 @@ If you skip PDF setup:
 - Users can still view reports in-browser
 - CSV export is available
 - Browser "Print to PDF" works as an alternative
+
+---
+
+## Surveys Setup
+
+KoNote includes a built-in survey engine for collecting structured feedback from participants. Surveys are **disabled by default** — you need to turn on the feature toggle before anyone can create or respond to surveys.
+
+### Feature Toggle
+
+Enable surveys from the admin UI:
+
+1. Go to **Admin → Settings → Features**
+2. Turn on **Surveys**
+3. Click **Save**
+
+Once enabled, "Surveys" appears in the Admin/Manage dropdown and a "Surveys" tab appears on each participant's file.
+
+No environment variables are required for surveys. The feature is entirely controlled by the `surveys` feature toggle in the database (`admin_settings_featuretoggles` table).
+
+### Database Tables
+
+Running `python manage.py migrate` creates these tables in the main database:
+
+| Table | Purpose |
+|-------|---------|
+| `surveys` | Survey definitions (name, status, options) |
+| `survey_sections` | Sections within a survey (grouping, scoring, conditions) |
+| `survey_questions` | Individual questions with type, options, and ordering |
+| `survey_trigger_rules` | Automatic assignment rules (event, enrolment, time, characteristic) |
+| `survey_assignments` | Tracks which surveys are assigned to which participants |
+| `survey_responses` | Completed survey submissions |
+| `survey_answers` | Individual answers — text values are **Fernet-encrypted** at rest |
+| `survey_links` | Shareable link tokens for public survey access |
+| `survey_partial_answers` | In-progress answers for auto-save (encrypted) |
+
+### Shareable Links (Public Survey Access)
+
+Surveys can be completed through shareable links — public URLs that require no login. When you create a shareable link for a survey, KoNote generates a unique token-based URL.
+
+**No additional setup is required** for shareable links beyond enabling the surveys feature. The public form is served at `/survey/<token>/` on the same domain as your KoNote instance.
+
+If you use a custom domain, make sure both `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` include that domain — otherwise form submissions from shareable links will fail with a CSRF error.
+
+### Trigger Rules
+
+Trigger rules can automatically assign surveys when certain events occur (e.g., a participant is enrolled in a program, or a specific number of days have passed). Trigger rules are configured per-survey from the admin interface — no environment variables or code changes are needed.
+
+### What to Know
+
+- **Encryption:** Free-text answers (`SurveyAnswer.value` and `PartialAnswer.value`) are Fernet-encrypted at rest. Numeric values used for scoring are stored as plain integers for aggregation.
+- **Survey data stays in the main database** — not the audit database. Audit log entries are created for survey-related actions (create, submit, assign) via the standard audit middleware.
+- **Closing a survey** automatically deactivates all its trigger rules and prevents new responses, but preserves existing data.
+
+---
+
+## Participant Portal Setup
+
+The participant portal is a separate, participant-facing interface where participants can view their goals, progress, journal entries, and surveys. It is **disabled by default**.
+
+### Feature Toggle
+
+Enable the portal from the admin UI:
+
+1. Go to **Admin → Settings → Features**
+2. Turn on **Participant Portal**
+3. Click **Save**
+
+Turning on the portal also makes sub-features available: **Journal**, **Messaging**, and **Resources** each have their own toggles that depend on the portal being enabled.
+
+### Environment Variables
+
+The portal works on a single domain without extra configuration. For production deployments where you want the portal on a separate subdomain (e.g., `my.outcomes.myagency.ca`), set these optional variables:
+
+| Variable | Required? | Purpose |
+|----------|-----------|---------|
+| `EMAIL_HASH_KEY` | **Yes** (production) | HMAC secret for hashing participant email addresses during login lookup. Must be a stable string — changing it invalidates all existing portal accounts. In demo mode, a placeholder is used automatically. |
+| `PORTAL_DOMAIN` | No | Portal subdomain (e.g., `my.outcomes.myagency.ca`). When set, portal paths (`/my/`) are only accessible on this domain. |
+| `STAFF_DOMAIN` | No | Staff subdomain (e.g., `outcomes.myagency.ca`). When set, staff paths are blocked on the portal domain and vice versa. |
+
+**Single-domain setup (most deployments):** Leave `PORTAL_DOMAIN` and `STAFF_DOMAIN` blank. The portal runs at `/my/` on your main domain alongside the staff interface. No domain enforcement is applied.
+
+**Split-domain setup (optional):** Set both `PORTAL_DOMAIN` and `STAFF_DOMAIN`. KoNote's `DomainEnforcementMiddleware` ensures portal paths are only reachable on the portal domain and staff paths are only reachable on the staff domain. Both domains must be in `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+
+### Database Tables
+
+Running `python manage.py migrate` creates these tables in the main database:
+
+| Table | Purpose |
+|-------|---------|
+| `portal_participant_users` | Participant login accounts (encrypted email, HMAC hash, MFA, lockout) |
+| `portal_invites` | Single-use invite tokens for participant onboarding |
+| `portal_journal_entries` | Private journal entries written by participants (encrypted) |
+| `portal_messages` | Messages from participants to staff (encrypted) |
+| `portal_staff_notes` | Notes from staff visible in a participant's portal (encrypted) |
+| `portal_correction_requests` | Participant requests to correct their recorded data (PHIPA/PIPEDA) |
+| `portal_staff_assisted_login_tokens` | One-time tokens for in-person portal login |
+| `portal_resource_links` | Program-level resource links (bilingual) |
+| `portal_client_resource_links` | Per-participant resource links added by staff |
+
+### Portal Invitations
+
+Staff invite participants to the portal from the participant's detail page:
+
+1. Open the participant's file
+2. Click **Portal → Create Invite**
+3. Optionally set a verbal verification code
+4. Share the generated link with the participant
+
+The invite link is valid for **7 days** and can only be used once. The participant creates their own email, display name, and password, then goes through a consent flow before reaching their dashboard.
+
+### Multi-Factor Authentication
+
+Participant portal accounts use **TOTP-based MFA** by default. Participants set up MFA during their first login. If a participant loses access to their authenticator app, staff can reset their MFA from the portal management page.
+
+Account lockout activates after **5 failed login attempts** with a **15-minute lockout period**.
+
+### What to Know
+
+- **Encryption:** Portal models encrypt PII at rest — email addresses, journal entries, messages, staff notes, correction request descriptions, and TOTP secrets are all Fernet-encrypted. Email addresses are additionally HMAC-hashed for constant-time lookup.
+- **Separate session:** The portal uses its own session key (`_portal_participant_id`). Participant sessions are completely separate from staff sessions — a participant cannot access the staff interface and vice versa.
+- **Emergency logout:** The portal includes a panic/safety button that immediately destroys the session via `navigator.sendBeacon()`. This is designed for participants in unsafe situations (e.g., domestic violence).
+- **Data isolation:** Every portal view scopes queries to the logged-in participant's client file. There is no way for one participant to see another's data.
 
 ---
 

@@ -52,7 +52,7 @@ class CSVParserValidTest(TestCase):
         assert len(parsed.breakdowns) == 1
         assert parsed.breakdowns[0].label == "Age Groups"
         assert parsed.breakdowns[0].source_type == "age"
-        assert len(parsed.breakdowns[0].bins) == 3
+        assert len(parsed.breakdowns[0].bins_json) == 3
 
     def test_parse_with_description(self):
         csv_content = (
