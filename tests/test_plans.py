@@ -3,9 +3,7 @@
 Covers the post_save signal on PlanTarget that auto-updates achievement_status
 when a goal's lifecycle status changes.
 """
-import pytest
 from cryptography.fernet import Fernet
-from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.utils import timezone

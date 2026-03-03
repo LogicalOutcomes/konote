@@ -1694,6 +1694,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 
             warningDiv.style.display = "block";
             warningDiv.classList.add("tier-2");
+            warningDiv.setAttribute("aria-live", "assertive");
             // Reset confirmation — tier-2 requires two clicks
             warningDiv.setAttribute("data-confirm-count", "0");
             if (confirmedInput) confirmedInput.value = "";
@@ -1725,6 +1726,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             warningDiv.style.display = "block";
             warningDiv.classList.remove("tier-2");
             warningDiv.removeAttribute("data-confirm-count");
+            warningDiv.setAttribute("aria-live", "polite");
             // Reset confirmation when value changes
             if (confirmedInput) confirmedInput.value = "";
             var btn = warningDiv.querySelector(".plausibility-confirm-btn");
@@ -1772,6 +1774,8 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         e.target.style.display = "none";
         warningDiv.style.color = "var(--pico-muted-color)";
         warningDiv.classList.remove("tier-2");
+        warningDiv.removeAttribute("data-confirm-count");
+        warningDiv.setAttribute("aria-live", "polite");
     });
 
     // Selector matches inputs with any plausibility data attribute

@@ -163,7 +163,7 @@
                 {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
                 {% if mf.value.errors %}<small class="error" id="metric-error-{{ forloop.counter }}-{{ tf.target.pk }}" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
                 <div class="plausibility-warning" style="display:none;" role="alert" aria-live="polite">
-                    <small class="warning-text" style="color: var(--pico-del-color);"></small>
+                    <small class="warning-text"></small>
                     <button type="button" class="outline secondary plausibility-confirm-btn" style="padding: 0.15rem 0.5rem; margin-top: 0.25rem; font-size: 0.8125rem;">
                         {% trans "Confirm this value" %}
                     </button>
