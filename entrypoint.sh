@@ -11,7 +11,10 @@ python manage.py migrate --noinput
 echo "Migrations complete."
 
 echo "Running audit migrations..."
-python manage.py migrate --database=audit --noinput
+# migrate_audit is a custom command that bypasses the django-tenants migrate_schemas
+# override; the audit DB uses the standard PostgreSQL backend which does not have
+# the set_schema() method that migrate_schemas requires.
+python manage.py migrate_audit --noinput
 echo "Audit migrations complete."
 
 echo "Locking down audit database permissions..."

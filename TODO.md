@@ -21,15 +21,14 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 
 **Deployment automation (ops scripting, not product code):**
 
-- [ ] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — PB (DOC-MA5)
-- [ ] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
+- [x] Write deploy script design doc — how provisioning is automated, target: new agency instance in hours not weeks (docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DOC-MA5)
+- [x] Build deploy script to automate agency instance provisioning — server setup, DNS, SSL, Docker, initial configuration, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) — 2026-03-02 (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
@@ -82,15 +81,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
-### Phase: Server Sharing — cost optimization, not a launch prerequisite (see tasks/design-rationale/multi-tenancy.md)
+### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
 
-Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing allows agencies to share a server while keeping data walled off, reducing costs to $4–10/agency/month. Worth doing when the network grows beyond 3–5 agencies.
+Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
 
-- [ ] Integrate django-tenants for server sharing — multiple agencies on one server with walled-off database sections (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
-- [ ] Implement per-agency encryption keys — separate encryption key per agency, encrypted by master key (see plan Task 3) — PB (MT-ENCRYPT1)
-- [ ] Create cost-sharing group data model — which agencies share a server, program-level data sharing controls, published reports (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit agency column (see plan Tasks 5-6) — PB (MT-CONSENT1)
-- [ ] Validate existing features work across shared-server agencies — update test infrastructure, fix related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
+Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
+
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
@@ -116,7 +112,6 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
 - [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
-- [ ] Use KoNote logos from `Logo/brand/` folder across app and website (see PR #100) — PB (LOGO1)
 
 ## Parking Lot: Ready to Build
 
@@ -151,6 +146,21 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
+
+### Multi-Tenancy Infrastructure (PR #220)
+
+- [x] Integrate django-tenants for server sharing — schema-per-tenant, SHARED_APPS/TENANT_APPS split — 2026-03-03 (MT-CORE1)
+- [x] Implement per-agency encryption keys — KEK pattern, thread-local cache, management commands — 2026-03-03 (MT-ENCRYPT1)
+- [x] Create cost-sharing group data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport — 2026-03-03 (MT-CONSORT1)
+- [x] Add consent_to_aggregate_reporting field and audit tenant_schema column — 2026-03-03 (MT-CONSENT1)
+- [x] Validate existing features work with multi-tenancy — NoOpTenantRouter for SQLite, 12 new tests, no regressions — 2026-03-03 (MT-VALIDATE1)
+
+### PB Tasks Sprint — Deploy Script + Logo Integration
+
+- [x] Write deploy script design doc — automated provisioning plan for OVHcloud VPS — 2026-03-02 (DOC-MA5)
+- [x] Build deploy script — scripts/deploy-konote-vps.sh automates 9 of 15 manual steps — 2026-03-02 (DEPLOY-SCRIPT1)
+- [x] Add KoNote logo to navigation and social sharing meta tags — 2026-03-02 (LOGO1)
+- [x] Remove stale OPS4 — backup restore was already completed 2026-02-26 (see ARCHIVE.md) — 2026-03-02 (OPS4-CLEANUP)
 
 ### Wave 2 Sprint — Accessibility Sweep (PR #208)
 

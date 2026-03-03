@@ -44,15 +44,25 @@ DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() in ("1", "true", "yes")
 # not stored in settings. Only URL is kept here for the feature toggle check.
 ODK_CENTRAL_URL = os.environ.get("ODK_CENTRAL_URL", "")
 
-# Application definition
-INSTALLED_APPS = [
+# ── Multi-tenancy: app split ──────────────────────────────────────────
+# django-tenants requires apps to be split into shared (public schema)
+# and tenant (per-agency schema) groups. See DRR: multi-tenancy.md.
+
+SHARED_APPS = [
+    "django_tenants",
+    "apps.tenants",
+    # Django core (shared)
+    "django.contrib.contenttypes",
+    "django.contrib.staticfiles",
+]
+
+TENANT_APPS = [
+    "django.contrib.contenttypes",
     "django.contrib.admin",
     "django.contrib.auth",
-    "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # KoNote apps
+    # KoNote apps (per-agency)
     "apps.auth_app",
     "apps.programs",
     "apps.clients",
@@ -60,7 +70,6 @@ INSTALLED_APPS = [
     "apps.notes",
     "apps.events",
     "apps.admin_settings",
-    "apps.audit",
     "apps.reports",
     "apps.registration",
     "apps.groups",
@@ -69,9 +78,25 @@ INSTALLED_APPS = [
     "apps.communications",
     "apps.surveys",
     "apps.field_collection",
+    "apps.consortia",
 ]
 
+# INSTALLED_APPS combines both lists (de-duplicated, order preserved)
+INSTALLED_APPS = list(SHARED_APPS) + [
+    app for app in TENANT_APPS if app not in SHARED_APPS
+]
+# Audit app lives in a separate database — not shared, not tenant.
+# Its migration routing is handled by AuditRouter, not TenantSyncRouter.
+INSTALLED_APPS.append("apps.audit")
+
+# django-tenants configuration
+TENANT_MODEL = "tenants.Agency"
+TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
+
 MIDDLEWARE = [
+    # TenantMainMiddleware MUST be first — it sets the PostgreSQL schema
+    # search_path based on the request's subdomain before anything else runs.
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -148,7 +173,15 @@ for _alias, _conf in DATABASES.items():
         _conf.setdefault("OPTIONS", {})["connect_timeout"] = 10
 del _alias, _conf
 
-DATABASE_ROUTERS = ["konote.db_router.AuditRouter"]
+# Override the default database engine for django-tenants schema routing.
+# Only applies when using PostgreSQL (not SQLite in tests).
+if "postgresql" in DATABASES["default"].get("ENGINE", ""):
+    DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
+
+DATABASE_ROUTERS = [
+    "django_tenants.routers.TenantSyncRouter",
+    "konote.db_router.AuditRouter",
+]
 
 # Password hashing — Argon2 first
 PASSWORD_HASHERS = [

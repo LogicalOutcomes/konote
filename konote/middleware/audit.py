@@ -125,6 +125,13 @@ class AuditMiddleware:
             pass
         return None
 
+    def _get_tenant_schema(self, request):
+        """Get the current tenant schema name from the request, if available."""
+        tenant = getattr(request, "tenant", None)
+        if tenant is not None:
+            return getattr(tenant, "schema_name", "")
+        return ""
+
     def _log_request(self, request, response, action):
         """Write an audit log entry."""
         try:
@@ -155,6 +162,7 @@ class AuditMiddleware:
                 program_id=conf_program_id,
                 is_demo_context=getattr(request.user, "is_demo", False),
                 is_confidential_context=is_confidential,
+                tenant_schema=self._get_tenant_schema(request),
                 metadata=metadata,
             )
         except Exception as e:
@@ -194,6 +202,7 @@ class AuditMiddleware:
                 program_id=None,
                 is_demo_context=False,
                 is_confidential_context=False,
+                tenant_schema=self._get_tenant_schema(request),
                 metadata={
                     "path": request.path,
                     "status_code": response.status_code,

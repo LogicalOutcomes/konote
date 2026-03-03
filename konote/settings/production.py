@@ -4,6 +4,7 @@ Production settings — secure defaults for all deployment platforms.
 Supported platforms (auto-detected):
 - Railway: Sets RAILWAY_ENVIRONMENT, provides PORT
 - Azure App Service: Sets WEBSITE_SITE_NAME, provides PORT
+- Azure Container Apps: Sets CONTAINER_APP_NAME
 - Elestio: Sets ELESTIO_VM_NAME
 - Docker/self-hosted: Set DATABASE_URL and other required vars
 
@@ -105,6 +106,10 @@ if os.environ.get("WEBSITE_SITE_NAME"):
         ".azurewebsites.net",
     ])
 
+# Azure Container Apps
+if os.environ.get("CONTAINER_APP_NAME"):
+    ALLOWED_HOSTS.append(".azurecontainerapps.io")
+
 # Elestio
 if os.environ.get("ELESTIO_VM_NAME"):
     # Elestio provides CNAME or custom domain via env vars
@@ -151,6 +156,9 @@ if os.environ.get("RAILWAY_ENVIRONMENT"):
 if os.environ.get("WEBSITE_SITE_NAME"):
     site_name = os.environ.get("WEBSITE_SITE_NAME")
     _trusted_origins.append(f"https://{site_name}.azurewebsites.net")
+
+if os.environ.get("CONTAINER_APP_NAME"):
+    _trusted_origins.append("https://*.azurecontainerapps.io")
 
 if os.environ.get("ELESTIO_VM_NAME"):
     elestio_domain = os.environ.get("ELESTIO_DOMAIN", "")

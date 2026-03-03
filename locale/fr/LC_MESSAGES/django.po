@@ -878,7 +878,7 @@ msgstr "Rechercher %(clients)s"
 
 #, python-format
 msgid "New %(client)s"
-msgstr "Nouveau %(client)s"
+msgstr "Nouveau/Nouvelle %(client)s"
 
 #, python-format
 msgid "All %(programs)s"
@@ -17635,3 +17635,9 @@ msgstr "Sans notes cette période"
 
 msgid "suppressed"
 msgstr "supprimé"
+
+msgid "URL-safe identifier, e.g. 'youth-services'. Used as schema name."
+msgstr "Identifiant URL sécurisé, p. ex. 'services-jeunesse'. Utilisé comme nom de schéma."
+
+msgid "Your organisation name"
+msgstr "Nom de votre organisation"
