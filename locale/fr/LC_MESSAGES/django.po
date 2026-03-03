@@ -80,10 +80,18 @@ msgstr "Se connecter avec Microsoft"
 msgid "Try the Demo"
 msgstr "Essayer la démo"
 
+msgid "Training Accounts"
+msgstr "Comptes de formation"
+
 msgid "Sign in instantly as a demo user to explore the system"
 msgstr ""
 "Connectez-vous instantanément en tant qu'utilisateur démo pour explorer le "
 "système"
+
+msgid "Sign in as a demo user to explore the system. Changes do not affect real data."
+msgstr ""
+"Connectez-vous en tant qu'utilisateur démo pour explorer le système. "
+"Les modifications n'affectent pas les vraies données."
 
 msgid "Manager"
 msgstr "Gestionnaire"
