@@ -1501,13 +1501,15 @@ def executive_dashboard_pdf(request):
 
     html_content = render_to_string("reports/pdf_executive_dashboard.html", context, request=request)
 
-    # Attempt PDF conversion via WeasyPrint; fall back to HTML if unavailable
+    # Attempt PDF conversion via WeasyPrint; fall back to HTML if unavailable.
+    # WeasyPrint may raise ImportError (not installed) or OSError (native
+    # libraries like libgobject missing, common on Windows dev machines).
     try:
         from weasyprint import HTML as WeasyHTML
         pdf_bytes = WeasyHTML(string=html_content).write_pdf()
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="executive-dashboard.pdf"'
-    except ImportError:
+    except (ImportError, OSError):
         response = HttpResponse(html_content, content_type="text/html")
         response["Content-Disposition"] = 'attachment; filename="executive-dashboard.html"'
 
