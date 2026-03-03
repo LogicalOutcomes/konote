@@ -14,7 +14,10 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.portal.survey_helpers import filter_visible_sections
+from apps.portal.survey_helpers import (
+    calculate_section_scores,
+    filter_visible_sections,
+)
 
 from .models import (
     SurveyAnswer,
@@ -159,6 +162,12 @@ def public_survey_form(request, token):
             },
         )
 
+        # Store scores in session if survey allows score display
+        if survey.show_scores_to_participant:
+            scores = calculate_section_scores(visible_sections, all_answers)
+            if scores:
+                request.session[f"survey_scores_{link.token}"] = scores
+
         return redirect("public_survey_thank_you", token=link.token)
 
     # GET: only show unconditional sections initially
@@ -183,6 +192,12 @@ def public_survey_thank_you(request, token):
         return render(request, "surveys/public_expired.html", {
             "survey": None,
         })
+
+    # Retrieve scores from session (one-time read, then clean up)
+    session_key = f"survey_scores_{link.token}"
+    scores = request.session.pop(session_key, None)
+
     return render(request, "surveys/public_thank_you.html", {
         "survey": link.survey,
+        "scores": scores,
     })

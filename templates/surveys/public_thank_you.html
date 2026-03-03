@@ -17,6 +17,28 @@
 <h1>{% trans "Thank you!" %}</h1>
 <p>{% blocktrans with name=survey.name %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
 
+{% if scores %}
+<section style="text-align:left; margin-top:2rem">
+    <h2>{% trans "Your Scores" %}</h2>
+    <table aria-label="{% trans 'Survey scores' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Section" %}</th>
+                <th scope="col">{% trans "Score" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for s in scores %}
+            <tr>
+                <td>{{ s.title }}</td>
+                <td>{{ s.score }} / {{ s.max_score }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
 </main>
 </body>
 </html>
