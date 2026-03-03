@@ -8,6 +8,7 @@ from .views import (
     alert_recommendation_review,
     calendar_feed_settings,
     event_create,
+    event_edit,
     event_list,
     meeting_create,
     meeting_list,
@@ -22,6 +23,7 @@ urlpatterns = [
     # Participant events
     path("participant/<int:client_id>/", event_list, name="event_list"),
     path("participant/<int:client_id>/create/", event_create, name="event_create"),
+    path("participant/<int:client_id>/<int:event_id>/edit/", event_edit, name="event_edit"),
     # Alerts
     path("participant/<int:client_id>/alerts/create/", alert_create, name="alert_create"),
     path("alerts/<int:alert_id>/cancel/", alert_cancel, name="alert_cancel"),

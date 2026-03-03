@@ -62,11 +62,11 @@
             <tbody>
                 {% for row in category_counts %}
                 <tr>
-                    <td>{{ row.sre_category__name }}</td>
+                    <td>{% if row.category %}{{ row.category.get_translated_name }}{% else %}—{% endif %}</td>
                     <td>
-                        {% if row.sre_category__severity == 1 %}
+                        {% if row.severity == 1 %}
                             <span class="badge badge-danger">{% trans "1" %}</span>
-                        {% elif row.sre_category__severity == 2 %}
+                        {% elif row.severity == 2 %}
                             <span class="badge badge-warning">{% trans "2" %}</span>
                         {% else %}
                             <span class="badge badge-info">{% trans "3" %}</span>

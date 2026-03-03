@@ -326,8 +326,10 @@ def _send_sre_notification(event, request):
     )
     if event.title:
         body += f"{_('Event')}: {event.title}\n"
-    if event.description:
-        body += f"\n{_('Description')}: {event.description[:500]}\n"
+
+    # Do NOT include event.description in email — it may contain PII
+    # (participant names, clinical details). Email is the alert; staff
+    # click through to the app to read details behind RBAC.
 
     try:
         event_url = request.build_absolute_uri(
@@ -404,6 +406,67 @@ def event_create(request, client_id):
     return render(request, "events/event_form.html", {
         "form": form,
         "client": client,
+        "can_flag_sre": can_flag_sre,
+    })
+
+
+@login_required
+@requires_permission("event.create", _get_program_from_client)
+def event_edit(request, client_id, event_id):
+    """Edit an existing event for a client, including SRE flagging."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    event = get_object_or_404(Event, pk=event_id, client_file=client)
+
+    can_flag_sre = _user_can_flag_sre(request.user)
+    was_sre = event.is_sre
+
+    if request.method == "POST":
+        form = EventForm(request.POST, instance=event, can_flag_sre=can_flag_sre)
+        if form.is_valid():
+            event = form.save(commit=False)
+
+            # Handle SRE transition: non-SRE → SRE (new flagging)
+            if event.is_sre and not was_sre and can_flag_sre:
+                event.sre_flagged_by = request.user
+                event.sre_flagged_at = timezone.now()
+
+            event.save()
+
+            # Audit log + notification only on NEW SRE flagging
+            if event.is_sre and not was_sre:
+                from apps.audit.models import AuditLog
+                AuditLog.objects.using("audit").create(
+                    event_timestamp=timezone.now(),
+                    user_id=request.user.pk,
+                    user_display=request.user.display_name if hasattr(request.user, "display_name") else str(request.user),
+                    action="update",
+                    resource_type="sre_event",
+                    resource_id=event.pk,
+                    is_demo_context=getattr(request.user, "is_demo", False),
+                    metadata={
+                        "action": "flag",
+                        "client_id": client.pk,
+                        "sre_category_id": event.sre_category_id,
+                        "sre_category_name": str(event.sre_category) if event.sre_category else "",
+                        "severity": event.sre_category.severity if event.sre_category else None,
+                    },
+                )
+                if not event.sre_notifications_sent:
+                    _send_sre_notification(event, request)
+                messages.success(request, _("Event updated and flagged as a Serious Reportable Event. Notifications have been sent."))
+            else:
+                messages.success(request, _("Event updated."))
+
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = EventForm(instance=event, can_flag_sre=can_flag_sre)
+
+    return render(request, "events/event_form.html", {
+        "form": form,
+        "client": client,
+        "editing": True,
         "can_flag_sre": can_flag_sre,
     })
 
@@ -1242,12 +1305,20 @@ def sre_report(request):
 
     sre_events = sre_events.order_by("-start_timestamp")
 
-    # Aggregate counts by category
-    category_counts = (
-        sre_events.values("sre_category__name", "sre_category__severity")
+    # Aggregate counts by category (use IDs so templates can call get_translated_name)
+    category_counts_raw = (
+        sre_events.values("sre_category_id", "sre_category__severity")
         .annotate(count=Count("pk"))
-        .order_by("sre_category__severity", "sre_category__name")
+        .order_by("sre_category__severity")
     )
+    # Resolve to category objects for bilingual display
+    cat_map = {c.pk: c for c in SRECategory.objects.filter(
+        pk__in=[r["sre_category_id"] for r in category_counts_raw if r["sre_category_id"]]
+    )}
+    category_counts = [
+        {"category": cat_map.get(r["sre_category_id"]), "severity": r["sre_category__severity"], "count": r["count"]}
+        for r in category_counts_raw
+    ]
 
     # Aggregate counts by program
     program_counts = (
