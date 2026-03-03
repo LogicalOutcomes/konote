@@ -914,7 +914,7 @@ def plausibility_tuning_dashboard(request):
     """Dashboard showing plausibility override rates per metric to help admins tune thresholds."""
     from datetime import timedelta
 
-    from django.db.models import Avg, Case, Count, F, FloatField, Q, Value, When
+    from django.db.models import Avg, Count, Q
 
     from apps.notes.models import PlausibilityOverrideLog
     from apps.plans.models import MetricDefinition
