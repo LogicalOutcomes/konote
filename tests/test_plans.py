@@ -448,6 +448,90 @@ class MetricValueFormTier2Test(TestCase):
         self.assertNotIn("data-very-unlikely-max", html)
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricValueFormPlausibilityCleanTest(TestCase):
+    """Tests for server-side plausibility validation in MetricValueForm.clean()."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _make_metric_def(self):
+        return MetricDefinition.objects.create(
+            name="Test Plausibility",
+            definition="For plausibility tests",
+            category="custom",
+            metric_type="scale",
+            min_value=None,
+            max_value=None,
+            warn_min=10,
+            warn_max=500,
+            very_unlikely_min=-1000,
+            very_unlikely_max=150000,
+        )
+
+    def test_tier2_value_rejected_without_confirmation(self):
+        """Value outside tier-2 bounds should fail without plausibility_confirmed."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "-5000"},
+            metric_def=md,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("extremely unlikely", str(form.errors["value"]))
+
+    def test_tier1_value_rejected_without_confirmation(self):
+        """Value outside tier-1 bounds should fail without plausibility_confirmed."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "5"},
+            metric_def=md,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("outside the expected range", str(form.errors["value"]))
+
+    def test_tier2_value_accepted_with_confirmation(self):
+        """Value outside tier-2 bounds should pass with plausibility_confirmed=True."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "-5000", "plausibility_confirmed": "True"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_tier1_value_accepted_with_confirmation(self):
+        """Value outside tier-1 bounds should pass with plausibility_confirmed=True."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "5", "plausibility_confirmed": "True"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_in_range_value_accepted_without_confirmation(self):
+        """Value within all bounds should pass without confirmation."""
+        from apps.notes.forms import MetricValueForm
+
+        md = self._make_metric_def()
+        form = MetricValueForm(
+            data={"metric_def_id": md.pk, "value": "100"},
+            metric_def=md,
+        )
+        self.assertTrue(form.is_valid())
+
+
 class Tier2DataMigrationTest(TestCase):
     """Test that the data migration constants are correctly defined."""
 

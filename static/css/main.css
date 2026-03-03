@@ -2097,6 +2097,10 @@ label {
     color: var(--pico-form-element-invalid-border-color);
     font-weight: bold;
 }
+.plausibility-warning.tier-2 .plausibility-confirm-btn {
+    border-color: var(--pico-form-element-invalid-border-color);
+    color: var(--pico-form-element-invalid-border-color);
+}
 
 /* ---- The Session Overall (Two-Lens Layout) ---- */
 .session-overall {
