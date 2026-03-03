@@ -13,6 +13,8 @@ from .views import (
     meeting_list,
     meeting_status_update,
     meeting_update,
+    sre_report,
+    sre_unflag,
 )
 
 app_name = "events"
@@ -34,4 +36,7 @@ urlpatterns = [
     path("meetings/<int:event_id>/status/", meeting_status_update, name="meeting_status_update"),
     # Calendar feed
     path("calendar/settings/", calendar_feed_settings, name="calendar_feed_settings"),
+    # SRE
+    path("sre/<int:event_id>/unflag/", sre_unflag, name="sre_unflag"),
+    path("sre/report/", sre_report, name="sre_report"),
 ]
