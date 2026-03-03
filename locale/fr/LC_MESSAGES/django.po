@@ -17768,8 +17768,8 @@ msgid ""
 "4.1.4). No individual participant or staff names are shown."
 msgstr ""
 "Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
-"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de "
-"participant ou de membre du personnel n'est affiché."
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de participant"
+" ou de membre du personnel n'est affiché."
 
 msgid "Anomaly Flags"
 msgstr "Signalements d'anomalies"
@@ -17827,7 +17827,9 @@ msgid "Records Accessed by Type"
 msgstr "Dossiers consultés par type"
 
 msgid "Review the overview statistics and anomaly flags above."
-msgstr "Consultez les statistiques d'aperçu et les signalements d'anomalies ci-dessus."
+msgstr ""
+"Consultez les statistiques d'aperçu et les signalements d'anomalies ci-"
+"dessus."
 
 msgid "Standard (< 5)"
 msgstr "Standard (< 5)"
@@ -17853,13 +17855,231 @@ msgid "Total audit events"
 msgstr "Total des événements d'audit"
 
 msgid "Use the Print button to include this summary in board reports."
-msgstr "Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au conseil."
+msgstr ""
+"Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au "
+"conseil."
 
 msgid "Reporting period: %(start)s to %(end)s"
 msgstr "Période de rapport : %(start)s au %(end)s"
 
-msgid ""
-"View aggregate compliance summary (no PII, no staff names)"
+msgid "View aggregate compliance summary (no PII, no staff names)"
 msgstr ""
 "Consulter le résumé de conformité agrégé (aucune information personnelle, "
 "aucun nom de membre du personnel)"
+
+msgid "(no date)"
+msgstr "(pas de date)"
+
+msgid "(no program)"
+msgstr "(pas de programme)"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "A Serious Reportable Event has been flagged."
+msgstr "Un événement à déclarer obligatoirement a été signalé."
+
+msgid "All categories"
+msgstr "Toutes les catégories"
+
+msgid ""
+"An SRE category is required when flagging an event as a Serious Reportable "
+"Event."
+msgstr ""
+"Une catégorie d'ÉDO est requise lors du signalement d'un événement à "
+"déclarer obligatoirement."
+
+msgid ""
+"Are you sure you want to remove the Serious Reportable Event flag from this "
+"event?"
+msgstr ""
+"Êtes-vous sûr de vouloir retirer le signalement d'événement à déclarer "
+"obligatoirement de cet événement?"
+
+msgid "By Category"
+msgstr "Par catégorie"
+
+msgid "By Program"
+msgstr "Par programme"
+
+msgid "Create Category"
+msgstr "Créer la catégorie"
+
+msgid "Edit SRE Category"
+msgstr "Modifier la catégorie d'ÉDO"
+
+msgid "End date"
+msgstr "Date de fin"
+
+msgid ""
+"Event created and flagged as a Serious Reportable Event. Notifications have "
+"been sent."
+msgstr ""
+"Événement créé et signalé comme événement à déclarer obligatoirement. Les "
+"notifications ont été envoyées."
+
+msgid "Flag this event as a Serious Reportable Event (SRE)."
+msgstr "Signaler cet événement comme événement à déclarer obligatoirement (ÉDO)."
+
+msgid ""
+"Flag this event as a Serious Reportable Event. This will notify leadership."
+msgstr ""
+"Signaler cet événement comme événement à déclarer obligatoirement. Cela "
+"notifiera la direction."
+
+msgid "Flagged at"
+msgstr "Signalé le"
+
+msgid "Flagged by"
+msgstr "Signalé par"
+
+msgid "French Name"
+msgstr "Nom français"
+
+msgid "French description"
+msgstr "Description en français"
+
+msgid "French name"
+msgstr "Nom en français"
+
+msgid "Level 1"
+msgstr "Niveau 1"
+
+msgid "Level 1 — Immediate"
+msgstr "Niveau 1 — Immédiat"
+
+msgid "Level 2"
+msgstr "Niveau 2"
+
+msgid "Level 2 — 24h"
+msgstr "Niveau 2 — 24h"
+
+msgid "Level 2 — Within 24 hours"
+msgstr "Niveau 2 — Dans les 24 heures"
+
+msgid "Level 3"
+msgstr "Niveau 3"
+
+msgid "Level 3 — 7 days"
+msgstr "Niveau 3 — 7 jours"
+
+msgid "Level 3 — Within 7 days"
+msgstr "Niveau 3 — Dans les 7 jours"
+
+msgid ""
+"Manage the predefined list of SRE categories available to staff when "
+"flagging events."
+msgstr ""
+"Gérer la liste prédéfinie de catégories d'ÉDO disponibles pour le personnel "
+"lors du signalement d'événements."
+
+msgid "Name (English)"
+msgstr "Nom (anglais)"
+
+msgid "New SRE Category"
+msgstr "Nouvelle catégorie d'ÉDO"
+
+msgid ""
+"No SRE categories yet. Run the seed command or create one to get started."
+msgstr ""
+"Aucune catégorie d'ÉDO pour le moment. Exécutez la commande de "
+"préremplissage ou créez-en une pour commencer."
+
+msgid "No SREs found in the selected date range."
+msgstr "Aucun ÉDO trouvé dans la période sélectionnée."
+
+msgid "Remove SRE Flag"
+msgstr "Retirer le signalement d'ÉDO"
+
+msgid "SRE"
+msgstr "ÉDO"
+
+msgid "SRE Categories"
+msgstr "Catégories d'ÉDO"
+
+msgid "SRE Category"
+msgstr "Catégorie d'ÉDO"
+
+msgid "SRE Events"
+msgstr "Événements ÉDO"
+
+msgid "SRE Report"
+msgstr "Rapport d'ÉDO"
+
+msgid "SRE categories"
+msgstr "Catégories d'ÉDO"
+
+msgid "SRE category"
+msgstr "Catégorie d'ÉDO"
+
+msgid "SRE category %(name)s %(status)s."
+msgstr "Catégorie d'ÉDO %(name)s %(status)s."
+
+msgid "SRE category created."
+msgstr "Catégorie d'ÉDO créée."
+
+msgid "SRE category updated."
+msgstr "Catégorie d'ÉDO mise à jour."
+
+msgid "SRE counts by category"
+msgstr "Nombre d'ÉDO par catégorie"
+
+msgid "SRE counts by program"
+msgstr "Nombre d'ÉDO par programme"
+
+msgid "SRE flag removed from this event."
+msgstr "Le signalement d'ÉDO a été retiré de cet événement."
+
+msgid "SRE notifications sent"
+msgstr "Notifications d'ÉDO envoyées"
+
+msgid "Serious Reportable Event"
+msgstr "Événement à déclarer obligatoirement"
+
+msgid "Serious Reportable Event (SRE)"
+msgstr "Événement à déclarer obligatoirement (ÉDO)"
+
+msgid "Serious Reportable Event Categories"
+msgstr "Catégories d'événements à déclarer obligatoirement"
+
+msgid "Serious Reportable Events"
+msgstr "Événements à déclarer obligatoirement"
+
+msgid "Serious Reportable Events Report"
+msgstr "Rapport des événements à déclarer obligatoirement"
+
+msgid "Severity"
+msgstr "Gravité"
+
+msgid "Severity level"
+msgstr "Niveau de gravité"
+
+msgid ""
+"This action is audited. Un-flagging an SRE is recorded in the audit log."
+msgstr ""
+"Cette action est auditée. Le retrait d'un signalement d'ÉDO est enregistré "
+"dans le journal d'audit."
+
+msgid "This event is not flagged as an SRE."
+msgstr "Cet événement n'est pas signalé comme ÉDO."
+
+msgid "This will notify program leadership and site administrators."
+msgstr "Cela notifiera la direction du programme et les administrateurs du site."
+
+msgid "View all SREs in a date range, by program and category."
+msgstr "Voir tous les ÉDO dans une période, par programme et catégorie."
+
+msgid "View event"
+msgstr "Voir l'événement"
+
+msgid "activated"
+msgstr "activée"
+
+msgid "archived"
+msgstr "archivée"
