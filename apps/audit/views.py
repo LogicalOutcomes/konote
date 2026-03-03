@@ -360,16 +360,17 @@ def compliance_summary(request):
 
     # --- Aggregate metrics ---
 
-    total_events = qs.count()
-
     # Access events by action type (aggregate counts, no names)
     action_counts = dict(
         qs.values_list("action").annotate(count=Count("id")).order_by("-count")
     )
 
+    # Derive totals from action_counts (avoids redundant COUNT queries)
+    total_events = sum(action_counts.values())
+    export_count = action_counts.get("export", 0)
+
     # Export events — count by role (from metadata), not by staff name
     export_qs = qs.filter(action="export")
-    export_count = export_qs.count()
 
     # Count exports by role (stored in metadata.user_role)
     export_by_role = {}
