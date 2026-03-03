@@ -17682,12 +17682,12 @@ msgid ""
 "response content is processed externally. Please confirm your agency has "
 "reviewed this with your privacy officer or board."
 msgstr ""
-"L'activation de cette fonctionnalité signifie que les réponses dépersonnalisées "
-"des participants seront envoyées à un service d'IA externe pour analyse. Les "
-"noms individuels sont retirés, mais le contenu des réponses est traité à "
-"l'externe. Veuillez confirmer que votre organisme a examiné cette question "
-"avec votre responsable de la protection de la vie privée ou votre conseil "
-"d'administration."
+"L'activation de cette fonctionnalité signifie que les réponses "
+"dépersonnalisées des participants seront envoyées à un service d'IA externe "
+"pour analyse. Les noms individuels sont retirés, mais le contenu des "
+"réponses est traité à l'externe. Veuillez confirmer que votre organisme a "
+"examiné cette question avec votre responsable de la protection de la vie "
+"privée ou votre conseil d'administration."
 
 msgid "Privacy governance notice"
 msgstr "Avis de gouvernance en matière de vie privée"
@@ -17716,7 +17716,125 @@ msgid "Warning maximum cannot exceed the hard maximum."
 msgstr "Le maximum d'avertissement ne peut pas dépasser le maximum absolu."
 
 msgid "Warning minimum cannot be below the hard minimum."
-msgstr "Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
+msgstr ""
+"Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
 
 msgid "Warning minimum must be less than warning maximum."
-msgstr "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+msgstr ""
+"Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+
+msgid "%(count)s access denied events on %(date)s"
+msgstr "%(count)s événements d'accès refusé le %(date)s"
+
+msgid "%(count)s failed login attempts on %(date)s"
+msgstr "%(count)s tentatives de connexion échouées le %(date)s"
+
+msgid "%(count)s participant records viewed on %(date)s"
+msgstr "%(count)s dossiers de participants consultés le %(date)s"
+
+msgid "Access denied spike"
+msgstr "Pic d'accès refusés"
+
+msgid "Active users"
+msgstr "Utilisateurs actifs"
+
+msgid ""
+"Aggregate privacy and access metrics for board accountability (PIPEDA "
+"4.1.4). No individual participant or staff names are shown."
+msgstr ""
+"Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de "
+"participant ou de membre du personnel n'est affiché."
+
+msgid "Anomaly Flags"
+msgstr "Signalements d'anomalies"
+
+msgid "Anomaly flags"
+msgstr "Signalements d'anomalies"
+
+msgid "Bulk record access"
+msgstr "Accès massif aux dossiers"
+
+msgid "Compliance Summary"
+msgstr "Résumé de conformité"
+
+msgid "Conservative (< 10)"
+msgstr "Prudent (< 10)"
+
+msgid ""
+"Contact your administrator to investigate specific incidents. They have "
+"access to detailed audit log entries."
+msgstr ""
+"Communiquez avec votre administrateur pour enquêter sur des incidents "
+"précis. Il a accès aux entrées détaillées du journal d'audit."
+
+msgid "Data exports"
+msgstr "Exportations de données"
+
+msgid "Export events by role"
+msgstr "Événements d'exportation par rôle"
+
+msgid "Exports by Role"
+msgstr "Exportations par rôle"
+
+msgid "Failed login spike"
+msgstr "Pic de connexions échouées"
+
+msgid "Failed logins"
+msgstr "Connexions échouées"
+
+msgid "How to use this report"
+msgstr "Comment utiliser ce rapport"
+
+msgid "If an anomaly needs investigation, note the date and type."
+msgstr "Si une anomalie nécessite une enquête, notez la date et le type."
+
+msgid "No anomalies detected during this period."
+msgstr "Aucune anomalie détectée au cours de cette période."
+
+msgid "Overview"
+msgstr "Aperçu"
+
+msgid "Record access by type"
+msgstr "Accès aux dossiers par type"
+
+msgid "Records Accessed by Type"
+msgstr "Dossiers consultés par type"
+
+msgid "Review the overview statistics and anomaly flags above."
+msgstr "Consultez les statistiques d'aperçu et les signalements d'anomalies ci-dessus."
+
+msgid "Standard (< 5)"
+msgstr "Standard (< 5)"
+
+msgid ""
+"The following unusual patterns were detected during this period. Contact "
+"your administrator to investigate specific incidents."
+msgstr ""
+"Les tendances inhabituelles suivantes ont été détectées au cours de cette "
+"période. Communiquez avec votre administrateur pour enquêter sur des "
+"incidents précis."
+
+msgid ""
+"This summary shows aggregate compliance metrics — no individual participant "
+"or staff names are displayed. This is by design (PIPEDA principle of "
+"limiting collection)."
+msgstr ""
+"Ce résumé présente des indicateurs de conformité agrégés — aucun nom de "
+"participant ou de membre du personnel n'est affiché. C'est intentionnel "
+"(principe de la LPRPDE de limiter la collecte)."
+
+msgid "Total audit events"
+msgstr "Total des événements d'audit"
+
+msgid "Use the Print button to include this summary in board reports."
+msgstr "Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au conseil."
+
+msgid "Reporting period: %(start)s to %(end)s"
+msgstr "Période de rapport : %(start)s au %(end)s"
+
+msgid ""
+"View aggregate compliance summary (no PII, no staff names)"
+msgstr ""
+"Consulter le résumé de conformité agrégé (aucune information personnelle, "
+"aucun nom de membre du personnel)"
