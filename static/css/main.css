@@ -229,6 +229,19 @@ body > nav a.nav-active {
     padding-bottom: 2px;
 }
 
+/* Nav brand logo */
+.nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+.nav-logo {
+    height: 28px;
+    width: auto;
+    vertical-align: middle;
+}
+
 /* ---- Breadcrumb (enhanced visibility) ---- */
 nav.breadcrumb {
     margin-bottom: var(--kn-space-base);
