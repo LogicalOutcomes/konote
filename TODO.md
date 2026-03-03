@@ -82,10 +82,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
-- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
@@ -97,43 +94,30 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
-- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
-- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
 
-### Session 7 — PR Cleanup + Survey Links Merge
+### Session 7 — PR Cleanup + TODO Housekeeping
 
-- [x] Resolve merge conflicts and merge PR #236 (DQ1-TIER2 + docs verification) — 2026-03-03 (DQ1-TIER2)
-- [x] Resolve merge conflicts and merge PR #239 (survey shareable links) — 2026-03-03 (SURVEY-LINK1)
-- [x] Add missing French translations for survey link strings (6 entries) — 2026-03-03 (SURVEY-LINK1)
-- [x] Clean up TODO.md — remove completed items from Coming Up, update flags — 2026-03-03
+- [x] Merge PR #236 — DQ1-TIER2 thresholds + docs verification — 2026-03-03 (DQ1-TIER2)
+- [x] Merge PR #239 — survey shareable links + 6 missing French translations — 2026-03-03 (SURVEY-LINK1)
+- [x] Clean up TODO.md — mark completed parking lot items, archive old entries — 2026-03-03
 
-### Session 6 — Data Quality + Documentation + QA Verification
+### Session 6 — Data Quality + Documentation + AI Toggles
 
-- [x] Add second-tier "very unlikely" plausibility thresholds — model fields, validation, migrations, JS two-click confirm, CSS, admin form, 17 new tests — 2026-03-03 (DQ1-TIER2)
-- [x] Verify demo data engine guide — 7 claims checked against code, fixed "programme" spelling — 2026-03-03 (DOC-DEMO1)
-- [x] Verify DV-safe mode documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM1)
-- [x] Verify per-field front desk access documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM2)
-- [x] Verify access tiers documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM3)
-- [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
-- [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
-- [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
+- [x] Add second-tier plausibility thresholds — model fields, JS two-click confirm, 17 tests — 2026-03-03 (DQ1-TIER2)
+- [x] Verify docs: DOC-DEMO1, DOC-PERM1-3, QA-PA-TEST1-2 — all accurate — 2026-03-03
+- [x] Implement two-tier AI feature toggle split — 2026-03-03 (AI-TOGGLE1)
+- [x] Build SRE workflow — PR #243 open, needs conflict resolution — 2026-03-03 (SRE1)
+- [x] Build plausibility tuning dashboard — PR #244 open, needs conflict resolution — 2026-03-03 (DQ1-TUNE)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 
-- [x] Add configurable suppression threshold to ReportTemplate (5 or 10) — 2026-03-03 (QA-R8-RPT1)
-- [x] Add secondary (complementary) suppression to prevent derivation by subtraction — 2026-03-03 (QA-R8-RPT1)
-- [x] Remove n=50 floor for demographic grouping (small-cell suppression handles privacy) — 2026-03-03 (QA-R8-RPT1)
-- [x] Build compliance summary page for executives (aggregate audit metrics, no PII) — 2026-03-03 (QA-R8-PERM2)
-- [x] Update reporting-architecture DRR with suppression and compliance decisions — 2026-03-03 (QA-R8-RPT1, QA-R8-PERM2)
+- [x] Small-cell suppression with secondary suppression — 2026-03-03 (QA-R8-RPT1)
+- [x] Compliance summary page for executives (no PII) — 2026-03-03 (QA-R8-PERM2, QA-R7-EXEC-COMPLIANCE1)
 
 ### Session 4 — Documentation & Cleanup
 
-- [x] Create 9 admin toolkit decision documents (01-09) in docs/agency-setup-guide/ — 2026-03-03 (DEPLOY-TOOLKIT1)
-- [x] Add surveys and portal deployment docs to deploying-konote.md — 2026-03-03 (DOC-DEPLOY1)
-- [x] Add surveys and portal technical architecture to technical-documentation.md — 2026-03-03 (DOC-TECH1)
-- [x] Update konote-website with new features, security, and FAQ — 2026-03-03 (WEBSITE-UPDATE1)
-- [x] Align ParsedBreakdown.bins field naming to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
+- [x] Admin toolkit docs (01-09), deployment docs, website updates — 2026-03-03 (DEPLOY-TOOLKIT1, DOC-DEPLOY1, DOC-TECH1, WEBSITE-UPDATE1)
 
 _Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
