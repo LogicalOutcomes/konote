@@ -613,6 +613,57 @@ def deduplicate_themes(theme_dicts):
     return result
 
 
+class PlausibilityOverrideLog(models.Model):
+    """Tracks when plausibility warnings are triggered and whether staff override or correct them."""
+
+    metric_definition = models.ForeignKey(
+        "plans.MetricDefinition", on_delete=models.CASCADE,
+        related_name="plausibility_overrides",
+    )
+    progress_note = models.ForeignKey(
+        "ProgressNote", on_delete=models.CASCADE,
+        related_name="plausibility_overrides",
+        null=True, blank=True,
+    )
+    entered_value = models.FloatField(
+        help_text=_("The value that triggered the plausibility warning"),
+    )
+    threshold_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("warn_min", _("Below minimum")),
+            ("warn_max", _("Above maximum")),
+        ],
+    )
+    threshold_value = models.FloatField(
+        help_text=_("The warn_min or warn_max value that was breached"),
+    )
+    action = models.CharField(
+        max_length=20,
+        choices=[
+            ("confirmed", _("Staff confirmed the value")),
+            ("corrected", _("Staff corrected the value")),
+        ],
+    )
+    corrected_value = models.FloatField(
+        null=True, blank=True,
+        help_text=_("The corrected value, if changed"),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "notes"
+        ordering = ["-created_at"]
+        verbose_name = _("plausibility override log")
+        verbose_name_plural = _("plausibility override logs")
+
+    def __str__(self):
+        return f"{self.metric_definition} — {self.get_action_display()} ({self.entered_value})"
+
+
 @receiver(post_delete, sender=SuggestionLink)
 def recalculate_priority_on_link_delete(sender, instance, **kwargs):
     """Recalculate theme priority when a link is deleted (e.g. note erasure)."""
