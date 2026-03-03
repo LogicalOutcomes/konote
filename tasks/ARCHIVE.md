@@ -4,6 +4,85 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-03-03 Session 6 cleanup)
+
+### Multi-Tenancy Infrastructure (PR #220)
+
+- [x] Integrate django-tenants for server sharing — schema-per-tenant, SHARED_APPS/TENANT_APPS split — 2026-03-03 (MT-CORE1)
+- [x] Implement per-agency encryption keys — KEK pattern, thread-local cache, management commands — 2026-03-03 (MT-ENCRYPT1)
+- [x] Create cost-sharing group data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport — 2026-03-03 (MT-CONSORT1)
+- [x] Add consent_to_aggregate_reporting field and audit tenant_schema column — 2026-03-03 (MT-CONSENT1)
+- [x] Validate existing features work with multi-tenancy — NoOpTenantRouter for SQLite, 12 new tests, no regressions — 2026-03-03 (MT-VALIDATE1)
+
+### PB Tasks Sprint — Deploy Script + Logo Integration
+
+- [x] Write deploy script design doc — automated provisioning plan for OVHcloud VPS — 2026-03-02 (DOC-MA5)
+- [x] Build deploy script — scripts/deploy-konote-vps.sh automates 9 of 15 manual steps — 2026-03-02 (DEPLOY-SCRIPT1)
+- [x] Add KoNote logo to navigation and social sharing meta tags — 2026-03-02 (LOGO1)
+- [x] Remove stale OPS4 — backup restore was already completed 2026-02-26 (see ARCHIVE.md) — 2026-03-02 (OPS4-CLEANUP)
+
+### Wave 2 Sprint — Accessibility Sweep (PR #208)
+
+- [x] Fix ARIA role violations in nav dropdowns — menu pattern replaces incorrect listbox — 2026-03-02 (AXE-ARIA1)
+- [x] Fix duplicate landmark regions — aria-labels on both nav elements — 2026-03-02 (AXE-LANDMARK1)
+- [x] Fix public survey form accessibility — skip link, title, main.css — 2026-03-02 (AXE-TEMPLATE1)
+- [x] Fix colour contrast failures — --kn-text-faint corrected to #697888, feedback badge darkened — 2026-03-02 (AXE-CONTRAST1)
+- [x] Fix empty table headers on 8 admin pages — screen-reader "Actions" text — 2026-03-02 (AXE-TABLE1)
+- [x] Fix checkbox/radio label touch targets — CSS :has() padding — 2026-03-02 (QA-R8-A11Y6)
+- [x] Accessibility polish bundle — breadcrumb padding, aria-hidden on icons, link_embed consistency — 2026-03-02 (QA-R8-A11Y7)
+- [x] Verified: French navigation uses {% url %} tags correctly — no hardcoded paths found — 2026-03-02 (QA-R8-I18N1)
+- [x] Verified: form resubmission → help page is a QA false positive — no code path exists — 2026-03-02 (QA-R8-UX10)
+- [x] Add axe-core accessibility smoke tests to CI — new a11y job in ci.yml — 2026-03-02 (CI-A11Y1)
+
+### Wave 1 Sprint — Parallel Bug Fixes (PRs #201-#207, qa-scenarios #18)
+
+- [x] Auto-update progress metrics when goal status changes — post_save signal on PlanTarget updates achievement_status — 2026-03-02 (REQ-G4)
+- [x] Fix SCN-035 YAML URL — `/reports/funder/` to `/reports/funder-report/` in qa-scenarios repo — 2026-03-02 (QA-R8b-YAML1)
+- [x] Fix test runner interactive step execution — duplicate screenshot detection, HTMX waits, select action handler — 2026-03-02 (QA-R8b-TEST1)
+- [x] Fix URL placeholder substitution — pre-seed alert_id, recommendation_id, meeting_id, first-name client keys — 2026-03-02 (QA-R8b-TEST2)
+- [x] Fix newly created client not searchable — search now queries all accessible programs when search query is present — 2026-03-02 (QA-R8-UX3)
+- [x] Fix create form Tab order — added explicit field_order to ClientFileForm (First Name before Last Name) — 2026-03-02 (QA-R8-A11Y4)
+- [x] Verified: validation error + success confirmation on participant create already working — 2026-03-02 (QA-R8-UX5)
+- [x] Fix mobile edit — moved Edit to top of Actions dropdown menu — 2026-03-02 (QA-R8-UX6)
+- [x] Verified: accent display correct — _strip_accents() only used for search, display preserves original — 2026-03-02 (QA-R8-UX13)
+- [x] Fix excessive Tab presses — added "Skip to results" link on search/list pages — 2026-03-02 (QA-R8-A11Y5)
+- [x] Fix profile tabs arrow key nav — WAI-ARIA roving tabindex pattern + keyboard handler — 2026-03-02 (QA-R8-A11Y8)
+- [x] Fix quick note entry point — missing include + wrong hx-swap in notes tab — 2026-03-02 (QA-R8-UX4)
+- [x] Fix missing h1 on notes-detail page — added h1 Progress Note with French — 2026-03-02 (AXE-HEADING1)
+- [x] Verified: language middleware not regressed — 24 tests pass, SafeLocaleMiddleware intact — 2026-03-02 (QA-R8-LANG1)
+- [x] Verified: offline fallback not regressed — htmx error handlers + service worker + offline banner intact — 2026-03-02 (QA-R8-UX7)
+- [x] Verified: data export routes exist — /reports/participant/<id>/export/ with PDF/CSV/JSON + SecureExportLink — 2026-03-02 (QA-R8-VERIFY1)
+- [x] Fix calendar feed URL — added error handling, POST-Redirect-GET, improved success message — 2026-03-02 (QA-R8-UX9)
+- [x] Fix PM user management nav — `/manage/` path was missing from nav_active context processor — 2026-03-02 (QA-R8-UX12)
+
+### Phase: FHIR-Informed Data Foundations + CIDS Compliance (PR #131)
+
+- [x] Add CIDS metadata fields + OrganizationProfile — 2026-02-27 (CIDS-META1 + CIDS-ORG1)
+- [x] Import CIDS code lists + TaxonomyMapping model — 2026-02-27 (CIDS-CODES1)
+- [x] Build admin UI for CIDS tagging — 2026-02-27 (CIDS-ADMIN1)
+- [x] Add CIDS codes to reports + Standards Alignment appendix — 2026-02-27 (CIDS-ENRICH1)
+- [x] Extend ClientProgramEnrolment into ServiceEpisode — 2026-02-27 (FHIR-EPISODE1)
+- [x] Populate new ServiceEpisode fields from existing data — 2026-02-27 (FHIR-MIGRATE1)
+- [x] Add achievement_status + first_achieved_at to PlanTarget — 2026-02-27 (FHIR-ACHIEVE1)
+- [x] Add author_role to ProgressNote — 2026-02-27 (FHIR-ROLE1)
+- [x] Build JSON-LD export + impact dimensions — 2026-02-27 (CIDS-EXPORT1 + CIDS-IMPACT1)
+- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
+
+### QA Round 8 Tier 1
+
+- [x] QA Round 8 Tier 1: removed dashboard search autofocus (credentials leaked into search bar after login redirect) — 2026-03-01 (QA-R8-SEC1)
+- [x] QA Round 8 Tier 1: added regression test confirming demo buttons hidden when DEMO_MODE off — 2026-03-01 (QA-R8-SEC2)
+- [x] QA Round 8 Tier 1: verified skip link correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y1)
+- [x] QA Round 8 Tier 1: moved language toggle after login form for WCAG 2.4.3 Tab order — 2026-03-01 (QA-R8-A11Y2)
+- [x] QA Round 8 Tier 1: verified Actions dropdown ARIA pattern already correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y3)
+- [x] QA Round 8 Tier 1: verified 404 to 403 handling correct in code (stale screenshot) — 2026-03-01 (QA-R8-UX1)
+- [x] QA Round 8 Tier 1: closed BUG-33 form data corruption — could not reproduce, fields use explicit name bindings — 2026-03-01 (QA-R8-UX2)
+- [x] QA Round 8 Tier 1: verified admin nav hidden for executive role (stale screenshot) — 2026-03-01 (QA-R8-PERM1)
+- [x] Build export_agency_data management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, nested client-centric JSON, config files, Diceware passphrase, 20 tests — 2026-02-28 (SEC3)
+- [x] Individual client data export from client profile (Tier 1) — PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating — 2026-02-28 (QA-R7-PRIVACY1)
+
+---
+
 ## Moved from Recently Done (2026-03-03 TODO cleanup)
 
 ### Multi-Tenancy Infrastructure (PR #220)

@@ -268,13 +268,13 @@ If none of these exist, notes will be created without metric values. To fix this
 
 Event types need to exist in the system. These are usually created automatically during initial setup (the `seed` command). If your instance is missing event types, ask your system administrator to check.
 
-### My profile JSON programme name is not being used
+### My profile JSON program name is not being used
 
 Program names in the profile must match **exactly** — including capitalisation, spacing, and any special characters. For example, if your program is called "Youth Mental Health" in KoNote, the profile must use `"Youth Mental Health"` (not `"youth mental health"` or `"Youth mental health"`).
 
-When a profile programme name does not match, the engine logs a warning but continues — that programme's data will be auto-generated instead of using your custom content.
+When a profile program name does not match, the engine logs a warning but continues — that program's data will be auto-generated instead of using your custom content.
 
-### I changed my programmes and the demo data is outdated
+### I changed my programs and the demo data is outdated
 
 Simply regenerate demo data. Go to **Admin > Demo Data** and click **Regenerate Demo Data** (or run the command line tool with `--force`). The engine will clear the old demo data and create new data matching your current configuration.
 

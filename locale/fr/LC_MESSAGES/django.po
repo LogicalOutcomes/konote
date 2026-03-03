@@ -1,4 +1,4 @@
-# French translations for KoNote Web
+﻿# French translations for KoNote Web
 # Copyright (C) 2024
 # This file is distributed under the same license as the KoNote Web package.
 #
@@ -17745,6 +17745,80 @@ msgid "Warning minimum must be less than warning maximum."
 msgstr ""
 "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
 
+msgid ""
+"Hard ceiling — values above this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plafond absolu — les valeurs au-dessus sont presque certainement des erreurs"
+" de saisie. Nécessite deux confirmations."
+
+msgid ""
+"Hard floor — values below this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plancher absolu — les valeurs en dessous sont presque certainement des "
+"erreurs de saisie. Nécessite deux confirmations."
+
+msgid "Very unlikely maximum cannot exceed the hard maximum."
+msgstr "Le maximum très improbable ne peut pas dépasser le maximum absolu."
+
+msgid "Very unlikely maximum must be at or above the warning maximum."
+msgstr ""
+"Le maximum très improbable doit être égal ou supérieur au maximum "
+"d'avertissement."
+
+msgid "Very unlikely minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum très improbable ne peut pas être inférieur au minimum absolu."
+
+msgid "Very unlikely minimum must be at or below the warning minimum."
+msgstr ""
+"Le minimum très improbable doit être égal ou inférieur au minimum "
+"d'avertissement."
+
+msgid "Very unlikely minimum must be less than very unlikely maximum."
+msgstr ""
+"Le minimum très improbable doit être inférieur au maximum très improbable."
+
+msgid "Click again to confirm"
+msgstr "Cliquez de nouveau pour confirmer"
+
+msgid ""
+"This value ({value}) is extremely unlikely for {metric}. This is almost "
+"certainly a data-entry error. Please re-check and confirm twice if correct."
+msgstr ""
+"Cette valeur ({value}) est extrêmement improbable pour {metric}. Il s'agit "
+"presque certainement d'une erreur de saisie. Veuillez revérifier et "
+"confirmer deux fois si elle est correcte."
+
+msgid ""
+"This value ({value}) is unusually high for {metric}. Please double-check. If"
+" correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement élevée pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid ""
+"This value ({value}) is unusually low for {metric}. Please double-check. If "
+"correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement basse pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid "This value is extremely unlikely. Please confirm it is correct."
+msgstr ""
+"Cette valeur est extrêmement improbable. Veuillez confirmer qu'elle est "
+"correcte."
+
+msgid ""
+"This value is outside the expected range. Please confirm it is correct."
+msgstr ""
+"Cette valeur est en dehors de la plage attendue. Veuillez confirmer qu'elle "
+"est correcte."
+
+msgid "Value confirmed."
+msgstr "Valeur confirmée."
+
 msgid "Invalid send method"
 msgstr "Méthode d'envoi non valide"
 
@@ -18011,3 +18085,45 @@ msgstr "journal de dérogation de plausibilité"
 
 msgid "plausibility override logs"
 msgstr "journaux de dérogation de plausibilité"
+msgid " — %(pending)d still pending at period end"
+msgstr " — %(pending)d toujours en attente à la fin de la période"
+
+msgid "%(overdue)d exceeded 30-day statutory deadline"
+msgstr "%(overdue)d ont dépassé le délai légal de 30 jours"
+
+msgid "No privacy requests were received this period."
+msgstr "Aucune demande de confidentialité n'a été reçue durant cette période."
+
+msgid "all within statutory deadline"
+msgstr "toutes dans les délais légaux"
+
+msgid ""
+"Privacy requests processed: %(count)d (average %(days)d days, %(deadline)s)"
+msgstr ""
+"Demandes de confidentialité traitées : %(count)d (moyenne de %(days)d jours,"
+" %(deadline)s)"
+
+msgid ""
+"If true, use a cookie to discourage multiple submissions from the same "
+"browser."
+msgstr ""
+"Si vrai, utiliser un témoin pour décourager les soumissions multiples depuis"
+" le même navigateur."
+
+msgid "Limit to one response per browser (uses a cookie)"
+msgstr "Limiter à une réponse par navigateur (utilise un témoin)"
+
+msgid "Already Responded"
+msgstr "Déjà répondu"
+
+msgid "First name or nickname (optional)"
+msgstr "Prénom ou surnom (facultatif)"
+
+msgid "Additional questions appeared below."
+msgstr "Des questions supplémentaires sont apparues ci-dessous."
+
+msgid "You have already submitted a response to \"%(name)s\"."
+msgstr "Vous avez déjà soumis une réponse à « %(name)s »."
+
+msgid "Page"
+msgstr "Page"

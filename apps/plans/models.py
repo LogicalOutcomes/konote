@@ -55,6 +55,14 @@ class MetricDefinition(models.Model):
         null=True, blank=True,
         help_text=_("Soft warning maximum — values above this trigger a plausibility warning but are still accepted."),
     )
+    very_unlikely_min = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Hard floor — values below this are almost certainly data-entry errors. Requires two confirmations."),
+    )
+    very_unlikely_max = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Hard ceiling — values above this are almost certainly data-entry errors. Requires two confirmations."),
+    )
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
     unit_fr = models.CharField(
         max_length=50, blank=True, default="",
@@ -183,6 +191,31 @@ class MetricDefinition(models.Model):
             if self.warn_max > self.max_value:
                 raise ValidationError(
                     _("Warning maximum cannot exceed the hard maximum.")
+                )
+        if self.very_unlikely_min is not None and self.very_unlikely_max is not None:
+            if self.very_unlikely_min >= self.very_unlikely_max:
+                raise ValidationError(
+                    _("Very unlikely minimum must be less than very unlikely maximum.")
+                )
+        if self.very_unlikely_min is not None and self.warn_min is not None:
+            if self.very_unlikely_min > self.warn_min:
+                raise ValidationError(
+                    _("Very unlikely minimum must be at or below the warning minimum.")
+                )
+        if self.very_unlikely_max is not None and self.warn_max is not None:
+            if self.very_unlikely_max < self.warn_max:
+                raise ValidationError(
+                    _("Very unlikely maximum must be at or above the warning maximum.")
+                )
+        if self.very_unlikely_min is not None and self.min_value is not None:
+            if self.very_unlikely_min < self.min_value:
+                raise ValidationError(
+                    _("Very unlikely minimum cannot be below the hard minimum.")
+                )
+        if self.very_unlikely_max is not None and self.max_value is not None:
+            if self.very_unlikely_max > self.max_value:
+                raise ValidationError(
+                    _("Very unlikely maximum cannot exceed the hard maximum.")
                 )
 
     @property
