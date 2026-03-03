@@ -4106,7 +4106,7 @@ article[aria-label="notification"].fading-out {
 }
 .feedback-badge--request { background: #e3f2fd; color: #1565c0; }
 .feedback-badge--suggestion { background: #e8f5e9; color: #2e7d32; }
-.feedback-badge--complaint, .feedback-badge--concern { background: #fff3e0; color: #e65100; }
+.feedback-badge--complaint, .feedback-badge--concern { background: #fff3e0; color: #bf3d00; }  /* Darkened from #e65100 for WCAG AA (4.93:1 on #fff3e0) */
 .feedback-badge--praise { background: #f3e5f5; color: #7b1fa2; }
 @media (prefers-color-scheme: dark) {
     .feedback-badge--request { background: rgba(21, 101, 192, 0.2); color: #90caf9; }

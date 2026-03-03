@@ -45,7 +45,7 @@
     --kn-text: #1a202c;
     --kn-text-secondary: #4a5568;
     --kn-text-muted: #64748b;   /* Darkened for WCAG AA (4.75:1 on white) */
-    --kn-text-faint: #a0aec0;
+    --kn-text-faint: #717d8f;   /* Darkened for WCAG AA (4.57:1 on white) */
     --kn-text-inverse: #ffffff;
 
     /* --- Spacing (4px grid) --- */
