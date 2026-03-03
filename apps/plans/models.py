@@ -55,6 +55,14 @@ class MetricDefinition(models.Model):
         null=True, blank=True,
         help_text=_("Soft warning maximum — values above this trigger a plausibility warning but are still accepted."),
     )
+    very_unlikely_min = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Hard floor — values below this are almost certainly data-entry errors. Requires two confirmations."),
+    )
+    very_unlikely_max = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Hard ceiling — values above this are almost certainly data-entry errors. Requires two confirmations."),
+    )
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
     unit_fr = models.CharField(
         max_length=50, blank=True, default="",
