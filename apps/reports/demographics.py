@@ -336,17 +336,17 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     Returns a curated list of fields safe for reporting — blocking PII,
     operational fields, and text fields that produce unique groups.
 
-    If a program is confidential or has fewer than 50 enrolled clients,
-    only "No grouping" is returned.
+    If a program is confidential, only "No grouping" is returned.
+    Small-cell suppression (applied at export time) protects individual
+    cells regardless of program size.
 
     Args:
-        program: Optional Program instance to check confidentiality
-                 and enrolment count.
+        program: Optional Program instance to check confidentiality.
 
     Returns:
         List of (value, label) tuples for form choices.
     """
-    from apps.clients.models import ClientProgramEnrolment, CustomFieldDefinition
+    from apps.clients.models import CustomFieldDefinition
 
     choices = [
         ("", _("No grouping")),
@@ -355,14 +355,6 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     # Confidential programs: no demographic grouping at all
     if program and getattr(program, "is_confidential", False):
         return choices
-
-    # Small programs: grouping is unsafe (k-anonymity)
-    if program:
-        enrolled_count = ClientProgramEnrolment.objects.filter(
-            program=program, status="active",
-        ).count()
-        if enrolled_count < 50:
-            return choices
 
     choices.append(("age_range", _("Age Range")))
 
