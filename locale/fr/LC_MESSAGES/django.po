@@ -696,17 +696,18 @@ msgstr "Ajouter"
 msgid "Additional questions appeared below."
 msgstr "Des questions supplémentaires sont apparues ci-dessous."
 
-msgid "Back"
-msgstr "Retour"
-
-msgid "Next"
-msgstr "Suivant"
-
 msgid "Page"
 msgstr "Page"
 
-msgid "of"
-msgstr "de"
+msgid "Already Responded"
+msgstr "Déjà répondu"
+
+#, python-format
+msgid "You have already submitted a response to \"%(name)s\"."
+msgstr "Vous avez déjà soumis une réponse à « %(name)s »."
+
+msgid "Limit to one response per browser (uses a cookie)"
+msgstr "Limiter à une réponse par navigateur (utilise un cookie)"
 
 msgid "Select user"
 msgstr "Sélectionner un utilisateur"
@@ -17835,4 +17836,9 @@ msgid "Total audit events"
 msgstr ""
 
 msgid "Use the Print button to include this summary in board reports."
+msgstr ""
+
+msgid ""
+"If true, use a cookie to discourage multiple submissions from the same "
+"browser."
 msgstr ""

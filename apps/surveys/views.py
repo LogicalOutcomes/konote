@@ -761,6 +761,7 @@ def survey_links(request, survey_id):
                 survey=survey,
                 created_by=request.user,
                 collect_name=request.POST.get("collect_name") == "on",
+                single_response=request.POST.get("single_response") == "on",
                 expires_at=expires_at,
             )
             messages.success(request, _("Shareable link created."))

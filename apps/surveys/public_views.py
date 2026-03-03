@@ -53,6 +53,22 @@ def public_survey_form(request, token):
         )
 
     survey = link.survey
+
+    # Single-response check: show friendly message if cookie exists
+    cookie_key = f"survey_done_{link.token[:8]}"
+    if link.single_response:
+        try:
+            request.get_signed_cookie(cookie_key)
+            already_responded = True
+        except Exception:
+            already_responded = False
+    else:
+        already_responded = False
+    if already_responded:
+        return render(request, "surveys/public_already_responded.html", {
+            "survey": survey,
+        })
+
     sections = survey.sections.filter(
         is_active=True,
     ).prefetch_related("questions").select_related(
@@ -168,7 +184,18 @@ def public_survey_form(request, token):
             if scores:
                 request.session[f"survey_scores_{link.token}"] = scores
 
-        return redirect("public_survey_thank_you", token=link.token)
+        resp = redirect("public_survey_thank_you", token=link.token)
+
+        # Set signed cookie to discourage repeat submissions
+        if link.single_response:
+            resp.set_signed_cookie(
+                cookie_key, "1",
+                max_age=365 * 24 * 60 * 60,  # 1 year
+                httponly=True,
+                samesite="Lax",
+            )
+
+        return resp
 
     # GET: only show unconditional sections initially
     visible_sections = filter_visible_sections(sections_list, {})

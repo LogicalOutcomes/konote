@@ -108,6 +108,10 @@
                 <input type="checkbox" name="collect_name" id="collect_name">
                 {% trans "Ask respondents for their name (optional, not encrypted)" %}
             </label>
+            <label>
+                <input type="checkbox" name="single_response" id="single_response">
+                {% trans "Limit to one response per browser (uses a cookie)" %}
+            </label>
         </fieldset>
 
         <button type="submit">{% trans "Create Link" %}</button>
