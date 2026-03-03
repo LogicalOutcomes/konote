@@ -16,6 +16,7 @@ KONOTE_APPS = {
     "events", "admin_settings", "audit", "reports",
     "registration", "groups", "circles", "portal",
     "communications", "surveys", "field_collection",
+    "tenants", "consortia",
 }
 
 # Models explicitly excluded from export, with reasons.
@@ -33,6 +34,11 @@ EXPORT_EXCLUDE = {
     ("portal", "StaffAssistedLoginToken"),
     # Personal calendar-feed tokens — security-sensitive / ephemeral
     ("events", "CalendarFeedToken"),
+    # Shared-schema multi-tenancy infrastructure — not per-agency data
+    ("tenants", "Agency"),
+    ("tenants", "AgencyDomain"),
+    ("tenants", "TenantKey"),
+    ("tenants", "Consortium"),
 }
 
 

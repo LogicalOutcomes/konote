@@ -1,4 +1,31 @@
-"""Database router to direct audit models to the audit database."""
+"""Database routers for KoNote multi-tenancy.
+
+AuditRouter — directs audit app models to the 'audit' database.
+NoOpTenantRouter — pass-through used in test settings when running on
+SQLite, which doesn't support PostgreSQL schemas. This avoids crashes
+from TenantSyncRouter accessing connection.schema_name on SQLite.
+"""
+
+
+class NoOpTenantRouter:
+    """Pass-through router that satisfies django-tenants' config check.
+
+    Used in test.py with TENANT_SYNC_ROUTER pointed here so that
+    django_tenants.apps.ready() passes validation without requiring
+    the real TenantSyncRouter (which crashes on SQLite).
+    """
+
+    def db_for_read(self, model, **hints):
+        return None
+
+    def db_for_write(self, model, **hints):
+        return None
+
+    def allow_relation(self, obj1, obj2, **hints):
+        return None
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        return None
 
 
 class AuditRouter:

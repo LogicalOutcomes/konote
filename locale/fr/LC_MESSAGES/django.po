@@ -17635,3 +17635,9 @@ msgstr "Sans notes cette période"
 
 msgid "suppressed"
 msgstr "supprimé"
+
+msgid "URL-safe identifier, e.g. 'youth-services'. Used as schema name."
+msgstr ""
+
+msgid "Your organisation name"
+msgstr ""
