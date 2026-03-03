@@ -696,6 +696,18 @@ msgstr "Ajouter"
 msgid "Additional questions appeared below."
 msgstr "Des questions supplémentaires sont apparues ci-dessous."
 
+msgid "Back"
+msgstr "Retour"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Page"
+msgstr "Page"
+
+msgid "of"
+msgstr "de"
+
 msgid "Select user"
 msgstr "Sélectionner un utilisateur"
 
