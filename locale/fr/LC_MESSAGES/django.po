@@ -17466,8 +17466,125 @@ msgstr ""
 
 msgid "Something went wrong generating your calendar link. Please try again."
 msgstr ""
-"Une erreur s'est produite lors de la génération de votre lien de calendrier. "
-"Veuillez réessayer."
+"Une erreur s'est produite lors de la génération de votre lien de calendrier."
+" Veuillez réessayer."
 
 msgid "Skip to results"
 msgstr "Passer aux résultats"
+
+msgid "AGENCY NOTES"
+msgstr "NOTES DE L'ORGANISME"
+
+msgid "Agency Notes"
+msgstr "Notes de l'organisme"
+
+msgid "Agency context notes accompanying this export."
+msgstr "Notes contextuelles de l'organisme accompagnant cette exportation."
+
+msgid "Approval Details"
+msgstr "Détails de l'approbation"
+
+msgid "Approve Report"
+msgstr "Approuver le rapport"
+
+msgid "Approve and Export"
+msgstr "Approuver et exporter"
+
+msgid "Approved At"
+msgstr "Approuvé le"
+
+msgid "Back to Form"
+msgstr "Retour au formulaire"
+
+msgid "Download Link Expires"
+msgstr "Le lien de téléchargement expire"
+
+msgid "Download Report"
+msgstr "Télécharger le rapport"
+
+msgid "Export Format"
+msgstr "Format d'exportation"
+
+msgid "Generate Preview"
+msgstr "Générer l'aperçu"
+
+msgid "Individuals Served"
+msgstr "Personnes desservies"
+
+msgid "New Clients"
+msgstr "Nouveaux clients"
+
+msgid "Per-Program Breakdown"
+msgstr "Répartition par programme"
+
+msgid "Report Approved"
+msgstr "Rapport approuvé"
+
+msgid "Report Approved and Exported"
+msgstr "Rapport approuvé et exporté"
+
+msgid "Report Details"
+msgstr "Détails du rapport"
+
+msgid "Review Report"
+msgstr "Réviser le rapport"
+
+msgid "Review Report Before Approving"
+msgstr "Réviser le rapport avant l'approbation"
+
+msgid ""
+"Review the data below, add any context notes, then approve to generate the "
+"export file."
+msgstr ""
+"Révisez les données ci-dessous, ajoutez des notes contextuelles au besoin, "
+"puis approuvez pour générer le fichier d'exportation."
+
+msgid ""
+"Something went wrong generating the report. Please try again or contact "
+"support."
+msgstr ""
+"Un problème est survenu lors de la génération du rapport. Veuillez réessayer "
+"ou contacter le soutien technique."
+
+msgid ""
+"The report has been approved and a secure download link has been created."
+msgstr ""
+"Le rapport a été approuvé et un lien de téléchargement sécurisé a été créé."
+
+msgid "This link will expire in 24 hours. You can also share this link:"
+msgstr "Ce lien expirera dans 24 heures. Vous pouvez également partager ce lien :"
+
+msgid "Total Contacts"
+msgstr "Total des contacts"
+
+msgid "Your CSV report is ready for download."
+msgstr "Votre rapport CSV est prêt à télécharger."
+
+msgid "Your PDF report is ready for download."
+msgstr "Votre rapport PDF est prêt à télécharger."
+
+msgid ""
+"e.g., Q1 debt figures include a large legal settlement for one participant. "
+"This is accurate, not a data entry error."
+msgstr ""
+"p. ex., les chiffres de dette du T1 comprennent un règlement juridique "
+"important pour un participant. Il s'agit d'une donnée exacte, pas d'une "
+"erreur de saisie."
+
+#. blocktrans from funder_report_preview.html
+msgid "This report covers %(count)s programs."
+msgstr "Ce rapport couvre %(count)s programmes."
+
+#. blocktrans from funder_report_preview.html
+msgid ""
+"%(met)s of %(total)s clients met at least one target (%(rate)s%%)."
+msgstr ""
+"%(met)s des %(total)s clients ont atteint au moins une cible (%(rate)s %%)."
+
+#. blocktrans from funder_report_preview.html — approval form help text
+msgid ""
+"Optional context notes to accompany this report. "
+"For example: explain outlier values or unusual patterns."
+msgstr ""
+"Notes contextuelles facultatives pour accompagner ce rapport. "
+"Par exemple : expliquer des valeurs aberrantes ou des tendances inhabituelles."
