@@ -159,6 +159,15 @@ class TestConsentField(TestCase):
 
     def test_field_exists_and_defaults_false(self):
         from apps.clients.models import ServiceEpisode
+        
+        # Query the database to ensure the column exists
+        # (This catches missing migrations that _meta.get_field() would miss)
+        count = ServiceEpisode.objects.filter(
+            consent_to_aggregate_reporting=False
+        ).count()
+        assert count >= 0  # Could be 0 if no records exist, but query must succeed
+        
+        # Also verify the field metadata
         field = ServiceEpisode._meta.get_field("consent_to_aggregate_reporting")
         assert field is not None
         assert field.default is False
