@@ -115,6 +115,10 @@ def can_send(client_file, channel, method="staff"):
     """
     from apps.admin_settings.models import FeatureToggle, InstanceSetting
 
+    # 0. Validate method parameter
+    if method not in ("staff", "automated"):
+        return False, _("Invalid send method")
+
     # 1. Safety-First mode
     if InstanceSetting.get("safety_first_mode", "false") == "true":
         return False, _("Safety-First mode is enabled — no outbound messages")
@@ -126,6 +130,7 @@ def can_send(client_file, channel, method="staff"):
         return False, _("Staff messaging is not enabled")
     if method == "automated" and not auto_ok:
         return False, _("Automated reminders are not enabled")
+    # Defence-in-depth: block if a future method value bypasses the checks above
     if not staff_ok and not auto_ok:
         return False, _("Messaging is set to record-keeping only")
 
