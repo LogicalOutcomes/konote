@@ -16,16 +16,16 @@ The main use case is **data cleaning for qualitative analysis** — stripping id
 
 You have a spreadsheet of open-ended survey responses. Some contain participant names, locations, program names, worker names, or other identifying details.
 
-Open a chat in OpenWebUI connected to our self-hosted model. Copy the responses from your spreadsheet and paste them into the chat. Ask the model to:
+Open a chat in OpenWebUI connected to our self-hosted model. Upload your spreadsheet (Excel, CSV) and ask the model to:
 
 - Remove all names, locations, and identifying details
 - Clean up formatting (fix typos, encoding issues, duplicate entries)
 - Flag responses that are too short or off-topic to be useful
 - Output the cleaned responses in a structured format
 
-The model processes this on our Canadian server. The raw data travels encrypted (HTTPS) from your OpenWebUI to the server, is processed in memory, and the cleaned result comes back. Nothing is saved on the server between requests — Ollama doesn't retain conversation history.
+OpenWebUI extracts the content from the uploaded file and sends it to our model on the Canadian server. The data travels encrypted (HTTPS), is processed in memory, and the cleaned result comes back. Nothing is saved on the inference server between requests — Ollama doesn't retain conversation history.
 
-Your conversation history (including the raw data you pasted) is stored in **your** OpenWebUI instance, on your own machine — not on the inference server.
+Your conversation history (including the uploaded file content) is stored in **your** OpenWebUI instance, on your own machine — not on the inference server.
 
 **Stage 2 — Thematic analysis (frontier model)**
 
@@ -36,14 +36,6 @@ Since the PII was already stripped in Stage 1, there's no privacy concern sendin
 ### Why Two Stages?
 
 The self-hosted model is good enough for data cleaning — identifying names, addresses, and personal details is a relatively straightforward task. But deep qualitative analysis (nuanced thematic coding, interpreting meaning across hundreds of responses) is where frontier models are significantly better. Splitting the work gives you both data sovereignty and analytical quality.
-
-### What About File Uploads?
-
-OpenWebUI supports uploading Excel, PDF, and Word files, but that uses the RAG (retrieval) pipeline, which adds complexity — it chunks the document, generates embeddings, and stores them in a vector database. You don't need any of that for data cleaning.
-
-The simpler approach: **copy from your spreadsheet, paste into the chat**. The model's context window is 262K tokens (~200,000 words), so it can handle hundreds of responses in a single conversation. No file upload pipeline needed.
-
-If you prefer, you can disable RAG entirely in OpenWebUI's admin settings to keep things simple.
 
 ## Pricing (OVHcloud Canada)
 
