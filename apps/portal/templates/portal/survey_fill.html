@@ -102,7 +102,7 @@
                            hx-include="[name=csrfmiddlewaretoken]"
                            hx-target="#save-status"
                            hx-swap="innerHTML">
-                    {{ opt.label|bilingual:opt.label_fr }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
                 {% endfor %}
             </fieldset>
@@ -120,7 +120,7 @@
                            onchange="htmxSaveCheckboxGroup(this)"
                            data-save-url="{% url 'portal:survey_autosave' assignment_id=assignment.pk %}"
                            data-question-id="{{ question.pk }}">
-                    {{ opt.label|bilingual:opt.label_fr }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
                 {% endfor %}
                 {% endwith %}
@@ -143,7 +143,7 @@
                                hx-include="[name=csrfmiddlewaretoken]"
                                hx-target="#save-status"
                                hx-swap="innerHTML">
-                        {{ opt.label|bilingual:opt.label_fr }}
+                        {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                     </label>
                 {% endfor %}
                 </div>

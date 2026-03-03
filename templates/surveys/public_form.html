@@ -89,7 +89,7 @@
             <label>
                 <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if saved == opt.value %}checked{% endif %}>
-                {{ opt.label|bilingual:opt.label_fr }}
+                {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
             </label>
             {% endfor %}
             {% endwith %}
@@ -100,7 +100,7 @@
             <label>
                 <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if opt.value|in_multi_value:saved %}checked{% endif %}>
-                {{ opt.label|bilingual:opt.label_fr }}
+                {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
             </label>
             {% endfor %}
             {% endwith %}
@@ -112,7 +112,7 @@
                 <label style="text-align:center">
                     <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                            {% if saved == opt.value %}checked{% endif %}>
-                    {{ opt.label|bilingual:opt.label_fr }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
             {% endfor %}
             </div>

@@ -22,7 +22,7 @@
                 {% if answer == "1" %}{% trans "Yes" %}{% elif answer == "0" %}{% trans "No" %}{% else %}{{ answer }}{% endif %}
             {% elif question.question_type == "single_choice" or question.question_type == "rating_scale" %}
                 {% for opt in question.options_json %}
-                    {% if opt.value == answer %}{{ opt.label|bilingual:opt.label_fr }}{% endif %}
+                    {% if opt.value == answer %}{% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}{% endif %}
                 {% endfor %}
             {% elif question.question_type == "multiple_choice" %}
                 {{ answer }}
