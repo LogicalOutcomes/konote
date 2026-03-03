@@ -4,6 +4,7 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
+- [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
 
@@ -25,7 +26,6 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Discuss data handling acknowledgement during permissions interview — plaintext backup opt-in, designate contact person (see docs/data-handling-acknowledgement.md, deployment-protocol.md Phase 1) — SG (DEPLOY-DHA1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [x] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/). Document 10 (Data Responsibilities) is done — 2026-03-03 (DEPLOY-TOOLKIT1)
 - [ ] Review and merge data handling acknowledgement PR #130 — expanded to cover encryption key custody, SharePoint/Google Drive responsibilities, exports, plaintext backups, staff departures. Wired into deployment protocol Phases 0/4/5. Needs legal review before first agency use (see docs/data-handling-acknowledgement.md) — SG (SEC3-AGREE1)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
@@ -44,8 +44,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Data Quality
 
-
-- [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
 ### Phase: Post-Launch Communication Enhancements
@@ -59,7 +57,6 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
-- [x] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" — renamed ParsedBreakdown.bins to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -68,21 +65,9 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
-### Phase: Surveys Future Work
-
-- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-
 ### Phase: Documentation & Website Updates
 
-- [x] Create deployment documentation for surveys and portal features — 2026-03-03 (DOC-DEPLOY1)
-- [x] Update technical documentation in GitHub for surveys and portal architecture — 2026-03-03 (DOC-TECH1)
-- [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
-- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
-- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
-- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
-- [x] Add new features and capabilities to the web site as they are built — 2026-03-03 (WEBSITE-UPDATE1)
+_All documentation tasks completed — see Recently Done._
 
 ## Parking Lot: Ready to Build
 
@@ -111,8 +96,29 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
-- [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md for full analysis — GK reviews (AI-SELFHOST1)
+- [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
+- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
+- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
+
 ## Recently Done
+
+### Session 7 — PR Cleanup + Survey Links Merge
+
+- [x] Resolve merge conflicts and merge PR #236 (DQ1-TIER2 + docs verification) — 2026-03-03 (DQ1-TIER2)
+- [x] Resolve merge conflicts and merge PR #239 (survey shareable links) — 2026-03-03 (SURVEY-LINK1)
+- [x] Add missing French translations for survey link strings (6 entries) — 2026-03-03 (SURVEY-LINK1)
+- [x] Clean up TODO.md — remove completed items from Coming Up, update flags — 2026-03-03
+
+### Session 6 — Data Quality + Documentation + QA Verification
+
+- [x] Add second-tier "very unlikely" plausibility thresholds — model fields, validation, migrations, JS two-click confirm, CSS, admin form, 17 new tests — 2026-03-03 (DQ1-TIER2)
+- [x] Verify demo data engine guide — 7 claims checked against code, fixed "programme" spelling — 2026-03-03 (DOC-DEMO1)
+- [x] Verify DV-safe mode documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM1)
+- [x] Verify per-field front desk access documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM2)
+- [x] Verify access tiers documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM3)
+- [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
+- [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
+- [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 
@@ -130,77 +136,4 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Update konote-website with new features, security, and FAQ — 2026-03-03 (WEBSITE-UPDATE1)
 - [x] Align ParsedBreakdown.bins field naming to bins_json — 2026-03-03 (TEMPLATE-ALIGN1)
 
-### Multi-Tenancy Infrastructure (PR #220)
-
-- [x] Integrate django-tenants for server sharing — schema-per-tenant, SHARED_APPS/TENANT_APPS split — 2026-03-03 (MT-CORE1)
-- [x] Implement per-agency encryption keys — KEK pattern, thread-local cache, management commands — 2026-03-03 (MT-ENCRYPT1)
-- [x] Create cost-sharing group data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport — 2026-03-03 (MT-CONSORT1)
-- [x] Add consent_to_aggregate_reporting field and audit tenant_schema column — 2026-03-03 (MT-CONSENT1)
-- [x] Validate existing features work with multi-tenancy — NoOpTenantRouter for SQLite, 12 new tests, no regressions — 2026-03-03 (MT-VALIDATE1)
-
-### PB Tasks Sprint — Deploy Script + Logo Integration
-
-- [x] Write deploy script design doc — automated provisioning plan for OVHcloud VPS — 2026-03-02 (DOC-MA5)
-- [x] Build deploy script — scripts/deploy-konote-vps.sh automates 9 of 15 manual steps — 2026-03-02 (DEPLOY-SCRIPT1)
-- [x] Add KoNote logo to navigation and social sharing meta tags — 2026-03-02 (LOGO1)
-- [x] Remove stale OPS4 — backup restore was already completed 2026-02-26 (see ARCHIVE.md) — 2026-03-02 (OPS4-CLEANUP)
-
-### Wave 2 Sprint — Accessibility Sweep (PR #208)
-
-- [x] Fix ARIA role violations in nav dropdowns — menu pattern replaces incorrect listbox — 2026-03-02 (AXE-ARIA1)
-- [x] Fix duplicate landmark regions — aria-labels on both nav elements — 2026-03-02 (AXE-LANDMARK1)
-- [x] Fix public survey form accessibility — skip link, title, main.css — 2026-03-02 (AXE-TEMPLATE1)
-- [x] Fix colour contrast failures — --kn-text-faint corrected to #697888, feedback badge darkened — 2026-03-02 (AXE-CONTRAST1)
-- [x] Fix empty table headers on 8 admin pages — screen-reader "Actions" text — 2026-03-02 (AXE-TABLE1)
-- [x] Fix checkbox/radio label touch targets — CSS :has() padding — 2026-03-02 (QA-R8-A11Y6)
-- [x] Accessibility polish bundle — breadcrumb padding, aria-hidden on icons, link_embed consistency — 2026-03-02 (QA-R8-A11Y7)
-- [x] Verified: French navigation uses {% url %} tags correctly — no hardcoded paths found — 2026-03-02 (QA-R8-I18N1)
-- [x] Verified: form resubmission → help page is a QA false positive — no code path exists — 2026-03-02 (QA-R8-UX10)
-- [x] Add axe-core accessibility smoke tests to CI — new a11y job in ci.yml — 2026-03-02 (CI-A11Y1)
-
-### Wave 1 Sprint — Parallel Bug Fixes (PRs #201–#207, qa-scenarios #18)
-
-- [x] Auto-update progress metrics when goal status changes — post_save signal on PlanTarget updates achievement_status — 2026-03-02 (REQ-G4)
-- [x] Fix SCN-035 YAML URL — `/reports/funder/` → `/reports/funder-report/` in qa-scenarios repo — 2026-03-02 (QA-R8b-YAML1)
-- [x] Fix test runner interactive step execution — duplicate screenshot detection, HTMX waits, select action handler — 2026-03-02 (QA-R8b-TEST1)
-- [x] Fix URL placeholder substitution — pre-seed alert_id, recommendation_id, meeting_id, first-name client keys — 2026-03-02 (QA-R8b-TEST2)
-- [x] Fix newly created client not searchable — search now queries all accessible programs when search query is present — 2026-03-02 (QA-R8-UX3)
-- [x] Fix create form Tab order — added explicit field_order to ClientFileForm (First Name before Last Name) — 2026-03-02 (QA-R8-A11Y4)
-- [x] Verified: validation error + success confirmation on participant create already working — 2026-03-02 (QA-R8-UX5)
-- [x] Fix mobile edit — moved Edit to top of Actions dropdown menu — 2026-03-02 (QA-R8-UX6)
-- [x] Verified: accent display correct — _strip_accents() only used for search, display preserves original — 2026-03-02 (QA-R8-UX13)
-- [x] Fix excessive Tab presses — added "Skip to results" link on search/list pages — 2026-03-02 (QA-R8-A11Y5)
-- [x] Fix profile tabs arrow key nav — WAI-ARIA roving tabindex pattern + keyboard handler — 2026-03-02 (QA-R8-A11Y8)
-- [x] Fix quick note entry point — missing include + wrong hx-swap in notes tab — 2026-03-02 (QA-R8-UX4)
-- [x] Fix missing h1 on notes-detail page — added `<h1>{% trans "Progress Note" %}</h1>` with French — 2026-03-02 (AXE-HEADING1)
-- [x] Verified: language middleware not regressed — 24 tests pass, SafeLocaleMiddleware intact — 2026-03-02 (QA-R8-LANG1)
-- [x] Verified: offline fallback not regressed — htmx error handlers + service worker + offline banner intact — 2026-03-02 (QA-R8-UX7)
-- [x] Verified: data export routes exist — /reports/participant/<id>/export/ with PDF/CSV/JSON + SecureExportLink — 2026-03-02 (QA-R8-VERIFY1)
-- [x] Fix calendar feed URL — added error handling, POST-Redirect-GET, improved success message — 2026-03-02 (QA-R8-UX9)
-- [x] Fix PM user management nav — `/manage/` path was missing from nav_active context processor — 2026-03-02 (QA-R8-UX12)
-
-### Phase: FHIR-Informed Data Foundations + CIDS Compliance (PR #131)
-
-- [x] Add CIDS metadata fields + OrganizationProfile — 2026-02-27 (CIDS-META1 + CIDS-ORG1)
-- [x] Import CIDS code lists + TaxonomyMapping model — 2026-02-27 (CIDS-CODES1)
-- [x] Build admin UI for CIDS tagging — 2026-02-27 (CIDS-ADMIN1)
-- [x] Add CIDS codes to reports + Standards Alignment appendix — 2026-02-27 (CIDS-ENRICH1)
-- [x] Extend ClientProgramEnrolment into ServiceEpisode — 2026-02-27 (FHIR-EPISODE1)
-- [x] Populate new ServiceEpisode fields from existing data — 2026-02-27 (FHIR-MIGRATE1)
-- [x] Add achievement_status + first_achieved_at to PlanTarget — 2026-02-27 (FHIR-ACHIEVE1)
-- [x] Add author_role to ProgressNote — 2026-02-27 (FHIR-ROLE1)
-- [x] Build JSON-LD export + impact dimensions — 2026-02-27 (CIDS-EXPORT1 + CIDS-IMPACT1)
-- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
-
-### QA Round 8 Tier 1
-
-- [x] QA Round 8 Tier 1: removed dashboard search autofocus (credentials leaked into search bar after login redirect) — 2026-03-01 (QA-R8-SEC1)
-- [x] QA Round 8 Tier 1: added regression test confirming demo buttons hidden when DEMO_MODE off — 2026-03-01 (QA-R8-SEC2)
-- [x] QA Round 8 Tier 1: verified skip link correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y1)
-- [x] QA Round 8 Tier 1: moved language toggle after login form for WCAG 2.4.3 Tab order — 2026-03-01 (QA-R8-A11Y2)
-- [x] QA Round 8 Tier 1: verified Actions dropdown ARIA pattern already correct in code (stale screenshot) — 2026-03-01 (QA-R8-A11Y3)
-- [x] QA Round 8 Tier 1: verified 404→403 handling correct in code (stale screenshot) — 2026-03-01 (QA-R8-UX1)
-- [x] QA Round 8 Tier 1: closed BUG-33 form data corruption — could not reproduce, fields use explicit name bindings — 2026-03-01 (QA-R8-UX2)
-- [x] QA Round 8 Tier 1: verified admin nav hidden for executive role (stale screenshot) — 2026-03-01 (QA-R8-PERM1)
-- [x] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, nested client-centric JSON, config files, Diceware passphrase, 20 tests — 2026-02-28 (SEC3)
-- [x] Individual client data export from client profile (Tier 1) — PDF, CSV, JSON via SecureExportLink with audit trail, nonce dedup, permission gating — 2026-02-28 (QA-R7-PRIVACY1)
+_Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._

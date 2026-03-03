@@ -17,10 +17,10 @@
 {% include "_lang_toggle.html" with max_width="720px" %}
 <main id="main-content" class="container" style="max-width:720px; padding-top:2rem">
 
-<h1>{{ survey.name }}</h1>
+<h1>{{ survey.name|bilingual:survey.name_fr }}</h1>
 
 {% if survey.description %}
-<p>{{ survey.description }}</p>
+<p>{{ survey.description|bilingual:survey.description_fr }}</p>
 {% endif %}
 
 {% if errors %}
@@ -34,6 +34,8 @@
 </article>
 {% endif %}
 
+<div id="page-progress" role="status" aria-live="polite" hidden></div>
+
 <form method="post">
     {% csrf_token %}
 
@@ -44,20 +46,22 @@
     </div>
 
     {% if link.collect_name %}
-    <label for="respondent_name">{% trans "Your name (optional)" %}</label>
-    <input type="text" id="respondent_name" name="respondent_name"
+    <label for="respondent_name">{% trans "First name or nickname (optional)" %}</label>
+    <input type="text" id="respondent_name" name="respondent_name" maxlength="50"
            value="{{ posted.respondent_name|default:'' }}">
     {% endif %}
 
+    <div id="section-announce" role="status" aria-live="polite" class="visually-hidden"></div>
+
     {% for section in sections %}
-    <fieldset>
-        <legend>{{ section.title }}</legend>
-        {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
+    <fieldset{% if section.page_break %} data-page-break="true"{% endif %}{% if section.condition_question_id %} data-condition-question="q_{{ section.condition_question_id }}" data-condition-value="{{ section.condition_value }}" hidden{% endif %}>
+        <legend>{{ section.title|bilingual:section.title_fr }}</legend>
+        {% if section.instructions %}<p><small>{{ section.instructions|bilingual:section.instructions_fr }}</small></p>{% endif %}
 
         {% for question in section.questions.all %}
         <div style="margin-bottom:1.5rem">
             <label for="q_{{ question.pk }}">
-                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+                {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
             </label>
 
             {% if question.question_type == "short_text" %}
@@ -85,7 +89,7 @@
             <label>
                 <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if saved == opt.value %}checked{% endif %}>
-                {{ opt.label }}
+                {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
             </label>
             {% endfor %}
             {% endwith %}
@@ -96,7 +100,7 @@
             <label>
                 <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if opt.value|in_multi_value:saved %}checked{% endif %}>
-                {{ opt.label }}
+                {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
             </label>
             {% endfor %}
             {% endwith %}
@@ -108,7 +112,7 @@
                 <label style="text-align:center">
                     <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                            {% if saved == opt.value %}checked{% endif %}>
-                    {{ opt.label }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
             {% endfor %}
             </div>
@@ -123,9 +127,152 @@
     </fieldset>
     {% endfor %}
 
-    <button type="submit">{% trans "Submit" %}</button>
+    <div id="page-nav" style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1rem" hidden>
+        <button type="button" id="page-prev" class="outline">&larr; {% trans "Back" %}</button>
+        <button type="button" id="page-next">{% trans "Next" %} &rarr;</button>
+    </div>
+    <button type="submit" id="submit-btn">{% trans "Submit" %}</button>
 </form>
 
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    /* --- Conditional section visibility --- */
+    var conditionals = document.querySelectorAll('[data-condition-question]');
+    var announce = document.getElementById('section-announce');
+
+    if (conditionals.length) {
+        conditionals.forEach(function(fieldset) {
+            var qName = fieldset.dataset.conditionQuestion;
+            var expected = fieldset.dataset.conditionValue;
+            var inputs = document.querySelectorAll('[name="' + qName + '"]');
+
+            function check() {
+                var val = '';
+                inputs.forEach(function(inp) {
+                    if (inp.type === 'radio' || inp.type === 'checkbox') {
+                        if (inp.checked) val = inp.value;
+                    } else {
+                        val = inp.value;
+                    }
+                });
+                var wasHidden = fieldset.hidden;
+                fieldset.hidden = (val !== expected);
+                if (wasHidden && !fieldset.hidden && announce) {
+                    announce.textContent = '{% trans "Additional questions appeared below." %}';
+                    setTimeout(function() { announce.textContent = ''; }, 3000);
+                }
+            }
+
+            inputs.forEach(function(inp) {
+                inp.addEventListener('change', check);
+            });
+        });
+    }
+
+    /* --- Multi-page navigation (client-side only) --- */
+    var allFieldsets = document.querySelectorAll('form > fieldset:not([aria-hidden="true"])');
+    if (!allFieldsets.length) return;
+
+    // Group fieldsets into pages (split at data-page-break="true")
+    var pages = [[]];
+    allFieldsets.forEach(function(fs) {
+        if (fs.dataset.pageBreak === 'true' && pages[pages.length - 1].length > 0) {
+            pages.push([]);
+        }
+        pages[pages.length - 1].push(fs);
+    });
+
+    // Only enable multi-page if there are 2+ pages
+    if (pages.length < 2) return;
+
+    var currentPage = 0;
+    var progress = document.getElementById('page-progress');
+    var nav = document.getElementById('page-nav');
+    var prevBtn = document.getElementById('page-prev');
+    var nextBtn = document.getElementById('page-next');
+    var submitBtn = document.getElementById('submit-btn');
+
+    progress.hidden = false;
+    nav.hidden = false;
+
+    function showPage(idx) {
+        currentPage = idx;
+        pages.forEach(function(pageFieldsets, i) {
+            pageFieldsets.forEach(function(fs) {
+                if (i !== currentPage) {
+                    fs.hidden = true;
+                } else if (!fs.dataset.conditionQuestion) {
+                    fs.hidden = false;
+                } else {
+                    // Re-evaluate the condition so navigating back restores visible sections
+                    var qName = fs.dataset.conditionQuestion;
+                    var expected = fs.dataset.conditionValue;
+                    var inputs = document.querySelectorAll('[name="' + qName + '"]');
+                    var val = '';
+                    inputs.forEach(function(inp) {
+                        if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) val = inp.value;
+                        else if (inp.type !== 'radio' && inp.type !== 'checkbox') val = inp.value;
+                    });
+                    var wasHidden = fs.hidden;
+                    fs.hidden = (val !== expected);
+                    if (wasHidden && !fs.hidden && announce) {
+                        announce.textContent = '{% trans "Additional questions appeared below." %}';
+                        setTimeout(function() { announce.textContent = ''; }, 3000);
+                    }
+                }
+            });
+        });
+        progress.textContent = '{% trans "Page" %} ' + (currentPage + 1) + ' {% trans "of" %} ' + pages.length;
+        prevBtn.hidden = (currentPage === 0);
+        nextBtn.hidden = (currentPage === pages.length - 1);
+        submitBtn.hidden = (currentPage !== pages.length - 1);
+
+        // Focus first heading/legend on new page
+        var firstLegend = pages[currentPage][0].querySelector('legend');
+        if (firstLegend) {
+            firstLegend.setAttribute('tabindex', '-1');
+            firstLegend.focus();
+        }
+    }
+
+    function validateCurrentPage() {
+        var valid = true;
+        pages[currentPage].forEach(function(fs) {
+            if (fs.hidden) return;
+            var required = fs.querySelectorAll('[required]');
+            required.forEach(function(el) {
+                if (!el.value) {
+                    el.reportValidity();
+                    valid = false;
+                }
+            });
+        });
+        return valid;
+    }
+
+    prevBtn.addEventListener('click', function() {
+        if (currentPage > 0) showPage(currentPage - 1);
+    });
+
+    nextBtn.addEventListener('click', function() {
+        if (validateCurrentPage()) {
+            showPage(currentPage + 1);
+        }
+    });
+
+    showPage(0);
+});
+
+/* Report height to parent for iframe embed resizing */
+if (window.parent !== window) {
+    new ResizeObserver(function() {
+        window.parent.postMessage({
+            type: 'konote-embed-resize',
+            height: document.body.scrollHeight
+        }, '*');
+    }).observe(document.body);
+}
+</script>
 </body>
 </html>

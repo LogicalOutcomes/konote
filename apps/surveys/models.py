@@ -374,6 +374,10 @@ class SurveyLink(models.Model):
         default=False,
         help_text=_("If true, ask respondent for their name (optional, not encrypted)."),
     )
+    single_response = models.BooleanField(
+        default=False,
+        help_text=_("If true, use a cookie to discourage multiple submissions from the same browser."),
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
