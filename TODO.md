@@ -21,6 +21,12 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
 
+### Phase: Session 7 — Compliance, Safety, Data Quality
+
+- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
+- [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
+- [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -42,7 +48,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: Data Quality
+### Phase: Session 7 Prep — Admin UX & Configuration
 
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
@@ -81,12 +87,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 - [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
-- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
-- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
-- [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
@@ -97,8 +98,6 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
-- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
-- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
 
 ## Recently Done
 
@@ -119,6 +118,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
 - [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
 - [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
+- [x] Verified: note sharing toggle (6/7 checks pass) — toggle sets consent/restrict, UI shows binary ON/OFF, hidden when agency sharing off, confirmation on OFF, PM/Admin UI only, audit logged. Gap: no dedicated toggle endpoint tests in test_cross_program_security.py yet — 2026-03-03 (QA-R7-PRIVACY2)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 
