@@ -1,0 +1,43 @@
+FROM alpine:3.21
+
+# Build arg for version (fallback if .git not available)
+ARG KONOTE_VERSION=unknown
+
+# Install only what we need:
+# - postgresql16-client: pg_dump, pg_isready, psql
+# - curl: webhooks, healthcheck pings
+# - msmtp: lightweight SMTP client for health emails
+# - bash: scripts use bashisms
+# - docker-cli: docker system prune
+# - gzip: backup compression
+# - coreutils: date, stat with GNU options
+RUN apk add --no-cache \
+    postgresql16-client \
+    curl \
+    msmtp \
+    bash \
+    docker-cli \
+    gzip \
+    coreutils
+
+# Store version for health report
+RUN echo "${KONOTE_VERSION}" > /etc/konote-version
+
+# Copy ops scripts
+COPY scripts/ops-entrypoint.sh /usr/local/bin/ops-entrypoint.sh
+COPY scripts/ops-backup.sh /usr/local/bin/ops-backup.sh
+COPY scripts/ops-health-report.sh /usr/local/bin/ops-health-report.sh
+COPY scripts/ops-backup-verify.sh /usr/local/bin/ops-backup-verify.sh
+COPY scripts/ops-disk-check.sh /usr/local/bin/ops-disk-check.sh
+COPY scripts/ops-docker-prune.sh /usr/local/bin/ops-docker-prune.sh
+
+RUN chmod +x /usr/local/bin/ops-*.sh
+
+# Backup storage
+VOLUME /backups
+
+# Health check: verify crond is running
+HEALTHCHECK --interval=60s --timeout=5s --retries=3 \
+    CMD pgrep crond > /dev/null || exit 1
+
+CMD ["/usr/local/bin/ops-entrypoint.sh"]
