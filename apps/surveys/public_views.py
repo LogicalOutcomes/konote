@@ -9,8 +9,10 @@ from django.db import transaction
 from django.http import Http404, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.audit.models import AuditLog
 from apps.portal.survey_helpers import filter_visible_sections
 
 from .models import (
@@ -139,6 +141,21 @@ def public_survey_form(request, token):
                             answer.numeric_value = opt.get("score")
                             break
                 answer.save()
+
+        # Audit trail — do NOT log respondent_name or IP (PIPEDA 4.4)
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            action="post",
+            resource_type="survey",
+            resource_id=response.pk,
+            metadata={
+                "channel": "public_link",
+                "survey_id": survey.pk,
+                "survey_name": survey.name,
+                "link_token_prefix": link.token[:8],
+                "is_anonymous": survey.is_anonymous,
+            },
+        )
 
         return redirect("public_survey_thank_you", token=link.token)
 
