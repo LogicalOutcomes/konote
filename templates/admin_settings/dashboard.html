@@ -116,12 +116,14 @@
         <header>{% trans "Messaging" %}</header>
         <p>{% trans "Configure appointment reminders, message templates, and channel settings." %}</p>
         <p class="settings-indicator">
-            {% if messaging_profile == "record_keeping" %}
-                {% trans "Record-keeping only" %}
-            {% elif messaging_profile == "staff_sent" %}
+            {% if staff_messaging_enabled and automated_reminders_enabled %}
+                {% trans "Staff messages + automated reminders" %}
+            {% elif staff_messaging_enabled %}
                 {% trans "Staff-sent messages enabled" %}
-            {% elif messaging_profile == "full_automation" %}
-                {% trans "Full automation enabled" %}
+            {% elif automated_reminders_enabled %}
+                {% trans "Automated reminders enabled" %}
+            {% else %}
+                {% trans "Record-keeping only" %}
             {% endif %}
         </p>
         <footer><a href="{% url 'admin_settings:messaging_settings' %}" role="button" class="outline">{% trans "Messaging Settings" %}</a></footer>

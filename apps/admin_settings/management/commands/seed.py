@@ -203,7 +203,7 @@ class Command(BaseCommand):
             "print_header": "",
             "print_footer": "CONFIDENTIAL",
             "default_client_tab": "notes",
-            "messaging_profile": "staff_sent",
+            "staff_messaging_enabled": "true",
             "document_storage_provider": "google_drive",
             "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
         }

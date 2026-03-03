@@ -106,6 +106,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "compliance.view_summary": DENY,  # No compliance oversight
 
         # PM admin features — receptionist has no access
         "template.plan.manage": DENY,
@@ -209,6 +210,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "compliance.view_summary": DENY,  # No compliance oversight
 
         # PM admin features — staff has no access
         "template.plan.manage": DENY,
@@ -320,6 +322,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": PROGRAM,  # Own program only. Enforced by @requires_permission
         "audit.view": PROGRAM,  # QA oversight for own program. Enforced by @requires_permission
+        "compliance.view_summary": DENY,  # PMs use audit.view for their program instead
 
         # PM admin features — PMs manage these for their own programs
         "template.plan.manage": PROGRAM,  # Create/edit plan templates in own program
@@ -417,7 +420,8 @@ PERMISSIONS = {
         "user.manage": DENY,  # Override to ALLOW if executive is operational ED
         "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
         "program.manage": DENY,  # Override to ALLOW if executive is operational ED
-        "audit.view": DENY,   # Executive has no audit access
+        "audit.view": DENY,   # Executive has no raw audit log access
+        "compliance.view_summary": ALLOW,  # Aggregate compliance metrics for board reporting (PIPEDA 4.1.4)
 
         # PM admin features — executives don't manage templates/config
         "template.plan.manage": DENY,
@@ -582,6 +586,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "settings.manage": "Change system configuration, feature toggles, and terminology",
         "program.manage": "Create, edit, or archive programs",
         "audit.view": "View the audit log",
+        "compliance.view_summary": "View aggregate compliance summary (no PII, no staff names)",
 
         # PM admin features
         "template.plan.manage": "Create, edit, or delete plan templates",
