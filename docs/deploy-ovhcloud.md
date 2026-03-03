@@ -26,7 +26,7 @@ The script generates all credentials, SSHes into the VPS, hardens the OS, instal
 - **Full options** — run `./scripts/deploy-konote-vps.sh --help`
 - **Design doc** — see [deploy script design](plans/2026-02-20-deploy-script-design.md) for architecture decisions
 
-After the script finishes, skip to [Section 7: Point Your Domain to the VPS](#7-point-your-domain-to-the-vps) (if DNS isn't already configured) or [Section 12: Set Up Monitoring](#12-set-up-monitoring) to complete the remaining manual steps.
+After the script finishes, skip to [Section 7: Point Your Domain to the VPS](#7-point-your-domain-to-the-vps) (if DNS isn't already configured) or [Section 12: Set Up External Monitoring](#12-set-up-external-monitoring) to complete the remaining manual steps. Backups and internal monitoring are handled automatically by the ops sidecar.
 
 ### Manual Path
 
@@ -57,8 +57,8 @@ This guide walks you through deploying KoNote on an OVHcloud VPS from scratch. I
 8. [Deploy KoNote](#8-deploy-konote)
 9. [Verify the Deployment](#9-verify-the-deployment)
 10. [Create Your First Admin User](#10-create-your-first-admin-user)
-11. [Set Up Backups](#11-set-up-backups)
-12. [Set Up Monitoring](#12-set-up-monitoring)
+11. [Backups and Monitoring (Automatic)](#11-backups-and-monitoring-automatic)
+12. [Set Up External Monitoring](#12-set-up-external-monitoring)
 13. [Set Up Email (External Relay)](#13-set-up-email-external-relay)
 14. [Run a Second Instance (Dev/Demo)](#14-run-a-second-instance-devdemo)
 15. [Updating KoNote](#15-updating-konote)
@@ -417,7 +417,7 @@ Press **Ctrl+C** to stop watching logs (the containers keep running).
 sudo docker compose ps
 ```
 
-You should see 5 containers, all with status "Up" or "Up (healthy)":
+You should see 6 containers, all with status "Up" or "Up (healthy)":
 
 ```
 NAME                 SERVICE     STATUS
@@ -426,6 +426,7 @@ konote-db-1          db          Up (healthy)
 konote-audit_db-1    audit_db    Up (healthy)
 konote-caddy-1       caddy       Up
 konote-autoheal-1    autoheal    Up (healthy)
+konote-ops-1         ops         Up (healthy)
 ```
 
 > **Note:** The web container takes about 60 seconds to become healthy (it needs to run migrations and start up). If it shows "health: starting", wait a minute and check again.
@@ -487,18 +488,25 @@ After logging in, go to **Admin > Settings** to:
 
 ---
 
-## 11. Set Up Backups
+## 11. Backups and Monitoring (Automatic)
 
-KoNote includes a backup script that dumps both databases nightly.
+Backups, disk monitoring, health reports, and maintenance all run automatically inside the **ops sidecar container**. No cron jobs to set up.
 
-### Make the scripts executable
+### What runs automatically
 
-```bash
-sudo chmod +x /opt/konote/scripts/backup-vps.sh
-sudo chmod +x /opt/konote/scripts/disk-check.sh
-```
+| Task | Schedule | What it does |
+|------|----------|--------------|
+| Database backup | 2 AM daily | Dumps both databases, compresses, manages retention |
+| Disk check | Hourly | Alerts if disk usage exceeds 80% |
+| Health report | 7 AM daily | Emails operational status (no participant data) |
+| Docker cleanup | 4 AM Sundays | Removes unused images and containers |
+| Backup verification | 5 AM Sundays | Test-restores latest backup and verifies integrity |
+
+All of this started when you ran `docker compose up -d` in Step 8. No additional setup needed.
 
 ### Create the backup directory
+
+If you used the deploy script, this is already done. If deploying manually:
 
 ```bash
 sudo mkdir -p /opt/konote/backups
@@ -507,47 +515,57 @@ sudo mkdir -p /opt/konote/backups
 ### Test the backup manually
 
 ```bash
-sudo /opt/konote/scripts/backup-vps.sh
+cd /opt/konote
+sudo docker compose exec ops /usr/local/bin/ops-backup.sh
 ```
 
 You should see output showing both databases being backed up with file sizes.
 
-> **Note:** The backup script runs `docker compose` commands which require `sudo`.
-
-### Set up automated backups via cron
+### View backup files
 
 ```bash
-sudo crontab -e
+ls -lh /opt/konote/backups/
 ```
 
-If asked to choose an editor, select **nano** (option 1).
+### Configure optional monitoring
 
-Add these lines at the bottom:
+Add these to your `.env` file for enhanced monitoring:
 
-```cron
-# KoNote: Nightly database backup at 2 AM
-0 2 * * * /opt/konote/scripts/backup-vps.sh >> /var/log/konote-backup.log 2>&1
+```ini
+# Dead man's switch — get alerted if backups STOP running.
+# Create a free push monitor at uptimerobot.com or healthchecks.io,
+# then paste the URL here.
+HEALTHCHECK_PING_URL=https://hc-ping.com/your-uuid-here
 
-# KoNote: Hourly disk usage check
-0 * * * * /opt/konote/scripts/disk-check.sh >> /var/log/konote-disk.log 2>&1
+# Alert webhook — get notified on backup failure or disk warnings.
+# Works with ntfy.sh (free), Slack, or UptimeRobot push monitors.
+ALERT_WEBHOOK_URL=https://ntfy.sh/your-topic
 
-# KoNote: Weekly Docker cleanup (remove old images)
-0 4 * * 0 docker system prune -f >> /var/log/docker-prune.log 2>&1
+# Daily health email — operational status emailed every morning.
+# Requires email to be configured (see Step 13).
+OPS_HEALTH_REPORT_TO=admin@youragency.ca
 ```
 
-Save and exit (**Ctrl+O**, **Enter**, **Ctrl+X**).
-
-### Verify cron is set up
+After updating `.env`, restart to apply:
 
 ```bash
-sudo crontab -l
+cd /opt/konote
+sudo docker compose up -d
 ```
 
-You should see your three cron entries.
+### Verify the ops sidecar is running
+
+```bash
+sudo docker compose logs --tail 20 ops
+```
+
+You should see the crontab schedule and "Ops sidecar ready. Starting crond."
 
 ---
 
-## 12. Set Up Monitoring
+## 12. Set Up External Monitoring
+
+The ops sidecar provides **internal monitoring** (database health, disk, backups). You should also set up **external monitoring** that checks your site from outside the VPS.
 
 [UptimeRobot](https://uptimerobot.com/) is a free service that checks your site every 5 minutes and emails you if it goes down.
 
@@ -562,6 +580,8 @@ You should see your three cron entries.
 5. Save
 
 UptimeRobot will now check your site every 5 minutes and email you within minutes if it goes down.
+
+> **Note:** The ops sidecar monitors the system from inside (backups, disk, database health). UptimeRobot monitors from outside (is the website reachable?). You should set up both — they catch different failure modes.
 
 ---
 
@@ -1069,7 +1089,8 @@ sudo docker compose start web
 | Restart after .env change | `cd /opt/konote && sudo docker compose up -d` |
 | Rebuild after code update | `cd /opt/konote && sudo git pull && sudo docker compose up -d --build` |
 | Create admin user | `sudo docker compose exec web python manage.py createsuperuser` |
-| Run backup now | `sudo /opt/konote/scripts/backup-vps.sh` |
+| Run backup now | `sudo docker compose exec ops /usr/local/bin/ops-backup.sh` |
+| Ops logs | `sudo docker compose logs --tail 50 ops` |
 | Check container health | `sudo docker compose ps` |
 | Check disk space | `df -h /` |
 | View backup files | `ls -lh /opt/konote/backups/` |
