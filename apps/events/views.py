@@ -1,11 +1,12 @@
 """Views for events and alerts — admin event types + client-scoped events/alerts."""
+import logging
 import secrets
 from datetime import timedelta
 from urllib.parse import urlparse, urlunparse
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -24,13 +25,16 @@ from apps.programs.access import (
 from django_ratelimit.decorators import ratelimit
 
 from apps.auth_app.decorators import admin_required, requires_permission, requires_permission_global
+from apps.auth_app.permissions import ALLOW, DENY, can_access
 from apps.programs.models import Program, UserProgramRole
 
 from .forms import (
     AlertCancelForm, AlertForm, AlertRecommendCancelForm, AlertReviewRecommendationForm,
-    EventForm, EventTypeForm, MeetingEditForm, MeetingQuickCreateForm,
+    EventForm, EventTypeForm, MeetingEditForm, MeetingQuickCreateForm, SRECategoryForm,
 )
-from .models import Alert, AlertCancellationRecommendation, CalendarFeedToken, Event, EventType, Meeting
+from .models import Alert, AlertCancellationRecommendation, CalendarFeedToken, Event, EventType, Meeting, SRECategory
+
+logger = logging.getLogger(__name__)
 
 
 # Use shared access helpers from apps.programs.access
@@ -247,6 +251,103 @@ def event_list(request, client_id):
     return render(request, "events/event_list.html", context)
 
 
+def _user_can_flag_sre(user):
+    """Check if user has sre.flag permission based on their highest role."""
+    from apps.auth_app.decorators import _get_user_highest_role_any
+    if getattr(user, "is_admin", False):
+        return True
+    role = _get_user_highest_role_any(user)
+    if role is None:
+        return False
+    return can_access(role, "sre.flag") != DENY
+
+
+def _send_sre_notification(event, request):
+    """Send SRE notification emails to admins and executives.
+
+    Recipients: admin/executive roles in the event's program + all site-wide admins.
+    Level 1 severity: "[URGENT]" in subject.
+    If email fails, log but don't block save.
+    """
+    from apps.auth_app.models import User
+    from apps.communications.services import send_email_message
+
+    category = event.sre_category
+    severity = category.severity if category else 2
+    category_name = str(category) if category else _("Unknown")
+
+    # Build recipient list: admins + executives/PMs in the event's program
+    recipient_emails = set()
+
+    # All site-wide admins
+    for admin_user in User.objects.filter(is_admin=True, is_active=True):
+        if admin_user.email:
+            recipient_emails.add(admin_user.email)
+
+    # PMs and executives in the event's program
+    if event.author_program_id:
+        roles_qs = UserProgramRole.objects.filter(
+            program_id=event.author_program_id,
+            role__in=["program_manager", "executive"],
+            status="active",
+        ).select_related("user")
+        for role_obj in roles_qs:
+            if role_obj.user.is_active and role_obj.user.email:
+                recipient_emails.add(role_obj.user.email)
+
+    if not recipient_emails:
+        logger.warning("SRE notification: no recipients found for event %s", event.pk)
+        return
+
+    # Build subject
+    urgent_prefix = "[URGENT] " if severity == 1 else ""
+    subject = f"{urgent_prefix}{_('Serious Reportable Event')} — {category_name}"
+
+    # Build body
+    date_str = event.start_timestamp.strftime("%Y-%m-%d") if event.start_timestamp else _("(no date)")
+    program_name = event.author_program.name if event.author_program else _("(no program)")
+    flagged_by = event.sre_flagged_by.display_name if event.sre_flagged_by and hasattr(event.sre_flagged_by, "display_name") else str(event.sre_flagged_by or _("Unknown"))
+
+    # Bilingual category name
+    category_en = category.name if category else ""
+    category_fr = category.name_fr if category else ""
+    bilingual_category = f"{category_en} / {category_fr}" if category_fr else category_en
+
+    severity_labels = {1: _("Level 1 — Immediate"), 2: _("Level 2 — Within 24 hours"), 3: _("Level 3 — Within 7 days")}
+    severity_label = severity_labels.get(severity, _("Unknown"))
+
+    body = (
+        f"{_('A Serious Reportable Event has been flagged.')}\n\n"
+        f"{_('Category')}: {bilingual_category}\n"
+        f"{_('Severity')}: {severity_label}\n"
+        f"{_('Date')}: {date_str}\n"
+        f"{_('Program')}: {program_name}\n"
+        f"{_('Flagged by')}: {flagged_by}\n"
+    )
+    if event.title:
+        body += f"{_('Event')}: {event.title}\n"
+    if event.description:
+        body += f"\n{_('Description')}: {event.description[:500]}\n"
+
+    try:
+        event_url = request.build_absolute_uri(
+            reverse("events:event_list", kwargs={"client_id": event.client_file_id})
+        )
+        body += f"\n{_('View event')}: {event_url}\n"
+    except Exception:
+        pass
+
+    # Send to each recipient individually
+    for email_addr in recipient_emails:
+        try:
+            send_email_message(email_addr, subject, body)
+        except Exception as exc:
+            logger.warning("SRE notification failed for %s: %s", email_addr[:5] + "***", str(exc))
+
+    event.sre_notifications_sent = True
+    event.save(update_fields=["sre_notifications_sent"])
+
+
 @login_required
 @requires_permission("event.create", _get_program_from_client)
 def event_create(request, client_id):
@@ -254,22 +355,56 @@ def event_create(request, client_id):
     client = _get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
+
+    can_flag_sre = _user_can_flag_sre(request.user)
+
     if request.method == "POST":
-        form = EventForm(request.POST)
+        form = EventForm(request.POST, can_flag_sre=can_flag_sre)
         if form.is_valid():
             event = form.save(commit=False)
             event.client_file = client
             event.author_program = getattr(
                 request, "user_program", None
             ) or _get_author_program(request.user, client)
+
+            # Handle SRE flagging
+            if event.is_sre and can_flag_sre:
+                event.sre_flagged_by = request.user
+                event.sre_flagged_at = timezone.now()
+
             event.save()
-            messages.success(request, _("Event created."))
+
+            # SRE audit log + notification
+            if event.is_sre:
+                from apps.audit.models import AuditLog
+                AuditLog.objects.using("audit").create(
+                    event_timestamp=timezone.now(),
+                    user_id=request.user.pk,
+                    user_display=request.user.display_name if hasattr(request.user, "display_name") else str(request.user),
+                    action="create",
+                    resource_type="sre_event",
+                    resource_id=event.pk,
+                    is_demo_context=getattr(request.user, "is_demo", False),
+                    metadata={
+                        "client_id": client.pk,
+                        "sre_category_id": event.sre_category_id,
+                        "sre_category_name": str(event.sre_category) if event.sre_category else "",
+                        "severity": event.sre_category.severity if event.sre_category else None,
+                    },
+                )
+                _send_sre_notification(event, request)
+                messages.success(request, _("Event created and flagged as a Serious Reportable Event. Notifications have been sent."))
+            else:
+                messages.success(request, _("Event created."))
+
             return redirect("events:event_list", client_id=client.pk)
     else:
-        form = EventForm()
+        form = EventForm(can_flag_sre=can_flag_sre)
+
     return render(request, "events/event_form.html", {
         "form": form,
         "client": client,
+        "can_flag_sre": can_flag_sre,
     })
 
 
@@ -917,4 +1052,232 @@ def calendar_feed_settings(request):
         "outlook_subscribe_url": outlook_subscribe_url,
         "feed_token": feed_token,
         "breadcrumbs": breadcrumbs,
+    })
+
+
+# ---------------------------------------------------------------------------
+# SRE Un-flagging (Admin only)
+# ---------------------------------------------------------------------------
+
+@login_required
+@admin_required
+def sre_unflag(request, event_id):
+    """Remove SRE flag from an event. Admin-only, creates audit log."""
+    event = get_object_or_404(Event, pk=event_id)
+    if not event.is_sre:
+        messages.info(request, _("This event is not flagged as an SRE."))
+        return redirect("events:event_list", client_id=event.client_file_id)
+
+    if request.method == "POST":
+        old_category = str(event.sre_category) if event.sre_category else ""
+        old_severity = event.sre_category.severity if event.sre_category else None
+
+        event.is_sre = False
+        event.sre_category = None
+        event.save(update_fields=["is_sre", "sre_category"])
+
+        # Audit log for un-flagging
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name if hasattr(request.user, "display_name") else str(request.user),
+            action="update",
+            resource_type="sre_event",
+            resource_id=event.pk,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "action": "unflag",
+                "previous_category": old_category,
+                "previous_severity": old_severity,
+            },
+        )
+        messages.success(request, _("SRE flag removed from this event."))
+        return redirect("events:event_list", client_id=event.client_file_id)
+
+    return render(request, "events/sre_unflag_confirm.html", {
+        "event": event,
+    })
+
+
+# ---------------------------------------------------------------------------
+# SRE Category Admin Management (Admin only)
+# ---------------------------------------------------------------------------
+
+@login_required
+@admin_required
+def sre_category_list(request):
+    """List all SRE categories."""
+    categories = SRECategory.objects.all()
+    breadcrumbs = [
+        {"url": "", "label": _("SRE Categories")},
+    ]
+    return render(request, "events/sre_category_list.html", {
+        "categories": categories,
+        "breadcrumbs": breadcrumbs,
+        "nav_active": "manage",
+    })
+
+
+@login_required
+@admin_required
+def sre_category_create(request):
+    """Create a new SRE category."""
+    if request.method == "POST":
+        form = SRECategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("SRE category created."))
+            return redirect("sre_categories:sre_category_list")
+    else:
+        form = SRECategoryForm()
+    breadcrumbs = [
+        {"url": reverse("sre_categories:sre_category_list"), "label": _("SRE Categories")},
+        {"url": "", "label": _("New")},
+    ]
+    return render(request, "events/sre_category_form.html", {
+        "form": form,
+        "editing": False,
+        "breadcrumbs": breadcrumbs,
+        "nav_active": "manage",
+    })
+
+
+@login_required
+@admin_required
+def sre_category_edit(request, category_id):
+    """Edit an existing SRE category."""
+    category = get_object_or_404(SRECategory, pk=category_id)
+    if request.method == "POST":
+        form = SRECategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("SRE category updated."))
+            return redirect("sre_categories:sre_category_list")
+    else:
+        form = SRECategoryForm(instance=category)
+    breadcrumbs = [
+        {"url": reverse("sre_categories:sre_category_list"), "label": _("SRE Categories")},
+        {"url": "", "label": category.name},
+    ]
+    return render(request, "events/sre_category_form.html", {
+        "form": form,
+        "editing": True,
+        "category": category,
+        "breadcrumbs": breadcrumbs,
+        "nav_active": "manage",
+    })
+
+
+@login_required
+@admin_required
+def sre_category_toggle_active(request, category_id):
+    """Archive or unarchive an SRE category."""
+    category = get_object_or_404(SRECategory, pk=category_id)
+    if request.method == "POST":
+        category.is_active = not category.is_active
+        category.save(update_fields=["is_active"])
+        status_msg = _("activated") if category.is_active else _("archived")
+        messages.success(request, _("SRE category %(name)s %(status)s.") % {"name": category.name, "status": status_msg})
+    return redirect("sre_categories:sre_category_list")
+
+
+# ---------------------------------------------------------------------------
+# SRE Report (Admin/Executive/PM)
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("sre.view_report", allow_admin=True)
+def sre_report(request):
+    """SRE report: all SRE events in date range, filterable by program and category.
+
+    Admin and Executive see all programs. PMs see only their own programs.
+    """
+    import datetime
+
+    # Default date range: last 90 days
+    today = timezone.now().date()
+    default_start = today - timedelta(days=90)
+    start_date_str = request.GET.get("start_date", "")
+    end_date_str = request.GET.get("end_date", "")
+    program_id = request.GET.get("program", "")
+    category_id = request.GET.get("category", "")
+
+    try:
+        start_date = datetime.date.fromisoformat(start_date_str) if start_date_str else default_start
+    except ValueError:
+        start_date = default_start
+    try:
+        end_date = datetime.date.fromisoformat(end_date_str) if end_date_str else today
+    except ValueError:
+        end_date = today
+
+    # Convert dates to datetimes for query
+    start_dt = timezone.make_aware(datetime.datetime.combine(start_date, datetime.time.min))
+    end_dt = timezone.make_aware(datetime.datetime.combine(end_date, datetime.time.max))
+
+    # Base queryset: SRE events only
+    sre_events = Event.objects.filter(
+        is_sre=True,
+        start_timestamp__gte=start_dt,
+        start_timestamp__lte=end_dt,
+    ).select_related("sre_category", "author_program", "sre_flagged_by", "event_type")
+
+    # Scope to user's programs if not admin
+    if not request.user.is_admin:
+        user_program_ids = get_user_program_ids(request.user)
+        sre_events = sre_events.filter(author_program_id__in=user_program_ids)
+
+    # Filters
+    if program_id:
+        try:
+            sre_events = sre_events.filter(author_program_id=int(program_id))
+        except (ValueError, TypeError):
+            pass
+    if category_id:
+        try:
+            sre_events = sre_events.filter(sre_category_id=int(category_id))
+        except (ValueError, TypeError):
+            pass
+
+    sre_events = sre_events.order_by("-start_timestamp")
+
+    # Aggregate counts by category
+    category_counts = (
+        sre_events.values("sre_category__name", "sre_category__severity")
+        .annotate(count=Count("pk"))
+        .order_by("sre_category__severity", "sre_category__name")
+    )
+
+    # Aggregate counts by program
+    program_counts = (
+        sre_events.values("author_program__name")
+        .annotate(count=Count("pk"))
+        .order_by("author_program__name")
+    )
+
+    # Filter options
+    if request.user.is_admin:
+        programs = Program.objects.filter(status="active").order_by("name")
+    else:
+        user_program_ids = get_user_program_ids(request.user)
+        programs = Program.objects.filter(pk__in=user_program_ids, status="active").order_by("name")
+    categories = SRECategory.objects.filter(is_active=True)
+
+    breadcrumbs = [
+        {"url": "", "label": _("SRE Report")},
+    ]
+    return render(request, "events/sre_report.html", {
+        "sre_events": sre_events,
+        "category_counts": category_counts,
+        "program_counts": program_counts,
+        "start_date": start_date,
+        "end_date": end_date,
+        "programs": programs,
+        "categories": categories,
+        "selected_program": program_id,
+        "selected_category": category_id,
+        "total_count": sre_events.count(),
+        "breadcrumbs": breadcrumbs,
+        "nav_active": "manage",
     })
