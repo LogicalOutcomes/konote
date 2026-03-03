@@ -477,6 +477,21 @@ class SecureExportLink(models.Model):
     # File location (not web-accessible)
     file_path = models.CharField(max_length=500)
 
+    # Report approval workflow (RPT-APPROVE1)
+    agency_notes = models.TextField(
+        blank=True,
+        default="",
+        help_text=_("Agency context notes accompanying this export."),
+    )
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="approved_exports",
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
     def is_valid(self):
         """Check if link is still usable (no I/O — checks DB state only)."""
         if self.revoked:
