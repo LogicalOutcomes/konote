@@ -1642,14 +1642,24 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 })();
 
 
-// ── Plausibility warnings for metric values (DQ1) ───────────────────
+// ── Plausibility warnings for metric values (DQ1 + DQ1-TIER2) ───────
 
 (function () {
     "use strict";
 
+    /**
+     * Two-tier plausibility checking:
+     *   Tier 2 (very unlikely) — RED, requires TWO confirmations
+     *   Tier 1 (warn)          — YELLOW, requires ONE confirmation
+     *
+     * Tier 2 is checked first. If the value is outside tier-2 bounds,
+     * the tier-1 check is skipped (tier-2 is always the wider range).
+     */
     function checkPlausibility(input) {
         var warnMin = parseFloat(input.getAttribute("data-warn-min"));
         var warnMax = parseFloat(input.getAttribute("data-warn-max"));
+        var vuMin = parseFloat(input.getAttribute("data-very-unlikely-min"));
+        var vuMax = parseFloat(input.getAttribute("data-very-unlikely-max"));
         var val = parseFloat(input.value);
 
         var wrapper = input.closest(".metric-number-input");
@@ -1662,39 +1672,73 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 
         if (isNaN(val) || input.value.trim() === "") {
             warningDiv.style.display = "none";
+            warningDiv.classList.remove("tier-2");
+            warningDiv.removeAttribute("data-confirm-count");
             if (confirmedInput) confirmedInput.value = "";
             return;
         }
 
+        var metricLabel = wrapper.querySelector("label");
+        var labelText = metricLabel ? metricLabel.textContent.trim() : "this metric";
+        var formattedVal = val.toLocaleString();
+
+        // ── Tier 2: very unlikely ────────────────────────────────────
+        var isBelowVU = !isNaN(vuMin) && val < vuMin;
+        var isAboveVU = !isNaN(vuMax) && val > vuMax;
+
+        if (isBelowVU || isAboveVU) {
+            var warningText = warningDiv.querySelector(".warning-text");
+            warningText.textContent = t("plausibility_tier2",
+                "This value ({value}) is extremely unlikely for {metric}. This is almost certainly a data-entry error. Please re-check and confirm twice if correct.")
+                .replace("{value}", formattedVal).replace("{metric}", labelText);
+
+            warningDiv.style.display = "block";
+            warningDiv.classList.add("tier-2");
+            warningDiv.setAttribute("aria-live", "assertive");
+            // Reset confirmation — tier-2 requires two clicks
+            warningDiv.setAttribute("data-confirm-count", "0");
+            if (confirmedInput) confirmedInput.value = "";
+            var btn = warningDiv.querySelector(".plausibility-confirm-btn");
+            if (btn) {
+                btn.style.display = "";
+                btn.textContent = t("confirm_this_value", "Confirm this value");
+            }
+            return;
+        }
+
+        // ── Tier 1: warn ─────────────────────────────────────────────
         var isBelowWarn = !isNaN(warnMin) && val < warnMin;
         var isAboveWarn = !isNaN(warnMax) && val > warnMax;
 
         if (isBelowWarn || isAboveWarn) {
             var warningText = warningDiv.querySelector(".warning-text");
-            var metricLabel = wrapper.querySelector("label");
-            var labelText = metricLabel ? metricLabel.textContent.trim() : "this metric";
-            var formattedVal = val.toLocaleString();
 
             if (isAboveWarn) {
-                warningText.textContent =
-                    "This value (" + formattedVal + ") is unusually high for " + labelText +
-                    ". Please double-check. If correct, click Confirm.";
+                warningText.textContent = t("plausibility_high",
+                    "This value ({value}) is unusually high for {metric}. Please double-check. If correct, click Confirm.")
+                    .replace("{value}", formattedVal).replace("{metric}", labelText);
             } else {
-                warningText.textContent =
-                    "This value (" + formattedVal + ") is unusually low for " + labelText +
-                    ". Please double-check. If correct, click Confirm.";
+                warningText.textContent = t("plausibility_low",
+                    "This value ({value}) is unusually low for {metric}. Please double-check. If correct, click Confirm.")
+                    .replace("{value}", formattedVal).replace("{metric}", labelText);
             }
 
             warningDiv.style.display = "block";
+            warningDiv.classList.remove("tier-2");
+            warningDiv.removeAttribute("data-confirm-count");
+            warningDiv.setAttribute("aria-live", "polite");
             // Reset confirmation when value changes
             if (confirmedInput) confirmedInput.value = "";
             var btn = warningDiv.querySelector(".plausibility-confirm-btn");
             if (btn) {
                 btn.style.display = "";
+                btn.textContent = t("confirm_this_value", "Confirm this value");
                 warningDiv.style.color = "";
             }
         } else {
             warningDiv.style.display = "none";
+            warningDiv.classList.remove("tier-2");
+            warningDiv.removeAttribute("data-confirm-count");
             if (confirmedInput) confirmedInput.value = "";
         }
     }
@@ -1708,22 +1752,47 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         if (!wrapper) return;
 
         var confirmedInput = wrapper.querySelector(".plausibility-confirmed-input");
+
+        // Tier-2: require two confirmations
+        if (warningDiv.classList.contains("tier-2")) {
+            var count = parseInt(warningDiv.getAttribute("data-confirm-count") || "0", 10);
+            count++;
+            warningDiv.setAttribute("data-confirm-count", String(count));
+
+            if (count === 1) {
+                // First click — change button text, do NOT confirm yet
+                e.target.textContent = t("click_again_to_confirm", "Click again to confirm");
+                return;
+            }
+            // Second click — confirmed
+        }
+
         if (confirmedInput) confirmedInput.value = "True";
 
         var warningText = warningDiv.querySelector(".warning-text");
-        if (warningText) warningText.textContent = "Value confirmed.";
+        if (warningText) warningText.textContent = t("value_confirmed", "Value confirmed.");
         e.target.style.display = "none";
         warningDiv.style.color = "var(--pico-muted-color)";
+        warningDiv.classList.remove("tier-2");
+        warningDiv.removeAttribute("data-confirm-count");
+        warningDiv.setAttribute("aria-live", "polite");
     });
 
-    // Check on change and blur for metric number inputs with warn attributes
+    // Selector matches inputs with any plausibility data attribute
+    var plausibilitySelector =
+        'input[type="number"][data-warn-min],' +
+        'input[type="number"][data-warn-max],' +
+        'input[type="number"][data-very-unlikely-min],' +
+        'input[type="number"][data-very-unlikely-max]';
+
+    // Check on change and blur for metric number inputs with warn/vu attributes
     document.addEventListener("change", function (e) {
-        if (e.target.matches('input[type="number"][data-warn-min], input[type="number"][data-warn-max]')) {
+        if (e.target.matches(plausibilitySelector)) {
             checkPlausibility(e.target);
         }
     });
     document.addEventListener("blur", function (e) {
-        if (e.target.matches('input[type="number"][data-warn-min], input[type="number"][data-warn-max]')) {
+        if (e.target.matches(plausibilitySelector)) {
             checkPlausibility(e.target);
         }
     }, true);

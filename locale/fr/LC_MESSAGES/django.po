@@ -693,22 +693,6 @@ msgstr "Aucun personnel assigné pour le moment."
 msgid "Add"
 msgstr "Ajouter"
 
-msgid "Additional questions appeared below."
-msgstr "Des questions supplémentaires sont apparues ci-dessous."
-
-msgid "Page"
-msgstr "Page"
-
-msgid "Already Responded"
-msgstr "Déjà répondu"
-
-#, python-format
-msgid "You have already submitted a response to \"%(name)s\"."
-msgstr "Vous avez déjà soumis une réponse à « %(name)s »."
-
-msgid "Limit to one response per browser (uses a cookie)"
-msgstr "Limiter à une réponse par navigateur (utilise un cookie)"
-
 msgid "Select user"
 msgstr "Sélectionner un utilisateur"
 
@@ -9579,33 +9563,17 @@ msgid "Enable in Features, then configure Twilio credentials."
 msgstr ""
 "Activez dans Fonctionnalités, puis configurez les identifiants Twilio."
 
-msgid "Full Automation"
-msgstr "Automatisation complète"
-
-msgid "Full automation enabled"
-msgstr "Automatisation complète activée"
-
 msgid "How many hours before a meeting to send the reminder."
 msgstr "Nombre d'heures avant une réunion pour envoyer le rappel."
 
 msgid "If you change your mind, please contact the organisation directly."
 msgstr "Si vous changez d'avis, veuillez contacter l'organisme directement."
 
-msgid ""
-"KoNote automatically sends reminders before meetings. Requires email or SMS "
-"setup."
-msgstr ""
-"KoNote envoie automatiquement des rappels avant les réunions. Nécessite la "
-"configuration du courriel ou des SMS."
-
 msgid "Message Templates"
 msgstr "Modèles de message"
 
 msgid "Messaging"
 msgstr "Messagerie"
-
-msgid "Messaging Profile"
-msgstr "Profil de messagerie"
 
 msgid "Messaging Settings"
 msgstr "Paramètres de messagerie"
@@ -9621,9 +9589,6 @@ msgstr "Non configuré"
 
 msgid "Personal note (optional)"
 msgstr "Note personnelle (facultatif)"
-
-msgid "Record-Keeping Only"
-msgstr "Tenue de dossiers uniquement"
 
 msgid "Record-keeping only"
 msgstr "Tenue de dossiers uniquement"
@@ -9667,26 +9632,59 @@ msgstr "Nom d'affichage de l'expéditeur"
 msgid "Shown in error messages when messaging fails."
 msgstr "Affiché dans les messages d'erreur lorsque la messagerie échoue."
 
-msgid ""
-"Staff can schedule meetings and log communications. Nothing is sent from "
-"KoNote."
-msgstr ""
-"Le personnel peut planifier des réunions et enregistrer des communications. "
-"Aucun message n'est envoyé depuis KoNote."
-
-msgid ""
-"Staff can send appointment reminders and messages directly from KoNote. "
-"Every message requires a person to click send."
-msgstr ""
-"Le personnel peut envoyer des rappels de rendez-vous et des messages "
-"directement depuis KoNote. Chaque message nécessite qu'une personne clique "
-"sur envoyer."
-
-msgid "Staff-Sent Messages"
+msgid "Staff-sent messages"
 msgstr "Messages envoyés par le personnel"
 
 msgid "Staff-sent messages enabled"
 msgstr "Messages envoyés par le personnel activés"
+
+msgid "Staff messaging is not enabled"
+msgstr "La messagerie du personnel n'est pas activée"
+
+msgid ""
+"Staff can compose and send individual messages to participants from within "
+"KoNote. Every message requires a person to review and click send."
+msgstr ""
+"Le personnel peut rédiger et envoyer des messages individuels aux "
+"participants depuis KoNote. Chaque message doit être révisé et envoyé "
+"manuellement."
+
+msgid "Staff messages + automated reminders"
+msgstr "Messages du personnel + rappels automatisés"
+
+msgid "Automated system reminders"
+msgstr "Rappels système automatisés"
+
+msgid "Automated reminders enabled"
+msgstr "Rappels automatisés activés"
+
+msgid "Automated reminders are not enabled"
+msgstr "Les rappels automatisés ne sont pas activés"
+
+msgid ""
+"KoNote automatically sends appointment reminders from a no-reply address "
+"before scheduled meetings. No staff action required."
+msgstr ""
+"KoNote envoie automatiquement des rappels de rendez-vous depuis une adresse "
+"sans réponse avant les réunions planifiées. Aucune action du personnel "
+"requise."
+
+msgid "Messaging Capabilities"
+msgstr "Capacités de messagerie"
+
+msgid ""
+"Select the messaging options your organisation needs. You can enable both."
+msgstr ""
+"Sélectionnez les options de messagerie dont votre organisation a besoin. "
+"Vous pouvez activer les deux."
+
+msgid ""
+"Neither option is enabled — KoNote is in record-keeping mode. Staff can "
+"schedule meetings and log communications, but nothing is sent."
+msgstr ""
+"Aucune option n'est activée — KoNote est en mode tenue de dossiers. Le "
+"personnel peut planifier des réunions et consigner les communications, mais "
+"rien n'est envoyé."
 
 msgid "Support Contact Name"
 msgstr "Nom du contact de soutien"
@@ -10716,6 +10714,14 @@ msgstr "Messages"
 
 msgid "My Messages"
 msgstr "Mes messages"
+
+#, python-format
+msgid ""
+"To leave a message for a colleague about a %(client)s, open the %(client)s's"
+" file and select \"Leave a Message.\""
+msgstr ""
+"Pour laisser un message à un collègue au sujet d'un(e) %(client)s, ouvrez le"
+" dossier du/de la %(client)s et sélectionnez « Laisser un message »."
 
 msgid "No messages."
 msgstr "Aucun message."
@@ -12858,9 +12864,6 @@ msgstr "Vos réponses sont sauvegardées automatiquement."
 
 msgid "Your name (optional)"
 msgstr "Votre nom (facultatif)"
-
-msgid "First name or nickname (optional)"
-msgstr "Prénom ou surnom (facultatif)"
 
 msgid "is answered"
 msgstr "a reçu une réponse"
@@ -17742,103 +17745,219 @@ msgid "Warning minimum must be less than warning maximum."
 msgstr ""
 "Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
 
-msgid "%(count)s access denied events on %(date)s"
+msgid ""
+"Hard ceiling — values above this are almost certainly data-entry errors. "
+"Requires two confirmations."
 msgstr ""
+"Plafond absolu — les valeurs au-dessus sont presque certainement des erreurs"
+" de saisie. Nécessite deux confirmations."
+
+msgid ""
+"Hard floor — values below this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plancher absolu — les valeurs en dessous sont presque certainement des "
+"erreurs de saisie. Nécessite deux confirmations."
+
+msgid "Very unlikely maximum cannot exceed the hard maximum."
+msgstr "Le maximum très improbable ne peut pas dépasser le maximum absolu."
+
+msgid "Very unlikely maximum must be at or above the warning maximum."
+msgstr ""
+"Le maximum très improbable doit être égal ou supérieur au maximum "
+"d'avertissement."
+
+msgid "Very unlikely minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum très improbable ne peut pas être inférieur au minimum absolu."
+
+msgid "Very unlikely minimum must be at or below the warning minimum."
+msgstr ""
+"Le minimum très improbable doit être égal ou inférieur au minimum "
+"d'avertissement."
+
+msgid "Very unlikely minimum must be less than very unlikely maximum."
+msgstr ""
+"Le minimum très improbable doit être inférieur au maximum très improbable."
+
+msgid "Click again to confirm"
+msgstr "Cliquez de nouveau pour confirmer"
+
+msgid ""
+"This value ({value}) is extremely unlikely for {metric}. This is almost "
+"certainly a data-entry error. Please re-check and confirm twice if correct."
+msgstr ""
+"Cette valeur ({value}) est extrêmement improbable pour {metric}. Il s'agit "
+"presque certainement d'une erreur de saisie. Veuillez revérifier et "
+"confirmer deux fois si elle est correcte."
+
+msgid ""
+"This value ({value}) is unusually high for {metric}. Please double-check. If"
+" correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement élevée pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid ""
+"This value ({value}) is unusually low for {metric}. Please double-check. If "
+"correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement basse pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid "This value is extremely unlikely. Please confirm it is correct."
+msgstr ""
+"Cette valeur est extrêmement improbable. Veuillez confirmer qu'elle est "
+"correcte."
+
+msgid ""
+"This value is outside the expected range. Please confirm it is correct."
+msgstr ""
+"Cette valeur est en dehors de la plage attendue. Veuillez confirmer qu'elle "
+"est correcte."
+
+msgid "Value confirmed."
+msgstr "Valeur confirmée."
+
+msgid "Invalid send method"
+msgstr "Méthode d'envoi non valide"
+
+msgid "%(count)s access denied events on %(date)s"
+msgstr "%(count)s événements d'accès refusé le %(date)s"
 
 msgid "%(count)s failed login attempts on %(date)s"
-msgstr ""
+msgstr "%(count)s tentatives de connexion échouées le %(date)s"
 
 msgid "%(count)s participant records viewed on %(date)s"
-msgstr ""
+msgstr "%(count)s dossiers de participants consultés le %(date)s"
 
 msgid "Access denied spike"
-msgstr ""
+msgstr "Pic d'accès refusés"
 
 msgid "Active users"
-msgstr ""
+msgstr "Utilisateurs actifs"
 
 msgid ""
 "Aggregate privacy and access metrics for board accountability (PIPEDA "
 "4.1.4). No individual participant or staff names are shown."
 msgstr ""
+"Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de "
+"participant ou de membre du personnel n'est affiché."
 
 msgid "Anomaly Flags"
-msgstr ""
+msgstr "Signalements d'anomalies"
 
 msgid "Anomaly flags"
-msgstr ""
+msgstr "Signalements d'anomalies"
 
 msgid "Bulk record access"
-msgstr ""
+msgstr "Accès massif aux dossiers"
 
 msgid "Compliance Summary"
-msgstr ""
+msgstr "Résumé de conformité"
 
 msgid "Conservative (< 10)"
-msgstr ""
+msgstr "Prudent (< 10)"
 
 msgid ""
 "Contact your administrator to investigate specific incidents. They have "
 "access to detailed audit log entries."
 msgstr ""
+"Communiquez avec votre administrateur pour enquêter sur des incidents "
+"précis. Il a accès aux entrées détaillées du journal d'audit."
 
 msgid "Data exports"
-msgstr ""
+msgstr "Exportations de données"
 
 msgid "Export events by role"
-msgstr ""
+msgstr "Événements d'exportation par rôle"
 
 msgid "Exports by Role"
-msgstr ""
+msgstr "Exportations par rôle"
 
 msgid "Failed login spike"
-msgstr ""
+msgstr "Pic de connexions échouées"
 
 msgid "Failed logins"
-msgstr ""
+msgstr "Connexions échouées"
 
 msgid "How to use this report"
-msgstr ""
+msgstr "Comment utiliser ce rapport"
 
 msgid "If an anomaly needs investigation, note the date and type."
-msgstr ""
+msgstr "Si une anomalie nécessite une enquête, notez la date et le type."
 
 msgid "No anomalies detected during this period."
-msgstr ""
+msgstr "Aucune anomalie détectée au cours de cette période."
 
 msgid "Overview"
-msgstr ""
+msgstr "Aperçu"
 
 msgid "Record access by type"
-msgstr ""
+msgstr "Accès aux dossiers par type"
 
 msgid "Records Accessed by Type"
-msgstr ""
+msgstr "Dossiers consultés par type"
 
 msgid "Review the overview statistics and anomaly flags above."
-msgstr ""
+msgstr "Consultez les statistiques d'aperçu et les signalements d'anomalies ci-dessus."
 
 msgid "Standard (< 5)"
-msgstr ""
+msgstr "Standard (< 5)"
 
 msgid ""
 "The following unusual patterns were detected during this period. Contact "
 "your administrator to investigate specific incidents."
 msgstr ""
+"Les tendances inhabituelles suivantes ont été détectées au cours de cette "
+"période. Communiquez avec votre administrateur pour enquêter sur des "
+"incidents précis."
 
 msgid ""
 "This summary shows aggregate compliance metrics — no individual participant "
 "or staff names are displayed. This is by design (PIPEDA principle of "
 "limiting collection)."
 msgstr ""
+"Ce résumé présente des indicateurs de conformité agrégés — aucun nom de "
+"participant ou de membre du personnel n'est affiché. C'est intentionnel "
+"(principe de la LPRPDE de limiter la collecte)."
 
 msgid "Total audit events"
-msgstr ""
+msgstr "Total des événements d'audit"
 
 msgid "Use the Print button to include this summary in board reports."
+msgstr "Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au conseil."
+
+msgid "Reporting period: %(start)s to %(end)s"
+msgstr "Période de rapport : %(start)s au %(end)s"
+
+msgid ""
+"View aggregate compliance summary (no PII, no staff names)"
 msgstr ""
+"Consulter le résumé de conformité agrégé (aucune information personnelle, "
+"aucun nom de membre du personnel)"
 
 msgid ""
 "If true, use a cookie to discourage multiple submissions from the same "
 "browser."
 msgstr ""
+"Si vrai, utiliser un témoin pour décourager les soumissions multiples depuis "
+"le même navigateur."
+
+msgid "Limit to one response per browser (uses a cookie)"
+msgstr "Limiter à une réponse par navigateur (utilise un témoin)"
+
+msgid "Already Responded"
+msgstr "Déjà répondu"
+
+msgid "First name or nickname (optional)"
+msgstr "Prénom ou surnom (facultatif)"
+
+msgid "Additional questions appeared below."
+msgstr "Des questions supplémentaires sont apparues ci-dessous."
+
+msgid ""
+"You have already submitted a response to \"%(name)s\"."
+msgstr ""
+"Vous avez déjà soumis une réponse à « %(name)s »."

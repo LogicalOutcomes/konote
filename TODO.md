@@ -4,6 +4,7 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
+- [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev after merging PR #239 and #240. The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
 
@@ -45,7 +46,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Data Quality
 
 
-- [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
+- [x] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection — 2026-03-03 (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
 ### Phase: Post-Launch Communication Enhancements
@@ -76,12 +77,12 @@ Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/mu
 
 - [x] Create deployment documentation for surveys and portal features — 2026-03-03 (DOC-DEPLOY1)
 - [x] Update technical documentation in GitHub for surveys and portal architecture — 2026-03-03 (DOC-TECH1)
-- [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
-- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow — PR #147 (DOC-PERM1)
-- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit — PR #147 (DOC-PERM2)
-- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure — PR #147 (DOC-PERM3)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
+- [x] Write client-facing guide for demo data engine — verified existing guide against code (7 claims checked), fixed spelling — 2026-03-03 (DOC-DEMO1)
+- [x] Document DV-safe mode and GATED clinical access for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM1)
+- [x] Document per-field front desk access controls for agency admins — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM2)
+- [x] Document access tiers (3-tier RBAC model) for deployment runbook — verified against code (3 claims checked, all accurate) — 2026-03-03 (DOC-PERM3)
+- [x] Seed groups-attendance test data with 8+ members and 12+ sessions — verified existing seed functions correct (8 members, 12 sessions, 96 attendance records) — 2026-03-03 (QA-PA-TEST1)
+- [x] Seed comm-my-messages populated state with actual messages — verified existing seed functions correct (8 messages across 4 personas) — 2026-03-03 (QA-PA-TEST2)
 - [x] Add new features and capabilities to the web site as they are built — 2026-03-03 (WEBSITE-UPDATE1)
 
 ## Parking Lot: Ready to Build
@@ -111,8 +112,22 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
-- [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md for full analysis — GK reviews (AI-SELFHOST1)
+- [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
+- [ ] Add funder demographic profile dropdown with small-cell suppression — GK reviews reporting methodology (QA-R8-RPT1)
+- [ ] Decide executive audit log access for PIPEDA 4.1.4 board accountability — GK reviews data access policy (QA-R8-PERM2)
+
 ## Recently Done
+
+### Session 6 — Data Quality + Documentation + QA Verification
+
+- [x] Add second-tier "very unlikely" plausibility thresholds — model fields, validation, migrations, JS two-click confirm, CSS, admin form, 17 new tests — 2026-03-03 (DQ1-TIER2)
+- [x] Verify demo data engine guide — 7 claims checked against code, fixed "programme" spelling — 2026-03-03 (DOC-DEMO1)
+- [x] Verify DV-safe mode documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM1)
+- [x] Verify per-field front desk access documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM2)
+- [x] Verify access tiers documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM3)
+- [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
+- [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
+- [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 

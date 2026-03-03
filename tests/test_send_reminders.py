@@ -61,8 +61,8 @@ def _setup_fixtures(tc):
 
     # Enable messaging so can_send() passes
     InstanceSetting.objects.update_or_create(
-        setting_key="messaging_profile",
-        defaults={"setting_value": "staff_sent"},
+        setting_key="automated_reminders_enabled",
+        defaults={"setting_value": "true"},
     )
     FeatureToggle.objects.update_or_create(
         feature_key="messaging_sms",
