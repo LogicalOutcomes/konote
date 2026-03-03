@@ -1738,8 +1738,27 @@ class FunderReportViewTests(TestCase):
             return b"".join(download_resp.streaming_content).decode("utf-8")
         return download_resp.content.decode("utf-8")
 
-    def test_funder_report_csv_download(self):
-        """Funder report should create a secure link, and following it returns CSV."""
+    def _submit_funder_report_through_approval(self, form_data, agency_notes=""):
+        """Submit form → follow redirect to preview → POST approve.
+
+        Returns the approve response (the confirmation page).
+        """
+        resp = self.client.post("/reports/funder-report/", form_data)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp["Location"], "/reports/funder-report/preview/")
+
+        # Verify preview page loads
+        preview_resp = self.client.get("/reports/funder-report/preview/")
+        self.assertEqual(preview_resp.status_code, 200)
+
+        # Approve
+        approve_resp = self.client.post("/reports/funder-report/approve/", {
+            "agency_notes": agency_notes,
+        })
+        return approve_resp
+
+    def test_funder_report_form_redirects_to_preview(self):
+        """POST to funder report form should redirect to preview (RPT-APPROVE1)."""
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
@@ -1748,7 +1767,98 @@ class FunderReportViewTests(TestCase):
             "recipient": "self",
             "recipient_reason": "Test export",
         })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp["Location"], "/reports/funder-report/preview/")
+
+    def test_funder_report_preview_shows_summary(self):
+        """Preview page should show report summary and agency notes textarea."""
+        self.client.login(username="admin", password="testpass123")
+        self.client.post("/reports/funder-report/", {
+            "program": self.program.pk,
+            "fiscal_year": "2025",
+            "format": "csv",
+            "recipient": "self",
+            "recipient_reason": "Test export",
+        })
+        resp = self.client.get("/reports/funder-report/preview/")
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Review Report Before Approving")
+        self.assertContains(resp, "Test Program")
+        self.assertContains(resp, "Agency Notes")
+        self.assertContains(resp, "Approve and Export")
+
+    def test_funder_report_preview_requires_session(self):
+        """Preview page without session data should redirect to form."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/reports/funder-report/preview/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp["Location"], "/reports/funder-report/")
+
+    def test_funder_report_approve_with_notes(self):
+        """Approve with agency notes populates SecureExportLink fields."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self._submit_funder_report_through_approval(
+            {
+                "program": self.program.pk,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            },
+            agency_notes="Q1 figures include a legal settlement.",
+        )
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.latest("created_at")
+        self.assertEqual(link.agency_notes, "Q1 figures include a legal settlement.")
+        self.assertEqual(link.approved_by, self.admin)
+        self.assertIsNotNone(link.approved_at)
+
+    def test_funder_report_approve_without_notes(self):
+        """Approve without notes should work (notes are optional)."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self._submit_funder_report_through_approval(
+            {
+                "program": self.program.pk,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.latest("created_at")
+        self.assertEqual(link.agency_notes, "")
+        self.assertIsNotNone(link.approved_at)
+
+    def test_funder_report_approve_includes_notes_in_csv(self):
+        """Agency notes should appear in the CSV export."""
+        self.client.login(username="admin", password="testpass123")
+        self._submit_funder_report_through_approval(
+            {
+                "program": self.program.pk,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            },
+            agency_notes="Special note for funders.",
+        )
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client.get(f"/reports/download/{link.id}/")
+        content = self._get_download_content(download_resp)
+        self.assertIn("AGENCY NOTES", content)
+        self.assertIn("Special note for funders.", content)
+
+    def test_funder_report_csv_download(self):
+        """Funder report should create a secure link, and following it returns CSV."""
+        self.client.login(username="admin", password="testpass123")
+        self._submit_funder_report_through_approval({
+            "program": self.program.pk,
+            "fiscal_year": "2025",
+            "format": "csv",
+            "recipient": "self",
+            "recipient_reason": "Test export",
+        })
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         self.assertIn("attachment", download_resp["Content-Disposition"])
@@ -1758,14 +1868,13 @@ class FunderReportViewTests(TestCase):
     def test_funder_report_csv_content(self):
         """Funder report CSV export should contain expected sections via secure link."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/funder-report/", {
+        self._submit_funder_report_through_approval({
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
             "recipient_reason": "Test export",
         })
-        self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         content = self._get_download_content(download_resp)
@@ -2434,19 +2543,25 @@ class DemoRealExportSeparationTests(TestCase):
         # Demo admin must NOT see real client's record ID
         self.assertNotIn("REAL-001", content)
 
+    def _submit_funder_through_approval(self, form_data):
+        """Submit funder report form → preview → approve. Returns approve response."""
+        resp = self.client.post("/reports/funder-report/", form_data)
+        self.assertEqual(resp.status_code, 302)
+        self.client.get("/reports/funder-report/preview/")
+        return self.client.post("/reports/funder-report/approve/", {"agency_notes": ""})
+
     def test_demo_admin_funder_report_only_shows_demo_clients(self):
         """
         Demo admin Funder report should only count demo client data (EXP0c).
         """
         self.client.login(username="demo_admin", password="testpass123")
-        resp = self.client.post("/reports/funder-report/", {
+        self._submit_funder_through_approval({
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
             "recipient_reason": "Test export",
         })
-        self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
 
@@ -2463,14 +2578,13 @@ class DemoRealExportSeparationTests(TestCase):
         Real admin Funder report should only count real client data (EXP0c).
         """
         self.client.login(username="real_admin", password="testpass123")
-        resp = self.client.post("/reports/funder-report/", {
+        self._submit_funder_through_approval({
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
             "recipient_reason": "Test export",
         })
-        self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
 
@@ -2606,7 +2720,7 @@ class ExportWarningDialogTests(TestCase):
         self.assertIn("recipient", resp.context["form"].errors)
 
     def test_funder_report_post_with_recipient_proceeds(self):
-        """POST to /reports/funder-report/ with recipient should create a secure export link."""
+        """POST to /reports/funder-report/ with recipient should redirect to preview."""
         resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
@@ -2614,7 +2728,11 @@ class ExportWarningDialogTests(TestCase):
             "recipient": "funder",
             "recipient_reason": "Test export",
         })
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp["Location"], "/reports/funder-report/preview/")
+        # Complete the approval flow to create the export
+        self.client.get("/reports/funder-report/preview/")
+        self.client.post("/reports/funder-report/approve/", {"agency_notes": ""})
         self.assertTrue(SecureExportLink.objects.exists())
 
     # -----------------------------------------------------------------

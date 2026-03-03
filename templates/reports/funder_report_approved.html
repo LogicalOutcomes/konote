@@ -6,7 +6,7 @@
 {% block content %}
 <nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
-        <li><a href="{% url 'clients:dashboard' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
         <li><a href="{% url 'reports:funder_report' %}">{% trans "Funder Report" %}</a></li>
         <li aria-current="page">{% trans "Approved" %}</li>
     </ul>
