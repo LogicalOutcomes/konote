@@ -1669,11 +1669,18 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         var isBelowWarn = !isNaN(warnMin) && val < warnMin;
         var isAboveWarn = !isNaN(warnMax) && val > warnMax;
 
+        var originalInput = wrapper.querySelector(".plausibility-original-value");
+
         if (isBelowWarn || isAboveWarn) {
             var warningText = warningDiv.querySelector(".warning-text");
             var metricLabel = wrapper.querySelector("label");
             var labelText = metricLabel ? metricLabel.textContent.trim() : "this metric";
             var formattedVal = val.toLocaleString();
+
+            // Store the original flagged value for override logging
+            if (originalInput && !originalInput.value) {
+                originalInput.value = val;
+            }
 
             if (isAboveWarn) {
                 warningText.textContent =
@@ -1688,6 +1695,8 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             warningDiv.style.display = "block";
             // Reset confirmation when value changes
             if (confirmedInput) confirmedInput.value = "";
+            // Update original value to reflect the current flagged value
+            if (originalInput) originalInput.value = val;
             var btn = warningDiv.querySelector(".plausibility-confirm-btn");
             if (btn) {
                 btn.style.display = "";
@@ -1696,6 +1705,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         } else {
             warningDiv.style.display = "none";
             if (confirmedInput) confirmedInput.value = "";
+            if (originalInput) originalInput.value = "";
         }
     }
 
