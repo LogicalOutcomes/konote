@@ -74,8 +74,12 @@ def group_clients_by_age(
     else:
         bins = AGE_RANGES
 
-    # Load clients — encrypted birth_date requires Python access
-    clients = ClientFile.objects.filter(pk__in=client_ids)
+    # Load clients — encrypted birth_date requires Python access.
+    # Only fetch pk and encrypted birth_date to avoid loading other
+    # encrypted PII fields (names, phone) unnecessarily.
+    clients = ClientFile.objects.filter(pk__in=client_ids).only(
+        "pk", "_birth_date_encrypted",
+    )
 
     for client in clients:
         age_range = _find_age_bin(client.birth_date, as_of_date, bins)
