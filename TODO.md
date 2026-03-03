@@ -126,6 +126,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verify access tiers documentation — 3 claims checked, all accurate — 2026-03-03 (DOC-PERM3)
 - [x] Verify groups-attendance seed data — 8 members, 12 sessions, 96 records correct — 2026-03-03 (QA-PA-TEST1)
 - [x] Verify comm-my-messages seed data — 8 messages across 4 personas correct — 2026-03-03 (QA-PA-TEST2)
+- [x] Implement two-tier AI feature toggle split — `ai_assist_tools_only` (no PII, default enabled) and `ai_assist_participant_data` (de-identified, default disabled), migration 0006, admin UI, seed — 2026-03-03 (AI-TOGGLE1)
 
 ### Session 4 — Documentation & Cleanup
 
