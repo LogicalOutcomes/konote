@@ -11,15 +11,15 @@ Related: [AI feature toggles DRR](ai-feature-toggles.md), [OVHcloud deployment D
 
 KoNote's current AI integration routes participant data (scrubbed quotes, suggestion themes) through OpenRouter to Anthropic's Claude API. Even with PII scrubbing, this sends de-identified participant content to US-incorporated cloud services — a data sovereignty concern for agencies subject to PHIPA, OCAP, or funder data handling requirements.
 
-Beyond KoNote, LogicalOutcomes needs a general-purpose LLM server for:
+Beyond KoNote, LogicalOutcomes needs a general-purpose LLM inference endpoint for:
 
 1. **KoNote suggestion theme tagging** — nightly batch processing of participant suggestions across all agencies
 2. **KoNote outcome insights** — on-demand qualitative analysis of scrubbed participant quotes
-3. **OpenWebUI instances** — interactive chat for staff at multiple organisations (not participant data — internal use)
-4. **Survey qualitative analysis** — thematic coding of open-ended survey responses for evaluation reports
+3. **OpenWebUI connections** — external OpenWebUI instances at multiple organisations connect to this central model server
+4. **Survey qualitative analysis** — two-stage pipeline: PII stripping and data cleanup (self-hosted), then deep thematic analysis (frontier LLM API)
 5. **General analytical work** — document analysis, report drafting, data interpretation
 
-This is a **shared inference server** — one VPS serving multiple KoNote deployments, multiple OpenWebUI instances, and analytical workloads.
+This is a **lean shared inference endpoint** — one VPS running Ollama + Caddy, serving multiple KoNote deployments, external OpenWebUI instances, and analytical workloads. OpenWebUI is deployed separately by each organisation, not on this server.
 
 ## Decision: Shared Ollama VPS on OVHcloud Beauharnois
 
@@ -27,17 +27,17 @@ This is a **shared inference server** — one VPS serving multiple KoNote deploy
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  OVHcloud VPS-4 (Beauharnois, QC) — Shared LLM Server       │
+│  OVHcloud VPS-4 (Beauharnois, QC) — Lean LLM Endpoint       │
 │  12 vCPUs, 48 GB RAM, 300 GB NVMe                            │
 │                                                              │
-│  ┌──────────┐  ┌───────────┐  ┌────────────────────────┐    │
-│  │  Caddy   │  │  Ollama   │  │    Open WebUI          │    │
-│  │ (reverse │──│ (LLM      │──│  (chat interface)      │    │
-│  │  proxy,  │  │  engine)  │  │  per-org instances     │    │
-│  │  TLS,    │  │  :11434   │  │  :3000+                │    │
-│  │  auth)   │  │           │  │                        │    │
-│  │  :80/443 │  │           │  │                        │    │
-│  └──────────┘  └───────────┘  └────────────────────────┘    │
+│  ┌──────────┐  ┌───────────┐                                 │
+│  │  Caddy   │  │  Ollama   │                                 │
+│  │ (reverse │──│ (LLM      │                                 │
+│  │  proxy,  │  │  engine)  │                                 │
+│  │  TLS,    │  │  :11434   │                                 │
+│  │  auth)   │  │           │                                 │
+│  │  :80/443 │  │           │                                 │
+│  └──────────┘  └───────────┘                                 │
 │                                                              │
 │  Primary model: qwen3.5:35b-a3b (MoE, 3B active / 35B total)│
 │  Backup model:  qwen3.5:27b (dense, 27B — higher quality)   │
@@ -47,12 +47,13 @@ This is a **shared inference server** — one VPS serving multiple KoNote deploy
 │  └─────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────┘
 
-External clients:
+External clients (all connect via HTTPS to llm.example.com):
   ├── KoNote Instance A  →  INSIGHTS_API_BASE=https://llm.example.com/v1
   ├── KoNote Instance B  →  INSIGHTS_API_BASE=https://llm.example.com/v1
-  ├── OpenWebUI (org 1)  →  https://chat1.example.com  (own auth)
-  ├── OpenWebUI (org 2)  →  https://chat2.example.com  (own auth)
-  └── Survey analysis    →  API calls to https://llm.example.com/v1
+  ├── OpenWebUI (org 1)  →  OLLAMA_BASE_URL=https://llm.example.com
+  ├── OpenWebUI (org 2)  →  OLLAMA_BASE_URL=https://llm.example.com
+  ├── Survey PII stage   →  API calls to https://llm.example.com/v1
+  └── Survey analysis    →  API calls to Claude API (de-identified data)
 ```
 
 ### Why a Shared Server (Not Per-Agency)
@@ -73,7 +74,7 @@ The shared model wins on cost and operations. The blast radius risk is mitigated
 - Agency identifiers are **never sent** to the LLM — only scrubbed text and theme lists
 - Ollama does not persist conversation history between requests
 - No cross-agency data mixing is possible at the model level
-- Separate OpenWebUI instances per organisation maintain user-level isolation
+- External OpenWebUI instances are deployed separately by each organisation — they connect to this endpoint but their data stays on their own infrastructure
 
 ---
 
@@ -146,15 +147,14 @@ This model requires ~65 GB RAM at Q4 quantization → upgrade to VPS-6 (96 GB, ~
 |-----------|-----------|
 | Qwen3.5-35B-A3B (Q4_K_M) | ~20 GB |
 | KV cache (262K context, active request) | ~2–4 GB |
-| OpenWebUI (1–2 instances) | ~1–2 GB |
 | Caddy + OS overhead | ~2 GB |
-| **Headroom for burst** | **~20 GB free** |
+| **Headroom for burst** | **~22 GB free** |
 | **Total available** | **48 GB** |
 
-The 20 GB headroom accommodates:
+The 22 GB headroom accommodates:
 - Multiple concurrent inference requests (each adds ~1–2 GB KV cache)
 - Occasional loading of the backup 27B model (~16 GB; the 35B model is unloaded)
-- System memory pressure from OpenWebUI users
+- Burst traffic from multiple external OpenWebUI instances
 
 ### VPS Specs and Cost
 
@@ -162,10 +162,10 @@ All prices in CAD (converted from USD at 1 USD ≈ 1.35 CAD; verify current rate
 
 | Tier | vCPUs | RAM | Storage | Cost (CAD/mo) | Use Case |
 |------|-------|-----|---------|---------------|----------|
-| VPS-3 | 8 | 24 GB | 200 GB | ~$23 | Minimum viable (35B-A3B only, no OpenWebUI) |
-| **VPS-4** | **12** | **48 GB** | **300 GB** | **~$40** | **Recommended (35B-A3B + OpenWebUI + headroom)** |
+| VPS-3 | 8 | 24 GB | 200 GB | ~$23 | Minimum viable (35B-A3B only, low concurrency) |
+| **VPS-4** | **12** | **48 GB** | **300 GB** | **~$40** | **Recommended (35B-A3B + headroom for concurrent requests)** |
 | VPS-5 | 16 | 64 GB | 350 GB | ~$59 | Upgrade (122B-A10B or heavy concurrent use) |
-| VPS-6 | 24 | 96 GB | 400 GB | ~$79 | Maximum (122B-A10B + OpenWebUI + heavy use) |
+| VPS-6 | 24 | 96 GB | 400 GB | ~$79 | Maximum (122B-A10B + heavy concurrent use) |
 
 **Start with VPS-4.** Upgrade to VPS-5/6 only if quality requirements or concurrency demand it.
 
@@ -174,7 +174,7 @@ All prices in CAD (converted from USD at 1 USD ≈ 1.35 CAD; verify current rate
 | Scenario | Monthly cost (CAD) |
 |----------|-------------------|
 | OpenRouter API (current, 10 agencies) | ~$27–68 (usage-based, unpredictable) |
-| Self-hosted VPS-4 (10 agencies + OpenWebUI) | **~$40** (fixed, unlimited use) |
+| Self-hosted VPS-4 (10 agencies + external OpenWebUI) | **~$40** (fixed, unlimited inference) |
 | Self-hosted VPS-4 + off-site backup VPS | ~$51 |
 
 The self-hosted option becomes **cheaper than cloud API** at ~5 agencies and provides **unlimited inference** with no per-token cost.
@@ -184,6 +184,8 @@ The self-hosted option becomes **cheaper than cloud API** at ~5 agencies and pro
 ## Container Stack
 
 ### docker-compose.yml for the LLM VPS
+
+This is a lean deployment — just the inference engine and reverse proxy. No OpenWebUI on this server.
 
 ```yaml
 services:
@@ -202,22 +204,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 120s              # model loading takes time
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
-    restart: unless-stopped
-    depends_on:
-      ollama:
-        condition: service_healthy
-    volumes:
-      - openwebui_data:/app/backend/data
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - WEBUI_AUTH=true
-      - ENABLE_SIGNUP=false            # admin creates accounts
-      - DEFAULT_MODELS=qwen3.5:35b-a3b
-    ports:
-      - "127.0.0.1:3000:8080"         # only accessible via Caddy
 
   caddy:
     image: caddy:2-alpine
@@ -242,7 +228,6 @@ services:
 
 volumes:
   ollama_data:
-  openwebui_data:
   caddy_data:
   caddy_config:
 ```
@@ -250,12 +235,7 @@ volumes:
 ### Caddyfile
 
 ```caddyfile
-# OpenWebUI — interactive chat for staff
-chat.example.com {
-    reverse_proxy open-webui:8080
-}
-
-# Ollama API — for KoNote instances and scripts
+# Ollama API — for KoNote instances, OpenWebUI connections, and scripts
 llm.example.com {
     # Require API key for all requests
     @api {
@@ -378,93 +358,115 @@ docker compose exec -T ollama ollama pull qwen3.5:35b-a3b >> "$LOG" 2>&1
 echo "$(date) — Theme batch complete" >> "$LOG"
 ```
 
-### Survey Analysis (Non-KoNote)
+### Survey Qualitative Analysis — Two-Stage Pipeline
 
-For survey qualitative analysis, analysts use either:
+Survey qualitative analysis uses a two-stage pipeline that leverages each model's strengths:
 
-1. **OpenWebUI** — paste survey responses into chat, ask for thematic coding
-2. **API script** — Python script that reads a CSV of open-ended responses and calls the Ollama API for theme extraction, outputs a coded CSV
+```
+┌───────────────────────────────────────────────────────┐
+│  Stage 1: PII Stripping & Data Cleanup (Self-hosted)  │
+│  Model: Qwen3.5-35B-A3B on LLM VPS                   │
+│  Data: Raw survey responses (may contain PII)         │
+│  Output: De-identified, structured, quality-checked   │
+│  Location: All processing in Canada                   │
+└───────────────────┬───────────────────────────────────┘
+                    │  De-identified structured data only
+                    ▼
+┌───────────────────────────────────────────────────────┐
+│  Stage 2: Deep Qualitative Analysis (Frontier LLM)    │
+│  Model: Claude API (or equivalent frontier model)     │
+│  Data: Clean, de-identified, structured responses     │
+│  Output: Thematic analysis, coding, insights          │
+│  Location: API call — no PII leaves Canada            │
+└───────────────────────────────────────────────────────┘
+```
 
-Both use the same Ollama endpoint. No KoNote code changes needed.
+**Stage 1 — Self-hosted (PII stripping and data cleanup):**
+
+1. Read raw CSV/spreadsheet of open-ended survey responses
+2. Strip PII: names, locations, contact details, identifying context
+3. Clean and standardise text (fix encoding, remove duplicates, normalise whitespace)
+4. Quality assessment: flag responses that are too short, off-topic, or gibberish
+5. Structure output as clean JSON with response ID, cleaned text, quality flag
+
+This is the stage where data sovereignty matters — raw survey responses may contain participant-identifying content. The self-hosted model processes this in Canada and the raw data never leaves the VPS.
+
+**Stage 2 — Frontier LLM API (deep analysis):**
+
+1. Receive de-identified structured data from Stage 1
+2. Thematic coding: identify themes, patterns, and categories across responses
+3. Generate narrative summaries of findings
+4. Produce coded output suitable for evaluation reports
+
+This stage benefits from the frontier model's superior reasoning, nuanced understanding, and structured output quality. Since Stage 1 has already stripped all PII, the de-identified data can safely be sent to an external API.
+
+**Why two stages?** A single self-hosted model could do both, but the quality of deep qualitative analysis from an open-source model running on CPU does not match frontier models. By splitting the pipeline, the self-hosted model handles the privacy-sensitive work (what it must do), and the frontier model handles the analytical work (what it does best). The result is both data-sovereign and high-quality.
 
 ---
 
-## OpenWebUI Configuration
+## External OpenWebUI Connections
 
-### Multi-Organisation Setup
+### Architecture: OpenWebUI Deployed Separately
 
-Each organisation gets its own OpenWebUI instance (separate Docker container, separate data volume) or a single shared instance with user accounts.
+OpenWebUI instances are **not hosted on the LLM VPS**. Each organisation deploys its own OpenWebUI instance (on their own server, workstation, or cloud) and configures it to connect to the central Ollama endpoint:
 
-**Option A: Separate instances per org (recommended for isolation)**
+```
+Organisation A's server                  LLM VPS (Beauharnois)
+┌──────────────────────┐                ┌──────────────────────┐
+│  OpenWebUI           │ ──HTTPS──────→ │  Caddy → Ollama      │
+│  (own data, own auth)│                │  llm.example.com     │
+└──────────────────────┘                └──────────────────────┘
 
-```yaml
-  open-webui-org1:
-    image: ghcr.io/open-webui/open-webui:main
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - WEBUI_AUTH=true
-      - ENABLE_SIGNUP=false
-    volumes:
-      - openwebui_org1:/app/backend/data
-    ports:
-      - "127.0.0.1:3001:8080"
-
-  open-webui-org2:
-    image: ghcr.io/open-webui/open-webui:main
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - WEBUI_AUTH=true
-      - ENABLE_SIGNUP=false
-    volumes:
-      - openwebui_org2:/app/backend/data
-    ports:
-      - "127.0.0.1:3002:8080"
+Organisation B's workstation
+┌──────────────────────┐                        │
+│  OpenWebUI           │ ──HTTPS────────────────┘
+│  (own data, own auth)│
+└──────────────────────┘
 ```
 
-Each gets a separate subdomain (chat-org1.example.com, chat-org2.example.com) via Caddy.
+**OpenWebUI connection configuration:**
 
-**Option B: Single shared instance with user management**
+```env
+OLLAMA_BASE_URL=https://llm.example.com
+# API key passed via OpenWebUI's "Connection" settings in the admin panel
+```
 
-Simpler to operate. OpenWebUI has built-in user management with admin/user roles. Suitable when organisations don't need full isolation. All users share conversation history visibility settings controlled by the admin.
+### Benefits of Separate Deployment
 
-**Recommendation: Start with Option B** (single instance). Move to Option A only if organisations need strict isolation.
-
-### What OpenWebUI Provides
-
-- Chat interface with model selection
-- Conversation history (stored locally on the VPS, not in KoNote)
-- File upload for document analysis
-- System prompt customisation per user
-- Admin controls for model access and user management
-- No participant data — this is a general-purpose chat tool for staff
+| Factor | OpenWebUI on LLM VPS | OpenWebUI deployed separately |
+|--------|---------------------|------------------------------|
+| VPS resource usage | Consumes RAM and CPU | **Zero — VPS is lean** |
+| Data ownership | Conversations stored on shared server | **Conversations stay with each org** |
+| Auth management | LO manages all accounts | **Each org manages their own** |
+| Scaling | More orgs = more VPS load | **VPS only handles inference** |
+| Availability | VPS down = chat down | **OpenWebUI still works with local models as fallback** |
 
 ### Important: OpenWebUI is NOT for Participant Data
 
-OpenWebUI conversations are stored in its own SQLite/PostgreSQL database on the LLM VPS. This data:
-- Is **not encrypted at rest** (unlike KoNote's Fernet-encrypted fields)
-- Is **not subject to PHIPA consent enforcement**
-- Has **no PII scrubbing pipeline**
+Regardless of where OpenWebUI is deployed, it has:
+- **No PII scrubbing pipeline**
+- **No PHIPA consent enforcement**
+- **No encryption at rest** for conversations (by default)
 
 **Staff must not paste participant-identifying information into OpenWebUI.** This should be communicated during onboarding and reinforced with a system prompt:
 
 > "You are an assistant for nonprofit staff. Never ask for client names, dates of birth, or identifying information. If a user shares identifying information, remind them to use de-identified data only."
 
-### Data Retention Policy
+### Data Retention Guidance (for each org's OpenWebUI)
 
-OpenWebUI stores conversations in its own database on the LLM VPS. This data is **not encrypted at rest** and has **no PII scrubbing pipeline**. A retention policy limits exposure if staff accidentally paste identifying content.
+Each organisation is responsible for their own OpenWebUI data, but LogicalOutcomes should recommend:
 
-| Setting | Default | Rationale |
-|---------|---------|-----------|
+| Setting | Recommendation | Rationale |
+|---------|---------------|-----------|
 | Conversation retention | 90 days | Long enough for staff reference, short enough to limit PII exposure |
 | Purge mechanism | Cron job or OpenWebUI admin setting | Automated — don't rely on manual cleanup |
-| Backup retention | Same as conversation retention | If OpenWebUI backups are enabled, apply the same 90-day limit |
+| Acceptable use policy | Required before access | Staff must understand no participant data in chat |
 
-**Accidental PII incident procedure:**
-1. Staff reports (or admin discovers) participant-identifying content in an OpenWebUI conversation
+**Accidental PII incident procedure (recommended for each org):**
+1. Staff reports (or admin discovers) participant-identifying content in a conversation
 2. Admin deletes the specific conversation immediately via OpenWebUI admin panel
 3. Admin documents the incident (date, what was exposed, how it was discovered)
-4. If the conversation was included in a backup, delete the backup copy
-5. Remind staff of the acceptable use policy
+4. Remind staff of the acceptable use policy
 
 ---
 
@@ -473,7 +475,7 @@ OpenWebUI stores conversations in its own database on the LLM VPS. This data is 
 ### Network Security
 
 ```
-Internet
+Internet (KoNote instances, OpenWebUI instances, scripts)
     │
     ▼
 ┌──────────┐
@@ -481,21 +483,18 @@ Internet
 │  :443    │
 └────┬─────┘
      │  (internal Docker network only)
-     ├── ollama:11434      ← NOT exposed to internet
-     └── open-webui:8080   ← NOT exposed to internet
+     └── ollama:11434      ← NOT exposed to internet
 ```
 
-- Ollama and OpenWebUI listen only on the Docker internal network
-- Caddy is the sole entry point — handles TLS (Let's Encrypt) and authentication
-- The Ollama API requires a `Bearer` token (checked by Caddy, not by Ollama itself)
-- OpenWebUI has its own login system
+- Ollama listens only on the Docker internal network
+- Caddy is the sole entry point — handles TLS (Let's Encrypt) and API key authentication
+- All clients (KoNote, OpenWebUI, scripts) authenticate with a `Bearer` token checked by Caddy
 
 ### API Key Management
 
 | Secret | Where Stored | Who Has It |
 |--------|-------------|------------|
-| `LLM_API_KEY` (Caddy checks this) | `.env` on LLM VPS | KoNote instances (in their `.env` as `INSIGHTS_API_KEY`) |
-| OpenWebUI admin password | OpenWebUI database | LO team |
+| `LLM_API_KEY` (Caddy checks this) | `.env` on LLM VPS | KoNote instances, OpenWebUI instances (in their connection settings) |
 | VPS SSH key | Team workstations | Canadian-resident team members only |
 
 ### Firewall Rules (Optional Hardening)
@@ -533,8 +532,10 @@ Option A is more secure (two layers: firewall + API key). Option B is simpler wh
 |------|----------|-----------|
 | Model weights | OVHcloud Beauharnois, QC | Canada |
 | Inference input/output | In-memory only (not persisted by Ollama) | Canada |
-| OpenWebUI conversations | OVHcloud Beauharnois, QC | Canada |
+| OpenWebUI conversations | Each org's own infrastructure | Per org — not on this VPS |
 | KoNote participant data | KoNote VPS (also Beauharnois) | Canada |
+| Survey Stage 1 (raw responses) | Processed on LLM VPS, in-memory | Canada |
+| Survey Stage 2 (de-identified) | Sent to frontier LLM API | No PII — safe for external API |
 | Model updates (downloads) | Ollama registry (US-hosted) | Transit only — model weights are not personal data |
 
 **All personal data stays in Canada.** Model weights are open-source software, not personal data — downloading them from a US registry does not create a CLOUD Act exposure.
@@ -575,12 +576,10 @@ The LLM VPS has **minimal backup requirements**:
 | Data | Backup? | Why |
 |------|---------|-----|
 | Model weights | No | Re-downloadable from Ollama registry |
-| OpenWebUI conversations | Optional | Convenience, not compliance-critical |
-| OpenWebUI user accounts | Yes | Small — include in nightly backup |
-| Docker volumes | Optional | Can be rebuilt from scratch in <30 min |
+| Docker volumes | No | Can be rebuilt from scratch in <15 min |
 | `.env` + Caddyfile | Yes | Store in password manager |
 
-**Recovery procedure:** Provision new VPS → `docker compose up` → `ollama pull` → restore OpenWebUI volume. Total recovery: ~30 minutes.
+**Recovery procedure:** Provision new VPS → `docker compose up` → `ollama pull`. Total recovery: ~15 minutes. The lean stack has no state to restore.
 
 ### Cron Jobs
 
@@ -604,7 +603,7 @@ The LLM VPS has **minimal backup requirements**:
 
 1. **Provision VPS-4** on OVHcloud Canada (Beauharnois) — 12 vCPUs, 48 GB RAM, 300 GB NVMe
 2. **Install Docker + Docker Compose** on the VPS
-3. **Configure DNS** — point `llm.example.com` and `chat.example.com` to VPS IP
+3. **Configure DNS** — point `llm.example.com` to VPS IP
 4. **Generate LLM_API_KEY** — `openssl rand -hex 32`
 5. **Create `.env`** with `LLM_API_KEY`
 6. **Create `Caddyfile`** (see above)
@@ -612,12 +611,12 @@ The LLM VPS has **minimal backup requirements**:
 8. **Deploy:** `docker compose up -d`
 9. **Pull primary model:** `docker compose exec ollama ollama pull qwen3.5:35b-a3b`
 10. **Verify Ollama:** `curl -H "Authorization: Bearer $LLM_API_KEY" https://llm.example.com/v1/models`
-11. **Set up OpenWebUI:** create admin account, disable signup, set system prompt
-12. **Configure KoNote instances:** set `INSIGHTS_API_BASE`, `INSIGHTS_API_KEY`, `INSIGHTS_MODEL` in each `.env`
-13. **Test end-to-end:** trigger outcome insights from a KoNote instance, verify it uses the self-hosted model
-14. **Set up cron jobs:** theme batch, disk check, log rotation
-15. **Configure UptimeRobot** — monitor `https://llm.example.com/v1/models`
-16. **Document:** VPS IP, domain, API key location, OpenWebUI admin credentials
+11. **Configure KoNote instances:** set `INSIGHTS_API_BASE`, `INSIGHTS_API_KEY`, `INSIGHTS_MODEL` in each `.env`
+12. **Test end-to-end:** trigger outcome insights from a KoNote instance, verify it uses the self-hosted model
+13. **Set up cron jobs:** theme batch, disk check, log rotation
+14. **Configure UptimeRobot** — monitor `https://llm.example.com/v1/models`
+15. **Distribute API key** to organisations running OpenWebUI instances (for their connection settings)
+16. **Document:** VPS IP, domain, API key location
 
 ---
 
@@ -633,16 +632,16 @@ Ollama processes requests sequentially by default. With `OLLAMA_NUM_PARALLEL=2`,
 | `OLLAMA_NUM_PARALLEL=2` | 2 concurrent | Slightly slower per-request, better throughput |
 | `OLLAMA_NUM_PARALLEL=4` | 4 concurrent | Needs more RAM for KV caches |
 
-**Start with 2.** The primary workload (nightly batch) is sequential anyway. Interactive OpenWebUI use is low-volume.
+**Start with 2.** The primary workload (nightly batch) is sequential anyway. Interactive use from external OpenWebUI instances is low-volume.
 
 ### When to Upgrade
 
 | Signal | Action |
 |--------|--------|
-| OpenWebUI users report slow responses | Increase `OLLAMA_NUM_PARALLEL` or upgrade VPS |
+| External clients report slow responses | Increase `OLLAMA_NUM_PARALLEL` or upgrade VPS |
 | Batch processing exceeds 4 hours | Upgrade to VPS-5 (more vCPUs) |
 | Quality complaints on theme tagging | Switch to 27B dense or 122B-A10B model |
-| >5 OpenWebUI organisations | Consider Option A (separate instances) |
+| Many concurrent OpenWebUI connections | Increase `OLLAMA_NUM_PARALLEL` |
 | RAM usage consistently >85% | Upgrade VPS tier |
 
 ---
@@ -775,10 +774,12 @@ The [OVHcloud DRR](ovhcloud-deployment.md) lists this as an anti-pattern for hig
 | Approach | Why Rejected |
 |----------|-------------|
 | Running LLM on the same VPS as a busy KoNote instance | Resource contention — inference and database both CPU/RAM-hungry |
+| Hosting OpenWebUI on the LLM VPS | Wastes VPS resources, centralises data unnecessarily — each org deploys their own OpenWebUI pointing to this endpoint |
 | Exposing Ollama directly to the internet without Caddy | No TLS, no auth, no rate limiting |
 | Using a US-hosted inference API for participant data | Defeats the data sovereignty purpose |
 | Sending agency identifiers to the LLM | Unnecessary data exposure — only send the text |
-| Storing OpenWebUI conversations unencrypted with participant PII | OpenWebUI has no PII scrubbing — staff must not paste identifying data |
+| Pasting participant-identifying data into OpenWebUI | OpenWebUI has no PII scrubbing — staff must not paste identifying data |
+| Doing deep qualitative analysis entirely on self-hosted model | Open-source model quality doesn't match frontier models for nuanced thematic analysis — use two-stage pipeline instead |
 | Skipping the API key on the Ollama endpoint | Any internet scanner could send inference requests |
 | Using the largest possible model for all tasks | Diminishing returns — 35B-A3B quality is excellent; 122B-A10B is only marginally better at 3× the RAM |
 | GPU VPS at current scale | $500+/mo for speed improvements that don't matter for nightly batch processing |
@@ -787,8 +788,8 @@ The [OVHcloud DRR](ovhcloud-deployment.md) lists this as an anti-pattern for hig
 
 ## GK Review Items
 
-- [ ] Confirm the model quality is sufficient for qualitative analysis (theme extraction, thematic coding) — may need a side-by-side test comparing Qwen3.5-35B-A3B output vs Claude Sonnet on the same scrubbed quotes
+- [ ] Confirm the two-stage survey pipeline meets quality needs — test: Qwen for PII stripping + Claude for analysis vs Claude for everything
 - [ ] Review OpenWebUI acceptable use guidelines for staff — what can/can't be pasted into chat
-- [ ] Confirm VPS-4 sizing is appropriate for expected workload (KoNote instances + OpenWebUI + surveys)
+- [ ] Confirm VPS-4 sizing is appropriate for expected workload (KoNote instances + external OpenWebUI connections + survey Stage 1)
 - [ ] Review whether survey analysis outputs need the same privacy controls as KoNote insights
-- [ ] Decide domain names for the LLM and chat endpoints
+- [ ] Decide domain name for the LLM endpoint (e.g., llm.logicaloutcomes.ca)
