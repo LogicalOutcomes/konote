@@ -17,10 +17,10 @@
 {% include "_lang_toggle.html" with max_width="720px" %}
 <main id="main-content" class="container" style="max-width:720px; padding-top:2rem">
 
-<h1>{{ survey.name }}</h1>
+<h1>{{ survey.name|bilingual:survey.name_fr }}</h1>
 
 {% if survey.description %}
-<p>{{ survey.description }}</p>
+<p>{{ survey.description|bilingual:survey.description_fr }}</p>
 {% endif %}
 
 {% if errors %}
@@ -51,13 +51,13 @@
 
     {% for section in sections %}
     <fieldset>
-        <legend>{{ section.title }}</legend>
-        {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
+        <legend>{{ section.title|bilingual:section.title_fr }}</legend>
+        {% if section.instructions %}<p><small>{{ section.instructions|bilingual:section.instructions_fr }}</small></p>{% endif %}
 
         {% for question in section.questions.all %}
         <div style="margin-bottom:1.5rem">
             <label for="q_{{ question.pk }}">
-                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+                {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
             </label>
 
             {% if question.question_type == "short_text" %}
@@ -85,7 +85,7 @@
             <label>
                 <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if saved == opt.value %}checked{% endif %}>
-                {{ opt.label }}
+                {{ opt.label|bilingual:opt.label_fr }}
             </label>
             {% endfor %}
             {% endwith %}
@@ -96,7 +96,7 @@
             <label>
                 <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
                        {% if opt.value|in_multi_value:saved %}checked{% endif %}>
-                {{ opt.label }}
+                {{ opt.label|bilingual:opt.label_fr }}
             </label>
             {% endfor %}
             {% endwith %}
@@ -108,7 +108,7 @@
                 <label style="text-align:center">
                     <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
                            {% if saved == opt.value %}checked{% endif %}>
-                    {{ opt.label }}
+                    {{ opt.label|bilingual:opt.label_fr }}
                 </label>
             {% endfor %}
             </div>

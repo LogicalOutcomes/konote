@@ -2,19 +2,19 @@
 {% load i18n %}
 {% load survey_tags %}
 
-{% block title %}{{ survey.name }}{% endblock %}
+{% block title %}{{ survey.name|bilingual:survey.name_fr }}{% endblock %}
 
 {% block content %}
-<h1>{{ survey.name }}</h1>
+<h1>{{ survey.name|bilingual:survey.name_fr }}</h1>
 <p><small>{% blocktrans with date=response_obj.submitted_at|date:"N j, Y" %}Submitted on {{ date }}{% endblocktrans %}</small></p>
 
 {% for section in sections %}
 <section>
-    <h2>{{ section.title }}</h2>
+    <h2>{{ section.title|bilingual:section.title_fr }}</h2>
 
     {% for question in section.questions.all %}
     <div style="margin-bottom:1rem">
-        <strong>{{ question.question_text }}</strong>
+        <strong>{{ question.question_text|bilingual:question.question_text_fr }}</strong>
         {% with answer=question.pk|partial_value:answers %}
         {% if answer %}
         <p style="margin-top:0.25rem; padding-left:1rem; border-left:3px solid var(--pico-muted-border-color)">
@@ -22,7 +22,7 @@
                 {% if answer == "1" %}{% trans "Yes" %}{% elif answer == "0" %}{% trans "No" %}{% else %}{{ answer }}{% endif %}
             {% elif question.question_type == "single_choice" or question.question_type == "rating_scale" %}
                 {% for opt in question.options_json %}
-                    {% if opt.value == answer %}{{ opt.label }}{% endif %}
+                    {% if opt.value == answer %}{{ opt.label|bilingual:opt.label_fr }}{% endif %}
                 {% endfor %}
             {% elif question.question_type == "multiple_choice" %}
                 {{ answer }}
