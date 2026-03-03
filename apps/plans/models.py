@@ -192,6 +192,31 @@ class MetricDefinition(models.Model):
                 raise ValidationError(
                     _("Warning maximum cannot exceed the hard maximum.")
                 )
+        if self.very_unlikely_min is not None and self.very_unlikely_max is not None:
+            if self.very_unlikely_min >= self.very_unlikely_max:
+                raise ValidationError(
+                    _("Very unlikely minimum must be less than very unlikely maximum.")
+                )
+        if self.very_unlikely_min is not None and self.warn_min is not None:
+            if self.very_unlikely_min > self.warn_min:
+                raise ValidationError(
+                    _("Very unlikely minimum must be at or below the warning minimum.")
+                )
+        if self.very_unlikely_max is not None and self.warn_max is not None:
+            if self.very_unlikely_max < self.warn_max:
+                raise ValidationError(
+                    _("Very unlikely maximum must be at or above the warning maximum.")
+                )
+        if self.very_unlikely_min is not None and self.min_value is not None:
+            if self.very_unlikely_min < self.min_value:
+                raise ValidationError(
+                    _("Very unlikely minimum cannot be below the hard minimum.")
+                )
+        if self.very_unlikely_max is not None and self.max_value is not None:
+            if self.very_unlikely_max > self.max_value:
+                raise ValidationError(
+                    _("Very unlikely maximum cannot exceed the hard maximum.")
+                )
 
     @property
     def translated_name(self):
