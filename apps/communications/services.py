@@ -554,7 +554,7 @@ def check_and_send_health_alert():
                 continue
 
         # Send alert
-        product_name = InstanceSetting.get("product_name", "KoNote")
+        product_name = "KoNote"
         channel_name = health.get_channel_display()
         send_email_message(
             to_email=admin_email,

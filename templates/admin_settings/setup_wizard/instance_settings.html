@@ -8,12 +8,12 @@
 <form method="post">
     {% csrf_token %}
 
-    <label for="product_name">{% trans "Product Name" %}</label>
-    <input type="text" id="product_name" name="product_name"
-           value="{{ current_data.product_name|default:'KoNote' }}"
-           placeholder="KoNote"
-           aria-describedby="product_name_help">
-    <small id="product_name_help">{% trans "Shown in the header and page titles." %}</small>
+    <label for="organization_name">{% trans "Organization Name" %}</label>
+    <input type="text" id="organization_name" name="organization_name"
+           value="{{ current_data.organization_name|default:'' }}"
+           placeholder="{% trans 'Your organisation name' %}"
+           aria-describedby="organization_name_help">
+    <small id="organization_name_help">{% trans "Your organisation's display name. Shown in the footer." %}</small>
 
     <label for="support_email">{% trans "Support Email" %}</label>
     <input type="email" id="support_email" name="support_email"
@@ -22,12 +22,12 @@
            aria-describedby="support_email_help">
     <small id="support_email_help">{% trans "Displayed in the footer for staff to contact." %}</small>
 
-    <label for="logo_url">{% trans "Logo URL" %}</label>
-    <input type="url" id="logo_url" name="logo_url"
-           value="{{ current_data.logo_url|default:'' }}"
-           placeholder="https://example.ca/logo.png"
-           aria-describedby="logo_url_help">
-    <small id="logo_url_help">{% trans "URL to your organisation logo image. Optional." %}</small>
+    <label for="organization_website">{% trans "Organization Website" %}</label>
+    <input type="url" id="organization_website" name="organization_website"
+           value="{{ current_data.organization_website|default:'' }}"
+           placeholder="https://example.ca"
+           aria-describedby="organization_website_help">
+    <small id="organization_website_help">{% trans "Your organisation's website. Links the organization name in the footer." %}</small>
 
     <label for="date_format">{% trans "Date Format" %}</label>
     <select id="date_format" name="date_format">

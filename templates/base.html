@@ -286,10 +286,10 @@
     <footer class="container site-footer" role="contentinfo">
         <div class="site-footer-inner">
             <div class="site-footer-brand">
-                {% if org.operating_name %}
-                <strong>{% if org.website %}<a href="{{ org.website }}" target="_blank" rel="noopener">{{ org.operating_name }}</a>{% else %}{{ org.operating_name }}{% endif %}</strong>
+                {% if site.organization_name %}
+                <strong>{% if site.organization_website %}<a href="{{ site.organization_website }}" target="_blank" rel="noopener">{{ site.organization_name }}</a>{% else %}{{ site.organization_name }}{% endif %}</strong>
                 {% endif %}
-                <span>{% trans "Powered by" %} {{ site.product_name|default:"KoNote" }}</span>
+                <span>{% trans "Powered by" %} KoNote</span>
                 {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
             </div>
             <div class="site-footer-links">
