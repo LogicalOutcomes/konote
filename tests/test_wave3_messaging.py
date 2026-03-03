@@ -160,6 +160,48 @@ class CanSendTests(TestCase):
         self.assertFalse(allowed)
         self.assertIn("not enabled", reason)
 
+    def test_automated_happy_path(self):
+        """Automated reminders enabled + method='automated' → allowed."""
+        InstanceSetting.objects.update_or_create(
+            setting_key="automated_reminders_enabled",
+            defaults={"setting_value": "true"},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="messaging_sms",
+            defaults={"is_enabled": True},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertTrue(allowed)
+        self.assertEqual(reason, "OK")
+
+    def test_automated_disabled_blocks(self):
+        """Automated reminders disabled + method='automated' → blocked."""
+        InstanceSetting.objects.update_or_create(
+            setting_key="automated_reminders_enabled",
+            defaults={"setting_value": "false"},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertFalse(allowed)
+        self.assertIn("not enabled", reason)
+
+    def test_staff_toggle_does_not_authorize_automated(self):
+        """Staff enabled but automated disabled + method='automated' → blocked.
+
+        Verifies the two toggles are truly independent — enabling staff
+        messaging must not accidentally authorize automated sends.
+        """
+        InstanceSetting.objects.update_or_create(
+            setting_key="staff_messaging_enabled",
+            defaults={"setting_value": "true"},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="messaging_sms",
+            defaults={"is_enabled": True},
+        )
+        allowed, reason = can_send(self.client_file, "sms", method="automated")
+        self.assertFalse(allowed)
+        self.assertIn("not enabled", reason)
+
     def test_sms_toggle_disabled_blocks(self):
         InstanceSetting.objects.update_or_create(
             setting_key="staff_messaging_enabled",
