@@ -17768,8 +17768,8 @@ msgid ""
 "4.1.4). No individual participant or staff names are shown."
 msgstr ""
 "Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
-"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de "
-"participant ou de membre du personnel n'est affiché."
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de participant"
+" ou de membre du personnel n'est affiché."
 
 msgid "Anomaly Flags"
 msgstr "Signalements d'anomalies"
@@ -17827,7 +17827,9 @@ msgid "Records Accessed by Type"
 msgstr "Dossiers consultés par type"
 
 msgid "Review the overview statistics and anomaly flags above."
-msgstr "Consultez les statistiques d'aperçu et les signalements d'anomalies ci-dessus."
+msgstr ""
+"Consultez les statistiques d'aperçu et les signalements d'anomalies ci-"
+"dessus."
 
 msgid "Standard (< 5)"
 msgstr "Standard (< 5)"
@@ -17853,13 +17855,32 @@ msgid "Total audit events"
 msgstr "Total des événements d'audit"
 
 msgid "Use the Print button to include this summary in board reports."
-msgstr "Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au conseil."
+msgstr ""
+"Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au "
+"conseil."
 
 msgid "Reporting period: %(start)s to %(end)s"
 msgstr "Période de rapport : %(start)s au %(end)s"
 
-msgid ""
-"View aggregate compliance summary (no PII, no staff names)"
+msgid "View aggregate compliance summary (no PII, no staff names)"
 msgstr ""
 "Consulter le résumé de conformité agrégé (aucune information personnelle, "
 "aucun nom de membre du personnel)"
+
+msgid " — %(pending)d still pending at period end"
+msgstr " — %(pending)d toujours en attente à la fin de la période"
+
+msgid "%(overdue)d exceeded 30-day statutory deadline"
+msgstr "%(overdue)d ont dépassé le délai légal de 30 jours"
+
+msgid "No privacy requests were received this period."
+msgstr "Aucune demande de confidentialité n'a été reçue durant cette période."
+
+msgid "all within statutory deadline"
+msgstr "toutes dans les délais légaux"
+
+msgid ""
+"Privacy requests processed: %(count)d (average %(days)d days, %(deadline)s)"
+msgstr ""
+"Demandes de confidentialité traitées : %(count)d (moyenne de %(days)d jours, "
+"%(deadline)s)"
