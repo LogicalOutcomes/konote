@@ -116,6 +116,23 @@ class TestConsortiaModels(TestCase):
         assert m.pk is not None
         assert m.consortium.name == "Test Consortium"
 
+    def test_program_sharing_model_fields(self):
+        from apps.consortia.models import ProgramSharing
+
+        # Verify metrics_shared has correct defaults
+        metrics_field = ProgramSharing._meta.get_field("metrics_shared")
+        assert metrics_field.default is list
+        assert metrics_field.blank is True
+
+        # date_to is nullable (sharing can be ongoing)
+        date_to_field = ProgramSharing._meta.get_field("date_to")
+        assert date_to_field.null is True
+
+        # Unique constraint prevents a program appearing twice in one membership
+        assert ("membership", "program") in [
+            tuple(ut) for ut in ProgramSharing._meta.unique_together
+        ]
+
     def test_published_report(self):
         from datetime import date, timedelta
 
