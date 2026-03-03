@@ -17768,8 +17768,8 @@ msgid ""
 "4.1.4). No individual participant or staff names are shown."
 msgstr ""
 "Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
-"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de "
-"participant ou de membre du personnel n'est affiché."
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de participant"
+" ou de membre du personnel n'est affiché."
 
 msgid "Anomaly Flags"
 msgstr "Signalements d'anomalies"
@@ -17827,7 +17827,9 @@ msgid "Records Accessed by Type"
 msgstr "Dossiers consultés par type"
 
 msgid "Review the overview statistics and anomaly flags above."
-msgstr "Consultez les statistiques d'aperçu et les signalements d'anomalies ci-dessus."
+msgstr ""
+"Consultez les statistiques d'aperçu et les signalements d'anomalies ci-"
+"dessus."
 
 msgid "Standard (< 5)"
 msgstr "Standard (< 5)"
@@ -17853,13 +17855,159 @@ msgid "Total audit events"
 msgstr "Total des événements d'audit"
 
 msgid "Use the Print button to include this summary in board reports."
-msgstr "Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au conseil."
+msgstr ""
+"Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au "
+"conseil."
 
 msgid "Reporting period: %(start)s to %(end)s"
 msgstr "Période de rapport : %(start)s au %(end)s"
 
-msgid ""
-"View aggregate compliance summary (no PII, no staff names)"
+msgid "View aggregate compliance summary (no PII, no staff names)"
 msgstr ""
 "Consulter le résumé de conformité agrégé (aucune information personnelle, "
 "aucun nom de membre du personnel)"
+
+msgid ""
+"A moderate number of warnings are being confirmed. Consider widening "
+"thresholds slightly."
+msgstr ""
+"Un nombre modéré d'avertissements sont confirmés. Envisagez d'élargir "
+"légèrement les seuils."
+
+msgid "Above maximum"
+msgstr "Au-dessus du maximum"
+
+msgid "Avg Confirmed Value"
+msgstr "Valeur confirmée moyenne"
+
+msgid "Below minimum"
+msgstr "En dessous du minimum"
+
+msgid "Confirmed"
+msgstr "Confirmés"
+
+msgid "Consider reviewing threshold"
+msgstr "Envisager de réviser le seuil"
+
+msgid "Current Thresholds"
+msgstr "Seuils actuels"
+
+msgid "Filter override logs"
+msgstr "Filtrer les journaux de dérogation"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "Green (< 30% override rate)"
+msgstr "Vert (< 30 % taux de dérogation)"
+
+msgid "How to Read This Dashboard"
+msgstr "Comment lire ce tableau de bord"
+
+msgid "Last year"
+msgstr "Dernière année"
+
+msgid ""
+"Most flagged values are confirmed as correct. Thresholds are likely too "
+"restrictive and should be widened."
+msgstr ""
+"La plupart des valeurs signalées sont confirmées comme correctes. Les seuils"
+" sont probablement trop restrictifs et devraient être élargis."
+
+msgid ""
+"Most flagged values are correct. Thresholds are too tight and should be "
+"widened to avoid staff ignoring warnings."
+msgstr ""
+"La plupart des valeurs signalées sont correctes. Les seuils sont trop "
+"stricts et devraient être élargis pour éviter que le personnel ignore les "
+"avertissements."
+
+msgid "No plausibility override data yet."
+msgstr "Aucune donnée de dérogation de plausibilité pour le moment."
+
+msgid "Override Rate"
+msgstr "Taux de dérogation"
+
+msgid ""
+"Override logs are recorded when staff encounter plausibility warnings during"
+" note entry and either confirm or correct flagged values. Data will appear "
+"here once warnings have been triggered."
+msgstr ""
+"Les journaux de dérogation sont enregistrés lorsque le personnel rencontre "
+"des avertissements de plausibilité lors de la saisie de notes et confirme ou"
+" corrige les valeurs signalées. Les données apparaîtront ici une fois les "
+"avertissements déclenchés."
+
+msgid "Plausibility Threshold Tuning"
+msgstr "Ajustement des seuils de plausibilité"
+
+msgid "Plausibility override rates by metric"
+msgstr "Taux de dérogation de plausibilité par indicateur"
+
+msgid "Recommendation"
+msgstr "Recommandation"
+
+msgid "Red (> 80% override rate)"
+msgstr "Rouge (> 80 % taux de dérogation)"
+
+msgid ""
+"Some warnings are unnecessary. Consider widening thresholds slightly to "
+"reduce alert fatigue."
+msgstr ""
+"Certains avertissements sont inutiles. Envisagez d'élargir légèrement les "
+"seuils pour réduire la fatigue des alertes."
+
+msgid "Staff confirmed the value"
+msgstr "Le personnel a confirmé la valeur"
+
+msgid "Staff corrected the value"
+msgstr "Le personnel a corrigé la valeur"
+
+msgid "The corrected value, if changed"
+msgstr "La valeur corrigée, si modifiée"
+
+msgid "The value that triggered the plausibility warning"
+msgstr "La valeur qui a déclenché l'avertissement de plausibilité"
+
+msgid "The warn_min or warn_max value that was breached"
+msgstr "La valeur warn_min ou warn_max qui a été dépassée"
+
+msgid ""
+"This dashboard shows how often plausibility warnings are triggered and "
+"whether staff confirm or correct flagged values. High override rates suggest"
+" thresholds may be too tight."
+msgstr ""
+"Ce tableau de bord montre la fréquence des avertissements de plausibilité et"
+" si le personnel confirme ou corrige les valeurs signalées. Des taux de "
+"dérogation élevés suggèrent que les seuils sont peut-être trop stricts."
+
+msgid "Threshold likely too tight"
+msgstr "Seuil probablement trop strict"
+
+msgid "Threshold working well"
+msgstr "Seuil fonctionnel"
+
+msgid ""
+"Thresholds are appropriately set. Most flagged values are being corrected."
+msgstr ""
+"Les seuils sont correctement définis. La plupart des valeurs signalées sont "
+"corrigées."
+
+msgid ""
+"Thresholds are working well. Most flagged values are genuine errors that "
+"staff correct."
+msgstr ""
+"Les seuils fonctionnent bien. La plupart des valeurs signalées sont de "
+"véritables erreurs que le personnel corrige."
+
+msgid "Total Warnings"
+msgstr "Total d'avertissements"
+
+msgid "Yellow (30% - 80% override rate)"
+msgstr "Jaune (30 % - 80 % taux de dérogation)"
+
+msgid "plausibility override log"
+msgstr "journal de dérogation de plausibilité"
+
+msgid "plausibility override logs"
+msgstr "journaux de dérogation de plausibilité"
