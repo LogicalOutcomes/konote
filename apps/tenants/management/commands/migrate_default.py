@@ -93,6 +93,8 @@ class Command(DjangoMigrateCommand):
         from django.db.migrations.operations.models import CreateModel
         from django.db.migrations.recorder import MigrationRecorder
 
+        from django.db import router as dj_router
+
         recorder = MigrationRecorder(connection)
         if not recorder.has_table():
             return False
@@ -198,16 +200,13 @@ class Command(DjangoMigrateCommand):
         #     must independently catch these "orphaned" dependents.
         #
         # Strategy: any applied migration whose dependency is absent from the
-        # current `applied` snapshot must also be removed.  Only consider
-        # dependencies whose app has migrations recorded in this database (the
-        # `apps_in_scope` guard prevents false-positives from audit-DB deps).
+        # current `applied` snapshot must also be removed.  We skip deps that
+        # belong to a different database entirely (e.g. audit app → audit DB)
+        # using router.allow_migrate — this is more reliable than checking
+        # apps_in_scope because the dep's app may have already been healed out
+        # of `applied` on a previous boot.
         #
         # Repeat until the set stabilises (handles chains of arbitrary depth).
-
-        # Apps that *have* or *had* records in this database.
-        apps_in_scope = {app for (app, _) in applied} | {
-            app for (app, _) in to_remove
-        }
 
         changed = True
         while changed:
@@ -225,9 +224,12 @@ class Command(DjangoMigrateCommand):
                     dep_app, dep_name = dep
                     if dep_name in ("__first__", "__latest__"):
                         continue
-                    # Only propagate for deps that belong to apps tracked
-                    # in this database — skip audit DB or unrelated deps.
-                    if dep_app not in apps_in_scope:
+                    # Skip deps that route to a different database entirely
+                    # (e.g. audit app → audit DB).  We only want to propagate
+                    # for deps that legitimately belong to THIS database —
+                    # using allow_migrate is correct even after TenantSyncRouter
+                    # is removed, because AuditRouter still blocks audit deps.
+                    if not dj_router.allow_migrate(connection.alias, dep_app):
                         continue
                     dep_key = (dep_app, dep_name)
                     # Trigger if dep is already absent from applied OR was
