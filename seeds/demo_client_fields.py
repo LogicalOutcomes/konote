@@ -47,7 +47,7 @@ CLIENT_CUSTOM_FIELDS = {
         "Gender Identity": "Non-binary and/or gender-diverse",
         "Transgender Experience": "Yes",
         "2SLGBTQIA+ Identity": "Yes",
-        "Born in Canada": "Yes",
+        "Born in Canada": "Prefer not to say",
         "Indigenous Identity": '["No"]',
         "Racial Identity": '["East Asian"]',
         "Disability": "Yes",
