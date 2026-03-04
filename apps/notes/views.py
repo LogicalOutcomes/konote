@@ -38,6 +38,7 @@ from apps.programs.access import (
 from apps.programs.models import UserProgramRole
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
 from .models import (
+    ALLIANCE_PROMPT_SETS,
     MetricValue, PlausibilityOverrideLog, ProgressNote, ProgressNoteTarget,
     ProgressNoteTemplate,
 )
@@ -88,6 +89,22 @@ def _check_client_consent(client):
     if not flags.get("require_client_consent", True):
         return True  # Feature disabled, allow notes
     return client.consent_given_at is not None
+
+
+def _get_next_alliance_prompt(client):
+    """Return the next alliance prompt set index for rotation.
+
+    Looks at the client's most recent note with an alliance_prompt_index
+    and returns the next index in rotation.
+    """
+    last_note = ProgressNote.objects.filter(
+        client_file=client,
+        alliance_prompt_index__isnull=False,
+    ).order_by("-created_at").first()
+
+    if last_note and last_note.alliance_prompt_index is not None:
+        return (last_note.alliance_prompt_index + 1) % len(ALLIANCE_PROMPT_SETS)
+    return 0
 
 
 def _compute_auto_calc_values(client):
@@ -241,6 +258,15 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
                 mf.auto_calc_value = auto_calc.get(ptm.metric_def.computation_type)
             else:
                 mf.auto_calc_value = None
+            # 90-day metric review check
+            import datetime
+            if ptm.last_reviewed_date:
+                days_since_review = (datetime.date.today() - ptm.last_reviewed_date).days
+                mf.review_due = days_since_review >= 90
+            else:
+                days_since_assign = (datetime.date.today() - ptm.assigned_date).days if ptm.assigned_date else 0
+                mf.review_due = days_since_assign >= 90
+            mf.ptm_pk = ptm.pk  # For the HTMX confirm endpoint
             metric_forms.append(mf)
         target_forms.append({
             "target": target,
@@ -641,8 +667,19 @@ def note_create(request, client_id):
     auto_calc = _compute_auto_calc_values(client)
     circle_choices = _get_circle_choices_for_client(client, request.user)
 
+    # Alliance prompt rotation — determine which prompt set to show
+    from django.utils.translation import get_language
     if request.method == "POST":
-        form = FullNoteForm(request.POST, circle_choices=circle_choices or None)
+        prompt_index = int(request.POST.get("alliance_prompt_index", 0))
+    else:
+        prompt_index = _get_next_alliance_prompt(client)
+    lang = get_language()
+    prompt_set = ALLIANCE_PROMPT_SETS[prompt_index]
+    alliance_prompt = prompt_set["prompt_fr"] if lang == "fr" else prompt_set["prompt"]
+    alliance_anchors = prompt_set["anchors_fr"] if lang == "fr" else prompt_set["anchors"]
+
+    if request.method == "POST":
+        form = FullNoteForm(request.POST, circle_choices=circle_choices or None, alliance_anchors=alliance_anchors)
         target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
