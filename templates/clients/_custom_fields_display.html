@@ -27,7 +27,7 @@
                 {% if not item.is_editable %}<small class="secondary">({% trans "view only" %})</small>{% endif %}
                 {% if item.field_def.is_sensitive %}<small class="secondary">({% trans "encrypted" %})</small>{% endif %}
             </dt>
-            <dd>{{ item.value }}</dd>
+            <dd>{{ item.display_value|default:item.value }}</dd>
         </div>
         {% endfor %}
     </dl>

@@ -467,7 +467,7 @@ class MetricValue(models.Model):
         ProgressNoteTarget, on_delete=models.CASCADE, related_name="metric_values"
     )
     metric_def = models.ForeignKey("plans.MetricDefinition", on_delete=models.CASCADE)
-    value = models.CharField(max_length=100, default="")
+    value = models.CharField(max_length=2000, default="")
     plausibility_confirmed = models.BooleanField(
         default=False,
         help_text=_("True if staff confirmed a value outside the plausibility warning range."),

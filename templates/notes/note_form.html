@@ -161,6 +161,13 @@
                     {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
                     {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
                 </div>
+                {% elif mf.is_open_text %}
+                <div class="open-text-metric">
+                    <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
+                    {{ mf.value }}
+                    {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
+                    {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+                </div>
                 {% elif mf.is_scale %}
                 <div class="scale-metric">
                     <label>{{ mf.value.label }}</label>

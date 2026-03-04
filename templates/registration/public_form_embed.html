@@ -217,6 +217,37 @@
                     {{ field_def.name }}
                 </label>
 
+                {% elif field_def.input_type == "multi_select" %}
+                <fieldset role="group" aria-labelledby="id_{{ field_key }}_label">
+                    {% for option in field_def.options_json %}
+                    <label>
+                        <input type="checkbox"
+                               name="{{ field_key }}"
+                               value="{{ option }}">
+                        {{ option }}
+                    </label>
+                    {% endfor %}
+                </fieldset>
+
+                {% elif field_def.input_type == "multi_select_other" %}
+                <fieldset role="group" aria-labelledby="id_{{ field_key }}_label">
+                    {% for option in field_def.options_json %}
+                    <label>
+                        <input type="checkbox"
+                               name="{{ field_key }}"
+                               value="{{ option }}">
+                        {{ option }}
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                <div style="margin-top: 0.5rem;">
+                    <label for="id_{{ field_key }}_other">{% trans "Other (please specify)" %}</label>
+                    <input type="text"
+                           name="{{ field_key }}_other"
+                           id="id_{{ field_key }}_other"
+                           placeholder="{% trans 'Please specify…' %}">
+                </div>
+
                 {% else %}
                 <!-- Default text input -->
                 <input type="text"
