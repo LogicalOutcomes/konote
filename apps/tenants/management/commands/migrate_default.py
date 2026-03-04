@@ -323,13 +323,30 @@ class Command(DjangoMigrateCommand):
                 # skip CreateModel when the target table already exists.
                 options["fake_initial"] = True
 
-            # Phase 5: catch duplicate column/table errors during migration application.
-            # When a pending migration tries to add a column/table that already exists
-            # in the DB (schema applied but record missing), fake just that migration
-            # and retry. Loop until all such cases are resolved or no progress is made.
+            # Phase 5: catch duplicate column/table errors and dependency-order
+            # errors during migration application.
+            #
+            # Two scenarios handled:
+            #
+            # (a) DuplicateColumn / DuplicateTable — a pending migration tries to
+            #     ADD schema that already exists.  This means the schema was applied
+            #     manually or by a previous run that crashed before recording it.
+            #     Fix: find the migration(s) where ALL schema-creating operations
+            #     already exist in the DB and fake them.  We require ALL checkable
+            #     operations to pass so we don't falsely fake a migration that only
+            #     partially applied (which would leave genuinely missing schema
+            #     un-created on the next run).
+            #
+            # (b) InconsistentMigrationHistory — a migration is recorded as applied
+            #     but one of its dependencies is not.  This happens when Phase 5(a)
+            #     fakes a migration whose dependency is a pure RunPython (data
+            #     migration) with no schema to verify, so it was never faked.
+            #     Fix: parse the error to identify the missing dependency and fake it.
+            import re as _re
             import psycopg.errors as psycopg_errors
             from django.apps import apps as django_apps
             from django.db import ProgrammingError as DjProgrammingError
+            from django.db.migrations.exceptions import InconsistentMigrationHistory
             from django.db.migrations.executor import MigrationExecutor
             from django.db.migrations.operations.fields import AddField
             from django.db.migrations.operations.models import CreateModel
@@ -342,6 +359,25 @@ class Command(DjangoMigrateCommand):
                 try:
                     super().handle(*args, **options)
                     break
+
+                except InconsistentMigrationHistory as e:
+                    # "Migration app.name is applied before its dependency app.name"
+                    m = _re.match(
+                        r"Migration (\w+)\.(\w+) is applied before its dependency"
+                        r" (\w+)\.(\w+)",
+                        str(e),
+                    )
+                    if not m:
+                        raise
+                    dep_app, dep_name = m.group(3), m.group(4)
+                    recorder.record_applied(dep_app, dep_name)
+                    self.stdout.write(
+                        self.style.NOTICE(
+                            f"  Phase 5: auto-faked {dep_app}.{dep_name}"
+                            f" (missing dependency)"
+                        )
+                    )
+
                 except DjProgrammingError as e:
                     cause = e.__cause__
                     if not isinstance(
@@ -349,8 +385,11 @@ class Command(DjangoMigrateCommand):
                     ):
                         raise
 
-                    # Find pending migrations whose schema changes already exist in
-                    # the DB and fake only those (not all pending migrations).
+                    # Find pending migrations where ALL schema-creating operations
+                    # already exist in the DB, and fake only those.
+                    # Requiring ALL to pass prevents falsely faking migrations that
+                    # only partially applied (e.g. a migration that creates two
+                    # tables where only one exists).
                     executor = MigrationExecutor(connection)
                     applied = executor.loader.applied_migrations  # dict, not callable
                     faked_any = False
@@ -360,8 +399,10 @@ class Command(DjangoMigrateCommand):
                             if (app, name) in applied:
                                 continue
                             migration = executor.loader.disk_migrations[(app, name)]
+
+                            # Collect pass/fail for every schema-checkable operation.
+                            checks: list[bool] = []
                             for op in migration.operations:
-                                schema_exists = False
                                 if isinstance(op, AddField):
                                     try:
                                         model = django_apps.get_model(app, op.model_name)
@@ -375,7 +416,7 @@ class Command(DjangoMigrateCommand):
                                         " AND table_name=%s AND column_name=%s",
                                         [tbl, col],
                                     )
-                                    schema_exists = bool(cursor.fetchone())
+                                    checks.append(bool(cursor.fetchone()))
                                 elif isinstance(op, CreateModel):
                                     try:
                                         tbl = django_apps.get_model(
@@ -388,18 +429,19 @@ class Command(DjangoMigrateCommand):
                                         " WHERE table_schema='public' AND table_name=%s",
                                         [tbl],
                                     )
-                                    schema_exists = bool(cursor.fetchone())
+                                    checks.append(bool(cursor.fetchone()))
 
-                                if schema_exists:
-                                    recorder.record_applied(app, name)
-                                    self.stdout.write(
-                                        self.style.NOTICE(
-                                            f"  Phase 5: auto-faked {app}.{name}"
-                                            f" (schema already exists)"
-                                        )
+                            # Fake only when every checkable op already exists
+                            # (and there is at least one checkable op).
+                            if checks and all(checks):
+                                recorder.record_applied(app, name)
+                                self.stdout.write(
+                                    self.style.NOTICE(
+                                        f"  Phase 5: auto-faked {app}.{name}"
+                                        f" (schema already exists)"
                                     )
-                                    faked_any = True
-                                    break  # next migration
+                                )
+                                faked_any = True
 
                     if not faked_any:
                         raise  # no progress possible
