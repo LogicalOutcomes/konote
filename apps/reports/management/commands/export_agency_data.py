@@ -314,6 +314,7 @@ class Command(BaseCommand):
             "mode": "plaintext" if plaintext else "encrypted",
             "output": output_path,
             "authorized_by": authorized_by or "(not specified)",
+            "include_demo": include_demo,
         }
         if client_id:
             audit_metadata["client_id"] = client_id
