@@ -237,13 +237,9 @@ KoNote UserProgramRole  →  ODK Central App User
 - **Domain:** `odk.yourdomain.com` (separate from KoNote's domain)
 - **HTTPS:** Handled by Central's built-in Nginx or external Caddy
 
-### For Railway-hosted KoNote
+### Co-located on OVHcloud VPS
 
-ODK Central cannot run on Railway (multi-container stack). Deploy Central on a separate Azure VM (~$15-30 CAD/month). The `sync_odk` command runs on the Railway instance and reaches Central via HTTPS.
-
-### For Docker Compose-hosted KoNote
-
-Can run on the same server if it has 4-6 GB RAM total. Separate docker-compose files, shared reverse proxy.
+KoNote and ODK Central can run on the same OVHcloud VPS if it has 4-6 GB RAM total. Use separate Docker Compose files with a shared reverse proxy (Caddy). The `sync_odk` command runs on the same server and reaches Central via localhost or HTTPS.
 
 ---
 

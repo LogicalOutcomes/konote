@@ -900,7 +900,7 @@ self-healing.
 ## Application Context
 
 KoNote is deployed via Docker Compose to various hosting providers
-(Azure Container Apps, Railway, OVHcloud Beauharnois, self-hosted).
+(OVHcloud VPS Beauharnois, Azure Container Apps, self-hosted).
 Each deployment is a single agency instance. OVHcloud deployments use
 a 4-layer self-healing automation stack.
 
@@ -909,7 +909,7 @@ a 4-layer self-healing automation stack.
 - PostgreSQL 16 (two databases: app + audit)
 - Gunicorn WSGI server (2 workers)
 - WhiteNoise for static files
-- Caddy as reverse proxy (OVHcloud) or platform-provided (Railway, Azure)
+- Caddy as reverse proxy (OVHcloud) or platform-provided (Azure)
 - Ollama inference endpoint on separate VPS (optional, for AI features)
 - No Redis, no Celery, no async workers
 

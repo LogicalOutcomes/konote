@@ -1,5 +1,7 @@
 # Canadian Hosting Options for KoNote
 
+> **Update (2026-03):** KoNote now deploys on OVHcloud VPS (Beauharnois, QC). This document is retained as historical research.
+
 Research conducted 2026-02-04. Evaluating Canadian-owned hosting providers for nonprofits requiring data residency compliance.
 
 ---

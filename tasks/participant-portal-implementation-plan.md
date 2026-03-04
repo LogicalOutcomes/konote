@@ -76,7 +76,7 @@ class DomainEnforcementMiddleware:
 
 Settings: `PORTAL_DOMAIN` and `STAFF_DOMAIN` env vars. When not configured, middleware does nothing (graceful degradation — portal still accessible at `/my/` on main domain).
 
-Deployment: Same Django process, same container, same database. Railway: add second custom domain. FullHost: add nginx server_name alias.
+Deployment: Same Django process, same container, same database. OVHcloud VPS: add second domain in Caddy configuration.
 
 ### Session isolation (zero code — browser-enforced)
 
@@ -488,24 +488,17 @@ When participant taps "Something doesn't look right?":
 
 ## Deployment
 
-### Railway
+### OVHcloud VPS (Beauharnois, QC)
 
-- Add second custom domain in Railway dashboard (e.g., `myjourney.agencyname.org`)
-- Both domains point to same service
+- Add second domain in Caddy configuration (e.g., `myjourney.agencyname.org`)
+- Both domains point to same Docker Compose service
 - Add env vars: `PORTAL_DOMAIN`, `STAFF_DOMAIN`, `EMAIL_HASH_KEY` (cryptographic secret for HMAC email hashing)
 - Add `PORTAL_DOMAIN` to `ALLOWED_HOSTS`
-- SSL handled by Railway automatically for both domains
-
-### FullHost (Jelastic)
-
-- Add `server_name` alias in nginx for portal subdomain
-- Both subdomains proxy to same Docker container
-- SSL: Let's Encrypt covers both subdomains (add SAN or separate cert)
-- Add env vars same as Railway (`PORTAL_DOMAIN`, `STAFF_DOMAIN`, `EMAIL_HASH_KEY`)
+- SSL handled by Caddy automatically for both domains (Let's Encrypt)
 
 ### Data residency
 
-Both deployment targets store data in Canada (Railway: Montreal region; FullHost: Canadian data centre). Any future hosting migration must maintain Canadian data residency for PHIPA/PIPEDA compliance. No third-party analytics, CDN, or external service may process portal PII.
+OVHcloud Beauharnois data centre stores data in Canada. Any future hosting migration must maintain Canadian data residency for PHIPA/PIPEDA compliance. No third-party analytics, CDN, or external service may process portal PII.
 
 ### For agencies without subdomain
 

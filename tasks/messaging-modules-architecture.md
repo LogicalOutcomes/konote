@@ -34,7 +34,7 @@ These are configured by the technical consultant at deployment. They answer: "Wh
 | Calendar Feeds (iCal) | `calendar_feeds` | None | Free | Admin toggle |
 | Email Sending | `email_sending` | SMTP credentials (M365 / Google Workspace) | Usually free with existing email | Consultant at setup |
 | SMS Sending | `sms_sending` | Twilio account + phone number | ~$15-25 CAD/month | Consultant at setup |
-| Automated Reminders | `automated_reminders` | `email_sending` OR `sms_sending` + Railway cron | Free (infrastructure cost only) | Consultant at setup |
+| Automated Reminders | `automated_reminders` | `email_sending` OR `sms_sending` + system crontab | Free (infrastructure cost only) | Consultant at setup |
 
 **Implementation:** Each is a `FeatureToggle` row. `email_sending` and `sms_sending` are only marked `is_enabled=True` after the consultant has configured credentials and verified they work.
 
@@ -430,7 +430,7 @@ A separate section in `docs/operations-runbook.md` covering:
    - Which email system does the org use? (M365 / Google Workspace / Neither)
    - Does the org want SMS? (Yes = set up Twilio / No = skip)
    - Does the org serve populations with safety concerns? (Yes = recommend Safety-First)
-   - Will they want automated reminders? (Yes = configure Railway cron / No = skip)
+   - Will they want automated reminders? (Yes = configure system crontab on OVHcloud VPS / No = skip)
 
 2. **Email setup steps** (already in messaging-calendar-plan.md Phase 0A1):
    - Google Workspace: app password, SMTP relay

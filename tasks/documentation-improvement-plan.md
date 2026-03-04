@@ -2,7 +2,7 @@
 
 **Goal:** Make KoNote adoption-ready for organizations cloning from a public GitHub repository.
 
-**Problem:** The current documentation is deployment-ready but development-unfriendly. Organizations can deploy to Railway/Azure/Elestio, but struggle with local setup, environment configuration, and security testing.
+**Problem:** The current documentation is deployment-ready but development-unfriendly. Organizations can deploy to OVHcloud VPS with Docker Compose, but struggle with local setup, environment configuration, and security testing.
 
 ---
 

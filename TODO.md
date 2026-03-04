@@ -77,7 +77,6 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Clean Railway/FullHost/Elestio references from ~24 historical task and plan files — these are in tasks/*.md, docs/archive/*, docs/plans/*, ENCRYPTION-PLAN.md, CHANGELOG.md. Not urgent (they're historical records, not active docs) but should be cleaned up for consistency (CHORE-HIST-CLEANUP1)
 
 ## Parking Lot: Needs Review
 
@@ -95,6 +94,10 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 11 — Cleanup
+
+- [x] Clean Railway/FullHost/Elestio references from ~24 historical task and plan files — updated active docs to OVHcloud, added archive banners to historical docs — 2026-03-04 (CHORE-HIST-CLEANUP1)
 
 ### Session 10 — Translations & Consent
 
