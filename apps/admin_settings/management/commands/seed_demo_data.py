@@ -4571,13 +4571,82 @@ class Command(BaseCommand):
                     participant_user=participant,
                     client_file=client,
                     defaults={
-                        "status": "pending",
+                        "status": "completed" if record_id == "DEMO-001" else "pending",
                         "assigned_by": assigned_by,
                         "due_date": (now + timedelta(days=21)).date(),
                     },
                 )
                 if fb_created:
                     assignments_created += 1
+
+                # Create a completed response for DEMO-001 (Jordan) on feedback survey
+                if record_id == "DEMO-001" and fb_created:
+                    fb_questions = list(SurveyQuestion.objects.filter(
+                        section__survey=feedback,
+                    ).order_by("section__sort_order", "sort_order"))
+
+                    submit_time = now - timedelta(days=15)
+                    consent_time = submit_time - timedelta(minutes=2)
+
+                    jordan_fb_response = SurveyResponse.objects.create(
+                        survey=feedback,
+                        assignment=assign_fb,
+                        client_file=client,
+                        channel="portal",
+                        consent_given_at=consent_time,
+                    )
+                    SurveyResponse.objects.filter(pk=jordan_fb_response.pk).update(
+                        submitted_at=submit_time,
+                    )
+
+                    # Answer questions — fb_questions order:
+                    # attendance, helpfulness, useful_aspects, suggestion
+                    if len(fb_questions) >= 4:
+                        # Q1: attendance (single_choice)
+                        a1 = SurveyAnswer(
+                            response=jordan_fb_response,
+                            question=fb_questions[0],
+                            numeric_value=5,
+                        )
+                        a1.value = "weekly"
+                        a1.save()
+
+                        # Q2: helpfulness (rating_scale)
+                        a2 = SurveyAnswer(
+                            response=jordan_fb_response,
+                            question=fb_questions[1],
+                            numeric_value=5,
+                        )
+                        a2.value = "5"
+                        a2.save()
+
+                        # Q3: useful aspects (multiple_choice)
+                        a3 = SurveyAnswer(
+                            response=jordan_fb_response,
+                            question=fb_questions[2],
+                        )
+                        a3.value = "one_on_one,goal_setting"
+                        a3.save()
+
+                        # Q4: suggestion (short_text)
+                        a4 = SurveyAnswer(
+                            response=jordan_fb_response,
+                            question=fb_questions[3],
+                        )
+                        a4.value = (
+                            "More evening sessions would help because I can't "
+                            "always take time off work for appointments during the day."
+                        )
+                        a4.save()
+
+                    responses_created += 1
+
+                    # Mark assignment as completed
+                    SurveyAssignment.objects.filter(pk=assign_fb.pk).update(
+                        status="completed",
+                        completed_at=submit_time,
+                        started_at=submit_time - timedelta(minutes=10),
+                    )
 
         # --- Staff-entered response for DEMO-004 (Sam) on satisfaction ---
         sam_client = ClientFile.objects.filter(record_id="DEMO-004").first()

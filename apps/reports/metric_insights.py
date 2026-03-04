@@ -382,6 +382,11 @@ def get_two_lenses(program, date_from, date_to, structured=None, distributions=N
 def get_instrument_aggregates(program, date_from, date_to):
     """Compute aggregate scores for multi-item instrument batteries.
 
+    Note: This function loads all matching MetricValues into Python memory.
+    At current scale (<2,000 clients) this is performant. If the system
+    scales beyond 2,000 clients with instrument metrics, consider replacing
+    with a SQL aggregate query (COUNT + CASE WHEN) for efficiency.
+
     Groups metrics by instrument_name and computes:
     - For inclusivity-style batteries (4-point scale): top-two-box %
       (count of values >= 3 / total * 100)
@@ -406,7 +411,8 @@ def get_instrument_aggregates(program, date_from, date_to):
     instrument_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     metric_defs = {}
 
-    values_data = qs.select_related("metric_def").values_list(
+    # Note: select_related is not needed here — values_list bypasses it.
+    values_data = qs.values_list(
         "pk",
         "metric_def_id",
         "metric_def__instrument_name",
@@ -449,7 +455,11 @@ def get_instrument_aggregates(program, date_from, date_to):
                 continue
 
             # Compute top-two-box for this item
-            # Top-two-box: % of responses scoring >= 3 on a 4-point scale
+            # Top-two-box threshold: >= 3 on a 4-point scale (1=Not true,
+            # 2=Somewhat false, 3=Somewhat true, 4=Very true).
+            # This threshold is specific to 4-point Likert scales.
+            # If instruments with other scale ranges are added, this
+            # logic must be updated to derive the threshold from max_value.
             item_top_two = 0
             item_total = 0
 
@@ -474,6 +484,9 @@ def get_instrument_aggregates(program, date_from, date_to):
             total_top_two += item_top_two
             total_responses += item_total
 
+        # Count items suppressed due to low N (below MIN_N_FOR_DISTRIBUTION)
+        suppressed_count = len(metrics_by_id) - len(items)
+
         if not items:
             continue
 
@@ -485,6 +498,7 @@ def get_instrument_aggregates(program, date_from, date_to):
             "aggregate_top_two_box_pct": aggregate_pct,
             "total_responses": total_responses,
             "is_multi_item": is_multi_item,
+            "suppressed_count": suppressed_count,
         }
 
     return results
