@@ -183,13 +183,32 @@ class Command(DjangoMigrateCommand):
                                 )
                                 break
 
-        if not to_remove:
-            return False
+        # --- Phase 2: orphan detection + transitive propagation ---
+        #
+        # This phase runs UNCONDITIONALLY — it catches two situations:
+        #
+        # (a) Migrations added to to_remove in Phase 1 have downstream
+        #     dependents in other apps (e.g. auth_app.0001 → auth.0012).
+        #
+        # (b) A previous boot's healer already removed some records from
+        #     django_migrations (e.g. auth.0001–0012), but crashed before
+        #     removing their dependents (e.g. auth_app.0001_initial).  On
+        #     the next boot Phase 1 finds nothing (tables now missing from
+        #     applied, not detectable via information_schema), so Phase 2
+        #     must independently catch these "orphaned" dependents.
+        #
+        # Strategy: any applied migration whose dependency is absent from the
+        # current `applied` snapshot must also be removed.  Only consider
+        # dependencies whose app has migrations recorded in this database (the
+        # `apps_in_scope` guard prevents false-positives from audit-DB deps).
+        #
+        # Repeat until the set stabilises (handles chains of arbitrary depth).
 
-        # --- Phase 2: transitive dependency propagation ---
-        # Any applied migration whose dependency (direct or transitive) is in
-        # to_remove must also be removed.  Repeat until the set stabilises.
-        # This handles cross-app chains like auth_app.0001 → auth.0012.
+        # Apps that *have* or *had* records in this database.
+        apps_in_scope = {app for (app, _) in applied} | {
+            app for (app, _) in to_remove
+        }
+
         changed = True
         while changed:
             changed = False
@@ -201,17 +220,25 @@ class Command(DjangoMigrateCommand):
                 except KeyError:
                     continue
                 for dep in migration.dependencies:
-                    # deps are always (app_label, migration_name) 2-tuples;
-                    # skip special markers like "__first__" / "__latest__"
                     if len(dep) != 2:
                         continue
                     dep_app, dep_name = dep
                     if dep_name in ("__first__", "__latest__"):
                         continue
-                    if (dep_app, dep_name) in to_remove:
+                    # Only propagate for deps that belong to apps tracked
+                    # in this database — skip audit DB or unrelated deps.
+                    if dep_app not in apps_in_scope:
+                        continue
+                    dep_key = (dep_app, dep_name)
+                    # Trigger if dep is already absent from applied OR was
+                    # flagged for removal in Phase 1 or an earlier iteration.
+                    if dep_key not in applied or dep_key in to_remove:
                         to_remove.add((app, name))
                         changed = True
                         break
+
+        if not to_remove:
+            return False
 
         # --- Phase 3: bulk removal ---
         for app_label, migration_name in sorted(to_remove):
