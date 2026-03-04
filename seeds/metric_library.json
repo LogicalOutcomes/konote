@@ -8,7 +8,16 @@
     "min_value": 0,
     "max_value": 27,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "is_standardized_instrument": true,
+    "higher_is_better": false,
+    "scoring_bands": [
+      {"min": 0, "max": 4, "label": "Minimal", "label_fr": "Minimale"},
+      {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
+      {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
+      {"min": 15, "max": 19, "label": "Moderately severe", "label_fr": "Modérément sévère"},
+      {"min": 20, "max": 27, "label": "Severe", "label_fr": "Sévère"}
+    ]
   },
   {
     "name": "GAD-7 (Anxiety)",
@@ -19,29 +28,15 @@
     "min_value": 0,
     "max_value": 21,
     "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Wellness Scale",
-    "name_fr": "Échelle de bien-être",
-    "definition": "Self-reported overall wellness on a 1-10 scale. 1 = very poor, 10 = excellent.",
-    "definition_fr": "Bien-être général auto-déclaré sur une échelle de 1 à 10. 1 = très mauvais, 10 = excellent.",
-    "category": "mental_health",
-    "min_value": 1,
-    "max_value": 10,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Coping Skills Rating",
-    "name_fr": "Évaluation des capacités d'adaptation",
-    "definition": "Staff assessment of client's coping skills. 1 = very limited, 5 = well-developed.",
-    "definition_fr": "Évaluation par le personnel des capacités d'adaptation du participant. 1 = très limitées, 5 = bien développées.",
-    "category": "mental_health",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "is_standardized_instrument": true,
+    "higher_is_better": false,
+    "scoring_bands": [
+      {"min": 0, "max": 4, "label": "Minimal", "label_fr": "Minimale"},
+      {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
+      {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
+      {"min": 15, "max": 21, "label": "Severe", "label_fr": "Sévère"}
+    ]
   },
   {
     "name": "K10 (Psychological Distress)",
@@ -52,18 +47,15 @@
     "min_value": 10,
     "max_value": 50,
     "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Housing Stability Index",
-    "name_fr": "Indice de stabilité du logement",
-    "definition": "Composite measure of housing stability. 1 = homeless/crisis, 5 = stable long-term housing.",
-    "definition_fr": "Mesure composite de la stabilité du logement. 1 = sans-abri/crise, 5 = logement stable à long terme.",
-    "category": "housing",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "is_standardized_instrument": true,
+    "higher_is_better": false,
+    "scoring_bands": [
+      {"min": 10, "max": 19, "label": "Likely well", "label_fr": "Probablement bien"},
+      {"min": 20, "max": 24, "label": "Mild", "label_fr": "Légère"},
+      {"min": 25, "max": 29, "label": "Moderate", "label_fr": "Modérée"},
+      {"min": 30, "max": 50, "label": "Severe", "label_fr": "Sévère"}
+    ]
   },
   {
     "name": "Nights in Shelter (past 30 days)",
@@ -74,40 +66,19 @@
     "min_value": 0,
     "max_value": 30,
     "unit": "nights",
-    "unit_fr": "nuits"
+    "unit_fr": "nuits",
+    "higher_is_better": false
   },
   {
     "name": "Monthly Income",
     "name_fr": "Revenu mensuel",
-    "definition": "Client's total monthly income from all sources, in local currency.",
+    "definition": "Participant's total monthly income from all sources, in local currency.",
     "definition_fr": "Revenu mensuel total du participant provenant de toutes les sources, en monnaie locale.",
     "category": "housing",
     "min_value": 0,
     "max_value": null,
     "unit": "$",
     "unit_fr": "$"
-  },
-  {
-    "name": "Housing Readiness",
-    "name_fr": "Préparation au logement",
-    "definition": "Assessment of readiness for independent housing. 1 = not ready, 5 = fully ready.",
-    "definition_fr": "Évaluation de la préparation au logement autonome. 1 = pas prêt, 5 = entièrement prêt.",
-    "category": "housing",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Job Readiness Score",
-    "name_fr": "Pointage de préparation à l'emploi",
-    "definition": "Assessment of employment readiness. 1 = significant barriers, 5 = job-ready.",
-    "definition_fr": "Évaluation de la préparation à l'emploi. 1 = obstacles importants, 5 = prêt à travailler.",
-    "category": "employment",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
   },
   {
     "name": "Hours Worked (past week)",
@@ -121,61 +92,6 @@
     "unit_fr": "heures"
   },
   {
-    "name": "Employment Status",
-    "name_fr": "Statut d'emploi",
-    "definition": "Current employment status. 1 = unemployed, 2 = casual/temporary, 3 = part-time, 4 = full-time, 5 = full-time stable.",
-    "definition_fr": "Statut d'emploi actuel. 1 = sans emploi, 2 = occasionnel/temporaire, 3 = temps partiel, 4 = temps plein, 5 = temps plein stable.",
-    "category": "employment",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "status",
-    "unit_fr": "statut"
-  },
-  {
-    "name": "Job Applications (past month)",
-    "name_fr": "Candidatures (dernier mois)",
-    "definition": "Number of job applications submitted in the past 30 days.",
-    "definition_fr": "Nombre de candidatures soumises au cours des 30 derniers jours.",
-    "category": "employment",
-    "min_value": 0,
-    "max_value": null,
-    "unit": "applications",
-    "unit_fr": "candidatures"
-  },
-  {
-    "name": "Days Clean",
-    "name_fr": "Jours d'abstinence",
-    "definition": "Consecutive days without substance use (self-reported).",
-    "definition_fr": "Jours consécutifs sans consommation de substances (auto-déclaré).",
-    "category": "substance_use",
-    "min_value": 0,
-    "max_value": null,
-    "unit": "days",
-    "unit_fr": "jours"
-  },
-  {
-    "name": "Cravings Intensity",
-    "name_fr": "Intensité des envies",
-    "definition": "Self-reported craving intensity. 0 = no cravings, 10 = extreme cravings.",
-    "definition_fr": "Intensité des envies auto-déclarée. 0 = aucune envie, 10 = envies extrêmes.",
-    "category": "substance_use",
-    "min_value": 0,
-    "max_value": 10,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Harm Reduction Score",
-    "name_fr": "Pointage de réduction des méfaits",
-    "definition": "Composite harm reduction measure. Tracks reduction in risky behaviours. 1 = high risk, 5 = low risk.",
-    "definition_fr": "Mesure composite de réduction des méfaits. Suivi de la diminution des comportements à risque. 1 = risque élevé, 5 = faible risque.",
-    "category": "substance_use",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
     "name": "School Attendance Rate",
     "name_fr": "Taux de présence scolaire",
     "definition": "Percentage of school days attended in the past month.",
@@ -185,83 +101,6 @@
     "max_value": 100,
     "unit": "%",
     "unit_fr": "%"
-  },
-  {
-    "name": "Family Connection Score",
-    "name_fr": "Pointage de liens familiaux",
-    "definition": "Quality of family/caregiver relationship. 1 = no contact/conflict, 5 = strong positive connection.",
-    "definition_fr": "Qualité de la relation familiale/avec les aidants. 1 = aucun contact/conflit, 5 = lien positif fort.",
-    "category": "youth",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Risk Behaviour Index",
-    "name_fr": "Indice de comportements à risque",
-    "definition": "Assessment of engagement in risky behaviours. 1 = frequent high-risk, 5 = no risky behaviours.",
-    "definition_fr": "Évaluation de l'engagement dans des comportements à risque. 1 = risque élevé fréquent, 5 = aucun comportement à risque.",
-    "category": "youth",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Goal Progress (1-10)",
-    "name_fr": "Progrès vers l'objectif (1-10)",
-    "definition": "Client's self-assessed progress toward their stated goal. 1 = no progress, 10 = goal achieved. Note: Consider using the qualitative progress descriptors (harder/holding/shifting/good place) for richer, less reductive tracking.",
-    "definition_fr": "Progrès auto-évalué du participant vers son objectif déclaré. 1 = aucun progrès, 10 = objectif atteint. Remarque : envisagez d'utiliser les descripteurs qualitatifs de progrès pour un suivi plus riche.",
-    "category": "general",
-    "min_value": 1,
-    "max_value": 10,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Client Satisfaction",
-    "name_fr": "Satisfaction du participant",
-    "definition": "Client satisfaction with services. 1 = very dissatisfied, 5 = very satisfied. Note: Consider using the engagement observation and client voice fields for richer feedback capture.",
-    "definition_fr": "Satisfaction du participant envers les services. 1 = très insatisfait, 5 = très satisfait. Remarque : envisagez d'utiliser les champs d'observation de l'engagement et de la voix du participant pour une rétroaction plus riche.",
-    "category": "general",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Life Skills Assessment",
-    "name_fr": "Évaluation des compétences de vie",
-    "definition": "Composite life skills score. Covers budgeting, cooking, communication, time management. 1 = very limited, 5 = independent.",
-    "definition_fr": "Pointage composite des compétences de vie. Couvre le budget, la cuisine, la communication, la gestion du temps. 1 = très limité, 5 = autonome.",
-    "category": "general",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Social Support Network",
-    "name_fr": "Réseau de soutien social",
-    "definition": "Size and quality of support network. 1 = isolated, 5 = strong diverse network.",
-    "definition_fr": "Taille et qualité du réseau de soutien. 1 = isolé, 5 = réseau diversifié et solide.",
-    "category": "general",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
-  },
-  {
-    "name": "Service Engagement",
-    "name_fr": "Engagement dans les services",
-    "definition": "Level of engagement with program services. 1 = disengaged, 5 = fully engaged.",
-    "definition_fr": "Niveau d'engagement dans les services du programme. 1 = désengagé, 5 = pleinement engagé.",
-    "category": "general",
-    "min_value": 1,
-    "max_value": 5,
-    "unit": "score",
-    "unit_fr": "pointage"
   },
   {
     "name": "How are you feeling today?",
@@ -464,5 +303,83 @@
     "achievement_options": ["Not enrolled", "Enrolled part-time", "Enrolled full-time"],
     "achievement_success_values": ["Enrolled part-time", "Enrolled full-time"],
     "target_rate": 80
+  },
+  {
+    "name": "Everyone is made to feel welcome",
+    "name_fr": "Tout le monde se sent bienvenu",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "category": "client_experience",
+    "min_value": 1,
+    "max_value": 4,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "Everyone is valued equally",
+    "name_fr": "Tout le monde est apprécié de la même manière",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "category": "client_experience",
+    "min_value": 1,
+    "max_value": 4,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "I am treated with respect",
+    "name_fr": "Je suis traité(e) avec respect",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "category": "client_experience",
+    "min_value": 1,
+    "max_value": 4,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "People help each other",
+    "name_fr": "Les gens s'entraident",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "category": "client_experience",
+    "min_value": 1,
+    "max_value": 4,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "I get help when I need it",
+    "name_fr": "J'obtiens de l'aide quand j'en ai besoin",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "category": "client_experience",
+    "min_value": 1,
+    "max_value": 4,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "How has taking part in this program changed things for you?",
+    "name_fr": "Comment votre participation à ce programme a-t-elle changé les choses pour vous?",
+    "definition": "Open-text reflection on self-reported program impact. Participant describes in their own words what has changed. Source: LogicalOutcomes recommended survey measures.",
+    "definition_fr": "Réflexion ouverte sur l'impact auto-déclaré du programme. Le participant décrit dans ses propres mots ce qui a changé. Source : mesures de sondage recommandées par LogicalOutcomes.",
+    "category": "client_experience",
+    "metric_type": "open_text",
+    "portal_visibility": "self_reported"
+  },
+  {
+    "name": "How can we improve our program or services?",
+    "name_fr": "Que devrions-nous faire pour améliorer notre programme ou nos services?",
+    "definition": "Open-text suggestion for program improvement. Participant provides feedback in their own words. Source: LogicalOutcomes recommended survey measures.",
+    "definition_fr": "Suggestion ouverte pour l'amélioration du programme. Le participant donne ses commentaires dans ses propres mots. Source : mesures de sondage recommandées par LogicalOutcomes.",
+    "category": "client_experience",
+    "metric_type": "open_text",
+    "portal_visibility": "self_reported"
   }
 ]

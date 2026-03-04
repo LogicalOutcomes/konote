@@ -730,6 +730,8 @@ class CustomFieldDefinition(models.Model):
         ("textarea", _("Text Area")),
         ("select", _("Dropdown")),
         ("select_other", _("Dropdown with Other option")),
+        ("multi_select", _("Multi-select checkboxes")),
+        ("multi_select_other", _("Multi-select with Other option")),
         ("date", _("Date")),
         ("number", _("Number")),
     ]

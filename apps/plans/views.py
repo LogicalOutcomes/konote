@@ -1164,6 +1164,8 @@ def _parse_metric_csv(csv_file):
         has_id_column = "id" in headers
         has_enabled_column = "is_enabled" in headers
         has_status_column = "status" in headers
+        has_metric_type_column = "metric_type" in headers
+        valid_metric_types = dict(MetricDefinition.METRIC_TYPE_CHOICES)
 
         # Pre-fetch existing metric ids for validation
         existing_ids = set()
@@ -1235,6 +1237,20 @@ def _parse_metric_csv(csv_file):
             if parsed_min is not None and parsed_max is not None and parsed_min > parsed_max:
                 row_errors.append(f"min_value ({parsed_min}) cannot be greater than max_value ({parsed_max})")
 
+            # metric_type (optional — defaults to 'scale' for new)
+            metric_type = "scale"
+            if has_metric_type_column:
+                raw_mt = row.get("metric_type", "").lower()
+                if raw_mt in valid_metric_types:
+                    metric_type = raw_mt
+                elif raw_mt:
+                    row_errors.append(f"metric_type '{row.get('metric_type', '')}' must be one of: {', '.join(valid_metric_types.keys())}")
+
+            # For open_text metrics, min/max are not required
+            if metric_type == "open_text":
+                parsed_min = None
+                parsed_max = None
+
             # is_enabled (optional — defaults to True for new, unchanged for updates)
             is_enabled = True
             if has_enabled_column:
@@ -1266,6 +1282,7 @@ def _parse_metric_csv(csv_file):
                     "definition": definition,
                     "definition_fr": definition_fr,
                     "category": category,
+                    "metric_type": metric_type,
                     "min_value": parsed_min,
                     "max_value": parsed_max,
                     "unit": unit,
@@ -1315,6 +1332,7 @@ def metric_import(request):
                     "definition": row_data["definition"],
                     "definition_fr": row_data.get("definition_fr", ""),
                     "category": row_data["category"],
+                    "metric_type": row_data.get("metric_type", "scale"),
                     "min_value": row_data["min_value"],
                     "max_value": row_data["max_value"],
                     "unit": row_data["unit"],
