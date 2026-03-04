@@ -31,6 +31,7 @@ from .metric_insights import (
     get_metric_trends,
     get_two_lenses,
     get_data_completeness,
+    get_instrument_aggregates,
 )
 
 # Map DB values to human-readable labels for suggestion priorities
@@ -276,6 +277,7 @@ def program_insights(request):
         achievement_rates_data = get_achievement_rates(program, date_from, date_to)
         metric_trends = get_metric_trends(program, date_from, date_to)
         data_completeness = get_data_completeness(program, date_from, date_to)
+        instrument_aggregates = get_instrument_aggregates(program, date_from, date_to)
         two_lenses = get_two_lenses(program, date_from, date_to,
                                     structured=structured,
                                     distributions=metric_distributions)
@@ -356,6 +358,7 @@ def program_insights(request):
             "metric_trends_json": metric_trends_json,
             "metric_trends_keys": metric_trends_keys,
             "data_completeness": data_completeness,
+            "instrument_aggregates": instrument_aggregates,
             "two_lenses": two_lenses,
             "lead_distribution": lead_distribution,
             "lead_achievement": lead_achievement,
