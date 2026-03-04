@@ -126,7 +126,7 @@ SECURE_EXPORT_DIR = os.environ.get(
 
 **Per deployment target:**
 - **Local dev:** System temp dir (`/tmp/konote_exports` or `%TEMP%\konote_exports`)
-- **Railway:** Ephemeral storage (files lost on deploy — acceptable for 24hr links)
+- **OVHcloud VPS:** Persistent storage via Docker volumes (files survive container restarts)
 - **Azure App Service:** Local temp storage or Azure Blob with SAS URLs (future enhancement)
 
 **Critical:** Directory must NOT be inside `MEDIA_ROOT` or `STATIC_ROOT` (not web-accessible).
@@ -551,8 +551,8 @@ class ClientFile(models.Model):
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
 | "Link expired" on fresh link | Server timezone wrong | Check `TZ` env var, should be `America/Toronto` |
-| Export files not cleaning up | Cron not running | Check Railway cron job or scheduled task |
-| "File not found" on download | Server restarted (Railway) | Normal for ephemeral storage; user must re-export |
+| Export files not cleaning up | Cron not running | Check system crontab on OVHcloud VPS |
+| "File not found" on download | Docker volume not mounted or container recreated without volume | Check Docker volume mounts; user may need to re-export |
 | "Permission denied" | Missing reporting role | Admin: assign Reports role to user |
 | Disk space warning in health check | Cleanup not running | Run `cleanup_expired_exports` manually, check cron |
 | Weekly summary not arriving | Email config or cron | Check `EMAIL_*` settings, check cron schedule |
@@ -563,7 +563,7 @@ For future maintainers:
 
 1. **How secure links work:** Export generates CSV, saves to temp dir, creates database record with UUID. Download view checks expiry, serves file. Cleanup deletes old files daily.
 
-2. **File storage location:** Defined by `SECURE_EXPORT_DIR` env var. On Railway, uses ephemeral `/tmp`. Files disappear on deploy (acceptable — links are short-lived).
+2. **File storage location:** Defined by `SECURE_EXPORT_DIR` env var. On OVHcloud VPS, uses a Docker volume for persistent storage. Files survive container restarts but are cleaned up by the daily cron job.
 
 3. **To manually clean up orphaned files:**
    ```bash
@@ -634,6 +634,6 @@ Transparent acknowledgment of limitations:
 
 3. **Audit logs are only useful if reviewed** — Weekly summaries help, but require human attention
 
-4. **Railway's ephemeral storage means files disappear on deploy** — Acceptable for 24hr links, but users may need to re-export after a deploy
+4. **Export files are temporary by design** — Cleaned up daily by cron job after link expiry. Docker volume persistence means files survive normal container restarts.
 
 5. **Single maintainer (Gillian) is still a bus factor** — Documentation helps but doesn't eliminate the risk
