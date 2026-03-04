@@ -184,6 +184,13 @@ class MetricDefinition(models.Model):
         help_text=_("Append-only changelog: [{date, note, note_fr, author}]. Most recent entry is the current rationale."),
     )
 
+    # ── Instrument grouping ──────────────────────────────────────────
+    instrument_name = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_("Group name for multi-item instruments (e.g. 'PHQ-9'). "
+                    "Metrics sharing an instrument_name are reported together."),
+    )
+
     # ── Standardized instrument / assessment fields ───────────────────
     is_standardized_instrument = models.BooleanField(
         default=False,
