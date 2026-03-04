@@ -21,7 +21,7 @@ A consultant-assisted setup workflow that uses Claude to analyze agency document
 │    • Do you need to demonstrate government references?      │
 │                                                             │
 │  Output: Recommended hosting provider + deployment guide    │
-│  Reference: tasks/canadian-hosting-research.md              │
+│  Reference: tasks/design-rationale/ovhcloud-deployment.md   │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -86,7 +86,7 @@ A consultant-assisted setup workflow that uses Claude to analyze agency document
 
 ## Phase 0: Hosting Selection Guide
 
-Before deploying KoNote, help the organisation choose the right hosting provider. See [canadian-hosting-research.md](canadian-hosting-research.md) for detailed research.
+Before deploying KoNote, help the organisation choose the right hosting provider. See [ovhcloud-deployment.md](design-rationale/ovhcloud-deployment.md) for hosting architecture details.
 
 ### Decision Questions
 
