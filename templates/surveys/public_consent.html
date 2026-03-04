@@ -1,0 +1,55 @@
+{% load i18n %}
+{% load static %}
+{% load survey_tags %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ survey.name|default:"Survey" }} — {% trans "Consent" %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% include "_lang_toggle_styles.html" %}
+</head>
+<body>
+<a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+{% include "_lang_toggle.html" with max_width="720px" %}
+<main id="main-content" class="container" style="max-width:720px; padding-top:2rem">
+
+<h1>{{ survey.name|bilingual:survey.name_fr }}</h1>
+
+{% if survey.description %}
+<p>{{ survey.description|bilingual:survey.description_fr }}</p>
+{% endif %}
+
+<article>
+    <header><h2>{% trans "Consent to Participate" %}</h2></header>
+    <div class="consent-text" style="white-space: pre-wrap;">{{ consent_text }}</div>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+    <fieldset>
+        <label for="consent_agree">
+            <input type="checkbox" id="consent_agree" name="consent_agree" value="1" required aria-required="true">
+            {% trans "I have read and agree to the above" %}
+        </label>
+    </fieldset>
+    <button type="submit" id="consent-continue-btn">{% trans "Continue" %}</button>
+</form>
+
+</main>
+<script>
+/* Report height to parent for iframe embed resizing */
+if (window.parent !== window) {
+    new ResizeObserver(function() {
+        window.parent.postMessage({
+            type: 'konote-embed-resize',
+            height: document.body.scrollHeight
+        }, '*');
+    }).observe(document.body);
+}
+</script>
+</body>
+</html>

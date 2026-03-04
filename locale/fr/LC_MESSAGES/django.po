@@ -19033,6 +19033,70 @@ msgstr "demande d'alliance du portail"
 msgid "portal alliance requests"
 msgstr "demandes d'alliance du portail"
 
+#: apps/surveys/forms.py
+msgid "Consent text (shown before the survey begins)"
+msgstr "Texte de consentement (affiché avant le début du sondage)"
+
+#: apps/surveys/forms.py
+msgid "Consent text — French"
+msgstr "Texte de consentement — français"
+
+#: apps/surveys/forms.py
+msgid ""
+"If provided, respondents must agree to this text before "
+"they can see the survey questions. Leave blank to skip "
+"the consent step."
+msgstr ""
+"Si fourni, les répondants doivent accepter ce texte avant "
+"de pouvoir voir les questions du sondage. Laissez vide pour "
+"sauter l'étape de consentement."
+
+#: apps/surveys/forms.py
+msgid ""
+"French version of the consent text. If left blank, the "
+"English text will be used for French respondents."
+msgstr ""
+"Version française du texte de consentement. Si laissé vide, "
+"le texte anglais sera utilisé pour les répondants francophones."
+
+#: apps/surveys/models.py
+msgid "When the respondent agreed to the consent text, if applicable."
+msgstr "Date et heure à laquelle le répondant a accepté le texte de consentement, le cas échéant."
+
+#: apps/surveys/models.py
+msgid ""
+"Consent text shown before the survey begins. "
+"The respondent must agree before proceeding. "
+"Leave blank to skip the consent step."
+msgstr ""
+"Texte de consentement affiché avant le début du sondage. "
+"Le répondant doit accepter avant de continuer. "
+"Laissez vide pour sauter l'étape de consentement."
+
+#: apps/surveys/models.py
+msgid "French consent text (displayed when language is French)."
+msgstr "Texte de consentement en français (affiché lorsque la langue est le français)."
+
+#: templates/surveys/public_consent.html
+msgid "Consent to Participate"
+msgstr "Consentement à participer"
+
+#: templates/surveys/public_consent.html
+msgid "I have read and agree to the above"
+msgstr "J'ai lu et j'accepte ce qui précède"
+
+#: templates/surveys/public_consent.html
+msgid "Continue"
+msgstr "Continuer"
+
+#: templates/surveys/admin/survey_form.html
+msgid ""
+"If provided, respondents must agree to this text before they can see the "
+"survey questions. Leave blank to skip the consent step."
+msgstr ""
+"Si fourni, les répondants doivent accepter ce texte avant de pouvoir voir "
+"les questions du sondage. Laissez vide pour sauter l'étape de consentement."
+
 #: apps/plans/models.py
 msgid ""
 "Group name for multi-item instruments (e.g. 'PHQ-9'). Metrics sharing an "
