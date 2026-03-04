@@ -379,6 +379,117 @@ def get_two_lenses(program, date_from, date_to, structured=None, distributions=N
     }
 
 
+def get_instrument_aggregates(program, date_from, date_to):
+    """Compute aggregate scores for multi-item instrument batteries.
+
+    Groups metrics by instrument_name and computes:
+    - For inclusivity-style batteries (4-point scale): top-two-box %
+      (count of values >= 3 / total * 100)
+    - For single-score instruments (PHQ-9, GAD-7, K10): no aggregation
+      needed (they are already single metrics)
+
+    Returns:
+        dict: {instrument_name: {
+            name, items: [{metric_def_id, name, top_two_box_pct, total}],
+            aggregate_top_two_box_pct, total_responses,
+            is_multi_item,
+        }}
+    """
+    qs = _base_metric_values_qs(program, date_from, date_to)
+    qs = qs.filter(
+        metric_def__instrument_name__gt="",
+        metric_def__metric_type="scale",
+    )
+
+    # Collect values grouped by instrument, metric, and participant
+    # instrument_name -> metric_id -> client_file_id -> [values]
+    instrument_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    metric_defs = {}
+
+    values_data = qs.select_related("metric_def").values_list(
+        "pk",
+        "metric_def_id",
+        "metric_def__instrument_name",
+        "progress_note_target__plan_target__client_file_id",
+        "value",
+    ).distinct()
+
+    for mv_pk, metric_def_id, instrument_name, client_file_id, raw_value in values_data:
+        try:
+            numeric_value = float(raw_value)
+        except (ValueError, TypeError):
+            continue
+        instrument_data[instrument_name][metric_def_id][client_file_id].append(
+            numeric_value
+        )
+
+    # Load metric definitions
+    all_metric_ids = set()
+    for metrics_by_id in instrument_data.values():
+        all_metric_ids.update(metrics_by_id.keys())
+    if all_metric_ids:
+        for md in MetricDefinition.objects.filter(pk__in=all_metric_ids):
+            metric_defs[md.pk] = md
+
+    results = {}
+    for instrument_name, metrics_by_id in instrument_data.items():
+        is_multi_item = len(metrics_by_id) > 1
+
+        # Only compute aggregate for multi-item instruments
+        if not is_multi_item:
+            continue
+
+        items = []
+        total_top_two = 0
+        total_responses = 0
+
+        for metric_id, participant_values in metrics_by_id.items():
+            metric_def = metric_defs.get(metric_id)
+            if not metric_def:
+                continue
+
+            # Compute top-two-box for this item
+            # Top-two-box: % of responses scoring >= 3 on a 4-point scale
+            item_top_two = 0
+            item_total = 0
+
+            for client_id, values in participant_values.items():
+                for val in values:
+                    item_total += 1
+                    if val >= 3:
+                        item_top_two += 1
+
+            if item_total < MIN_N_FOR_DISTRIBUTION:
+                continue
+
+            top_two_box_pct = round(item_top_two / item_total * 100, 1) if item_total else 0
+
+            items.append({
+                "metric_def_id": metric_id,
+                "name": metric_def.translated_name,
+                "top_two_box_pct": top_two_box_pct,
+                "total": item_total,
+            })
+
+            total_top_two += item_top_two
+            total_responses += item_total
+
+        if not items:
+            continue
+
+        aggregate_pct = round(total_top_two / total_responses * 100, 1) if total_responses else 0
+
+        results[instrument_name] = {
+            "name": instrument_name,
+            "items": items,
+            "aggregate_top_two_box_pct": aggregate_pct,
+            "total_responses": total_responses,
+            "is_multi_item": is_multi_item,
+        }
+
+    return results
+
+
 def get_data_completeness(program, date_from, date_to):
     """Compute data completeness for a program in a date range.
 
