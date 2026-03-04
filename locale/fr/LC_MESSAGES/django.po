@@ -19096,3 +19096,68 @@ msgid ""
 msgstr ""
 "Si fourni, les répondants doivent accepter ce texte avant de pouvoir voir "
 "les questions du sondage. Laissez vide pour sauter l'étape de consentement."
+
+#: apps/plans/models.py
+msgid ""
+"Group name for multi-item instruments (e.g. 'PHQ-9'). Metrics sharing an "
+"instrument_name are reported together."
+msgstr ""
+"Nom de groupe pour les instruments à items multiples (p. ex. « PHQ-9 »). "
+"Les indicateurs partageant un instrument_name sont rapportés ensemble."
+
+#: templates/reports/_insights_basic.html
+#: templates/reports/_insights_instruments.html
+msgid "Instrument Batteries"
+msgstr "Batteries d'instruments"
+
+#: templates/reports/_insights_instruments.html
+msgid ""
+"Aggregated results for multi-item instruments. Top-two-box shows the "
+"percentage of responses in the positive range (3 or 4 on a 4-point scale)."
+msgstr ""
+"Résultats agrégés pour les instruments à items multiples. Le « top-two-box » "
+"montre le pourcentage de réponses dans la plage positive (3 ou 4 sur une "
+"échelle en 4 points)."
+
+#: templates/reports/_insights_instruments.html
+msgid "Positive"
+msgstr "Positif"
+
+#: templates/reports/_insights_instruments.html
+msgid "Other"
+msgstr "Autre"
+
+#: templates/reports/_insights_instruments.html
+msgid "positive (top-two-box)"
+msgstr "positif (top-two-box)"
+
+#: templates/reports/_insights_instruments.html
+msgid "View item breakdown"
+msgstr "Voir le détail par item"
+
+#: templates/reports/_insights_instruments.html
+msgid "Item"
+msgstr "Item"
+
+#: templates/reports/_insights_instruments.html
+msgid "Top-two-box %"
+msgstr "% top-two-box"
+
+#: templates/reports/_insights_instruments.html
+msgid "Responses"
+msgstr "Réponses"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "%(count)s responses"
+msgstr "%(count)s réponses"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "Top-two-box percentage for %(name)s"
+msgstr "Pourcentage top-two-box pour %(name)s"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "Item breakdown for %(name)s"
+msgstr "Détail par item pour %(name)s"
