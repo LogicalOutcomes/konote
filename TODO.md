@@ -41,7 +41,7 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recurring-tasks.md).
 
 - [ ] **UX walkthrough** — run after UI changes. In Claude Code: `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` and add fixes to TODO (UX-WALK1)
-- [ ] **Code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the prompt from [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Latest results: [2026-03-04 deep review](tasks/reviews/2026-03-04-deep-review.md) (REV1)
+- [ ] **Code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the prompt from [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results stored in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 deep review (REV1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)

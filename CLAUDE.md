@@ -165,6 +165,8 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 | Task dashboard (one line per task) | `TODO.md` |
 | Task detail, subtasks, context, notes | `tasks/*.md` |
 | Phase prompts for Claude Code | `tasks/phase-*-prompt.md` |
+| Review prompts (how to run reviews) | `tasks/deep-review-prompt.md`, `tasks/code-review-framework.md` |
+| Review results (findings, vulnerabilities) | `konote-qa-scenarios/reviews/YYYY-MM-DD/` (private repo) |
 | Design rationale for complex features | `tasks/design-rationale/*.md` |
 | Decisions, notes, changelog | `CHANGELOG.md` |
 | How Claude manages tasks | `CLAUDE.md` (this section) |

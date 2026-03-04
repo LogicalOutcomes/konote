@@ -797,7 +797,7 @@ Improvements for deployment resilience
 2. **Paste the full prompt** from Part 4
 3. **Attach or provide access to the codebase** (GitHub URL, zip file, or file-by-file)
 4. **Let the tool work through the checklist** — do not interrupt or guide it
-5. **Save the output** to `tasks/reviews/YYYY-MM-DD-dimension.md`
+5. **Save the output** to `../konote-qa-scenarios/reviews/YYYY-MM-DD/dimension.md` (private repo)
 6. **Create tasks in TODO.md** for any Critical or High findings
 
 ### For Human Reviewers
@@ -810,14 +810,17 @@ Improvements for deployment resilience
 
 ### Comparing Results Over Time
 
-Store all review results in `tasks/reviews/` with consistent naming:
+Store all review results in the **private** `konote-qa-scenarios` repo under `reviews/`, organized by date:
 
 ```
-tasks/reviews/
-  2026-02-06-security.md
-  2026-02-06-privacy.md
-  2026-Q2-accessibility.md
-  2026-Q2-deployment.md
+konote-qa-scenarios/reviews/
+  2026-02-06/
+    security.md
+    privacy.md
+  2026-03-04/
+    deep-review.md
+    security.md
+    accessibility.md
 ```
 
 Each review references the previous one and tracks:
