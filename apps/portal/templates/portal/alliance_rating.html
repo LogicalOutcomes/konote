@@ -1,0 +1,53 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "How did your session go?" %}{% endblock %}
+
+{% block content %}
+<main class="container">
+    {% if expired %}
+    <article>
+        <header>
+            <h2>{% trans "This rating has expired" %}</h2>
+        </header>
+        <p>{% trans "This alliance rating request is no longer available. Ratings expire 7 days after your session." %}</p>
+        <a href="{% url 'portal:dashboard' %}" role="button">{% trans "Back to dashboard" %}</a>
+    </article>
+    {% elif completed %}
+    <article>
+        <header>
+            <h2>{% trans "Thank you!" %}</h2>
+        </header>
+        <p>{% trans "Your rating has been recorded. Your feedback helps improve the support you receive." %}</p>
+        <a href="{% url 'portal:dashboard' %}" role="button">{% trans "Back to dashboard" %}</a>
+    </article>
+    {% else %}
+    <article>
+        <header>
+            <h2>{{ alliance_prompt }}</h2>
+            <p>{% trans "Your worker recorded a session. Take a moment to share how you feel about working together." %}</p>
+            <p><small>{% trans "Your honest feedback helps your worker understand what's working and what to adjust." %}</small></p>
+        </header>
+
+        <form method="post">
+            {% csrf_token %}
+            <fieldset>
+                <div class="alliance-pills" role="radiogroup" aria-label="{{ alliance_prompt }}">
+                    {% for value, label in alliance_choices %}
+                    <label class="alliance-anchor">
+                        <input type="radio" name="rating" value="{{ value }}" required>
+                        <span>{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <div class="button-group" style="margin-top: 1.5rem;">
+                <button type="submit">{% trans "Submit rating" %}</button>
+                <a href="{% url 'portal:dashboard' %}" role="button" class="outline secondary">{% trans "Skip" %}</a>
+            </div>
+        </form>
+    </article>
+    {% endif %}
+</main>
+{% endblock %}

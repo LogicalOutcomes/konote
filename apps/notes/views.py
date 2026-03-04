@@ -834,6 +834,24 @@ def note_create(request, client_id):
                         _("This suggestion has been recorded. A Program Manager can group it with similar feedback."),
                     )
 
+            # PORTAL-ALLIANCE1: Create async alliance rating request if applicable
+            if not note.alliance_rating:
+                try:
+                    from apps.admin_settings.models import FeatureToggle
+                    flags = FeatureToggle.get_all_flags()
+                    if flags.get("portal_alliance_ratings", False):
+                        if hasattr(client, "portal_account") and client.portal_account.is_active:
+                            from datetime import timedelta
+                            from apps.portal.models import PortalAllianceRequest
+                            PortalAllianceRequest.objects.create(
+                                progress_note=note,
+                                client_file=client,
+                                prompt_index=prompt_index,
+                                expires_at=timezone.now() + timedelta(days=7),
+                            )
+                except Exception:
+                    logger.exception("Portal alliance request creation failed for note %s", note.pk)
+
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
