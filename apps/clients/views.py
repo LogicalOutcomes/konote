@@ -1104,6 +1104,34 @@ def client_detail(request, client_id):
     return render(request, "clients/detail.html", context)
 
 
+@login_required
+def assessment_due_banner(request, client_id):
+    """HTMX partial: show assessments due for this client."""
+    from apps.programs.access import get_client_or_403, get_user_program_ids
+    from apps.plans.assessment import get_assessments_due
+
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return render(request, "clients/includes/assessment_due_banner.html", {})
+
+    user_program_ids = get_user_program_ids(request.user)
+    assessments_due = get_assessments_due(client, program_ids=user_program_ids)
+
+    # Add days_since for display purposes
+    from django.utils import timezone as _tz
+    now = _tz.now()
+    for item in assessments_due:
+        if item["last_date"]:
+            item["days_since"] = (now - item["last_date"]).days
+        else:
+            item["days_since"] = None
+
+    return render(request, "clients/includes/assessment_due_banner.html", {
+        "client": client,
+        "assessments_due": assessments_due,
+    })
+
+
 def _get_custom_fields_context(client, user_role, hide_empty=False):
     """Build custom fields context for display/edit templates.
 

@@ -74,4 +74,6 @@ urlpatterns = [
     path("<int:client_id>/portal/revoke/", portal_revoke_access, name="portal_revoke"),
     path("<int:client_id>/portal/reset-mfa/", portal_reset_mfa, name="portal_reset_mfa"),
     path("<int:client_id>/portal/staff-login/", generate_staff_login_token, name="portal_staff_login"),
+    # Assessment-due banner (HTMX partial)
+    path("<int:client_id>/assessments-due/", views.assessment_due_banner, name="assessment_due_banner"),
 ]
