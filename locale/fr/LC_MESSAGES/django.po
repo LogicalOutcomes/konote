@@ -18590,7 +18590,7 @@ msgstr[0] "%(count)d indicateur avec un taux de dérogation élevé"
 msgstr[1] "%(count)d indicateurs avec un taux de dérogation élevé"
 
 msgid "Confirmed — still relevant"
-msgstr ""
+msgstr "Confirmé — toujours pertinent"
 
 msgid ""
 "How many sessions between prompts for this metric. Leave blank to prompt "
@@ -18617,17 +18617,19 @@ msgid "Sign in as"
 msgstr ""
 
 msgid "When the worker last confirmed this metric is still relevant."
-msgstr ""
+msgstr "Date de la dernière confirmation de la pertinence de cet indicateur."
 
 msgid "Which alliance prompt set was shown (index into ALLIANCE_PROMPT_SETS)."
 msgstr ""
 
 msgid "Change metric"
-msgstr ""
+msgstr "Changer l'indicateur"
 
 msgid "Still right"
-msgstr ""
+msgstr "Toujours pertinent"
 
 msgid ""
 "This metric has been tracked for 90+ days. Is it still the right measure?"
 msgstr ""
+"Cet indicateur est suivi depuis plus de 90 jours. Est-ce toujours la bonne "
+"mesure?"
