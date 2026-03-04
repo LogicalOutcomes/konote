@@ -1113,3 +1113,106 @@ class MetricCSVImportTest(TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(rows[0]["category"], "client_experience")
 
+
+# ================================================================== #
+# Instrument Grouping Tests                                          #
+# ================================================================== #
+
+
+class InstrumentNameFieldTest(TestCase):
+    """Tests for the instrument_name field on MetricDefinition."""
+
+    databases = {"default", "audit"}
+
+    def test_instrument_name_saves_and_retrieves(self):
+        """instrument_name can be saved and retrieved correctly."""
+        metric = MetricDefinition.objects.create(
+            name="Test Inclusivity Item",
+            definition="Test definition",
+            category="client_experience",
+            instrument_name="LogicalOutcomes Inclusivity Battery",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.instrument_name, "LogicalOutcomes Inclusivity Battery")
+
+    def test_instrument_name_defaults_to_empty(self):
+        """instrument_name defaults to empty string."""
+        metric = MetricDefinition.objects.create(
+            name="Standalone Metric",
+            definition="No instrument",
+            category="general",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.instrument_name, "")
+
+    def test_metrics_grouped_by_instrument_name(self):
+        """Metrics with the same instrument_name can be queried together."""
+        battery_name = "LogicalOutcomes Inclusivity Battery"
+        MetricDefinition.objects.create(
+            name="Item 1", definition="First item",
+            category="client_experience", instrument_name=battery_name,
+        )
+        MetricDefinition.objects.create(
+            name="Item 2", definition="Second item",
+            category="client_experience", instrument_name=battery_name,
+        )
+        MetricDefinition.objects.create(
+            name="Unrelated", definition="Not in a battery",
+            category="general",
+        )
+
+        grouped = MetricDefinition.objects.filter(instrument_name=battery_name)
+        self.assertEqual(grouped.count(), 2)
+
+    def test_instrument_name_in_seed_data(self):
+        """Verify seed JSON has instrument_name on the expected metrics."""
+        import json
+        from pathlib import Path
+
+        seed_file = Path(__file__).resolve().parent.parent / "seeds" / "metric_library.json"
+        with open(seed_file, "r", encoding="utf-8") as f:
+            metrics = json.load(f)
+
+        # Check PHQ-9 has instrument_name
+        phq9 = next(m for m in metrics if m["name"] == "PHQ-9 (Depression)")
+        self.assertEqual(phq9["instrument_name"], "PHQ-9")
+
+        # Check GAD-7
+        gad7 = next(m for m in metrics if m["name"] == "GAD-7 (Anxiety)")
+        self.assertEqual(gad7["instrument_name"], "GAD-7")
+
+        # Check K10
+        k10 = next(m for m in metrics if m["name"] == "K10 (Psychological Distress)")
+        self.assertEqual(k10["instrument_name"], "K10")
+
+        # Check all 5 inclusivity items
+        inclusivity_names = [
+            "Everyone is made to feel welcome",
+            "Everyone is valued equally",
+            "I am treated with respect",
+            "People help each other",
+            "I get help when I need it",
+        ]
+        for name in inclusivity_names:
+            item = next(m for m in metrics if m["name"] == name)
+            self.assertEqual(
+                item["instrument_name"],
+                "LogicalOutcomes Inclusivity Battery",
+                f"{name} should have instrument_name set",
+            )
+
+    def test_metrics_without_instrument_name_not_in_filter(self):
+        """Metrics without instrument_name are not returned by instrument filter."""
+        MetricDefinition.objects.create(
+            name="PHQ-9 Test", definition="Test",
+            category="mental_health", instrument_name="PHQ-9",
+        )
+        MetricDefinition.objects.create(
+            name="Standalone", definition="Test",
+            category="general", instrument_name="",
+        )
+
+        with_instrument = MetricDefinition.objects.filter(instrument_name__gt="")
+        self.assertEqual(with_instrument.count(), 1)
+        self.assertEqual(with_instrument.first().name, "PHQ-9 Test")
+
