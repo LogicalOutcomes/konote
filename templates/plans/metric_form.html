@@ -15,7 +15,7 @@
     {% if field.name == "iris_metric_code" or field.name == "sdg_goals" or field.name == "cids_indicator_uri" or field.name == "cids_unit_description" or field.name == "cids_defined_by" or field.name == "cids_has_baseline" or field.name == "cids_theme_override" %}
     {# CIDS fields rendered in the collapsible section below #}
     {% else %}
-    <div {% if field.name == "higher_is_better" or field.name == "threshold_low" or field.name == "threshold_high" or field.name == "target_band_high_pct" %}class="metric-scale-field"{% elif field.name == "achievement_options" or field.name == "achievement_success_values" or field.name == "target_rate" %}class="metric-achievement-field"{% endif %}>
+    <div {% if field.name == "higher_is_better" or field.name == "threshold_low" or field.name == "threshold_high" or field.name == "target_band_high_pct" or field.name == "warn_min" or field.name == "warn_max" or field.name == "very_unlikely_min" or field.name == "very_unlikely_max" %}class="metric-scale-field"{% elif field.name == "achievement_options" or field.name == "achievement_success_values" or field.name == "target_rate" %}class="metric-achievement-field"{% endif %}>
         {% if field.name == "higher_is_better" %}
         <label>
             {{ field }} {{ field.label }}
@@ -33,6 +33,8 @@
     </div>
     {% endif %}
     {% endfor %}
+
+    {% include "admin_settings/_tip.html" with text=_('Check the Plausibility Tuning Dashboard (in Admin Settings) to see how often each threshold triggers in practice.') %}
 
     {# CIDS Standards Metadata — collapsible so it doesn't clutter the form #}
     <details>

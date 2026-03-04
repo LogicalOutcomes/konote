@@ -1,7 +1,9 @@
 """Admin settings views: dashboard, terminology, features, instance settings."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.shortcuts import redirect, render
+from django.utils import timezone as tz
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required, demo_read_only
@@ -22,7 +24,8 @@ from .models import (
 @admin_required
 def dashboard(request):
     from apps.auth_app.models import User
-    from apps.notes.models import ProgressNoteTemplate
+    from apps.notes.models import PlausibilityOverrideLog, ProgressNoteTemplate
+    from apps.plans.models import MetricDefinition, PlanTemplate
 
     # State indicators for dashboard cards
     current_flags = FeatureToggle.get_all_flags()
@@ -46,9 +49,10 @@ def dashboard(request):
     partner_count = Partner.objects.count()
     report_template_count = ReportTemplate.objects.count()
 
-    # Messaging profile for dashboard card
+    # Messaging capabilities for dashboard card
     current_settings = InstanceSetting.get_all()
-    messaging_profile = current_settings.get("messaging_profile", "record_keeping")
+    staff_messaging_enabled = current_settings.get("staff_messaging_enabled", "false") == "true"
+    automated_reminders_enabled = current_settings.get("automated_reminders_enabled", "false") == "true"
 
     # Field access card (Tier 2+ only)
     from apps.admin_settings.models import get_access_tier
@@ -69,11 +73,44 @@ def dashboard(request):
     active_reason_count = 0
     if access_tier >= 3:
         from apps.auth_app.models import AccessGrant, AccessGrantReason
-        from django.utils import timezone as tz
         active_grant_count = AccessGrant.objects.filter(
             is_active=True, expires_at__gt=tz.now()
         ).count()
         active_reason_count = AccessGrantReason.objects.filter(is_active=True).count()
+
+    # Metrics card — single query with conditional aggregation
+    from django.db.models import Count, Q
+    metric_counts = MetricDefinition.objects.filter(status="active").aggregate(
+        total=Count("id"),
+        enabled=Count("id", filter=Q(is_enabled=True)),
+        custom=Count("id", filter=Q(is_library=False)),
+    )
+    total_metrics = metric_counts["total"]
+    enabled_metrics = metric_counts["enabled"]
+    custom_metrics = metric_counts["custom"]
+
+    # Plan templates card
+    plan_template_count = PlanTemplate.objects.count()
+
+    # Organisation profile card
+    org_profile = OrganizationProfile.objects.first()
+    org_name = (org_profile.operating_name or org_profile.legal_name) if org_profile else ""
+
+    # Plausibility tuning card — count metrics with high override rate (>80%)
+    from datetime import timedelta
+    cutoff = tz.now() - timedelta(days=90)
+    override_stats = (
+        PlausibilityOverrideLog.objects.filter(created_at__gte=cutoff)
+        .values("metric_definition_id")
+        .annotate(
+            total=Count("id"),
+            confirmed=Count("id", filter=Q(action="confirmed")),
+        )
+    )
+    high_override_count = sum(
+        1 for row in override_stats
+        if row["total"] >= 3 and row["confirmed"] / row["total"] > 0.8
+    )
 
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
@@ -85,11 +122,18 @@ def dashboard(request):
         "demo_users": demo_users,
         "partner_count": partner_count,
         "report_template_count": report_template_count,
-        "messaging_profile": messaging_profile,
+        "staff_messaging_enabled": staff_messaging_enabled,
+        "automated_reminders_enabled": automated_reminders_enabled,
         "access_tier": access_tier,
         "field_access_count": field_access_count,
         "active_grant_count": active_grant_count,
         "active_reason_count": active_reason_count,
+        "total_metrics": total_metrics,
+        "enabled_metrics": enabled_metrics,
+        "custom_metrics": custom_metrics,
+        "plan_template_count": plan_template_count,
+        "org_name": org_name,
+        "high_override_count": high_override_count,
     })
 
 
@@ -259,12 +303,33 @@ DEFAULT_FEATURES = {
         "depends_on": [],
         "used_by": [],
     },
-    "ai_assist": {
-        "label": _lazy("AI Assist"),
-        "description": _lazy("AI-powered features including goal builder and narrative generation."),
-        "when_on": [_lazy("AI Goal Builder appears on the plan page"), _lazy("AI narrative generation is available in reports")],
-        "when_off": [_lazy("AI features are hidden"), _lazy("No data is sent to AI services")],
+    "ai_assist_tools_only": {
+        "label": _lazy("AI Tools (no participant data)"),
+        "description": _lazy("AI helps staff write SMART outcomes, suggest metrics, categorise into CIDS, and generate narrative summaries from aggregate data. No participant data is ever sent to AI."),
+        "when_on": [
+            _lazy("AI Goal Builder appears on the plan page"),
+            _lazy("AI metric suggestions and narrative generation are available"),
+            _lazy("No participant data is sent to AI services"),
+        ],
+        "when_off": [
+            _lazy("All AI-powered tools are hidden"),
+            _lazy("No data is sent to AI services"),
+        ],
         "depends_on": [],
+        "used_by": ["ai_assist_participant_data"],
+    },
+    "ai_assist_participant_data": {
+        "label": _lazy("AI Participant Insights"),
+        "description": _lazy("AI summarises themes from de-identified participant feedback. Individual responses are de-identified before processing, but content is sent to an external AI service."),
+        "when_on": [
+            _lazy("Outcome Insights uses AI to summarise participant feedback themes"),
+            _lazy("De-identified participant responses are sent to an external AI service"),
+        ],
+        "when_off": [
+            _lazy("AI insight summarisation is disabled"),
+            _lazy("No participant data is sent to AI services"),
+        ],
+        "depends_on": ["ai_assist_tools_only"],
         "used_by": [],
     },
     "groups": {
@@ -357,7 +422,7 @@ DEFAULT_FEATURES = {
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources", "ai_assist_tools_only"}
 
 
 @login_required
@@ -462,6 +527,23 @@ def feature_toggle_action(request, feature_key):
         feature_key=feature_key,
         defaults={"is_enabled": new_state},
     )
+    cache.delete("feature_toggles")
+
+    # Audit log when ai_assist_participant_data is toggled
+    if feature_key == "ai_assist_participant_data":
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=tz.now(),
+            user_id=request.user.pk,
+            user_display=getattr(request.user, "display_name", str(request.user)),
+            action="update",
+            resource_type="feature_toggle",
+            resource_id=0,
+            metadata={
+                "feature_key": "ai_assist_participant_data",
+                "new_state": "enabled" if new_state else "disabled",
+            },
+        )
 
     return render(request, "admin_settings/_feature_toggle_success.html", {
         "feature_key": feature_key,
@@ -530,7 +612,8 @@ def messaging_settings(request):
     # Health status
     health_checks = {h.channel: h for h in SystemHealthCheck.objects.all()}
 
-    current_profile = current_settings.get("messaging_profile", "record_keeping")
+    staff_messaging_enabled = current_settings.get("staff_messaging_enabled", "false") == "true"
+    automated_reminders_enabled = current_settings.get("automated_reminders_enabled", "false") == "true"
     safety_first = current_settings.get("safety_first_mode", "false") == "true"
 
     return render(request, "admin_settings/messaging_settings.html", {
@@ -538,7 +621,8 @@ def messaging_settings(request):
         "email_configured": email_configured,
         "sms_configured": sms_configured,
         "health_checks": health_checks,
-        "current_profile": current_profile,
+        "staff_messaging_enabled": staff_messaging_enabled,
+        "automated_reminders_enabled": automated_reminders_enabled,
         "safety_first": safety_first,
     })
 
@@ -859,4 +943,119 @@ def backup_settings(request):
     return render(request, "admin_settings/backup_settings.html", {
         "form": form,
         "profile": profile,
+    })
+
+
+# --- Plausibility Threshold Tuning Dashboard (DQ1) ---
+
+@login_required
+@admin_required
+def plausibility_tuning_dashboard(request):
+    """Dashboard showing plausibility override rates per metric to help admins tune thresholds."""
+    from datetime import timedelta
+
+    from django.db.models import Avg, Count, Q
+
+    from apps.notes.models import PlausibilityOverrideLog
+    from apps.plans.models import MetricDefinition
+    from apps.programs.models import Program
+
+    # Date range filter
+    days_param = request.GET.get("days", "90")
+    try:
+        days = int(days_param)
+    except (ValueError, TypeError):
+        days = 90
+
+    date_filter = Q()
+    if days > 0:
+        cutoff = tz.now() - timedelta(days=days)
+        date_filter = Q(created_at__gte=cutoff)
+
+    # Program filter
+    program_id = request.GET.get("program", "")
+    program_filter = Q()
+    if program_id:
+        try:
+            program_filter = Q(metric_definition__owning_program_id=int(program_id))
+        except (ValueError, TypeError):
+            pass
+
+    # Query override logs grouped by metric_definition
+    metrics_data = (
+        PlausibilityOverrideLog.objects
+        .filter(date_filter & program_filter)
+        .values(
+            "metric_definition_id",
+            "metric_definition__name",
+            "metric_definition__warn_min",
+            "metric_definition__warn_max",
+            "metric_definition__owning_program__name",
+        )
+        .annotate(
+            total_warnings=Count("id"),
+            confirmed_count=Count("id", filter=Q(action="confirmed")),
+            corrected_count=Count("id", filter=Q(action="corrected")),
+            avg_confirmed_value=Avg(
+                "entered_value",
+                filter=Q(action="confirmed"),
+            ),
+        )
+        .order_by("-total_warnings")
+    )
+
+    # Calculate override rate and status for each metric
+    metric_rows = []
+    for row in metrics_data:
+        total = row["total_warnings"]
+        confirmed = row["confirmed_count"]
+        corrected = row["corrected_count"]
+        override_rate = (confirmed / total * 100) if total > 0 else 0
+
+        # Colour coding: green (<30%), yellow (30-80%), red (>80%)
+        if override_rate < 30:
+            status = "green"
+            status_label = _("Threshold working well")
+            recommendation = _("Thresholds are appropriately set. Most flagged values are being corrected.")
+        elif override_rate <= 80:
+            status = "yellow"
+            status_label = _("Consider reviewing threshold")
+            recommendation = _("A moderate number of warnings are being confirmed. Consider widening thresholds slightly.")
+        else:
+            status = "red"
+            status_label = _("Threshold likely too tight")
+            recommendation = _("Most flagged values are confirmed as correct. Thresholds are likely too restrictive and should be widened.")
+
+        metric_rows.append({
+            "metric_name": row["metric_definition__name"],
+            "program_name": row["metric_definition__owning_program__name"] or _("Global"),
+            "warn_min": row["metric_definition__warn_min"],
+            "warn_max": row["metric_definition__warn_max"],
+            "total_warnings": total,
+            "confirmed_count": confirmed,
+            "corrected_count": corrected,
+            "override_rate": round(override_rate, 1),
+            "avg_confirmed_value": round(row["avg_confirmed_value"], 2) if row["avg_confirmed_value"] is not None else None,
+            "status": status,
+            "status_label": status_label,
+            "recommendation": recommendation,
+        })
+
+    # Available programs for filter dropdown
+    programs = Program.objects.filter(status="active").order_by("name")
+
+    # Date range options
+    date_ranges = [
+        {"value": "30", "label": _("Last 30 days")},
+        {"value": "90", "label": _("Last 90 days")},
+        {"value": "365", "label": _("Last year")},
+        {"value": "0", "label": _("All time")},
+    ]
+
+    return render(request, "admin_settings/dq_tuning.html", {
+        "metric_rows": metric_rows,
+        "programs": programs,
+        "selected_days": days_param,
+        "selected_program": program_id,
+        "date_ranges": date_ranges,
     })

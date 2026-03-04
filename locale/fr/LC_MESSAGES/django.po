@@ -88,10 +88,12 @@ msgstr ""
 "Connectez-vous instantanément en tant qu'utilisateur démo pour explorer le "
 "système"
 
-msgid "Sign in as a demo user to explore the system. Changes do not affect real data."
+msgid ""
+"Sign in as a demo user to explore the system. Changes do not affect real "
+"data."
 msgstr ""
-"Connectez-vous en tant qu'utilisateur démo pour explorer le système. "
-"Les modifications n'affectent pas les vraies données."
+"Connectez-vous en tant qu'utilisateur démo pour explorer le système. Les "
+"modifications n'affectent pas les vraies données."
 
 msgid "Manager"
 msgstr "Gestionnaire"
@@ -4225,7 +4227,8 @@ msgid "Training Mode"
 msgstr "Mode formation"
 
 msgid "changes here do not affect real participant records."
-msgstr "les modifications ici n'affectent pas les vrais dossiers des participants."
+msgstr ""
+"les modifications ici n'affectent pas les vrais dossiers des participants."
 
 msgid "Signed in as %(name)s."
 msgstr "Connecté(e) en tant que %(name)s."
@@ -9560,33 +9563,17 @@ msgid "Enable in Features, then configure Twilio credentials."
 msgstr ""
 "Activez dans Fonctionnalités, puis configurez les identifiants Twilio."
 
-msgid "Full Automation"
-msgstr "Automatisation complète"
-
-msgid "Full automation enabled"
-msgstr "Automatisation complète activée"
-
 msgid "How many hours before a meeting to send the reminder."
 msgstr "Nombre d'heures avant une réunion pour envoyer le rappel."
 
 msgid "If you change your mind, please contact the organisation directly."
 msgstr "Si vous changez d'avis, veuillez contacter l'organisme directement."
 
-msgid ""
-"KoNote automatically sends reminders before meetings. Requires email or SMS "
-"setup."
-msgstr ""
-"KoNote envoie automatiquement des rappels avant les réunions. Nécessite la "
-"configuration du courriel ou des SMS."
-
 msgid "Message Templates"
 msgstr "Modèles de message"
 
 msgid "Messaging"
 msgstr "Messagerie"
-
-msgid "Messaging Profile"
-msgstr "Profil de messagerie"
 
 msgid "Messaging Settings"
 msgstr "Paramètres de messagerie"
@@ -9602,9 +9589,6 @@ msgstr "Non configuré"
 
 msgid "Personal note (optional)"
 msgstr "Note personnelle (facultatif)"
-
-msgid "Record-Keeping Only"
-msgstr "Tenue de dossiers uniquement"
 
 msgid "Record-keeping only"
 msgstr "Tenue de dossiers uniquement"
@@ -9648,26 +9632,59 @@ msgstr "Nom d'affichage de l'expéditeur"
 msgid "Shown in error messages when messaging fails."
 msgstr "Affiché dans les messages d'erreur lorsque la messagerie échoue."
 
-msgid ""
-"Staff can schedule meetings and log communications. Nothing is sent from "
-"KoNote."
-msgstr ""
-"Le personnel peut planifier des réunions et enregistrer des communications. "
-"Aucun message n'est envoyé depuis KoNote."
-
-msgid ""
-"Staff can send appointment reminders and messages directly from KoNote. "
-"Every message requires a person to click send."
-msgstr ""
-"Le personnel peut envoyer des rappels de rendez-vous et des messages "
-"directement depuis KoNote. Chaque message nécessite qu'une personne clique "
-"sur envoyer."
-
-msgid "Staff-Sent Messages"
+msgid "Staff-sent messages"
 msgstr "Messages envoyés par le personnel"
 
 msgid "Staff-sent messages enabled"
 msgstr "Messages envoyés par le personnel activés"
+
+msgid "Staff messaging is not enabled"
+msgstr "La messagerie du personnel n'est pas activée"
+
+msgid ""
+"Staff can compose and send individual messages to participants from within "
+"KoNote. Every message requires a person to review and click send."
+msgstr ""
+"Le personnel peut rédiger et envoyer des messages individuels aux "
+"participants depuis KoNote. Chaque message doit être révisé et envoyé "
+"manuellement."
+
+msgid "Staff messages + automated reminders"
+msgstr "Messages du personnel + rappels automatisés"
+
+msgid "Automated system reminders"
+msgstr "Rappels système automatisés"
+
+msgid "Automated reminders enabled"
+msgstr "Rappels automatisés activés"
+
+msgid "Automated reminders are not enabled"
+msgstr "Les rappels automatisés ne sont pas activés"
+
+msgid ""
+"KoNote automatically sends appointment reminders from a no-reply address "
+"before scheduled meetings. No staff action required."
+msgstr ""
+"KoNote envoie automatiquement des rappels de rendez-vous depuis une adresse "
+"sans réponse avant les réunions planifiées. Aucune action du personnel "
+"requise."
+
+msgid "Messaging Capabilities"
+msgstr "Capacités de messagerie"
+
+msgid ""
+"Select the messaging options your organisation needs. You can enable both."
+msgstr ""
+"Sélectionnez les options de messagerie dont votre organisation a besoin. "
+"Vous pouvez activer les deux."
+
+msgid ""
+"Neither option is enabled — KoNote is in record-keeping mode. Staff can "
+"schedule meetings and log communications, but nothing is sent."
+msgstr ""
+"Aucune option n'est activée — KoNote est en mode tenue de dossiers. Le "
+"personnel peut planifier des réunions et consigner les communications, mais "
+"rien n'est envoyé."
 
 msgid "Support Contact Name"
 msgstr "Nom du contact de soutien"
@@ -10697,6 +10714,14 @@ msgstr "Messages"
 
 msgid "My Messages"
 msgstr "Mes messages"
+
+#, python-format
+msgid ""
+"To leave a message for a colleague about a %(client)s, open the %(client)s's"
+" file and select \"Leave a Message.\""
+msgstr ""
+"Pour laisser un message à un collègue au sujet d'un(e) %(client)s, ouvrez le"
+" dossier du/de la %(client)s et sélectionnez « Laisser un message »."
 
 msgid "No messages."
 msgstr "Aucun message."
@@ -17663,7 +17688,902 @@ msgid "suppressed"
 msgstr "supprimé"
 
 msgid "URL-safe identifier, e.g. 'youth-services'. Used as schema name."
-msgstr "Identifiant URL sécurisé, p. ex. 'services-jeunesse'. Utilisé comme nom de schéma."
+msgstr ""
+"Identifiant URL sécurisé, p. ex. 'services-jeunesse'. Utilisé comme nom de "
+"schéma."
 
 msgid "Your organisation name"
 msgstr "Nom de votre organisation"
+
+msgid "Confirm this value"
+msgstr "Confirmer cette valeur"
+
+msgid ""
+"Enabling this feature means de-identified participant responses will be sent"
+" to an external AI service for analysis. Individual names are removed, but "
+"response content is processed externally. Please confirm your agency has "
+"reviewed this with your privacy officer or board."
+msgstr ""
+"L'activation de cette fonctionnalité signifie que les réponses "
+"dépersonnalisées des participants seront envoyées à un service d'IA externe "
+"pour analyse. Les noms individuels sont retirés, mais le contenu des "
+"réponses est traité à l'externe. Veuillez confirmer que votre organisme a "
+"examiné cette question avec votre responsable de la protection de la vie "
+"privée ou votre conseil d'administration."
+
+msgid "Privacy governance notice"
+msgstr "Avis de gouvernance en matière de vie privée"
+
+msgid ""
+"Soft warning maximum — values above this trigger a plausibility warning but "
+"are still accepted."
+msgstr ""
+"Maximum d'avertissement souple — les valeurs supérieures déclenchent un "
+"avertissement de plausibilité, mais sont tout de même acceptées."
+
+msgid ""
+"Soft warning minimum — values below this trigger a plausibility warning but "
+"are still accepted."
+msgstr ""
+"Minimum d'avertissement souple — les valeurs inférieures déclenchent un "
+"avertissement de plausibilité, mais sont tout de même acceptées."
+
+msgid ""
+"True if staff confirmed a value outside the plausibility warning range."
+msgstr ""
+"Vrai si le personnel a confirmé une valeur en dehors de la plage "
+"d'avertissement de plausibilité."
+
+msgid "Warning maximum cannot exceed the hard maximum."
+msgstr "Le maximum d'avertissement ne peut pas dépasser le maximum absolu."
+
+msgid "Warning minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum d'avertissement ne peut pas être inférieur au minimum absolu."
+
+msgid "Warning minimum must be less than warning maximum."
+msgstr ""
+"Le minimum d'avertissement doit être inférieur au maximum d'avertissement."
+
+msgid ""
+"Hard ceiling — values above this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plafond absolu — les valeurs au-dessus sont presque certainement des erreurs"
+" de saisie. Nécessite deux confirmations."
+
+msgid ""
+"Hard floor — values below this are almost certainly data-entry errors. "
+"Requires two confirmations."
+msgstr ""
+"Plancher absolu — les valeurs en dessous sont presque certainement des "
+"erreurs de saisie. Nécessite deux confirmations."
+
+msgid "Very unlikely maximum cannot exceed the hard maximum."
+msgstr "Le maximum très improbable ne peut pas dépasser le maximum absolu."
+
+msgid "Very unlikely maximum must be at or above the warning maximum."
+msgstr ""
+"Le maximum très improbable doit être égal ou supérieur au maximum "
+"d'avertissement."
+
+msgid "Very unlikely minimum cannot be below the hard minimum."
+msgstr ""
+"Le minimum très improbable ne peut pas être inférieur au minimum absolu."
+
+msgid "Very unlikely minimum must be at or below the warning minimum."
+msgstr ""
+"Le minimum très improbable doit être égal ou inférieur au minimum "
+"d'avertissement."
+
+msgid "Very unlikely minimum must be less than very unlikely maximum."
+msgstr ""
+"Le minimum très improbable doit être inférieur au maximum très improbable."
+
+msgid "Click again to confirm"
+msgstr "Cliquez de nouveau pour confirmer"
+
+msgid ""
+"This value ({value}) is extremely unlikely for {metric}. This is almost "
+"certainly a data-entry error. Please re-check and confirm twice if correct."
+msgstr ""
+"Cette valeur ({value}) est extrêmement improbable pour {metric}. Il s'agit "
+"presque certainement d'une erreur de saisie. Veuillez revérifier et "
+"confirmer deux fois si elle est correcte."
+
+msgid ""
+"This value ({value}) is unusually high for {metric}. Please double-check. If"
+" correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement élevée pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid ""
+"This value ({value}) is unusually low for {metric}. Please double-check. If "
+"correct, click Confirm."
+msgstr ""
+"Cette valeur ({value}) est inhabituellement basse pour {metric}. Veuillez "
+"revérifier. Si elle est correcte, cliquez sur Confirmer."
+
+msgid "This value is extremely unlikely. Please confirm it is correct."
+msgstr ""
+"Cette valeur est extrêmement improbable. Veuillez confirmer qu'elle est "
+"correcte."
+
+msgid ""
+"This value is outside the expected range. Please confirm it is correct."
+msgstr ""
+"Cette valeur est en dehors de la plage attendue. Veuillez confirmer qu'elle "
+"est correcte."
+
+msgid "Value confirmed."
+msgstr "Valeur confirmée."
+
+msgid "Invalid send method"
+msgstr "Méthode d'envoi non valide"
+
+msgid "%(count)s access denied events on %(date)s"
+msgstr "%(count)s événements d'accès refusé le %(date)s"
+
+msgid "%(count)s failed login attempts on %(date)s"
+msgstr "%(count)s tentatives de connexion échouées le %(date)s"
+
+msgid "%(count)s participant records viewed on %(date)s"
+msgstr "%(count)s dossiers de participants consultés le %(date)s"
+
+msgid "Access denied spike"
+msgstr "Pic d'accès refusés"
+
+msgid "Active users"
+msgstr "Utilisateurs actifs"
+
+msgid ""
+"Aggregate privacy and access metrics for board accountability (PIPEDA "
+"4.1.4). No individual participant or staff names are shown."
+msgstr ""
+"Indicateurs agrégés de confidentialité et d'accès pour la reddition de "
+"comptes au conseil d'administration (LPRPDE 4.1.4). Aucun nom de participant"
+" ou de membre du personnel n'est affiché."
+
+msgid "Anomaly Flags"
+msgstr "Signalements d'anomalies"
+
+msgid "Anomaly flags"
+msgstr "Signalements d'anomalies"
+
+msgid "Bulk record access"
+msgstr "Accès massif aux dossiers"
+
+msgid "Compliance Summary"
+msgstr "Résumé de conformité"
+
+msgid "Conservative (< 10)"
+msgstr "Prudent (< 10)"
+
+msgid ""
+"Contact your administrator to investigate specific incidents. They have "
+"access to detailed audit log entries."
+msgstr ""
+"Communiquez avec votre administrateur pour enquêter sur des incidents "
+"précis. Il a accès aux entrées détaillées du journal d'audit."
+
+msgid "Data exports"
+msgstr "Exportations de données"
+
+msgid "Export events by role"
+msgstr "Événements d'exportation par rôle"
+
+msgid "Exports by Role"
+msgstr "Exportations par rôle"
+
+msgid "Failed login spike"
+msgstr "Pic de connexions échouées"
+
+msgid "Failed logins"
+msgstr "Connexions échouées"
+
+msgid "How to use this report"
+msgstr "Comment utiliser ce rapport"
+
+msgid "If an anomaly needs investigation, note the date and type."
+msgstr "Si une anomalie nécessite une enquête, notez la date et le type."
+
+msgid "No anomalies detected during this period."
+msgstr "Aucune anomalie détectée au cours de cette période."
+
+msgid "Overview"
+msgstr "Aperçu"
+
+msgid "Record access by type"
+msgstr "Accès aux dossiers par type"
+
+msgid "Records Accessed by Type"
+msgstr "Dossiers consultés par type"
+
+msgid "Review the overview statistics and anomaly flags above."
+msgstr ""
+"Consultez les statistiques d'aperçu et les signalements d'anomalies ci-"
+"dessus."
+
+msgid "Standard (< 5)"
+msgstr "Standard (< 5)"
+
+msgid ""
+"The following unusual patterns were detected during this period. Contact "
+"your administrator to investigate specific incidents."
+msgstr ""
+"Les tendances inhabituelles suivantes ont été détectées au cours de cette "
+"période. Communiquez avec votre administrateur pour enquêter sur des "
+"incidents précis."
+
+msgid ""
+"This summary shows aggregate compliance metrics — no individual participant "
+"or staff names are displayed. This is by design (PIPEDA principle of "
+"limiting collection)."
+msgstr ""
+"Ce résumé présente des indicateurs de conformité agrégés — aucun nom de "
+"participant ou de membre du personnel n'est affiché. C'est intentionnel "
+"(principe de la LPRPDE de limiter la collecte)."
+
+msgid "Total audit events"
+msgstr "Total des événements d'audit"
+
+msgid "Use the Print button to include this summary in board reports."
+msgstr ""
+"Utilisez le bouton Imprimer pour inclure ce résumé dans les rapports au "
+"conseil."
+
+msgid "Reporting period: %(start)s to %(end)s"
+msgstr "Période de rapport : %(start)s au %(end)s"
+
+msgid "View aggregate compliance summary (no PII, no staff names)"
+msgstr ""
+"Consulter le résumé de conformité agrégé (aucune information personnelle, "
+"aucun nom de membre du personnel)"
+
+msgid "(no date)"
+msgstr "(pas de date)"
+
+msgid "(no program)"
+msgstr "(pas de programme)"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "A Serious Reportable Event has been flagged."
+msgstr "Un événement à déclarer obligatoirement a été signalé."
+
+msgid "All categories"
+msgstr "Toutes les catégories"
+
+msgid ""
+"An SRE category is required when flagging an event as a Serious Reportable "
+"Event."
+msgstr ""
+"Une catégorie d'ÉDO est requise lors du signalement d'un événement à "
+"déclarer obligatoirement."
+
+msgid ""
+"Are you sure you want to remove the Serious Reportable Event flag from this "
+"event?"
+msgstr ""
+"Êtes-vous sûr de vouloir retirer le signalement d'événement à déclarer "
+"obligatoirement de cet événement?"
+
+msgid "By Category"
+msgstr "Par catégorie"
+
+msgid "By Program"
+msgstr "Par programme"
+
+msgid "Create Category"
+msgstr "Créer la catégorie"
+
+msgid "Edit SRE Category"
+msgstr "Modifier la catégorie d'ÉDO"
+
+msgid "End date"
+msgstr "Date de fin"
+
+msgid ""
+"Event created and flagged as a Serious Reportable Event. Notifications have "
+"been sent."
+msgstr ""
+"Événement créé et signalé comme événement à déclarer obligatoirement. Les "
+"notifications ont été envoyées."
+
+msgid "Flag this event as a Serious Reportable Event (SRE)."
+msgstr ""
+"Signaler cet événement comme événement à déclarer obligatoirement (ÉDO)."
+
+msgid ""
+"Flag this event as a Serious Reportable Event. This will notify leadership."
+msgstr ""
+"Signaler cet événement comme événement à déclarer obligatoirement. Cela "
+"notifiera la direction."
+
+msgid "Flagged at"
+msgstr "Signalé le"
+
+msgid "Flagged by"
+msgstr "Signalé par"
+
+msgid "French Name"
+msgstr "Nom français"
+
+msgid "French description"
+msgstr "Description en français"
+
+msgid "French name"
+msgstr "Nom en français"
+
+msgid "Level 1"
+msgstr "Niveau 1"
+
+msgid "Level 1 — Immediate"
+msgstr "Niveau 1 — Immédiat"
+
+msgid "Level 2"
+msgstr "Niveau 2"
+
+msgid "Level 2 — 24h"
+msgstr "Niveau 2 — 24h"
+
+msgid "Level 2 — Within 24 hours"
+msgstr "Niveau 2 — Dans les 24 heures"
+
+msgid "Level 3"
+msgstr "Niveau 3"
+
+msgid "Level 3 — 7 days"
+msgstr "Niveau 3 — 7 jours"
+
+msgid "Level 3 — Within 7 days"
+msgstr "Niveau 3 — Dans les 7 jours"
+
+msgid ""
+"Manage the predefined list of SRE categories available to staff when "
+"flagging events."
+msgstr ""
+"Gérer la liste prédéfinie de catégories d'ÉDO disponibles pour le personnel "
+"lors du signalement d'événements."
+
+msgid "Name (English)"
+msgstr "Nom (anglais)"
+
+msgid "New SRE Category"
+msgstr "Nouvelle catégorie d'ÉDO"
+
+msgid ""
+"No SRE categories yet. Run the seed command or create one to get started."
+msgstr ""
+"Aucune catégorie d'ÉDO pour le moment. Exécutez la commande de "
+"préremplissage ou créez-en une pour commencer."
+
+msgid "No SREs found in the selected date range."
+msgstr "Aucun ÉDO trouvé dans la période sélectionnée."
+
+msgid "Remove SRE Flag"
+msgstr "Retirer le signalement d'ÉDO"
+
+msgid "SRE"
+msgstr "ÉDO"
+
+msgid "SRE Categories"
+msgstr "Catégories d'ÉDO"
+
+msgid "SRE Category"
+msgstr "Catégorie d'ÉDO"
+
+msgid "SRE Events"
+msgstr "Événements ÉDO"
+
+msgid "SRE Report"
+msgstr "Rapport d'ÉDO"
+
+msgid "SRE categories"
+msgstr "Catégories d'ÉDO"
+
+msgid "SRE category"
+msgstr "Catégorie d'ÉDO"
+
+msgid "SRE category %(name)s %(status)s."
+msgstr "Catégorie d'ÉDO %(name)s %(status)s."
+
+msgid "SRE category created."
+msgstr "Catégorie d'ÉDO créée."
+
+msgid "SRE category updated."
+msgstr "Catégorie d'ÉDO mise à jour."
+
+msgid "SRE counts by category"
+msgstr "Nombre d'ÉDO par catégorie"
+
+msgid "SRE counts by program"
+msgstr "Nombre d'ÉDO par programme"
+
+msgid "SRE flag removed from this event."
+msgstr "Le signalement d'ÉDO a été retiré de cet événement."
+
+msgid "SRE notifications sent"
+msgstr "Notifications d'ÉDO envoyées"
+
+msgid "Serious Reportable Event"
+msgstr "Événement à déclarer obligatoirement"
+
+msgid "Serious Reportable Event (SRE)"
+msgstr "Événement à déclarer obligatoirement (ÉDO)"
+
+msgid "Serious Reportable Event Categories"
+msgstr "Catégories d'événements à déclarer obligatoirement"
+
+msgid "Serious Reportable Events"
+msgstr "Événements à déclarer obligatoirement"
+
+msgid "Serious Reportable Events Report"
+msgstr "Rapport des événements à déclarer obligatoirement"
+
+msgid "Severity"
+msgstr "Gravité"
+
+msgid "Severity level"
+msgstr "Niveau de gravité"
+
+msgid ""
+"This action is audited. Un-flagging an SRE is recorded in the audit log."
+msgstr ""
+"Cette action est auditée. Le retrait d'un signalement d'ÉDO est enregistré "
+"dans le journal d'audit."
+
+msgid "This event is not flagged as an SRE."
+msgstr "Cet événement n'est pas signalé comme ÉDO."
+
+msgid "This will notify program leadership and site administrators."
+msgstr ""
+"Cela notifiera la direction du programme et les administrateurs du site."
+
+msgid "View all SREs in a date range, by program and category."
+msgstr "Voir tous les ÉDO dans une période, par programme et catégorie."
+
+msgid "View event"
+msgstr "Voir l'événement"
+
+msgid "activated"
+msgstr "activée"
+
+msgid "archived"
+msgstr "archivée"
+
+msgid ""
+"A moderate number of warnings are being confirmed. Consider widening "
+"thresholds slightly."
+msgstr ""
+"Un nombre modéré d'avertissements sont confirmés. Envisagez d'élargir "
+"légèrement les seuils."
+
+msgid "Above maximum"
+msgstr "Au-dessus du maximum"
+
+msgid "Avg Confirmed Value"
+msgstr "Valeur confirmée moyenne"
+
+msgid "Below minimum"
+msgstr "En dessous du minimum"
+
+msgid "Confirmed"
+msgstr "Confirmés"
+
+msgid "Consider reviewing threshold"
+msgstr "Envisager de réviser le seuil"
+
+msgid "Current Thresholds"
+msgstr "Seuils actuels"
+
+msgid "Filter override logs"
+msgstr "Filtrer les journaux de dérogation"
+
+msgid "Global"
+msgstr "Global"
+
+msgid "Green (< 30% override rate)"
+msgstr "Vert (< 30 % taux de dérogation)"
+
+msgid "How to Read This Dashboard"
+msgstr "Comment lire ce tableau de bord"
+
+msgid "Last year"
+msgstr "Dernière année"
+
+msgid ""
+"Most flagged values are confirmed as correct. Thresholds are likely too "
+"restrictive and should be widened."
+msgstr ""
+"La plupart des valeurs signalées sont confirmées comme correctes. Les seuils"
+" sont probablement trop restrictifs et devraient être élargis."
+
+msgid ""
+"Most flagged values are correct. Thresholds are too tight and should be "
+"widened to avoid staff ignoring warnings."
+msgstr ""
+"La plupart des valeurs signalées sont correctes. Les seuils sont trop "
+"stricts et devraient être élargis pour éviter que le personnel ignore les "
+"avertissements."
+
+msgid "No plausibility override data yet."
+msgstr "Aucune donnée de dérogation de plausibilité pour le moment."
+
+msgid "Override Rate"
+msgstr "Taux de dérogation"
+
+msgid ""
+"Override logs are recorded when staff encounter plausibility warnings during"
+" note entry and either confirm or correct flagged values. Data will appear "
+"here once warnings have been triggered."
+msgstr ""
+"Les journaux de dérogation sont enregistrés lorsque le personnel rencontre "
+"des avertissements de plausibilité lors de la saisie de notes et confirme ou"
+" corrige les valeurs signalées. Les données apparaîtront ici une fois les "
+"avertissements déclenchés."
+
+msgid "Plausibility Threshold Tuning"
+msgstr "Ajustement des seuils de plausibilité"
+
+msgid "Plausibility override rates by metric"
+msgstr "Taux de dérogation de plausibilité par indicateur"
+
+msgid "Recommendation"
+msgstr "Recommandation"
+
+msgid "Red (> 80% override rate)"
+msgstr "Rouge (> 80 % taux de dérogation)"
+
+msgid ""
+"Some warnings are unnecessary. Consider widening thresholds slightly to "
+"reduce alert fatigue."
+msgstr ""
+"Certains avertissements sont inutiles. Envisagez d'élargir légèrement les "
+"seuils pour réduire la fatigue des alertes."
+
+msgid "Staff confirmed the value"
+msgstr "Le personnel a confirmé la valeur"
+
+msgid "Staff corrected the value"
+msgstr "Le personnel a corrigé la valeur"
+
+msgid "The corrected value, if changed"
+msgstr "La valeur corrigée, si modifiée"
+
+msgid "The value that triggered the plausibility warning"
+msgstr "La valeur qui a déclenché l'avertissement de plausibilité"
+
+msgid "The warn_min or warn_max value that was breached"
+msgstr "La valeur warn_min ou warn_max qui a été dépassée"
+
+msgid ""
+"This dashboard shows how often plausibility warnings are triggered and "
+"whether staff confirm or correct flagged values. High override rates suggest"
+" thresholds may be too tight."
+msgstr ""
+"Ce tableau de bord montre la fréquence des avertissements de plausibilité et"
+" si le personnel confirme ou corrige les valeurs signalées. Des taux de "
+"dérogation élevés suggèrent que les seuils sont peut-être trop stricts."
+
+msgid "Threshold likely too tight"
+msgstr "Seuil probablement trop strict"
+
+msgid "Threshold working well"
+msgstr "Seuil fonctionnel"
+
+msgid ""
+"Thresholds are appropriately set. Most flagged values are being corrected."
+msgstr ""
+"Les seuils sont correctement définis. La plupart des valeurs signalées sont "
+"corrigées."
+
+msgid ""
+"Thresholds are working well. Most flagged values are genuine errors that "
+"staff correct."
+msgstr ""
+"Les seuils fonctionnent bien. La plupart des valeurs signalées sont de "
+"véritables erreurs que le personnel corrige."
+
+msgid "Total Warnings"
+msgstr "Total d'avertissements"
+
+msgid "Yellow (30% - 80% override rate)"
+msgstr "Jaune (30 % - 80 % taux de dérogation)"
+
+msgid "plausibility override log"
+msgstr "journal de dérogation de plausibilité"
+
+msgid "plausibility override logs"
+msgstr "journaux de dérogation de plausibilité"
+
+msgid " — %(pending)d still pending at period end"
+msgstr " — %(pending)d toujours en attente à la fin de la période"
+
+msgid "%(overdue)d exceeded 30-day statutory deadline"
+msgstr "%(overdue)d ont dépassé le délai légal de 30 jours"
+
+msgid "No privacy requests were received this period."
+msgstr "Aucune demande de confidentialité n'a été reçue durant cette période."
+
+msgid "all within statutory deadline"
+msgstr "toutes dans les délais légaux"
+
+msgid ""
+"Privacy requests processed: %(count)d (average %(days)d days, %(deadline)s)"
+msgstr ""
+"Demandes de confidentialité traitées : %(count)d (moyenne de %(days)d jours,"
+" %(deadline)s)"
+
+msgid ""
+"If true, use a cookie to discourage multiple submissions from the same "
+"browser."
+msgstr ""
+"Si vrai, utiliser un témoin pour décourager les soumissions multiples depuis"
+" le même navigateur."
+
+msgid "Limit to one response per browser (uses a cookie)"
+msgstr "Limiter à une réponse par navigateur (utilise un témoin)"
+
+msgid "Already Responded"
+msgstr "Déjà répondu"
+
+msgid "First name or nickname (optional)"
+msgstr "Prénom ou surnom (facultatif)"
+
+msgid "Additional questions appeared below."
+msgstr "Des questions supplémentaires sont apparues ci-dessous."
+
+msgid "You have already submitted a response to \"%(name)s\"."
+msgstr "Vous avez déjà soumis une réponse à « %(name)s »."
+
+msgid "Page"
+msgstr "Page"
+
+msgid ""
+"Event updated and flagged as a Serious Reportable Event. Notifications have "
+"been sent."
+msgstr ""
+"Événement mis à jour et signalé comme un événement indésirable grave. Des "
+"notifications ont été envoyées."
+
+msgid "Event updated."
+msgstr "Événement mis à jour."
+
+msgid "Too many requests. Please wait a few minutes before trying again."
+msgstr "Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
+
+msgid "Data & Measurement"
+msgstr "Données et mesure"
+
+msgid "People & Access"
+msgstr "Personnes et accès"
+
+msgid "Organisation & Branding"
+msgstr "Organisation et image de marque"
+
+msgid "Reporting"
+msgstr "Rapports"
+
+msgid "Tools"
+msgstr "Outils"
+
+msgid ""
+"Manage the measurement scales and achievement metrics used in outcome plans."
+msgstr ""
+"Gérer les échelles de mesure et les indicateurs de réalisation utilisés dans"
+" les plans de résultats."
+
+msgid "Manage Metrics"
+msgstr "Gérer les indicateurs"
+
+msgid "Plausibility Tuning"
+msgstr "Ajustement de plausibilité"
+
+msgid ""
+"Monitor how often plausibility warnings are triggered and whether thresholds"
+" need adjusting."
+msgstr ""
+"Surveiller la fréquence des avertissements de plausibilité et déterminer si "
+"les seuils doivent être ajustés."
+
+msgid "All thresholds look good"
+msgstr "Tous les seuils semblent adéquats"
+
+msgid "View Dashboard"
+msgstr "Voir le tableau de bord"
+
+msgid ""
+"Define reusable outcome plan structures that can be applied to new "
+"participants."
+msgstr ""
+"Définir des structures de plan de résultats réutilisables pouvant être "
+"appliquées aux nouveaux participants."
+
+msgid "Legal name, address, sector codes, and backup reminders."
+msgstr ""
+"Dénomination sociale, adresse, codes sectoriels et rappels de sauvegarde."
+
+msgid "Manage Profile"
+msgstr "Gérer le profil"
+
+msgid "About this page"
+msgstr "À propos de cette page"
+
+msgid "Tip"
+msgstr "Conseil"
+
+msgid ""
+"Terminology lets you change the words used throughout KoNote. For example, "
+"rename \"Participant\" to \"Client\" or \"Youth.\" Changes take effect "
+"immediately for all users. French terms are shown when a user's language "
+"preference is set to French."
+msgstr ""
+"La terminologie vous permet de modifier les mots utilisés dans KoNote. Par "
+"exemple, renommez « Participant » en « Client » ou « Jeune ». Les "
+"modifications prennent effet immédiatement pour tous les utilisateurs. Les "
+"termes en français sont affichés lorsque la préférence linguistique de "
+"l’utilisateur est le français."
+
+msgid ""
+"Feature toggles turn modules on or off for your whole organisation. "
+"Disabling a feature hides it from all users but preserves existing data. "
+"Some features depend on others — the confirmation dialog will show you the "
+"impact before you commit."
+msgstr ""
+"Les bascules de fonctionnalités activent ou désactivent des modules pour "
+"toute votre organisation. Désactiver une fonctionnalité la masque pour tous "
+"les utilisateurs mais préserve les données existantes. Certaines "
+"fonctionnalités dépendent d’autres — la boîte de confirmation vous montrera "
+"l’impact avant de valider."
+
+msgid ""
+"Instance settings control branding, date format, session timeout, and "
+"external integrations like document storage. These settings affect everyone "
+"who uses this KoNote instance."
+msgstr ""
+"Les paramètres d’instance contrôlent l’image de marque, le format de date, "
+"le délai d’expiration de session et les intégrations externes comme le "
+"stockage de documents. Ces paramètres affectent tous les utilisateurs de "
+"cette instance KoNote."
+
+msgid ""
+"Higher tiers add more controls but also more steps for staff. Most "
+"organisations start at Tier 1 and move up when they need finer control."
+msgstr ""
+"Les niveaux supérieurs ajoutent plus de contrôles mais aussi plus d’étapes "
+"pour le personnel. La plupart des organisations commencent au niveau 1 et "
+"progressent lorsqu’elles ont besoin d’un contrôle plus fin."
+
+msgid ""
+"Field access controls what the front desk role can see and edit on "
+"participant records. Workers, managers, and executives always have full "
+"access. Identity fields (name, record ID) are always visible and cannot be "
+"hidden."
+msgstr ""
+"Le contrôle d’accès aux champs détermine ce que le rôle de réception peut "
+"voir et modifier dans les dossiers des participants. Les intervenants, "
+"gestionnaires et cadres ont toujours un accès complet. Les champs d’identité"
+" (nom, numéro de dossier) sont toujours visibles et ne peuvent pas être "
+"masqués."
+
+msgid ""
+"Messaging settings control how KoNote communicates with participants via "
+"email and SMS. Safety-First mode disables all outbound messaging for "
+"organisations where contacting participants could create safety risks."
+msgstr ""
+"Les paramètres de messagerie contrôlent la façon dont KoNote communique avec"
+" les participants par courriel et SMS. Le mode Sécurité d’abord désactive "
+"toute messagerie sortante pour les organisations où contacter les "
+"participants pourrait créer des risques de sécurité."
+
+msgid ""
+"Standard SMS messages are limited to 160 characters. Longer messages may be "
+"split into multiple texts, which can increase costs."
+msgstr ""
+"Les messages SMS standards sont limités à 160 caractères. Les messages plus "
+"longs peuvent être divisés en plusieurs textes, ce qui peut augmenter les "
+"coûts."
+
+msgid "characters"
+msgstr "caractères"
+
+msgid ""
+"This dashboard shows how often plausibility warnings are triggered and "
+"whether staff confirm or correct the flagged values. A high override rate "
+"means the thresholds are too tight — staff are getting warnings for values "
+"that turn out to be correct. Use this information to adjust metric "
+"thresholds in the Metric Library."
+msgstr ""
+"Ce tableau de bord montre la fréquence des avertissements de plausibilité et"
+" si le personnel confirme ou corrige les valeurs signalées. Un taux de "
+"dérogation élevé signifie que les seuils sont trop serrés — le personnel "
+"reçoit des avertissements pour des valeurs qui s’avèrent correctes. Utilisez"
+" ces informations pour ajuster les seuils des indicateurs dans la "
+"bibliothèque d’indicateurs."
+
+msgid ""
+"A high override rate (red) means staff are constantly confirming flagged "
+"values as correct. This causes alert fatigue. Edit the metric's warning "
+"thresholds in the Metric Library to widen the accepted range."
+msgstr ""
+"Un taux de dérogation élevé (rouge) signifie que le personnel confirme "
+"constamment les valeurs signalées comme correctes. Cela cause une fatigue "
+"d’alerte. Modifiez les seuils d’avertissement de l’indicateur dans la "
+"bibliothèque d’indicateurs pour élargir la plage acceptée."
+
+msgid ""
+"The metric library contains all measurement scales and achievement metrics "
+"available for outcome plans. Library metrics are built-in. Custom metrics "
+"are specific to your organisation. Disabled metrics are hidden from staff "
+"but their historical data is preserved."
+msgstr ""
+"La bibliothèque d’indicateurs contient toutes les échelles de mesure et les "
+"indicateurs de réalisation disponibles pour les plans de résultats. Les "
+"indicateurs de bibliothèque sont intégrés. Les indicateurs personnalisés "
+"sont propres à votre organisation. Les indicateurs désactivés sont masqués "
+"pour le personnel mais leurs données historiques sont préservées."
+
+msgid "Filter by category"
+msgstr "Filtrer par catégorie"
+
+msgid ""
+"Check the Plausibility Tuning Dashboard (in Admin Settings) to see how often"
+" each threshold triggers in practice."
+msgstr ""
+"Consultez le tableau de bord d’ajustement de plausibilité (dans les "
+"paramètres d’administration) pour voir la fréquence de déclenchement de "
+"chaque seuil en pratique."
+
+msgid "The name shown when staff select this metric for a goal."
+msgstr ""
+"Le nom affiché lorsque le personnel sélectionne cet indicateur pour un "
+"objectif."
+
+msgid ""
+"French name, shown when a user's language is French. Leave blank to use the "
+"English name."
+msgstr ""
+"Nom en français, affiché lorsque la langue de l’utilisateur est le français."
+" Laisser vide pour utiliser le nom anglais."
+
+msgid ""
+"Describe what this metric measures and how to score it. Shown to staff "
+"during note entry."
+msgstr ""
+"Décrivez ce que cet indicateur mesure et comment l’évaluer. Affiché au "
+"personnel lors de la saisie de notes."
+
+msgid "French definition. Leave blank to use the English definition."
+msgstr ""
+"Définition en français. Laisser vide pour utiliser la définition anglaise."
+
+msgid ""
+"Uncheck for metrics where lower scores indicate improvement (e.g. PHQ-9 "
+"depression scale)."
+msgstr ""
+"Décochez pour les indicateurs où des scores plus bas indiquent une "
+"amélioration (p. ex. échelle de dépression PHQ-9)."
+
+msgid "Soft warning minimum. Values below this trigger a plausibility alert."
+msgstr ""
+"Avertissement souple minimum. Les valeurs inférieures à ce seuil déclenchent"
+" une alerte de plausibilité."
+
+msgid "Soft warning maximum. Values above this trigger a plausibility alert."
+msgstr ""
+"Avertissement souple maximum. Les valeurs supérieures à ce seuil déclenchent"
+" une alerte de plausibilité."
+
+msgid "%(count)d metric with high override rate"
+msgid_plural "%(count)d metrics with high override rate"
+msgstr[0] "%(count)d indicateur avec un taux de dérogation élevé"
+msgstr[1] "%(count)d indicateurs avec un taux de dérogation élevé"

@@ -457,7 +457,108 @@ class ExportAgencyDataTests(TestCase):
                 note = ep["progress_notes"][0]
                 self.assertEqual(note.get("notes_text"), "Client is making progress")
 
-    # ── 14. Plan target name is decrypted ─────────────────────────────
+    # ── 14. Demo data excluded by default ──────────────────────────────
+
+    def test_demo_clients_excluded_by_default(self):
+        """Demo clients should not appear in exports unless --include-demo."""
+        from apps.clients.models import ClientFile
+
+        demo_client = ClientFile.objects.create(is_demo=True)
+        demo_client.first_name = "DemoUser"
+        demo_client.last_name = "Testing"
+        demo_client.save()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True)
+
+            files = _unzip_bytes(open(out_path, "rb").read())
+
+            # Nested clients_complete.json
+            cc_file = [f for f in files if "clients_complete.json" in f][0]
+            data = json.loads(files[cc_file])
+            names = [c.get("first_name") for c in data["clients"]]
+            self.assertNotIn("DemoUser", names)
+            self.assertIn("Jane", names)
+
+            # Flat clients_clientfile.json
+            flat_file = [f for f in files if "clients_clientfile.json" in f][0]
+            flat_records = json.loads(files[flat_file])
+            flat_names = [r.get("first_name") for r in flat_records]
+            self.assertNotIn("DemoUser", flat_names)
+            self.assertIn("Jane", flat_names)
+
+    # ── 15. --include-demo flag ──────────────────────────────────────
+
+    def test_include_demo_flag_includes_demo_clients(self):
+        """--include-demo should include demo clients in the export."""
+        from apps.clients.models import ClientFile
+
+        demo_client = ClientFile.objects.create(is_demo=True)
+        demo_client.first_name = "DemoUser2"
+        demo_client.last_name = "Testing"
+        demo_client.save()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True, include_demo=True)
+
+            files = _unzip_bytes(open(out_path, "rb").read())
+            cc_file = [f for f in files if "clients_complete.json" in f][0]
+            data = json.loads(files[cc_file])
+
+            names = [c.get("first_name") for c in data["clients"]]
+            self.assertIn("DemoUser2", names)
+
+    # ── 16. Related records for demo clients excluded ─────────────────
+
+    def test_demo_client_related_records_excluded(self):
+        """Progress notes linked to demo clients should be excluded from flat files."""
+        from apps.clients.models import ClientFile
+        from apps.notes.models import ProgressNote
+
+        demo_client = ClientFile.objects.create(is_demo=True)
+        demo_client.first_name = "DemoRelated"
+        demo_client.last_name = "Testing"
+        demo_client.save()
+
+        demo_note = ProgressNote.objects.create(
+            client_file=demo_client,
+            note_type="quick",
+            author=self.user,
+            author_program=self.program,
+        )
+        demo_note.notes_text = "Demo note should not appear"
+        demo_note.save()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True)
+
+            files = _unzip_bytes(open(out_path, "rb").read())
+            notes_file = [f for f in files if "notes_progressnote.json" in f][0]
+            notes_records = json.loads(files[notes_file])
+            note_ids = [r.get("id") for r in notes_records]
+            self.assertNotIn(demo_note.pk, note_ids)
+            # Real note should still be present
+            self.assertIn(self.note.pk, note_ids)
+
+    # ── 17. Audit log records include_demo flag ──────────────────────
+
+    def test_audit_log_records_include_demo(self):
+        """Audit metadata should record whether --include-demo was used."""
+        from apps.audit.models import AuditLog
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True, include_demo=True)
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="agency_data_export"
+        ).latest("event_timestamp")
+        self.assertTrue(log.metadata["include_demo"])
+
+    # ── 18. Plan target name is decrypted ─────────────────────────────
 
     def test_plan_target_decrypted_in_nested(self):
         with tempfile.TemporaryDirectory() as tmpdir:

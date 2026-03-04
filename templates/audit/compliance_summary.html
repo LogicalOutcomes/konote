@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Compliance Summary" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .compliance-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+        gap: var(--kn-space-md);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .stat-card {
+        background: var(--kn-card-bg, var(--pico-card-background-color));
+        border: 1px solid var(--kn-border, var(--pico-muted-border-color));
+        border-radius: var(--kn-radius, var(--pico-border-radius));
+        padding: var(--kn-space-md);
+        text-align: center;
+    }
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .stat-card .stat-label {
+        font-size: 0.8125rem;
+        color: var(--kn-text-muted, var(--pico-muted-color));
+        margin-top: var(--kn-space-xs);
+    }
+    .anomaly-list {
+        list-style: none;
+        padding: 0;
+    }
+    .anomaly-list li {
+        padding: var(--kn-space-sm) var(--kn-space-md);
+        margin-bottom: var(--kn-space-xs);
+        border-left: 3px solid var(--kn-warning-fg, #e0a800);
+        background: var(--kn-card-bg, var(--pico-card-background-color));
+    }
+    .anomaly-type {
+        font-weight: 600;
+    }
+    @media print {
+        nav, .compliance-filters, .no-print { display: none !important; }
+        .stat-card { break-inside: avoid; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <hgroup>
+        <h1>{% trans "Compliance Summary" %}</h1>
+        <p>{% trans "Aggregate privacy and access metrics for board accountability (PIPEDA 4.1.4). No individual participant or staff names are shown." %}</p>
+    </hgroup>
+
+    {# ---- Period filter ---- #}
+    <form method="get" action="" class="compliance-filters no-print">
+        <div class="grid">
+            <label for="date_from">
+                {% trans "From" %}
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+            </label>
+            <label for="date_to">
+                {% trans "To" %}
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+            </label>
+            <div style="display:flex; align-items:flex-end; gap:0.5rem;">
+                <button type="submit">{% trans "Update" %}</button>
+                <a href="{% url 'audit:compliance_summary' %}" role="button" class="secondary outline">{% trans "Reset" %}</a>
+                <button type="button" class="contrast outline" onclick="window.print()">{% trans "Print" %}</button>
+            </div>
+        </div>
+    </form>
+
+    <p><small>{% blocktrans with start=period_start|date:"Y-m-d" end=period_end|date:"Y-m-d" %}Reporting period: {{ start }} to {{ end }}{% endblocktrans %}</small></p>
+
+    {# ---- Summary stats ---- #}
+    <h2>{% trans "Overview" %}</h2>
+    <div class="compliance-stats">
+        <div class="stat-card" role="group" aria-label="{% trans 'Total audit events' %}: {{ total_events }}">
+            <div class="stat-value" id="stat-total-events">{{ total_events }}</div>
+            <div class="stat-label" id="stat-total-events-label">{% trans "Total audit events" %}</div>
+        </div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Active users' %}: {{ active_user_count }}">
+            <div class="stat-value" id="stat-active-users">{{ active_user_count }}</div>
+            <div class="stat-label" id="stat-active-users-label">{% trans "Active users" %}</div>
+        </div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Data exports' %}: {{ export_count }}">
+            <div class="stat-value" id="stat-exports">{{ export_count }}</div>
+            <div class="stat-label" id="stat-exports-label">{% trans "Data exports" %}</div>
+        </div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Access denied' %}: {{ access_denied_count }}">
+            <div class="stat-value" id="stat-access-denied">{{ access_denied_count }}</div>
+            <div class="stat-label" id="stat-access-denied-label">{% trans "Access denied" %}</div>
+        </div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Failed logins' %}: {{ login_failed_count }}">
+            <div class="stat-value" id="stat-failed-logins">{{ login_failed_count }}</div>
+            <div class="stat-label" id="stat-failed-logins-label">{% trans "Failed logins" %}</div>
+        </div>
+        <div class="stat-card" role="group" aria-label="{% trans 'Anomaly flags' %}: {{ anomaly_count }}">
+            <div class="stat-value" id="stat-anomalies">{{ anomaly_count }}</div>
+            <div class="stat-label" id="stat-anomalies-label">{% trans "Anomaly flags" %}</div>
+        </div>
+    </div>
+
+    {# ---- Record types accessed ---- #}
+    {% if resource_type_display %}
+    <h2>{% trans "Records Accessed by Type" %}</h2>
+    <figure>
+        <table role="grid" aria-label="{% trans 'Record access by type' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Record Type" %}</th>
+                    <th scope="col" style="text-align:right;">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resource_type, count in resource_type_display.items %}
+                <tr>
+                    <td>{{ resource_type }}</td>
+                    <td style="text-align:right;">{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </figure>
+    {% endif %}
+
+    {# ---- Exports by role ---- #}
+    {% if export_by_role %}
+    <h2>{% trans "Exports by Role" %}</h2>
+    <figure>
+        <table role="grid" aria-label="{% trans 'Export events by role' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Role" %}</th>
+                    <th scope="col" style="text-align:right;">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for role, count in export_by_role.items %}
+                <tr>
+                    <td>{{ role|title }}</td>
+                    <td style="text-align:right;">{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </figure>
+    {% endif %}
+
+    {# ---- Anomalies ---- #}
+    <h2>{% trans "Anomaly Flags" %}</h2>
+    {% if anomalies %}
+    <p>{% trans "The following unusual patterns were detected during this period. Contact your administrator to investigate specific incidents." %}</p>
+    <ul class="anomaly-list">
+        {% for anomaly in anomalies %}
+        <li>
+            <span class="anomaly-type">{{ anomaly.type }}:</span>
+            {{ anomaly.detail }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>{% trans "No anomalies detected during this period." %}</p>
+    {% endif %}
+
+    {# ---- Escalation guidance ---- #}
+    <details class="no-print">
+        <summary>{% trans "How to use this report" %}</summary>
+        <p>{% trans "This summary shows aggregate compliance metrics — no individual participant or staff names are displayed. This is by design (PIPEDA principle of limiting collection)." %}</p>
+        <ol>
+            <li>{% trans "Review the overview statistics and anomaly flags above." %}</li>
+            <li>{% trans "If an anomaly needs investigation, note the date and type." %}</li>
+            <li>{% trans "Contact your administrator to investigate specific incidents. They have access to detailed audit log entries." %}</li>
+        </ol>
+        <p>{% trans "Use the Print button to include this summary in board reports." %}</p>
+    </details>
+</div>
+{% endblock %}

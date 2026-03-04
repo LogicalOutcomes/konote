@@ -1,7 +1,59 @@
 """Events and alerts for client timelines."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+
+class SRECategory(models.Model):
+    """Serious Reportable Event category — predefined list, configurable per agency.
+
+    Canadian nonprofits in housing, mental health, addictions, and youth services
+    must track and report critical incidents. Categories follow MCCSS, PHIPA,
+    and OHSA requirements.
+    """
+
+    SEVERITY_CHOICES = [
+        (1, _("Level 1 — Immediate")),
+        (2, _("Level 2 — Within 24 hours")),
+        (3, _("Level 3 — Within 7 days")),
+    ]
+
+    name = models.CharField(max_length=100)
+    name_fr = models.CharField(max_length=100, blank=True, default="", help_text=_("French name"))
+    description = models.TextField(blank=True)
+    description_fr = models.TextField(blank=True, default="", help_text=_("French description"))
+    severity = models.IntegerField(
+        choices=SEVERITY_CHOICES,
+        default=2,
+    )
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "events"
+        db_table = "sre_categories"
+        ordering = ["display_order", "name"]
+        verbose_name = _("SRE category")
+        verbose_name_plural = _("SRE categories")
+
+    def get_translated_name(self):
+        """Return the French name if the active language is French and a translation exists."""
+        from django.utils.translation import get_language
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
+
+    def get_translated_description(self):
+        """Return the French description if the active language is French and a translation exists."""
+        from django.utils.translation import get_language
+        if get_language() == "fr" and self.description_fr:
+            return self.description_fr
+        return self.description
+
+    def __str__(self):
+        return self.get_translated_name()
 
 
 class EventType(models.Model):
@@ -46,10 +98,50 @@ class Event(models.Model):
     backdate = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # --- Serious Reportable Event (SRE) fields ---
+    is_sre = models.BooleanField(
+        default=False,
+        verbose_name=_("Serious Reportable Event"),
+        help_text=_("Flag this event as a Serious Reportable Event (SRE)."),
+    )
+    sre_category = models.ForeignKey(
+        SRECategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="events",
+        verbose_name=_("SRE category"),
+    )
+    sre_flagged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sre_flagged_events",
+        verbose_name=_("Flagged by"),
+    )
+    sre_flagged_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_("Flagged at"),
+    )
+    sre_notifications_sent = models.BooleanField(
+        default=False,
+        verbose_name=_("SRE notifications sent"),
+    )
+
     class Meta:
         app_label = "events"
         db_table = "events"
         ordering = ["-start_timestamp"]
+
+    def clean(self):
+        """Validate SRE fields: category is required when flagged as SRE."""
+        super().clean()
+        if self.is_sre and not self.sre_category_id:
+            raise ValidationError({
+                "sre_category": _("An SRE category is required when flagging an event as a Serious Reportable Event."),
+            })
 
     def __str__(self):
         # Use title if available, otherwise event type, otherwise generic

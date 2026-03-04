@@ -40,6 +40,17 @@
     </p>
     {% endif %}
 
+    {% if feature_key == "ai_assist_participant_data" and action == "enable" %}
+    <div style="border-left: 3px solid var(--pico-primary); padding-left: 0.75rem; margin: 0.5rem 0;">
+        <p style="margin-bottom: 0.25rem; font-size: 0.875rem;">
+            <strong>{% trans "Privacy governance notice" %}</strong>
+        </p>
+        <p style="font-size: 0.8125rem; margin-bottom: 0;">
+            {% trans "Enabling this feature means de-identified participant responses will be sent to an external AI service for analysis. Individual names are removed, but response content is processed externally. Please confirm your agency has reviewed this with your privacy officer or board." %}
+        </p>
+    </div>
+    {% endif %}
+
     {% if user.is_demo %}
     <p class="secondary" style="margin-top: 0.5rem; margin-bottom: 0; font-size: 0.8125rem;">
         {% trans "Demo accounts cannot modify settings. Sign in with a real administrator account to make changes." %}

@@ -155,13 +155,19 @@
             {% if can_see_insights %}
             <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Insights" %}</a></li>
             {% endif %}
-            {% if can_see_reports or user.is_admin %}
+            {% has_permission "compliance.view_summary" as can_see_compliance %}
+            {% if can_see_reports or user.is_admin or can_see_compliance %}
             <li>
                 <details class="dropdown">
-                    <summary aria-haspopup="menu"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
+                    <summary aria-haspopup="menu"{% if nav_active == "reports" or nav_active == "compliance" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
                     <ul role="menu">
+                        {% if can_see_reports or user.is_admin %}
                         <li role="none"><a role="menuitem" href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'reports:export_form' %}">{% trans "Custom Export" %}</a></li>
+                        {% endif %}
+                        {% if can_see_compliance %}
+                        <li role="none"><a role="menuitem" href="{% url 'audit:compliance_summary' %}">{% trans "Compliance Summary" %}</a></li>
+                        {% endif %}
                     </ul>
                 </details>
             </li>
@@ -381,7 +387,14 @@
         loading: "{% trans 'Loading…' %}",
         resultsLoaded: "{% trans 'Results loaded.' %}",
         selected: "{% trans 'selected' %}",
-        "on this page": "{% trans 'on this page' %}"
+        "on this page": "{% trans 'on this page' %}",
+        confirm_this_value: "{% trans 'Confirm this value' %}",
+        click_again_to_confirm: "{% trans 'Click again to confirm' %}",
+        value_confirmed: "{% trans 'Value confirmed.' %}",
+        plausibility_tier2: "{% trans 'This value ({value}) is extremely unlikely for {metric}. This is almost certainly a data-entry error. Please re-check and confirm twice if correct.' %}",
+        plausibility_high: "{% trans 'This value ({value}) is unusually high for {metric}. Please double-check. If correct, click Confirm.' %}",
+        plausibility_low: "{% trans 'This value ({value}) is unusually low for {metric}. Please double-check. If correct, click Confirm.' %}",
+        rate_limited: "{% trans 'Too many requests. Please wait a few minutes before trying again.' %}"
     };
     </script>
     <!-- App JS — CSRF handling, error handlers -->

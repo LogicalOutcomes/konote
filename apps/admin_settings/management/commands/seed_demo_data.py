@@ -3574,13 +3574,13 @@ class Command(BaseCommand):
         for sd in submission_data:
             sub = RegistrationSubmission(
                 registration_link=link,
-                field_values=sd["field_values"],
                 status=sd["status"],
             )
             sub.first_name = sd["first_name"]
             sub.last_name = sd["last_name"]
             sub.email = sd["email"]
             sub.phone = sd["phone"]
+            sub.field_values = sd["field_values"]
             sub.save()
 
             # Backdate submitted_at and optionally set reviewed_at/reviewed_by
@@ -4050,29 +4050,40 @@ class Command(BaseCommand):
         # --- Trigger Rule: auto-assign satisfaction survey on enrolment ---
         employment = programs_by_name.get("Supported Employment")
         if satisfaction and employment:
-            SurveyTriggerRule.objects.get_or_create(
+            existing_rules = SurveyTriggerRule.objects.filter(
                 survey=satisfaction,
                 trigger_type="enrolment",
                 program=employment,
-                defaults={
-                    "repeat_policy": "once_per_participant",
-                    "auto_assign": True,
-                    "due_days": 30,
-                    "is_active": True,
-                    "created_by": created_by,
-                },
             )
+            if existing_rules.count() > 1:
+                # Remove duplicates that accumulate across re-seeds (no unique constraint)
+                keep_pk = existing_rules.first().pk
+                existing_rules.exclude(pk=keep_pk).delete()
+            elif not existing_rules.exists():
+                SurveyTriggerRule.objects.create(
+                    survey=satisfaction,
+                    trigger_type="enrolment",
+                    program=employment,
+                    repeat_policy="once_per_participant",
+                    auto_assign=True,
+                    due_days=30,
+                    is_active=True,
+                    created_by=created_by,
+                )
 
         # --- Shareable Link for satisfaction survey ---
         if satisfaction:
-            SurveyLink.objects.get_or_create(
-                survey=satisfaction,
-                defaults={
-                    "is_active": True,
-                    "collect_name": True,
-                    "created_by": created_by,
-                },
-            )
+            existing_links = SurveyLink.objects.filter(survey=satisfaction)
+            if existing_links.count() > 1:
+                keep_pk = existing_links.first().pk
+                existing_links.exclude(pk=keep_pk).delete()
+            elif not existing_links.exists():
+                SurveyLink.objects.create(
+                    survey=satisfaction,
+                    is_active=True,
+                    collect_name=True,
+                    created_by=created_by,
+                )
 
         # --- Assignments and Responses ---
         portal_clients = [

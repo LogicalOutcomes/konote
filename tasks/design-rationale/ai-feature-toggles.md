@@ -2,7 +2,7 @@
 
 Task ID: AI-TOGGLE1
 Date: 2026-02-25
-Status: Draft — GK reviews before implementation
+Status: Implemented — two-tier toggle split shipped (migration 0006, admin UI, seed command)
 Expert panel: Canadian Privacy & Health Information Specialist, Nonprofit Technology Governance Advisor, Data Sovereignty & AI Ethics Specialist, Software Architect
 
 ---

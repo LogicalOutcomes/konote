@@ -1,5 +1,7 @@
 """Self-service registration models."""
 import hashlib
+import hmac
+import json
 import secrets
 import string
 from datetime import datetime
@@ -141,8 +143,8 @@ class RegistrationSubmission(models.Model):
     # For duplicate detection without decryption
     email_hash = models.CharField(max_length=64, blank=True, db_index=True)
 
-    # Custom field values stored as JSON
-    field_values = models.JSONField(default=dict, blank=True)
+    # Custom field values — encrypted at rest (may contain sensitive PII)
+    _field_values_encrypted = models.BinaryField(default=b"", blank=True)
 
     # Status tracking
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
@@ -194,7 +196,7 @@ class RegistrationSubmission(models.Model):
         if self._email_encrypted:
             email = self.email.lower().strip() if self.email else ""
             if email:
-                self.email_hash = hashlib.sha256(email.encode()).hexdigest()
+                self.email_hash = self._compute_email_hash(email)
 
         super().save(*args, **kwargs)
 
@@ -231,11 +233,19 @@ class RegistrationSubmission(models.Model):
     @email.setter
     def email(self, value):
         self._email_encrypted = encrypt_field(value)
-        # Update hash when email is set
         if value:
-            self.email_hash = hashlib.sha256(value.lower().strip().encode()).hexdigest()
+            self.email_hash = self._compute_email_hash(value.lower().strip())
         else:
             self.email_hash = ""
+
+    @staticmethod
+    def _compute_email_hash(email):
+        """Keyed HMAC-SHA-256 hash matching the portal's pattern."""
+        return hmac.new(
+            settings.EMAIL_HASH_KEY.encode(),
+            email.encode(),
+            hashlib.sha256,
+        ).hexdigest()
 
     @property
     def phone(self):
@@ -247,6 +257,27 @@ class RegistrationSubmission(models.Model):
     @phone.setter
     def phone(self, value):
         self._phone_encrypted = encrypt_field(value)
+
+    # --- Encrypted property: field_values (JSON) ---
+
+    @property
+    def field_values(self):
+        """Decrypt and deserialise custom field values from encrypted storage."""
+        if not self._field_values_encrypted:
+            return {}
+        try:
+            raw = decrypt_field(self._field_values_encrypted)
+            return json.loads(raw) if raw else {}
+        except (DecryptionError, json.JSONDecodeError):
+            return {}
+
+    @field_values.setter
+    def field_values(self, value):
+        """Serialise and encrypt custom field values for storage."""
+        if value:
+            self._field_values_encrypted = encrypt_field(json.dumps(value))
+        else:
+            self._field_values_encrypted = b""
 
     def get_status_display_class(self):
         """Return CSS class for status badge styling."""

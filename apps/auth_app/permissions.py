@@ -86,6 +86,10 @@ PERMISSIONS = {
         "alert.recommend_cancel": DENY,  # Front desk have no alert access
         "alert.review_cancel_recommendation": DENY,
 
+        "sre.flag": DENY,          # Front desk cannot flag SREs
+        "sre.unflag": DENY,        # Front desk cannot un-flag SREs
+        "sre.view_report": DENY,   # Front desk have no SRE report access
+
         "custom_field.view": PER_FIELD,  # Uses field.front_desk_access setting
         "custom_field.edit": PER_FIELD,
 
@@ -106,6 +110,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "compliance.view_summary": DENY,  # No compliance oversight
 
         # PM admin features — receptionist has no access
         "template.plan.manage": DENY,
@@ -189,6 +194,11 @@ PERMISSIONS = {
                                            # Enforced by @requires_permission
         "alert.review_cancel_recommendation": DENY,  # Only PMs review recommendations
 
+        "sre.flag": PROGRAM,       # Staff can flag events as SREs within their program.
+                                    # Enforced by @requires_permission
+        "sre.unflag": DENY,        # Un-flagging is admin-only (immutable once set)
+        "sre.view_report": DENY,   # Staff don't have SRE report access
+
         "custom_field.view": PROGRAM,
         "custom_field.edit": PROGRAM,
 
@@ -209,6 +219,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "compliance.view_summary": DENY,  # No compliance oversight
 
         # PM admin features — staff has no access
         "template.plan.manage": DENY,
@@ -294,6 +305,11 @@ PERMISSIONS = {
         "alert.review_cancel_recommendation": ALLOW,  # PMs review staff recommendations.
                                                        # Enforced by @requires_permission
 
+        "sre.flag": ALLOW,         # PMs can flag events as SREs. Enforced by @requires_permission
+        "sre.unflag": DENY,        # Un-flagging is admin-only (immutable once set)
+        "sre.view_report": ALLOW,  # PMs view SRE reports for their programs.
+                                    # Enforced by @requires_permission
+
         "custom_field.view": ALLOW,  # Phase 3: GATED
         "custom_field.edit": DENY,
 
@@ -320,6 +336,7 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": PROGRAM,  # Own program only. Enforced by @requires_permission
         "audit.view": PROGRAM,  # QA oversight for own program. Enforced by @requires_permission
+        "compliance.view_summary": DENY,  # PMs use audit.view for their program instead
 
         # PM admin features — PMs manage these for their own programs
         "template.plan.manage": PROGRAM,  # Create/edit plan templates in own program
@@ -397,6 +414,11 @@ PERMISSIONS = {
         "alert.recommend_cancel": DENY,
         "alert.review_cancel_recommendation": DENY,
 
+        "sre.flag": DENY,          # Executives don't flag individual events
+        "sre.unflag": DENY,        # Executives don't un-flag individual events
+        "sre.view_report": ALLOW,  # Executives view aggregate SRE reports for board/funder.
+                                    # Enforced by @requires_permission
+
         "custom_field.view": DENY,
         "custom_field.edit": DENY,
 
@@ -417,7 +439,8 @@ PERMISSIONS = {
         "user.manage": DENY,  # Override to ALLOW if executive is operational ED
         "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
         "program.manage": DENY,  # Override to ALLOW if executive is operational ED
-        "audit.view": DENY,   # Executive has no audit access
+        "audit.view": DENY,   # Executive has no raw audit log access
+        "compliance.view_summary": ALLOW,  # Aggregate compliance metrics for board reporting (PIPEDA 4.1.4)
 
         # PM admin features — executives don't manage templates/config
         "template.plan.manage": DENY,
@@ -557,6 +580,10 @@ def permission_to_plain_english(perm_key, perm_level):
         "alert.recommend_cancel": "Recommend cancellation of a safety alert (for PM review)",
         "alert.review_cancel_recommendation": "Approve or reject alert cancellation recommendations",
 
+        "sre.flag": "Flag an event as a Serious Reportable Event (SRE)",
+        "sre.unflag": "Remove the SRE flag from an event (admin-only)",
+        "sre.view_report": "View the Serious Reportable Events report",
+
         "custom_field.view": "View custom fields",
         "custom_field.edit": "Edit custom fields",
 
@@ -582,6 +609,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "settings.manage": "Change system configuration, feature toggles, and terminology",
         "program.manage": "Create, edit, or archive programs",
         "audit.view": "View the audit log",
+        "compliance.view_summary": "View aggregate compliance summary (no PII, no staff names)",
 
         # PM admin features
         "template.plan.manage": "Create, edit, or delete plan templates",

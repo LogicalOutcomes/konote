@@ -119,6 +119,12 @@ PERMISSION_URL_MAP = {
     # Insights
     "insights.view": {"url": "/reports/insights/"},
 
+    # Compliance / SRE keys
+    "compliance.view_summary": {"url": "/manage/audit/compliance/", "skip": "allow_admin_or_permission"},
+    "sre.view_report": {"url": "/events/sre/report/", "skip": "allow_admin_or_permission"},
+    "sre.flag": {"skip": "embedded_in_event_create"},
+    "sre.unflag": {"skip": "admin_only_decorator"},
+
     # Attendance keys
     "attendance.check_in": {"skip": "view_level"},
     "attendance.view_report": {"skip": "view_level"},

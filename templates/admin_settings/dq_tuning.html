@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Plausibility Threshold Tuning" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Plausibility Threshold Tuning" %}</h1>
+
+{% include "admin_settings/_page_help.html" with content=_('This dashboard shows how often plausibility warnings are triggered and whether staff confirm or correct the flagged values. A high override rate means the thresholds are too tight — staff are getting warnings for values that turn out to be correct. Use this information to adjust metric thresholds in the Metric Library.') %}
+
+{% include "admin_settings/_tip.html" with text=_('A high override rate (red) means staff are constantly confirming flagged values as correct. This causes alert fatigue. Edit the metric\'s warning thresholds in the Metric Library to widen the accepted range.') %}
+
+<form method="get" role="search" aria-label="{% trans 'Filter override logs' %}">
+    <div class="grid" style="align-items: end;">
+        <label for="days">
+            {% trans "Time period" %}
+            <select name="days" id="days">
+                {% for dr in date_ranges %}
+                <option value="{{ dr.value }}" {% if dr.value == selected_days %}selected{% endif %}>{{ dr.label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label for="program">
+            {% trans "Program" %}
+            <select name="program" id="program">
+                <option value="">{% trans "All programs" %}</option>
+                {% for prog in programs %}
+                <option value="{{ prog.pk }}" {% if prog.pk|stringformat:"d" == selected_program %}selected{% endif %}>{{ prog.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">{% trans "Filter" %}</button>
+    </div>
+</form>
+
+{% if metric_rows %}
+<div class="overflow-auto">
+<table aria-label="{% trans 'Plausibility override rates by metric' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Metric" %}</th>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Current Thresholds" %}</th>
+            <th scope="col">{% trans "Total Warnings" %}</th>
+            <th scope="col">{% trans "Confirmed" %}</th>
+            <th scope="col">{% trans "Corrected" %}</th>
+            <th scope="col">{% trans "Override Rate" %}</th>
+            <th scope="col">{% trans "Avg Confirmed Value" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Recommendation" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in metric_rows %}
+        <tr>
+            <td><strong>{{ row.metric_name }}</strong></td>
+            <td>{{ row.program_name }}</td>
+            <td>
+                {% if row.warn_min is not None %}
+                    {% blocktrans with min=row.warn_min %}Min: {{ min }}{% endblocktrans %}
+                {% endif %}
+                {% if row.warn_min is not None and row.warn_max is not None %} / {% endif %}
+                {% if row.warn_max is not None %}
+                    {% blocktrans with max=row.warn_max %}Max: {{ max }}{% endblocktrans %}
+                {% endif %}
+            </td>
+            <td>{{ row.total_warnings }}</td>
+            <td>{{ row.confirmed_count }}</td>
+            <td>{{ row.corrected_count }}</td>
+            <td>
+                {% if row.status == "green" %}
+                <mark style="background: var(--kn-success-bg, #d1e7dd); color: var(--kn-success-fg, #0f5132); padding: 0.15em 0.5em; border-radius: 4px;">{{ row.override_rate }}%</mark>
+                {% elif row.status == "yellow" %}
+                <mark style="background: var(--kn-warning-bg, #fff3cd); color: var(--kn-warning-fg, #856404); padding: 0.15em 0.5em; border-radius: 4px;">{{ row.override_rate }}%</mark>
+                {% else %}
+                <mark style="background: var(--kn-danger-bg, #f8d7da); color: var(--kn-danger-fg, #842029); padding: 0.15em 0.5em; border-radius: 4px;">{{ row.override_rate }}%</mark>
+                {% endif %}
+            </td>
+            <td>
+                {% if row.avg_confirmed_value is not None %}
+                    {{ row.avg_confirmed_value }}
+                {% else %}
+                    <em>{% trans "N/A" %}</em>
+                {% endif %}
+            </td>
+            <td>{{ row.status_label }}</td>
+            <td><small>{{ row.recommendation }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<h2>{% trans "How to Read This Dashboard" %}</h2>
+<dl>
+    <dt style="color: var(--kn-success-fg, #0f5132);">{% trans "Green (< 30% override rate)" %}</dt>
+    <dd>{% trans "Thresholds are working well. Most flagged values are genuine errors that staff correct." %}</dd>
+    <dt style="color: var(--kn-warning-fg, #856404);">{% trans "Yellow (30% - 80% override rate)" %}</dt>
+    <dd>{% trans "Some warnings are unnecessary. Consider widening thresholds slightly to reduce alert fatigue." %}</dd>
+    <dt style="color: var(--kn-danger-fg, #842029);">{% trans "Red (> 80% override rate)" %}</dt>
+    <dd>{% trans "Most flagged values are correct. Thresholds are too tight and should be widened to avoid staff ignoring warnings." %}</dd>
+</dl>
+
+{% else %}
+<article style="background: var(--kn-info-bg, #cff4fc); color: var(--kn-info-fg, #055160);">
+    <p><strong>{% trans "No plausibility override data yet." %}</strong></p>
+    <p>{% trans "Override logs are recorded when staff encounter plausibility warnings during note entry and either confirm or correct flagged values. Data will appear here once warnings have been triggered." %}</p>
+</article>
+{% endif %}
+
+<p><a href="{% url 'admin_settings:dashboard' %}">&larr; {% trans "Back to Admin Settings" %}</a></p>
+{% endblock %}

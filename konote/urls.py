@@ -56,6 +56,7 @@ urlpatterns = [
     path("manage/templates/", include("apps.plans.admin_urls")),
     path("manage/note-templates/", include("apps.notes.admin_urls")),
     path("manage/event-types/", include("apps.events.manage_urls")),
+    path("manage/sre-categories/", include("apps.events.sre_manage_urls")),
     path("manage/metrics/", include("apps.plans.metric_urls")),
     path("manage/users/", include("apps.auth_app.admin_urls")),
     path("manage/audit/", include("apps.audit.urls")),

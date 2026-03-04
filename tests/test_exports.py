@@ -1297,3 +1297,201 @@ class MergeAchievementSummariesTest(SimpleTestCase):
         }
         result = merge_achievement_summaries([summary])
         self.assertIsNone(result["by_metric"][0]["achievement_rate"])
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ComplianceSummaryUnitTests(TestCase):
+    """Tests for get_compliance_summary() — privacy compliance board summary."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile
+
+        self.user = User.objects.create_user(
+            username="compliance_tester", password="pass", display_name="Tester"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Compliance"
+        self.client_file.save()
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_compliance_summary_no_requests(self):
+        """Returns 'No privacy requests' when count is 0."""
+        from apps.reports.export_engine import get_compliance_summary
+
+        result = get_compliance_summary(
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 12, 31),
+        )
+        self.assertIn("No privacy requests", result["summary_text"])
+        self.assertNotIn("completed_count", result)
+
+    def test_compliance_summary_completed_count_and_avg(self):
+        """Returns correct completed count and average days."""
+        from apps.clients.models import ErasureRequest
+        from apps.reports.export_engine import get_compliance_summary
+
+        # Create a completed erasure request (10 days to process)
+        er = ErasureRequest.objects.create(
+            client_file=self.client_file,
+            client_pk=self.client_file.pk,
+            requested_by=self.user,
+            requested_by_display="Tester",
+            status="anonymised",
+            reason_category="client_requested",
+            request_reason="Test reason",
+            erasure_tier="anonymise",
+        )
+        # Override auto_now_add for requested_at
+        from django.utils import timezone as tz
+        req_time = tz.now() - timedelta(days=10)
+        ErasureRequest.objects.filter(pk=er.pk).update(
+            requested_at=req_time,
+            completed_at=tz.now(),
+        )
+
+        result = get_compliance_summary(
+            start_date=date(2025, 1, 1),
+            end_date=date(2030, 12, 31),
+        )
+        self.assertEqual(result["completed_count"], 1)
+        self.assertIsNotNone(result["avg_processing_days"])
+        self.assertGreaterEqual(result["avg_processing_days"], 9)
+        self.assertLessEqual(result["avg_processing_days"], 11)
+
+    def test_compliance_summary_flags_overdue(self):
+        """Flags overdue requests correctly (> 30 days)."""
+        from apps.clients.models import ErasureRequest
+        from apps.reports.export_engine import get_compliance_summary
+
+        # Create a completed erasure request that took 45 days (overdue)
+        er = ErasureRequest.objects.create(
+            client_file=self.client_file,
+            client_pk=self.client_file.pk,
+            requested_by=self.user,
+            requested_by_display="Tester",
+            status="anonymised",
+            reason_category="client_requested",
+            request_reason="Test reason",
+            erasure_tier="anonymise",
+        )
+        from django.utils import timezone as tz
+        req_time = tz.now() - timedelta(days=45)
+        ErasureRequest.objects.filter(pk=er.pk).update(
+            requested_at=req_time,
+            completed_at=tz.now(),
+        )
+
+        result = get_compliance_summary(
+            start_date=date(2025, 1, 1),
+            end_date=date(2030, 12, 31),
+        )
+        self.assertEqual(result["overdue_count"], 1)
+        self.assertFalse(result["all_within_deadline"])
+        self.assertIn("exceeded", result["summary_text"])
+
+    def test_compliance_summary_pending_at_end(self):
+        """Includes pending-at-period-end count."""
+        from apps.clients.models import ErasureRequest
+        from apps.reports.export_engine import get_compliance_summary
+
+        # Create a pending request within the period
+        er = ErasureRequest.objects.create(
+            client_file=self.client_file,
+            client_pk=self.client_file.pk,
+            requested_by=self.user,
+            requested_by_display="Tester",
+            status="pending",
+            reason_category="client_requested",
+            request_reason="Test reason",
+            erasure_tier="anonymise",
+        )
+        from django.utils import timezone as tz
+        ErasureRequest.objects.filter(pk=er.pk).update(
+            requested_at=tz.now() - timedelta(days=5),
+        )
+
+        result = get_compliance_summary(
+            start_date=date(2025, 1, 1),
+            end_date=date(2030, 12, 31),
+        )
+        self.assertEqual(result["pending_at_end"], 1)
+        self.assertIn("pending", result["summary_text"])
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ComplianceBannerIntegrationTests(TestCase):
+    """Integration tests for the privacy compliance banner on the executive dashboard."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.programs.models import Program, UserProgramRole
+
+        self.http = HttpClient()
+
+        self.prog = Program.objects.create(name="Banner Test Prog", colour_hex="#10B981")
+
+        # Executive user
+        self.executive = User.objects.create_user(
+            username="banner_exec", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.executive, program=self.prog, role="executive",
+        )
+
+        # Create a client enrolled in the program
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Banner"
+        self.client_file.last_name = "Test"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.prog, status="active",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_compliance_banner_shown_when_pending(self):
+        """Banner appears when there are pending erasure requests."""
+        from apps.clients.models import ErasureRequest
+
+        ErasureRequest.objects.create(
+            client_file=self.client_file,
+            client_pk=self.client_file.pk,
+            requested_by=self.executive,
+            requested_by_display="Banner Exec",
+            status="pending",
+            reason_category="client_requested",
+            request_reason="Test banner",
+            erasure_tier="anonymise",
+        )
+
+        self.http.login(username="banner_exec", password="pass")
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "privacy-compliance-banner")
+        self.assertContains(resp, "Privacy Action Required")
+
+    def test_compliance_banner_hidden_when_empty(self):
+        """Banner does not appear when nothing is pending."""
+        self.http.login(username="banner_exec", password="pass")
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "privacy-compliance-banner")

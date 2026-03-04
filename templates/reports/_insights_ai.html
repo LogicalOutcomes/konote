@@ -48,9 +48,6 @@
             {% for sq in item.supporting_quotes %}
             <blockquote class="insight-quote insight-quote--compact">
                 <p>&ldquo;{{ sq.text }}&rdquo;</p>
-                {% if sq.note_id %}
-                <cite><a href="{% url 'notes:note_detail' note_id=sq.note_id %}">{% trans "View note" %}</a></cite>
-                {% endif %}
             </blockquote>
             {% endfor %}
         </details>
@@ -64,12 +61,9 @@
     {% for quote in summary.cited_quotes %}
     <blockquote class="insight-quote">
         <p>&ldquo;{{ quote.text }}&rdquo;</p>
-        <cite>
-            {% if quote.context %}{{ quote.context }} &middot; {% endif %}
-            {% if quote.note_id %}
-            <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
-            {% endif %}
-        </cite>
+        {% if quote.context %}
+        <cite>{{ quote.context }}</cite>
+        {% endif %}
     </blockquote>
     {% endfor %}
     {% endif %}

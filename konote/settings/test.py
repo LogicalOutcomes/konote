@@ -17,8 +17,9 @@ import dj_database_url
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
 os.environ.setdefault("DATABASE_URL", "sqlite://:memory:")
 os.environ.setdefault("AUDIT_DATABASE_URL", "sqlite://:memory:")
-# Test-only key — never use in development or production
+# Test-only keys — never use in development or production
 os.environ.setdefault("FIELD_ENCRYPTION_KEY", "TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=")
+os.environ.setdefault("EMAIL_HASH_KEY", "test-email-hash-key-not-for-production")
 
 from .base import *  # noqa: F401, F403
 

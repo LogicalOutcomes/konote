@@ -2,13 +2,13 @@
 {% load i18n %}
 {% load survey_tags %}
 
-{% block title %}{{ survey.name }}{% endblock %}
+{% block title %}{{ survey.name|bilingual:survey.name_fr }}{% endblock %}
 
 {% block content %}
-<h1>{{ survey.name }}</h1>
+<h1>{{ survey.name|bilingual:survey.name_fr }}</h1>
 
 {% if survey.description %}
-<p>{{ survey.description }}</p>
+<p>{{ survey.description|bilingual:survey.description_fr }}</p>
 {% endif %}
 
 {% if is_multi_page %}
@@ -36,15 +36,15 @@
 
     {% for section in sections %}
     <fieldset class="survey-section">
-        <legend><strong>{{ section.title }}</strong></legend>
-        {% if section.instructions %}<p>{{ section.instructions }}</p>{% endif %}
+        <legend><strong>{{ section.title|bilingual:section.title_fr }}</strong></legend>
+        {% if section.instructions %}<p>{{ section.instructions|bilingual:section.instructions_fr }}</p>{% endif %}
 
         {% for question in section.questions.all %}
         <div class="survey-question" style="margin-bottom:1.5rem">
 
             {% if question.question_type == "short_text" %}
             <label for="q_{{ question.pk }}">
-                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
             </label>
             <input type="text" id="q_{{ question.pk }}" name="q_{{ question.pk }}"
                    value="{{ question.pk|partial_value:partial_answers }}"
@@ -58,7 +58,7 @@
 
             {% elif question.question_type == "long_text" %}
             <label for="q_{{ question.pk }}">
-                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
             </label>
             <textarea id="q_{{ question.pk }}" name="q_{{ question.pk }}" rows="4"
                       {% if question.required %}required aria-required="true"{% endif %}
@@ -71,7 +71,7 @@
 
             {% elif question.question_type == "yes_no" %}
             <label for="q_{{ question.pk }}">
-                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
             </label>
             <select id="q_{{ question.pk }}" name="q_{{ question.pk }}"
                     {% if question.required %}required aria-required="true"{% endif %}
@@ -89,7 +89,7 @@
             {% elif question.question_type == "single_choice" %}
             <fieldset class="survey-question-group">
                 <legend>
-                    {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                    {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
                 </legend>
                 {% for opt in question.options_json %}
                 <label>
@@ -102,7 +102,7 @@
                            hx-include="[name=csrfmiddlewaretoken]"
                            hx-target="#save-status"
                            hx-swap="innerHTML">
-                    {{ opt.label }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
                 {% endfor %}
             </fieldset>
@@ -110,7 +110,7 @@
             {% elif question.question_type == "multiple_choice" %}
             <fieldset class="survey-question-group">
                 <legend>
-                    {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                    {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
                 </legend>
                 {% with saved_multi=question.pk|partial_value:partial_answers %}
                 {% for opt in question.options_json %}
@@ -120,7 +120,7 @@
                            onchange="htmxSaveCheckboxGroup(this)"
                            data-save-url="{% url 'portal:survey_autosave' assignment_id=assignment.pk %}"
                            data-question-id="{{ question.pk }}">
-                    {{ opt.label }}
+                    {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                 </label>
                 {% endfor %}
                 {% endwith %}
@@ -129,7 +129,7 @@
             {% elif question.question_type == "rating_scale" %}
             <fieldset class="survey-question-group">
                 <legend>
-                    {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
+                    {{ question.question_text|bilingual:question.question_text_fr }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
                 </legend>
                 <div role="group" class="rating-scale">
                 {% for opt in question.options_json %}
@@ -143,7 +143,7 @@
                                hx-include="[name=csrfmiddlewaretoken]"
                                hx-target="#save-status"
                                hx-swap="innerHTML">
-                        {{ opt.label }}
+                        {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
                     </label>
                 {% endfor %}
                 </div>

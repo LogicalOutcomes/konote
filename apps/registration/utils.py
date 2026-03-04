@@ -1,6 +1,8 @@
 """Utility functions for registration processing."""
 import hashlib
+import hmac
 
+from django.conf import settings
 from django.utils import timezone
 
 from apps.clients.models import (
@@ -92,8 +94,10 @@ def find_duplicate_clients(submission):
         for cdv in ClientDetailValue.objects.filter(field_def__in=email_field_defs):
             stored_email = cdv.get_value()
             if stored_email:
-                stored_hash = hashlib.sha256(
-                    stored_email.lower().strip().encode()
+                stored_hash = hmac.new(
+                    settings.EMAIL_HASH_KEY.encode(),
+                    stored_email.lower().strip().encode(),
+                    hashlib.sha256,
                 ).hexdigest()
                 if stored_hash == submission.email_hash:
                     if cdv.client_file_id not in seen_client_ids:

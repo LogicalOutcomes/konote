@@ -371,7 +371,12 @@ def program_insights(request):
     # Check if AI is available for the template
     from konote.ai import is_ai_available
     from apps.admin_settings.models import FeatureToggle
-    ai_enabled = is_ai_available() and FeatureToggle.get_all_flags().get("ai_assist", False)
+    flags = FeatureToggle.get_all_flags()
+    ai_enabled = (
+        is_ai_available()
+        and flags.get("ai_assist_tools_only", True)
+        and flags.get("ai_assist_participant_data", False)
+    )
     context["ai_enabled"] = ai_enabled
 
     if request.headers.get("HX-Request"):
@@ -423,7 +428,12 @@ def client_insights_partial(request, client_id):
     # Check AI availability
     from konote.ai import is_ai_available
     from apps.admin_settings.models import FeatureToggle
-    ai_enabled = is_ai_available() and FeatureToggle.get_all_flags().get("ai_assist", False)
+    flags = FeatureToggle.get_all_flags()
+    ai_enabled = (
+        is_ai_available()
+        and flags.get("ai_assist_tools_only", True)
+        and flags.get("ai_assist_participant_data", False)
+    )
 
     # Separate suggestions from other quotes
     suggestions = []
