@@ -1059,3 +1059,154 @@ def plausibility_tuning_dashboard(request):
         "selected_program": program_id,
         "date_ranges": date_ranges,
     })
+
+
+# --- Configuration Overview ---
+
+@login_required
+@admin_required
+def configuration_overview(request):
+    """Read-only overview of all active configuration settings."""
+    from django.db.models import Count, Q
+
+    from apps.audit.models import AuditLog
+    from apps.plans.models import MetricDefinition
+
+    from .models import (
+        ACCESS_TIER_CHOICES,
+        FeatureToggle, InstanceSetting, OrganizationProfile, TerminologyOverride,
+        get_access_tier,
+    )
+
+    # --- Organisation ---
+    org = OrganizationProfile.get_solo()
+
+    # --- Access & Privacy ---
+    settings_all = InstanceSetting.get_all()
+    access_tier = get_access_tier()
+    access_tier_label = dict(ACCESS_TIER_CHOICES).get(str(access_tier), str(access_tier))
+
+    privacy_officer_name = settings_all.get("privacy_officer_name", "")
+    privacy_officer_email = settings_all.get("privacy_officer_email", "")
+
+    # Feature-flag-based privacy settings
+    current_flags = FeatureToggle.get_all_flags()
+    consent_required = current_flags.get(
+        "require_client_consent",
+        "require_client_consent" in FEATURES_DEFAULT_ENABLED,
+    )
+    note_sharing_enabled = current_flags.get(
+        "cross_program_note_sharing",
+        "cross_program_note_sharing" in FEATURES_DEFAULT_ENABLED,
+    )
+
+    # --- Features ---
+    feature_rows = []
+    for key, info in DEFAULT_FEATURES.items():
+        is_enabled = current_flags.get(key, key in FEATURES_DEFAULT_ENABLED)
+        missing_config = []
+        if "requires_config" in info:
+            import os
+            for env_var in info["requires_config"]:
+                if not os.environ.get(env_var):
+                    missing_config.append(env_var)
+        feature_rows.append({
+            "key": key,
+            "label": info["label"],
+            "description": info["description"],
+            "is_enabled": is_enabled,
+            "missing_config": missing_config,
+        })
+
+    # --- Terminology ---
+    overrides = TerminologyOverride.objects.all()
+    terminology_rows = []
+    for obj in overrides:
+        default_en, default_fr = DEFAULT_TERMS.get(obj.term_key, ("", ""))
+        terminology_rows.append({
+            "key": obj.term_key,
+            "default_en": default_en,
+            "current_en": obj.display_value,
+            "current_fr": obj.display_value_fr,
+            "updated_at": obj.updated_at,
+        })
+
+    # --- Metrics & Assessments ---
+    metric_counts = MetricDefinition.objects.filter(status="active").aggregate(
+        total=Count("id"),
+        enabled=Count("id", filter=Q(is_enabled=True)),
+    )
+    enabled_metrics = metric_counts["enabled"]
+    total_metrics = metric_counts["total"]
+
+    # Standardized instruments (library metrics that are enabled)
+    standardized_instruments = list(
+        MetricDefinition.objects.filter(
+            status="active", is_enabled=True, is_library=True,
+        ).order_by("category", "name")
+    )
+
+    # --- Branding ---
+    brand_colour = settings_all.get("brand_colour", "")
+    date_format = settings_all.get("date_format", "YYYY-MM-DD")
+    session_timeout = settings_all.get("session_timeout_minutes", "30")
+
+    # --- Integrations ---
+    document_storage = settings_all.get("document_storage_provider", "")
+    email_configured = bool(settings_all.get("email_host", ""))
+    sms_configured = bool(settings_all.get("twilio_account_sid", ""))
+
+    import os
+    email_env = bool(os.environ.get("EMAIL_HOST"))
+    sms_env = bool(os.environ.get("TWILIO_ACCOUNT_SID"))
+    odk_configured = bool(os.environ.get("ODK_CENTRAL_URL"))
+
+    staff_messaging = settings_all.get("staff_messaging_enabled", "false") == "true"
+    automated_reminders = settings_all.get("automated_reminders_enabled", "false") == "true"
+
+    # --- Audit log (last 20 config-related entries) ---
+    audit_entries = list(
+        AuditLog.objects.using("audit").filter(
+            resource_type__in=["settings", "Setting", "Toggle", "Terminology", "Profile"],
+        ).order_by("-event_timestamp")[:20]
+    )
+    # Also try broader filter for object_type variations
+    if not audit_entries:
+        audit_entries = list(
+            AuditLog.objects.using("audit").filter(
+                resource_type__icontains="setting",
+            ).order_by("-event_timestamp")[:20]
+        )
+
+    return render(request, "admin_settings/configuration_overview.html", {
+        # Organisation
+        "org": org,
+        # Access & Privacy
+        "access_tier": access_tier,
+        "access_tier_label": access_tier_label,
+        "privacy_officer_name": privacy_officer_name,
+        "privacy_officer_email": privacy_officer_email,
+        "consent_required": consent_required,
+        "note_sharing_enabled": note_sharing_enabled,
+        # Features
+        "feature_rows": feature_rows,
+        # Terminology
+        "terminology_rows": terminology_rows,
+        # Metrics
+        "enabled_metrics": enabled_metrics,
+        "total_metrics": total_metrics,
+        "standardized_instruments": standardized_instruments,
+        # Branding
+        "brand_colour": brand_colour,
+        "date_format": date_format,
+        "session_timeout": session_timeout,
+        # Integrations
+        "document_storage": document_storage,
+        "email_configured": email_configured or email_env,
+        "sms_configured": sms_configured or sms_env,
+        "odk_configured": odk_configured,
+        "staff_messaging": staff_messaging,
+        "automated_reminders": automated_reminders,
+        # Audit
+        "audit_entries": audit_entries,
+    })
