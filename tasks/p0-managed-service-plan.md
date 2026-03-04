@@ -2,7 +2,7 @@
 
 **Requirement ID:** MA5 (managed hosting and support), related to MA3/MA4
 **Deliverable type:** Costed plan
-**Date:** 2026-03-02
+**Date:** 2026-03-04 (updated with self-healing support cost impact)
 **Source documents:** tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md, tasks/deployment-protocol.md, tasks/saas-service-agreement.md, tasks/design-rationale/data-access-residency-policy.md
 
 ---
@@ -103,14 +103,18 @@ Both paths are fully supported. The choice depends on the agency's requirements 
 
 ### What's Not Included (Operational Costs)
 
+The 4-layer self-healing automation handles ~99% of operational incidents automatically (container restarts, VPS reboots, backups, disk monitoring, health reports). Human support is needed only for: software updates (~1–2×/month), escalation alerts that self-healing couldn't resolve (~1×/month), agency support requests, and periodic security reviews. See [hosting cost comparison — tech support estimates](hosting-cost-comparison.md#technical-support-cost-estimates) for detailed hour breakdowns.
+
 | Item | Estimate | When needed |
 |------|----------|-------------|
-| KoNote team time (setup, maintenance, support) | Internal cost | Always |
-| Freelance sysadmin retainer | ~$100 CAD/mo | 3–5 agencies (recommended) |
-| Canadian MSP | ~$300–500 CAD/mo | 5–10+ agencies |
+| KoNote team time (~4–5 hr/mo per agency) | Internal cost | Always |
+| Freelance sysadmin on-call retainer | ~$75–150 CAD/mo | 3–5 agencies (recommended) |
+| Canadian MSP | ~$300–500 CAD/mo | 10+ agencies or when 24/7 SLA required |
 | SaaS agreement legal review | One-time ~$2,000–5,000 | Before first managed agency |
 | SSL certificates | $0 (Let's Encrypt via Caddy) | Always |
 | Domain registration | ~$15–20/year per agency | If LogicalOutcomes provides subdomain |
+
+**Impact of self-healing on support costs:** Without automation, managing even one OVHcloud VPS would require ~10–15 hours/month of sysadmin time (manual monitoring, backup management, incident response). With the 4-layer stack, this drops to ~4–5 hours/month — most of which is reviewing automated reports and applying software updates. At 5 agencies, the per-agency support burden is ~2 hours/month.
 
 ---
 
@@ -193,12 +197,12 @@ A SaaS service agreement is required before the first managed agency (see tasks/
 
 ## Scaling Plan
 
-| Stage | Agencies | Infrastructure | Support | Monthly Infrastructure Cost |
-|-------|----------|---------------|---------|---------------------------|
-| Launch | 1–2 | OVHcloud single-tenant VPS per agency | KoNote team + runbook | $45–90 |
-| Early growth | 3–5 | OVHcloud single-tenant (or start multi-tenant) | Add freelance sysadmin retainer | $105–175 (ST) or $81 (MT) |
-| Scale | 5–10 | Multi-tenant on larger VPS | Transition to Canadian MSP | $81–116 (MT) |
-| Enterprise | 10+ | Multi-tenant, dedicated VPS per large agency | MSP + dedicated support | Custom pricing |
+| Stage | Agencies | Infrastructure | Support | Monthly Infra Cost | Monthly Support Cost | All-In/Agency |
+|-------|----------|---------------|---------|-------------------|---------------------|---------------|
+| Launch | 1–2 | OVHcloud single-tenant VPS per agency | KoNote team + runbook | $45–90 | $0 (internal) | ~$45 |
+| Early growth | 3–5 | OVHcloud single-tenant (or start multi-tenant) | KoNote team + freelance on-call | $105–175 (ST) or $81 (MT) | ~$75–150 | ~$50–60 |
+| Scale | 5–10 | Multi-tenant on larger VPS | Freelance sysadmin retainer | $81–116 (MT) | ~$100–200 | ~$27–36 |
+| Enterprise | 10+ | Multi-tenant, dedicated VPS per large agency | Canadian MSP | Custom | ~$300–500 | Custom |
 
 ---
 
