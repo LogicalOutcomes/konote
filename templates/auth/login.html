@@ -117,12 +117,16 @@
             </div>
             {% endif %}
 
+            {% if demo_portal_participants %}
             <hr class="demo-divider" style="margin: 1.5rem 0 1rem;">
             <p class="demo-heading">{% trans "Participant Portal" %}</p>
             <p class="demo-subtext">{% trans "See what participants see when they check their goals and progress (if this is enabled)" %}</p>
             <div class="demo-grid">
-                <form method="post" action="/auth/demo-portal-login/">{% csrf_token %}<button type="submit" class="demo-btn demo-btn-portal">{% trans "Participant" %} — Jordan</button></form>
+                {% for pp in demo_portal_participants %}
+                <form method="post" action="/auth/demo-portal-login/{{ pp.client_file.record_id }}/">{% csrf_token %}<button type="submit" class="demo-btn demo-btn-portal">{% trans "Participant" %} — {{ pp.display_name }}</button></form>
+                {% endfor %}
             </div>
+            {% endif %}
         </section>
         {% endif %}
     </main>
