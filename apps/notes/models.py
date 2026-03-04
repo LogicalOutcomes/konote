@@ -112,6 +112,10 @@ class ProgressNoteTemplateMetric(models.Model):
         ordering = ["sort_order"]
 
 
+# Alliance prompt rotation sets — 3 phrasings cycled per-client to prevent
+# habituation.  Currently hardcoded; if the content team needs to add or edit
+# prompts without a code deploy, consider moving to a DB-backed model or a
+# JSON config file loaded at startup.
 ALLIANCE_PROMPT_SETS = [
     {
         "prompt": "How well are we working together?",

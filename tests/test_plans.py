@@ -658,3 +658,29 @@ class TestMetricReview(TestCase):
         self.ptm.refresh_from_db()
         self.assertEqual(self.ptm.last_reviewed_date, datetime.date.today())
 
+    def test_confirm_review_creates_audit_log(self):
+        """Confirming metric review creates an audit trail entry."""
+        from apps.audit.models import AuditLog
+        http_client = Client()
+        http_client.login(username="revtest", password="testpass123")
+        from django.urls import reverse
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        http_client.post(url)
+        log = AuditLog.objects.using("audit").filter(
+            action="confirm_metric_review",
+            resource_type="plan_target_metric",
+            resource_id=self.ptm.pk,
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.user_id, self.user.pk)
+
+    def test_confirm_review_requires_csrf(self):
+        """POST without CSRF token is rejected (Django middleware enforces)."""
+        from django.test import Client as DjangoClient
+        from django.urls import reverse
+        http_client = DjangoClient(enforce_csrf_checks=True)
+        http_client.login(username="revtest", password="testpass123")
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        response = http_client.post(url)
+        self.assertEqual(response.status_code, 403)
+

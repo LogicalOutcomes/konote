@@ -134,10 +134,13 @@ class Command(BaseCommand):
 
         # Default feature toggles
         FeatureToggle.objects.get_or_create(
-            name="programs", defaults={"is_enabled": True},
+            feature_key="programs", defaults={"is_enabled": True},
         )
         FeatureToggle.objects.get_or_create(
-            name="portal", defaults={"is_enabled": False},
+            feature_key="portal", defaults={"is_enabled": False},
+        )
+        FeatureToggle.objects.get_or_create(
+            feature_key="portal_alliance_ratings", defaults={"is_enabled": False},
         )
 
         self.stdout.write(self.style.SUCCESS("  Default configuration loaded."))

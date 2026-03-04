@@ -31,6 +31,9 @@
 
         <form method="post">
             {% csrf_token %}
+            {% if rating_error %}
+            <p class="error" role="alert">{{ rating_error }}</p>
+            {% endif %}
             <fieldset>
                 <div class="alliance-pills" role="radiogroup" aria-label="{{ alliance_prompt }}">
                     {% for value, label in alliance_choices %}

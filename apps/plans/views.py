@@ -1,5 +1,6 @@
 """Phase 3: Plan editing views — sections, targets, metrics, revisions."""
 import csv
+import datetime
 import io
 from collections import OrderedDict
 
@@ -1255,12 +1256,23 @@ def metric_import(request):
 @requires_permission("plan.edit", _get_program_from_ptm)
 def confirm_metric_review(request, ptm_id):
     """HTMX endpoint: confirm a metric is still relevant (90-day review)."""
-    import datetime
-
     ptm = get_object_or_404(PlanTargetMetric, pk=ptm_id)
     if request.method == "POST":
         ptm.last_reviewed_date = datetime.date.today()
         ptm.save(update_fields=["last_reviewed_date"])
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=getattr(request.user, "display_name", str(request.user)),
+            action="confirm_metric_review",
+            resource_type="plan_target_metric",
+            resource_id=ptm.pk,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "metric_def_id": ptm.metric_def_id,
+                "metric_name": ptm.metric_def.name,
+            },
+        )
         return HttpResponse(
             '<small class="secondary">\u2713 ' + str(_("Confirmed — still relevant")) + "</small>",
             content_type="text/html",

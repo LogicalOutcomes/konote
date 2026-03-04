@@ -216,23 +216,37 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
         ptm_qs = PlanTargetMetric.objects.filter(plan_target=target).select_related("metric_def").order_by("sort_order")
         metric_forms = []
         skipped_metrics = []
+
+        # Prefetch cadence data: last recorded time per metric_def for this client
+        cadenced_defs = [
+            ptm.metric_def_id for ptm in ptm_qs
+            if ptm.metric_def.cadence_sessions and ptm.metric_def.cadence_sessions > 1
+        ]
+        last_recorded_map = {}
+        if cadenced_defs:
+            from django.db.models import Max
+            last_recorded_map = dict(
+                MetricValue.objects.filter(
+                    metric_def_id__in=cadenced_defs,
+                    progress_note_target__progress_note__client_file=client,
+                    progress_note_target__progress_note__status="default",
+                ).values("metric_def_id").annotate(
+                    last_at=Max("created_at"),
+                ).values_list("metric_def_id", "last_at")
+            )
+
         for ptm in ptm_qs:
             # Cadence check: skip metric if not yet due
             is_due = True
             sessions_until_due = 0
             if ptm.metric_def.cadence_sessions and ptm.metric_def.cadence_sessions > 1:
-                last_recorded = MetricValue.objects.filter(
-                    metric_def=ptm.metric_def,
-                    progress_note_target__progress_note__client_file=client,
-                    progress_note_target__progress_note__status="default",
-                ).order_by("-created_at").first()
-
-                if last_recorded:
+                last_at = last_recorded_map.get(ptm.metric_def_id)
+                if last_at:
                     notes_since = ProgressNote.objects.filter(
                         client_file=client,
                         status="default",
                         note_type="full",
-                        created_at__gt=last_recorded.created_at,
+                        created_at__gt=last_at,
                     ).count()
                     if notes_since < ptm.metric_def.cadence_sessions - 1:
                         is_due = False
@@ -259,7 +273,6 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
             else:
                 mf.auto_calc_value = None
             # 90-day metric review check
-            import datetime
             if ptm.last_reviewed_date:
                 days_since_review = (datetime.date.today() - ptm.last_reviewed_date).days
                 mf.review_due = days_since_review >= 90
@@ -1032,6 +1045,15 @@ def note_cancel(request, note_id):
                 is_demo_context=getattr(user, "is_demo", False),
                 metadata={"reason": form.cleaned_data["status_reason"]},
             )
+            # Expire any pending portal alliance request for this note
+            try:
+                from apps.portal.models import PortalAllianceRequest
+                PortalAllianceRequest.objects.filter(
+                    progress_note=note,
+                    status="pending",
+                ).update(status="expired")
+            except Exception:
+                pass
             messages.success(request, _("Note cancelled."))
             return redirect("notes:note_list", client_id=client.pk)
     else:

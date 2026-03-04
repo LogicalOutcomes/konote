@@ -2091,6 +2091,7 @@ def portal_alliance_rating(request, request_id):
     anchors = prompt_set["anchors_fr"] if lang.startswith("fr") else prompt_set["anchors"]
     alliance_choices = list(anchors.items())
 
+    rating_error = ""
     if request.method == "POST":
         rating_str = request.POST.get("rating", "")
         try:
@@ -2114,11 +2115,14 @@ def portal_alliance_rating(request, request_id):
                     "rating": rating,
                 })
                 return render(request, "portal/alliance_rating.html", {"completed": True})
+            else:
+                rating_error = _("Please select a rating.")
         except (ValueError, TypeError):
-            pass
+            rating_error = _("Please select a rating.")
 
     return render(request, "portal/alliance_rating.html", {
         "alliance_prompt": alliance_prompt,
         "alliance_choices": alliance_choices,
         "alliance_req": alliance_req,
+        "rating_error": rating_error,
     })
