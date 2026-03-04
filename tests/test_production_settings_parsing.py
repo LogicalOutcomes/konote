@@ -9,8 +9,8 @@ from konote.settings.production import (
 class ProductionSettingsParsingTests(unittest.TestCase):
     def test_allowed_hosts_normalizes_url_and_wildcard(self):
         self.assertEqual(_normalize_host_entry("https://konote.llewelyn.ca/"), "konote.llewelyn.ca")
-        self.assertEqual(_normalize_host_entry("*.railway.app"), ".railway.app")
-        self.assertEqual(_normalize_host_entry(".up.railway.app"), ".up.railway.app")
+        self.assertEqual(_normalize_host_entry("*.example.com"), ".example.com")
+        self.assertEqual(_normalize_host_entry(".sub.example.com"), ".sub.example.com")
 
     def test_allowed_hosts_strips_path_and_trailing_dot(self):
         self.assertEqual(_normalize_host_entry("konote-dev.llewelyn.ca/path"), "konote-dev.llewelyn.ca")
@@ -38,8 +38,8 @@ class ProductionSettingsParsingTests(unittest.TestCase):
 
     def test_csrf_origins_converts_leading_dot_to_wildcard(self):
         self.assertEqual(
-            _normalize_origin_entry(".railway.app"),
-            "https://*.railway.app",
+            _normalize_origin_entry(".example.com"),
+            "https://*.example.com",
         )
 
 

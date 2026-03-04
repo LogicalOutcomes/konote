@@ -96,7 +96,7 @@ TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
 MIDDLEWARE = [
     # HealthCheckMiddleware MUST be first — it responds to GET /health/ before
     # TenantMainMiddleware attempts domain lookup (which fails for internal IPs
-    # used by Railway / Docker health probes and load-balancers).
+    # used by Docker health probes and load-balancers).
     "konote.middleware.health_check.HealthCheckMiddleware",
     # SecurityMiddleware MUST be second for security headers
     "django.middleware.security.SecurityMiddleware",

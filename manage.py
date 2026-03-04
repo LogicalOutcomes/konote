@@ -10,33 +10,16 @@ def get_default_settings():
 
     Detection order:
     1. Explicit DJANGO_SETTINGS_MODULE (always respected)
-    2. Railway (RAILWAY_ENVIRONMENT)
-    3. Azure App Service (WEBSITE_SITE_NAME)
-    4. Elestio (ELESTIO_VM_NAME)
-    5. Any production deployment with DATABASE_URL (Docker, etc.)
-    6. Local development (default)
+    2. Any production deployment with DATABASE_URL (Docker Compose, OVHcloud, Azure)
+    3. Local development (default)
 
     To force development settings when DATABASE_URL is set locally,
     set KONOTE_LOCAL_DEV=1.
     """
-    # If explicitly set, respect that
     if "DJANGO_SETTINGS_MODULE" in os.environ:
         return os.environ["DJANGO_SETTINGS_MODULE"]
 
-    # Auto-detect Railway
-    if os.environ.get("RAILWAY_ENVIRONMENT"):
-        return "konote.settings.production"
-
-    # Auto-detect Azure App Service
-    if os.environ.get("WEBSITE_SITE_NAME"):
-        return "konote.settings.production"
-
-    # Auto-detect Elestio
-    if os.environ.get("ELESTIO_VM_NAME"):
-        return "konote.settings.production"
-
-    # Auto-detect any production deployment (has DATABASE_URL but not local dev)
-    # This catches Docker, Kubernetes, or any other platform
+    # Auto-detect production (has DATABASE_URL but not local dev override)
     if os.environ.get("DATABASE_URL") and not os.environ.get("KONOTE_LOCAL_DEV"):
         return "konote.settings.production"
 
