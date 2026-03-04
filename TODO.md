@@ -61,7 +61,7 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
-- [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
+- [x] Improve admin UI for self-service configuration — PR #252 — 2026-03-04 (ADMIN-UX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -101,6 +101,12 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 8 — Admin UX Improvements
+
+- [x] Admin dashboard reorganised with section headings + 4 new cards (metrics, plausibility, plan templates, org profile) — PR #252 — 2026-03-04 (ADMIN-UX1)
+- [x] Contextual help added to 6 admin pages + SMS character counter — PR #252 — 2026-03-04 (ADMIN-UX1)
+- [x] Metric library: category filter, help text, plausibility link — PR #252 — 2026-03-04 (ADMIN-UX1)
 
 ### Code Review Fixes
 
