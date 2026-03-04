@@ -85,7 +85,6 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 - [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
-- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules (QA-R7-PRIVACY2)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
@@ -100,6 +99,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 ### Session 10 — Translations & Consent
 
 - [x] Fill empty French translations in django.po — all 5,124 entries translated, 0 empty — 2026-03-04 (I18N-FILL1)
+- [x] Consent withdrawal workflow — PIPEDA withdrawal with data retention, read-only enforcement, audit trail, 10 tests — 2026-03-04 (QA-R7-PRIVACY2)
 
 ### Session 9 — Metric Freshness & Alliance
 
