@@ -883,7 +883,7 @@ def metric_export(request):
 
     writer = csv.writer(response)
     writer.writerow(sanitise_csv_row(["id", "name", "name_fr", "definition", "definition_fr",
-                     "category", "min_value", "max_value", "unit", "unit_fr",
+                     "category", "metric_type", "min_value", "max_value", "unit", "unit_fr",
                      "portal_description", "portal_description_fr",
                      "is_enabled", "status"]))
 
@@ -895,6 +895,7 @@ def metric_export(request):
             m.definition,
             m.definition_fr,
             m.category,
+            m.metric_type,
             m.min_value if m.min_value is not None else "",
             m.max_value if m.max_value is not None else "",
             m.unit,
