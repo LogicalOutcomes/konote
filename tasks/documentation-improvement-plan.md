@@ -384,7 +384,7 @@ If you've lost your encryption key and have no backup:
 ## Further Reading
 
 - [Technical Documentation](technical-documentation.md) — Security architecture details
-- [Backup & Restore](backup-restore.md) — Database backup procedures
+- [Deployment Guide](../docs/deploying-konote.md) — Deployment, backups, and operations
 - [SECURITY.md](../SECURITY.md) — Security policy and vulnerability reporting
 ```
 
