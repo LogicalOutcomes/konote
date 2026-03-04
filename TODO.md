@@ -77,7 +77,6 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Fill 863 empty French translations in django.po — run `translate_strings --auto-translate` then review output (I18N-FILL1)
 - [ ] Clean Railway/FullHost/Elestio references from ~24 historical task and plan files — these are in tasks/*.md, docs/archive/*, docs/plans/*, ENCRYPTION-PLAN.md, CHANGELOG.md. Not urgent (they're historical records, not active docs) but should be cleaned up for consistency (CHORE-HIST-CLEANUP1)
 
 ## Parking Lot: Needs Review
@@ -97,6 +96,10 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 10 — Translations & Consent
+
+- [x] Fill empty French translations in django.po — all 5,124 entries translated, 0 empty — 2026-03-04 (I18N-FILL1)
 
 ### Session 9 — Metric Freshness & Alliance
 
