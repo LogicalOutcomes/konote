@@ -3649,58 +3649,73 @@ class Command(BaseCommand):
         )
 
         # --- Journal entries ---
+        # Jordan's employment journey — 6 entries over ~3 months
         journal_data = [
             {
-                "days_ago": 52,
+                "days_ago": 90,
                 "target": interview_target,
                 "content": (
-                    "Had my first mock interview today. It was terrifying but Casey "
-                    "said I did okay. I keep replaying the parts I messed up."
+                    "First day at the employment program. I'm nervous but Casey "
+                    "seems nice. She says we're going to work on my resume first "
+                    "which makes sense because I literally don't have one. I don't "
+                    "even know what I'd put on it. But she says everyone starts "
+                    "somewhere so... here goes nothing I guess."
+                ),
+            },
+            {
+                "days_ago": 60,
+                "target": interview_target,
+                "content": (
+                    "Did a mock interview today and it was SO AWKWARD. I kept "
+                    "saying um and couldn't remember what to say when she asked "
+                    "about my strengths. But Casey recorded it and we watched it "
+                    "back together and honestly it wasn't as bad as I thought? "
+                    "She pointed out good things I didn't even notice."
                 ),
             },
             {
                 "days_ago": 40,
-                "target": None,
-                "content": (
-                    "Bad day. Couldn't get out of bed until noon. Feeling like "
-                    "nobody's going to hire me. But I made it to the drop-in at "
-                    "least."
-                ),
-            },
-            {
-                "days_ago": 28,
                 "target": applications_target,
                 "content": (
-                    "Sent out three applications this week! Two online and one in "
-                    "person at the cafe on Queen Street. The in-person one felt "
-                    "weird but I did it."
+                    "Went to the workshop today and we updated my resume again. "
+                    "Casey helped me rewrite the part about my volunteering at "
+                    "the community centre so it sounds more professional. I'm "
+                    "actually kind of proud of it now. Sent out two applications "
+                    "on the way home."
                 ),
             },
             {
-                "days_ago": 15,
+                "days_ago": 25,
                 "target": interview_target,
                 "content": (
-                    "Got called back for the retail job! Real interview next "
-                    "Wednesday. Casey is going to do one more practice run with me. "
-                    "Nervous but also kind of excited?"
+                    "I have a real interview on Thursday. REAL. Not a practice one. "
+                    "For a customer service job at a store downtown. I can't sleep. "
+                    "Casey says we'll do one more practice run tomorrow. I keep "
+                    "telling myself if I can get through the mock ones I can get "
+                    "through this one too."
                 ),
             },
             {
-                "days_ago": 6,
+                "days_ago": 20,
                 "target": None,
                 "content": (
-                    "Interview went better than I thought. I remembered to breathe "
-                    "and make eye contact like we practised. Haven't heard back yet "
-                    "though."
+                    "I GOT THE JOB!!! They called today and I start next week!! "
+                    "Part time to start but they said if it goes well they might "
+                    "increase my hours. I called my mom and she cried. I might "
+                    "have cried a little too. Casey said she knew I could do it "
+                    "and honestly maybe she's right."
                 ),
             },
             {
-                "days_ago": 1,
+                "days_ago": 5,
                 "target": None,
                 "content": (
-                    "Cooking class was fun — made lentil soup and brought some "
-                    "home. Having something good to eat when I got back made the "
-                    "whole day feel better."
+                    "Finished my first week at the job. It was exhausting but "
+                    "good? My supervisor is really patient and the other people "
+                    "are nice. I messed up the cash register twice but nobody got "
+                    "mad. I'm going to keep coming to see Casey for a while "
+                    "because she said the transition can be hard and I think "
+                    "she's right about that."
                 ),
             },
         ]
@@ -3774,27 +3789,32 @@ class Command(BaseCommand):
             ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
             msg_count += 1
 
-        # --- Staff portal notes ---
+        # --- Staff portal notes (Casey's messages to Jordan) ---
         note_data = [
             {
-                "days_ago": 38,
+                "days_ago": 55,
                 "content": (
-                    "Great work showing up every week, Jordan. Consistency matters "
-                    "and you're building a real routine."
+                    "Hi Jordan — just a reminder that your appointment is Thursday "
+                    "at 2pm. We'll be working on interview prep so bring the job "
+                    "postings you found. See you then!"
                 ),
             },
             {
-                "days_ago": 14,
+                "days_ago": 30,
                 "content": (
-                    "You've been doing amazing with the interview prep. Remember — "
-                    "they called YOU back. That says something."
+                    "You did really well in the mock interview today, Jordan. I "
+                    "know it didn't feel like it but you kept going even when "
+                    "you got stuck on the strengths question. That's what matters. "
+                    "I've attached the feedback notes we went over."
                 ),
             },
             {
-                "days_ago": 3,
+                "days_ago": 19,
                 "content": (
-                    "So proud of how the interview went. Whatever happens with this "
-                    "one, you showed you can do it. We'll keep going."
+                    "CONGRATULATIONS Jordan!! I'm so happy for you. You earned "
+                    "this. Let's meet this week to talk about what the first few "
+                    "days might look like and how to make the transition smooth. "
+                    "So proud of you."
                 ),
             },
         ]
