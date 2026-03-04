@@ -619,6 +619,173 @@ CROSS_ENROLMENT_PLANS = {
 
 
 # ---------------------------------------------------------------------------
+# Client experience metrics — inclusivity battery + open-text per program
+# ---------------------------------------------------------------------------
+
+# Which inclusivity items each program uses (exact names from metric_library.json)
+ALL_INCLUSIVITY_METRICS = [
+    "Everyone is made to feel welcome",
+    "Everyone is valued equally",
+    "I am treated with respect",
+    "People help each other",
+    "I get help when I need it",
+]
+
+PROGRAM_EXPERIENCE_METRICS = {
+    "Supported Employment": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Housing Stability": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Youth Drop-In": {
+        "inclusivity": [
+            "Everyone is made to feel welcome",
+            "I am treated with respect",
+            "I get help when I need it",
+        ],  # 3 of 5
+        "open_text_impact": True,
+        "open_text_improve": False,
+    },
+    "Newcomer Connections": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Community Kitchen": {
+        "inclusivity": [
+            "Everyone is made to feel welcome",
+            "Everyone is valued equally",
+            "I get help when I need it",
+        ],  # 3 of 5
+        "open_text_impact": False,
+        "open_text_improve": True,
+    },
+}
+
+# Open-text response pools — real participant voices, not clinical language
+# Keyed by (metric_name, program_name, record_id) or (metric_name, program_name)
+OPEN_TEXT_IMPACT_RESPONSES = {
+    # "How has taking part in this program changed things for you?"
+    ("DEMO-001", "Supported Employment"): (
+        "I didn't think anyone would hire me but now I have a real resume "
+        "and I've been to two interviews. That's more than I did in the "
+        "whole year before I came here."
+    ),
+    ("DEMO-002", "Supported Employment"): (
+        "honestly I'm still figuring it out. some days are better than "
+        "others but at least I'm not sitting at home doing nothing anymore"
+    ),
+    ("DEMO-003", "Supported Employment"): (
+        "The biggest thing is the routine. I get up, I come here, I work "
+        "on applications. Before this I was just sleeping all day."
+    ),
+    ("DEMO-004", "Housing Stability"): (
+        "Before I came here I was sleeping in the shelter every night not "
+        "knowing what was gonna happen. Now I have my own room with a lock "
+        "on the door. That's everything."
+    ),
+    ("DEMO-005", "Housing Stability"): (
+        "C'est dur encore. Je suis toujours inquiet pour mon appartement "
+        "mais au moins j'ai quelqu'un qui m'aide avec les papiers."
+    ),
+    ("DEMO-006", "Housing Stability"): (
+        "its ups and downs tbh. some weeks I feel like things are getting "
+        "better and then something happens with the landlord and im back "
+        "to square one"
+    ),
+    ("DEMO-007", "Youth Drop-In"): (
+        "I used to just go home after school and play games by myself. "
+        "Now I have people who actually want to hang out with me."
+    ),
+    ("DEMO-008", "Youth Drop-In"): (
+        "idk. its ok I guess. I still don't really talk to anyone but "
+        "at least I come now"
+    ),
+    ("DEMO-009", "Youth Drop-In"): (
+        "I love the activities! Especially when we do art stuff. School "
+        "is still hard but coming here makes the week better."
+    ),
+    ("DEMO-010", "Newcomer Connections"): (
+        "Mon anglais s'améliore beaucoup. La semaine dernière j'ai pris "
+        "un rendez-vous chez le médecin toute seule — en anglais! Avant "
+        "j'aurais jamais pu faire ça."
+    ),
+    ("DEMO-011", "Newcomer Connections"): (
+        "I feel less alone. Before I was scared to go outside. Now I know "
+        "the people at the centre and they know me."
+    ),
+    ("DEMO-012", "Newcomer Connections"): (
+        "I know where everything is in the neighbourhood now. The library, "
+        "the clinic, the bank. I can help other new people find things too. "
+        "That feels good."
+    ),
+}
+
+OPEN_TEXT_IMPROVE_RESPONSES = {
+    # "How can we improve our program or services?"
+    ("DEMO-001", "Supported Employment"): (
+        "More evening sessions would be really helpful. Its hard to come "
+        "during the day when I'm trying to pick up shifts at the same time."
+    ),
+    ("DEMO-002", "Supported Employment"): (
+        "maybe have some kind of group thing where we can talk to other "
+        "people going through the same stuff? like a support group but "
+        "for job hunting"
+    ),
+    ("DEMO-003", "Supported Employment"): (
+        "Everything's been good. I guess more help with keeping a job "
+        "once you get one would be useful, not just getting the job."
+    ),
+    ("DEMO-004", "Housing Stability"): (
+        "I wish the appointments weren't always in the morning. When you "
+        "don't sleep good at the shelter its hard to get up for a 9am meeting."
+    ),
+    ("DEMO-005", "Housing Stability"): (
+        "Plus de services en français svp. Je comprends l'anglais un peu "
+        "mais pour les choses importantes comme le logement, j'ai besoin "
+        "de comprendre exactement."
+    ),
+    ("DEMO-006", "Housing Stability"): (
+        "the bus tickets help a lot. if you could give more that would "
+        "be great because I run out halfway through the month and then "
+        "I can't get to appointments"
+    ),
+    ("DEMO-010", "Newcomer Connections"): (
+        "Peut-être avoir plus d'activités en français pour les nouvelles "
+        "personnes qui arrivent. Au début c'est vraiment difficile quand "
+        "tout est en anglais seulement."
+    ),
+    ("DEMO-011", "Newcomer Connections"): (
+        "Childcare. I cannot come to the sessions because I have no one "
+        "to watch my children. If there was someone to help with the kids "
+        "I could come every time."
+    ),
+    ("DEMO-012", "Newcomer Connections"): (
+        "Maybe a WhatsApp group? Sometimes I want to ask a quick question "
+        "and don't want to wait until the next session."
+    ),
+    ("DEMO-013", "Community Kitchen"): (
+        "More vegetarian options please! My family doesn't eat meat and "
+        "some weeks I can't use the recipe because it has chicken."
+    ),
+    ("DEMO-014", "Community Kitchen"): (
+        "printed recipe cards to take home would be great. I try to "
+        "remember what we did but by the time I get to the store I "
+        "forget half the ingredients"
+    ),
+    ("DEMO-015", "Community Kitchen"): (
+        "I think smaller groups would be better. Sometimes its so crowded "
+        "I can't see what the instructor is doing."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
 # Client goals — participant-voiced, set on the first target of each client
 # ---------------------------------------------------------------------------
 
@@ -1539,6 +1706,11 @@ class Command(BaseCommand):
                 metrics_by_name, now,
             )
 
+        # --- Seed client experience metrics (inclusivity + open-text) ---
+        self._seed_client_experience_data(
+            workers, programs_by_name, metrics_by_name, now,
+        )
+
         # --- Create alerts for specific clients ---
         self._create_alerts(workers, programs_by_name)
 
@@ -1996,6 +2168,193 @@ class Command(BaseCommand):
                             metric_def=metric_def,
                             sort_order=m_idx,
                         )
+
+    def _seed_client_experience_data(
+        self, workers, programs_by_name, metrics_by_name, now,
+    ):
+        """Add client experience metrics (inclusivity + open-text) to existing notes.
+
+        For each client, creates a 'Client Experience' plan section with the
+        relevant inclusivity items and open-text metrics, then records values
+        on the last 2-3 full notes (periodic, not every note).
+        """
+        experience_count = 0
+
+        for record_id, plan_config in CLIENT_PLANS.items():
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                continue
+
+            program_name = plan_config["program"]
+            program = programs_by_name.get(program_name)
+            exp_config = PROGRAM_EXPERIENCE_METRICS.get(program_name)
+            if not program or not exp_config:
+                continue
+
+            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
+            author = workers.get(worker_username)
+            trend = plan_config["trend"]
+
+            # Collect the metric defs for this client's experience section
+            inclusivity_names = exp_config.get("inclusivity", [])
+            inclusivity_defs = []
+            for name in inclusivity_names:
+                md = metrics_by_name.get(name)
+                if md:
+                    inclusivity_defs.append(md)
+
+            open_text_defs = []
+            impact_name = "How has taking part in this program changed things for you?"
+            improve_name = "How can we improve our program or services?"
+            if exp_config.get("open_text_impact"):
+                md = metrics_by_name.get(impact_name)
+                if md:
+                    open_text_defs.append(md)
+            if exp_config.get("open_text_improve"):
+                md = metrics_by_name.get(improve_name)
+                if md:
+                    open_text_defs.append(md)
+
+            all_exp_metrics = inclusivity_defs + open_text_defs
+            if not all_exp_metrics:
+                continue
+
+            # Create the Client Experience plan section
+            section = PlanSection.objects.create(
+                client_file=client,
+                name="Client Experience",
+                program=program,
+                sort_order=20,  # after primary + cross-enrolment sections
+            )
+
+            target = PlanTarget.objects.create(
+                plan_section=section,
+                client_file=client,
+                name="Share feedback on program experience",
+                description="Tell us how the program is working for you.",
+                sort_order=0,
+            )
+
+            PlanTargetRevision.objects.create(
+                plan_target=target,
+                name=target.name,
+                description=target.description,
+                status="default",
+                changed_by=author,
+            )
+
+            for m_idx, md in enumerate(all_exp_metrics):
+                PlanTargetMetric.objects.create(
+                    plan_target=target,
+                    metric_def=md,
+                    sort_order=m_idx,
+                )
+
+            # Find the last 2-3 full notes for this client in this program
+            recent_notes = list(
+                ProgressNote.objects.filter(
+                    client_file=client,
+                    author_program=program,
+                    note_type="full",
+                ).order_by("-backdate")[:3]
+            )
+
+            if not recent_notes:
+                continue
+
+            # Generate inclusivity values based on trend
+            for note_idx, note in enumerate(recent_notes):
+                # Determine inclusivity values for this note
+                incl_values = self._inclusivity_values_for_trend(
+                    trend, note_idx, len(recent_notes)
+                )
+
+                pnt = ProgressNoteTarget.objects.create(
+                    progress_note=note,
+                    plan_target=target,
+                    notes="Mid-program feedback collected.",
+                    progress_descriptor="holding",
+                )
+
+                # Record inclusivity scale values
+                for i, md in enumerate(inclusivity_defs):
+                    val = incl_values[i] if i < len(incl_values) else 3
+                    MetricValue.objects.create(
+                        progress_note_target=pnt,
+                        metric_def=md,
+                        value=str(val),
+                    )
+
+                # Record open-text values only on the most recent note
+                if note_idx == 0:
+                    for md in open_text_defs:
+                        if md.name == impact_name:
+                            text = OPEN_TEXT_IMPACT_RESPONSES.get(
+                                (record_id, program_name), ""
+                            )
+                        elif md.name == improve_name:
+                            text = OPEN_TEXT_IMPROVE_RESPONSES.get(
+                                (record_id, program_name), ""
+                            )
+                        else:
+                            text = ""
+
+                        if text:
+                            MetricValue.objects.create(
+                                progress_note_target=pnt,
+                                metric_def=md,
+                                value=text,
+                            )
+
+                experience_count += 1
+
+        self.stdout.write(
+            f"  Client experience: {experience_count} notes updated "
+            f"with inclusivity + open-text metrics."
+        )
+
+    def _inclusivity_values_for_trend(self, trend, note_idx, total_notes):
+        """Generate 5 inclusivity values (1-4 scale) based on trend.
+
+        note_idx 0 = most recent note, higher = older.
+        """
+        if trend == "improving":
+            # Start 2-3, end 3-4
+            if note_idx == 0:
+                base = [4, 3, 4, 3, 4]
+            elif note_idx == 1:
+                base = [3, 3, 3, 3, 3]
+            else:
+                base = [2, 3, 2, 3, 3]
+        elif trend == "struggling":
+            # Fluctuate 1-3
+            if note_idx == 0:
+                base = [2, 1, 3, 2, 2]
+            elif note_idx == 1:
+                base = [3, 2, 2, 1, 2]
+            else:
+                base = [1, 2, 2, 2, 3]
+        elif trend == "stable":
+            # Consistently 3-4
+            base = [3, 4, 4, 3, 4]
+        elif trend == "crisis_then_improving":
+            if note_idx == 0:
+                base = [3, 3, 4, 3, 3]
+            elif note_idx == 1:
+                base = [2, 2, 3, 2, 3]
+            else:
+                base = [1, 1, 2, 1, 2]
+        elif trend == "mixed":
+            if note_idx == 0:
+                base = [3, 2, 4, 3, 3]
+            elif note_idx == 1:
+                base = [4, 3, 3, 2, 2]
+            else:
+                base = [2, 3, 3, 3, 4]
+        else:
+            base = [3, 3, 3, 3, 3]
+
+        return base
 
     def _create_alerts(self, workers, programs_by_name):
         """Create alerts for clients with notable situations.
