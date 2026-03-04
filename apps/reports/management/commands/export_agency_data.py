@@ -250,6 +250,11 @@ class Command(BaseCommand):
             help="Name of the person who authorised this export (logged only).",
         )
         parser.add_argument(
+            "--include-demo",
+            action="store_true",
+            help="Include demo/training data in the export (excluded by default).",
+        )
+        parser.add_argument(
             "--yes",
             action="store_true",
             help="Skip interactive confirmation (for automated pipelines).",
@@ -262,6 +267,7 @@ class Command(BaseCommand):
         plaintext = options["plaintext"]
         output_path = options["output"]
         client_id = options["client_id"]
+        include_demo = options["include_demo"]
         authorized_by = options["authorized_by"]
         skip_confirm = options["yes"]
 
@@ -269,7 +275,7 @@ class Command(BaseCommand):
 
         # ── Dry Run ───────────────────────────────────────────────────
         if dry_run:
-            self._print_summary(exportable, client_id)
+            self._print_summary(exportable, client_id, include_demo)
             return
 
         # ── Validate output ───────────────────────────────────────────
@@ -285,7 +291,7 @@ class Command(BaseCommand):
             os.makedirs(output_dir, exist_ok=True)
 
         # ── Summary + Confirmation ────────────────────────────────────
-        self._print_summary(exportable, client_id)
+        self._print_summary(exportable, client_id, include_demo)
 
         if not skip_confirm:
             expected = "CONFIRM PLAINTEXT" if plaintext else "CONFIRM"
@@ -322,7 +328,7 @@ class Command(BaseCommand):
         # ── Build the export ──────────────────────────────────────────
         tmpdir = tempfile.mkdtemp(prefix="konote_export_")
         try:
-            self._build_export(tmpdir, exportable, client_id, now)
+            self._build_export(tmpdir, exportable, client_id, include_demo, now)
             zip_bytes = self._zip_directory(tmpdir)
 
             if plaintext:
@@ -358,13 +364,15 @@ class Command(BaseCommand):
 
     # ── Summary printer ───────────────────────────────────────────────
 
-    def _print_summary(self, exportable, client_id):
+    def _print_summary(self, exportable, client_id, include_demo=False):
         """Print a table of models and row counts."""
         self.stdout.write(self.style.HTTP_INFO("\n  Agency Data Export — Summary\n"))
         if client_id:
             self.stdout.write(f"  Scope: single client (ID {client_id})\n")
         else:
             self.stdout.write("  Scope: full agency\n")
+        if not include_demo:
+            self.stdout.write("  Demo data: excluded (use --include-demo to include)\n")
 
         self.stdout.write(f"  {'Model':<45} {'Rows':>8}")
         self.stdout.write(f"  {'─' * 45} {'─' * 8}")
@@ -373,6 +381,8 @@ class Command(BaseCommand):
         for model in exportable:
             label = f"{model._meta.app_label}.{model._meta.model_name}"
             qs = model.objects.all()
+            if not include_demo:
+                qs = self._exclude_demo(qs, model)
             if client_id:
                 qs = self._filter_for_client(qs, model, client_id)
             count = qs.count()
@@ -384,7 +394,7 @@ class Command(BaseCommand):
 
     # ── Build export directory ────────────────────────────────────────
 
-    def _build_export(self, tmpdir, exportable, client_id, now):
+    def _build_export(self, tmpdir, exportable, client_id, include_demo, now):
         """Create the full export directory structure."""
         export_name = f"export-{now.strftime('%Y-%m-%d')}"
         base = os.path.join(tmpdir, export_name)
@@ -400,6 +410,8 @@ class Command(BaseCommand):
         # ── Flat data files ───────────────────────────────────────────
         for model in exportable:
             qs = model.objects.all()
+            if not include_demo:
+                qs = self._exclude_demo(qs, model)
             if client_id:
                 qs = self._filter_for_client(qs, model, client_id)
 
@@ -415,7 +427,7 @@ class Command(BaseCommand):
             self._write_json(os.path.join(data_dir, f"{label}.json"), records)
 
         # ── Nested client-centric file ────────────────────────────────
-        self._build_clients_complete(data_dir, client_id, now)
+        self._build_clients_complete(data_dir, client_id, include_demo, now)
 
         # ── Config files ──────────────────────────────────────────────
         self._build_config_files(config_dir)
@@ -450,14 +462,14 @@ class Command(BaseCommand):
 
     # ── Nested client-centric file ────────────────────────────────────
 
-    def _build_clients_complete(self, data_dir, client_id, now):
+    def _build_clients_complete(self, data_dir, client_id, include_demo, now):
         """Build clients_complete.json with nested per-client data."""
         from apps.clients.models import ClientFile, ClientDetailValue
         from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
         from apps.plans.models import PlanSection, PlanTarget
         from apps.events.models import Event
 
-        client_qs = ClientFile.objects.all()
+        client_qs = ClientFile.objects.all() if include_demo else ClientFile.objects.real()
         if client_id:
             client_qs = client_qs.filter(pk=client_id)
 
@@ -596,6 +608,24 @@ class Command(BaseCommand):
             return qs.filter(pk=client_id)
 
         # Models without client FK — return full set (config, metadata)
+        return qs
+
+    def _exclude_demo(self, qs, model):
+        """Exclude demo/training records from a queryset.
+
+        - ClientFile: filter on is_demo directly
+        - Models with FK to ClientFile: exclude via FK__is_demo=True
+        - Other models (config, metadata): no filtering
+        """
+        if model._meta.label_lower == "clients.clientfile":
+            return qs.filter(is_demo=False)
+
+        for field in model._meta.get_fields():
+            if isinstance(field, models.ForeignKey):
+                related = field.related_model
+                if related and related._meta.label_lower == "clients.clientfile":
+                    return qs.filter(**{f"{field.name}__is_demo": False})
+
         return qs
 
     # ── Helpers ────────────────────────────────────────────────────────

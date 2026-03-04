@@ -457,7 +457,50 @@ class ExportAgencyDataTests(TestCase):
                 note = ep["progress_notes"][0]
                 self.assertEqual(note.get("notes_text"), "Client is making progress")
 
-    # ── 14. Plan target name is decrypted ─────────────────────────────
+    # ── 14. Demo data excluded by default ──────────────────────────────
+
+    def test_demo_clients_excluded_by_default(self):
+        """Demo clients should not appear in exports unless --include-demo."""
+        from apps.clients.models import ClientFile
+
+        demo_client = ClientFile.objects.create(is_demo=True)
+        demo_client.first_name = "DemoUser"
+        demo_client.last_name = "Testing"
+        demo_client.save()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True)
+
+            files = _unzip_bytes(open(out_path, "rb").read())
+            cc_file = [f for f in files if "clients_complete.json" in f][0]
+            data = json.loads(files[cc_file])
+
+            names = [c.get("first_name") for c in data["clients"]]
+            self.assertNotIn("DemoUser", names)
+            self.assertIn("Jane", names)
+
+    def test_include_demo_flag_includes_demo_clients(self):
+        """--include-demo should include demo clients in the export."""
+        from apps.clients.models import ClientFile
+
+        demo_client = ClientFile.objects.create(is_demo=True)
+        demo_client.first_name = "DemoUser2"
+        demo_client.last_name = "Testing"
+        demo_client.save()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            out_path = os.path.join(tmpdir, "test.zip")
+            _call_export(output=out_path, plaintext=True, yes=True, include_demo=True)
+
+            files = _unzip_bytes(open(out_path, "rb").read())
+            cc_file = [f for f in files if "clients_complete.json" in f][0]
+            data = json.loads(files[cc_file])
+
+            names = [c.get("first_name") for c in data["clients"]]
+            self.assertIn("DemoUser2", names)
+
+    # ── 16. Plan target name is decrypted ─────────────────────────────
 
     def test_plan_target_decrypted_in_nested(self):
         with tempfile.TemporaryDirectory() as tmpdir:
