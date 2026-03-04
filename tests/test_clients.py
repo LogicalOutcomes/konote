@@ -751,6 +751,98 @@ class SelectOtherFieldTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MultiSelectFieldTest(TestCase):
+    """Tests for multi_select and multi_select_other custom field types."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        self.group = CustomFieldGroup.objects.create(title="Demographics")
+        self.racial_field = CustomFieldDefinition.objects.create(
+            group=self.group, name="Racial Identity", input_type="multi_select",
+            options_json=["White", "Black", "South Asian", "East Asian", "Latin American"],
+        )
+        self.identity_field = CustomFieldDefinition.objects.create(
+            group=self.group, name="Identity", input_type="multi_select_other",
+            options_json=["Option A", "Option B", "Option C"],
+        )
+        self.cf = ClientFile()
+        self.cf.first_name = "Test"
+        self.cf.last_name = "Client"
+        self.cf.save()
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.program)
+        self.client.login(username="admin", password="testpass123")
+
+    def test_multi_select_saves_json_array(self):
+        """Selecting multiple checkboxes stores a JSON array."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            f"custom_{self.racial_field.pk}": ["Black", "South Asian"],
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        cdv = ClientDetailValue.objects.get(client_file=self.cf, field_def=self.racial_field)
+        self.assertEqual(cdv.get_value(), '["Black", "South Asian"]')
+
+    def test_multi_select_empty_saves_blank(self):
+        """No selections stores empty string, not '[]'."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            # No value for the multi_select field — Django sends nothing for unchecked boxes
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        qs = ClientDetailValue.objects.filter(client_file=self.cf, field_def=self.racial_field)
+        if qs.exists():
+            self.assertIn(qs.first().get_value(), ["", "[]"])
+
+    def test_multi_select_roundtrip_shows_checked(self):
+        """Saved multi_select values appear as checked in the edit view context."""
+        import json
+        cdv = ClientDetailValue.objects.create(client_file=self.cf, field_def=self.racial_field)
+        cdv.value = json.dumps(["Black", "South Asian"])
+        cdv.save()
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/edit/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        for group in resp.context["custom_data"]:
+            for item in group["fields"]:
+                if item["field_def"].pk == self.racial_field.pk:
+                    self.assertIn("Black", item["selected_values"])
+                    self.assertIn("South Asian", item["selected_values"])
+                    self.assertEqual(item["display_value"], "Black, South Asian")
+
+    def test_multi_select_other_merges_custom_text(self):
+        """'Other' free-text is appended to the JSON array."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            f"custom_{self.identity_field.pk}": ["Option A"],
+            f"custom_{self.identity_field.pk}_other": "Custom Value",
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        cdv = ClientDetailValue.objects.get(client_file=self.cf, field_def=self.identity_field)
+        import json
+        stored = json.loads(cdv.get_value())
+        self.assertIn("Option A", stored)
+        self.assertIn("Custom Value", stored)
+
+    def test_multi_select_display_comma_separated(self):
+        """Display view shows multi_select as comma-separated text."""
+        import json
+        cdv = ClientDetailValue.objects.create(client_file=self.cf, field_def=self.racial_field)
+        cdv.value = json.dumps(["Black", "South Asian"])
+        cdv.save()
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/display/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Black, South Asian")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ConsentRecordingTest(TestCase):
     """Tests for consent recording workflow (PRIV1)."""
 
