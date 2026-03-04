@@ -24,7 +24,8 @@ from .models import (
 @admin_required
 def dashboard(request):
     from apps.auth_app.models import User
-    from apps.notes.models import ProgressNoteTemplate
+    from apps.notes.models import PlausibilityOverrideLog, ProgressNoteTemplate
+    from apps.plans.models import MetricDefinition, PlanTemplate
 
     # State indicators for dashboard cards
     current_flags = FeatureToggle.get_all_flags()
@@ -78,6 +79,38 @@ def dashboard(request):
         ).count()
         active_reason_count = AccessGrantReason.objects.filter(is_active=True).count()
 
+    # Metrics card — counts for metric library
+    total_metrics = MetricDefinition.objects.filter(status="active").count()
+    enabled_metrics = MetricDefinition.objects.filter(
+        status="active", is_enabled=True,
+    ).count()
+    custom_metrics = MetricDefinition.objects.filter(
+        status="active", is_library=False,
+    ).count()
+
+    # Plan templates card
+    plan_template_count = PlanTemplate.objects.count()
+
+    # Organisation profile card
+    org_profile = OrganizationProfile.objects.first()
+    org_name = org_profile.operating_name if org_profile else ""
+
+    # Plausibility tuning card — count metrics with high override rate (>80%)
+    from django.db.models import Count, Q
+    cutoff = tz.now() - tz.timedelta(days=90)
+    override_stats = (
+        PlausibilityOverrideLog.objects.filter(created_at__gte=cutoff)
+        .values("metric_definition_id")
+        .annotate(
+            total=Count("id"),
+            confirmed=Count("id", filter=Q(action="confirmed")),
+        )
+    )
+    high_override_count = sum(
+        1 for row in override_stats
+        if row["total"] >= 3 and row["confirmed"] / row["total"] > 0.8
+    )
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -94,6 +127,12 @@ def dashboard(request):
         "field_access_count": field_access_count,
         "active_grant_count": active_grant_count,
         "active_reason_count": active_reason_count,
+        "total_metrics": total_metrics,
+        "enabled_metrics": enabled_metrics,
+        "custom_metrics": custom_metrics,
+        "plan_template_count": plan_template_count,
+        "org_name": org_name,
+        "high_override_count": high_override_count,
     })
 
 
