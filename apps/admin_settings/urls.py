@@ -22,6 +22,7 @@ urlpatterns = [
     path("backup/", views.backup_settings, name="backup_settings"),
     path("field-access/", field_access_views.field_access, name="field_access"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
+    path("plausibility-tuning/", views.plausibility_tuning_dashboard, name="plausibility_tuning"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
     path("demo-data/", views.demo_data_management, name="demo_data_management"),
     # Access grants admin (Tier 3 only)

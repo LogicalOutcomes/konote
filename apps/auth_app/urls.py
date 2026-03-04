@@ -9,7 +9,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     # Demo login (only works when DEMO_MODE is enabled)
     path("demo-login/<str:role>/", views.demo_login, name="demo_login"),
-    path("demo-portal-login/", views.demo_portal_login, name="demo_portal_login"),
+    path("demo-portal-login/<str:record_id>/", views.demo_portal_login, name="demo_portal_login"),
     # MFA (TOTP)
     path("mfa/verify/", views.mfa_verify, name="mfa_verify"),
     path("mfa/setup/", views.mfa_setup, name="mfa_setup"),

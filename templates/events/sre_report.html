@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "SRE Report" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Serious Reportable Events Report" %}</h1>
+    <p>{% trans "View all SREs in a date range, by program and category." %}</p>
+</hgroup>
+
+{# Filters #}
+<form method="get" id="sre-filter-form">
+    <div class="grid">
+        <div>
+            <label for="start_date">{% trans "Start date" %}</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+        </div>
+        <div>
+            <label for="end_date">{% trans "End date" %}</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+        </div>
+        <div>
+            <label for="program">{% trans "Program" %}</label>
+            <select id="program" name="program">
+                <option value="">{% trans "All programs" %}</option>
+                {% for p in programs %}
+                <option value="{{ p.pk }}" {% if selected_program == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="category">{% trans "Category" %}</label>
+            <select id="category" name="category">
+                <option value="">{% trans "All categories" %}</option>
+                {% for c in categories %}
+                <option value="{{ c.pk }}" {% if selected_category == c.pk|stringformat:"d" %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit">{% trans "Filter" %}</button>
+</form>
+
+{# Summary #}
+<h2>{% trans "Summary" %}</h2>
+<p>{% blocktrans with count=total_count start=start_date|date end=end_date|date %}{{ count }} SRE(s) between {{ start }} and {{ end }}.{% endblocktrans %}</p>
+
+{% if category_counts %}
+<div class="grid">
+    <div>
+        <h3>{% trans "By Category" %}</h3>
+        <figure>
+        <table role="grid" aria-label="{% trans 'SRE counts by category' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Category" %}</th>
+                    <th scope="col">{% trans "Severity" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in category_counts %}
+                <tr>
+                    <td>{% if row.category %}{{ row.category.get_translated_name }}{% else %}—{% endif %}</td>
+                    <td>
+                        {% if row.severity == 1 %}
+                            <span class="badge badge-danger">{% trans "1" %}</span>
+                        {% elif row.severity == 2 %}
+                            <span class="badge badge-warning">{% trans "2" %}</span>
+                        {% else %}
+                            <span class="badge badge-info">{% trans "3" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </figure>
+    </div>
+    {% if program_counts %}
+    <div>
+        <h3>{% trans "By Program" %}</h3>
+        <figure>
+        <table role="grid" aria-label="{% trans 'SRE counts by program' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Program" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in program_counts %}
+                <tr>
+                    <td>{{ row.author_program__name|default:_("No program") }}</td>
+                    <td>{{ row.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </figure>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{# Detail table #}
+<h2>{% trans "SRE Events" %}</h2>
+{% if sre_events %}
+<figure>
+<table role="grid" aria-label="{% trans 'Serious Reportable Events' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Date" %}</th>
+            <th scope="col">{% trans "Category" %}</th>
+            <th scope="col">{% trans "Severity" %}</th>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Event" %}</th>
+            <th scope="col">{% trans "Flagged by" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in sre_events %}
+        <tr>
+            <td><time datetime="{{ event.start_timestamp|date:'c' }}">{{ event.start_timestamp|date }}</time></td>
+            <td>{{ event.sre_category|default:"—" }}</td>
+            <td>
+                {% if event.sre_category %}
+                    {% if event.sre_category.severity == 1 %}
+                        <span class="badge badge-danger">{% trans "Level 1" %}</span>
+                    {% elif event.sre_category.severity == 2 %}
+                        <span class="badge badge-warning">{% trans "Level 2" %}</span>
+                    {% else %}
+                        <span class="badge badge-info">{% trans "Level 3" %}</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ event.author_program.name|default:"—" }}</td>
+            <td>{{ event.title|default:"—" }}</td>
+            <td>{{ event.sre_flagged_by.display_name|default:event.sre_flagged_by|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No SREs found in the selected date range." %}</p>
+</div>
+{% endif %}
+{% endblock %}

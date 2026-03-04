@@ -48,6 +48,12 @@ _ul*
 qa/.qa-handoff*.json
 tests/*.log
 
+# Code review results (stored in private konote-qa-scenarios repo)
+tasks/reviews/
+tasks/session-reviews/
+docs/reviews/
+tasks/ux-review-latest.md
+
 # Original document files (converted to .md — originals kept locally for reference)
 tasks/originals/
 

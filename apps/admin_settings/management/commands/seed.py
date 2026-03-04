@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self._seed_feature_toggles()
         self._seed_instance_settings()
         self._seed_event_types()
+        self._seed_sre_categories()
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
@@ -64,6 +65,12 @@ class Command(BaseCommand):
         from django.core.management import call_command
 
         call_command("seed_event_types", stdout=self.stdout)
+
+    def _seed_sre_categories(self):
+        """Seed default Serious Reportable Event categories."""
+        from django.core.management import call_command
+
+        call_command("seed_sre_categories", stdout=self.stdout)
 
     def _seed_intake_fields(self):
         """Seed default custom fields for client intake forms."""
@@ -148,7 +155,8 @@ class Command(BaseCommand):
             ("alerts", True),
             ("quick_notes", True),
             ("analysis_charts", True),
-            ("ai_assist", False),
+            ("ai_assist_tools_only", True),
+            ("ai_assist_participant_data", False),
             ("groups", True),
             ("participant_portal", False),
             ("messaging_sms", False),
@@ -173,7 +181,10 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(
                 feature_key="messaging_email"
             ).update(is_enabled=True)
-            FeatureToggle.objects.filter(feature_key="ai_assist").update(
+            FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(
+                is_enabled=True
+            )
+            FeatureToggle.objects.filter(feature_key="ai_assist_participant_data").update(
                 is_enabled=True
             )
             FeatureToggle.objects.filter(feature_key="surveys").update(
@@ -183,7 +194,7 @@ class Command(BaseCommand):
                 is_enabled=True
             )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys, circles enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles enabled."
             )
 
     def _seed_instance_settings(self):
@@ -199,7 +210,7 @@ class Command(BaseCommand):
             "print_header": "",
             "print_footer": "CONFIDENTIAL",
             "default_client_tab": "notes",
-            "messaging_profile": "staff_sent",
+            "staff_messaging_enabled": "true",
             "document_storage_provider": "google_drive",
             "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
         }
@@ -246,6 +257,12 @@ class Command(BaseCommand):
         demo_users = User.objects.filter(is_demo=True)
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
+        # ProgressNote.author is PROTECTED so demo users cannot be deleted while
+        # they still have notes.  The demo_clients.delete() above should cascade
+        # and remove these, but notes can survive (e.g. cross-program sharing).
+        # Explicitly delete any remaining notes authored by demo users first.
+        from apps.notes.models import ProgressNote
+        ProgressNote.objects.filter(author__in=demo_users).delete()
         demo_users.delete()
 
         # Remove old program names that no longer exist

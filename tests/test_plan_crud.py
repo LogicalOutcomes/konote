@@ -723,7 +723,7 @@ class TestGoalCreateView(PlanCRUDBaseTest):
     """Tests for the goal_create view, including ai_enabled context."""
 
     @patch("apps.plans.views._can_edit_plan", return_value=True)
-    @patch("konote.ai_views._ai_enabled", return_value=True)
+    @patch("konote.ai_views._ai_tools_enabled", return_value=True)
     def test_goal_create_ai_enabled(self, _mock_ai_enabled, _mock_can_edit_plan):
         """Test goal_create view with AI enabled."""
         self.http.login(username="counsellor", password="pass")
@@ -734,7 +734,7 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertTrue(response.context["ai_enabled"])
 
     @patch("apps.plans.views._can_edit_plan", return_value=True)
-    @patch("konote.ai_views._ai_enabled", return_value=False)
+    @patch("konote.ai_views._ai_tools_enabled", return_value=False)
     def test_goal_create_ai_disabled(self, _mock_ai_enabled, _mock_can_edit_plan):
         """Test goal_create view with AI disabled."""
         self.http.login(username="counsellor", password="pass")

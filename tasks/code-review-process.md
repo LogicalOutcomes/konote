@@ -53,11 +53,16 @@ Open Claude Code in VS Code and use one of these prompts depending on what you w
 3. **Important issues** (bugs, inconsistencies) — add to Active Work in TODO.md
 4. **Nice-to-have** (style, minor cleanup) — add to Parking Lot or fix inline
 
+## Where Results Are Stored
+
+Review results contain specific vulnerability findings and are stored in the **private** `konote-qa-scenarios` repo under `reviews/YYYY-MM-DD/`. They are not tracked in this public repo.
+
 ## Review History
 
 Track completed reviews here so you know what's been checked:
 
 | Date | Scope | Findings | Notes |
 |------|-------|----------|-------|
-| 2026-02-07 | Full (security, quality, tests, i18n, a11y) | 4 critical, 6 high, 20+ medium | See `tasks/code-review-2026-02-07.md` |
-| 2026-03-02 | Full (security, quality, consistency, tests, i18n, a11y) | 2 critical, 9 important, 4 nice-to-have | See `tasks/code-review-2026-03-02.md` |
+| 2026-02-07 | Full (security, quality, tests, i18n, a11y) | 4 critical, 6 high, 20+ medium | See `konote-qa-scenarios/reviews/2026-02-07/` |
+| 2026-03-02 | Full (security, quality, consistency, tests, i18n, a11y) | 2 critical, 9 important, 4 nice-to-have | See `konote-qa-scenarios/reviews/2026-03-02/` |
+| 2026-03-04 | Deep review (6 dimensions) | 0 critical, 0 high, 11 medium, 21 low | See `konote-qa-scenarios/reviews/2026-03-04/` |

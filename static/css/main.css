@@ -1747,6 +1747,28 @@ button.outline.secondary:hover {
     display: block;
     margin-bottom: var(--kn-space-sm);
 }
+
+/* ---- Admin page help & tips ---- */
+.page-help {
+    background: var(--kn-info-bg);
+    padding: 0.75rem 1rem;
+    border-radius: var(--kn-radius, 4px);
+    margin-bottom: 1.5rem;
+}
+.page-help-content {
+    font-size: 0.875rem;
+    color: var(--kn-info-fg);
+    margin-top: 0.5rem;
+}
+.admin-tip {
+    border-left: 3px solid var(--kn-primary);
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    background: var(--kn-info-bg);
+    border-radius: 0 var(--kn-radius, 4px) var(--kn-radius, 4px) 0;
+}
+
 .admin-header {
     background: var(--kn-primary-subtle);
     border-bottom: 1px solid var(--kn-border-light);
@@ -2087,6 +2109,19 @@ label {
     gap: var(--kn-space-sm);
     padding: var(--kn-space-sm) 0;
     margin-bottom: var(--kn-space-sm);
+}
+
+/* ---- Plausibility warnings (DQ1 + DQ1-TIER2) ---- */
+.plausibility-warning .warning-text {
+    color: var(--pico-del-color);
+}
+.plausibility-warning.tier-2 .warning-text {
+    color: var(--pico-form-element-invalid-border-color);
+    font-weight: bold;
+}
+.plausibility-warning.tier-2 .plausibility-confirm-btn {
+    border-color: var(--pico-form-element-invalid-border-color);
+    color: var(--pico-form-element-invalid-border-color);
 }
 
 /* ---- The Session Overall (Two-Lens Layout) ---- */

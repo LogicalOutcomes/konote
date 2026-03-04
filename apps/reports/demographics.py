@@ -41,31 +41,7 @@ def get_age_range(birth_date: date | str | None, as_of_date: date | None = None)
     Returns:
         Age range string (e.g., "25-34") or "Unknown" if birth_date is missing/invalid.
     """
-    if not birth_date:
-        return _("Unknown")
-
-    # Handle string dates (from encrypted field)
-    if isinstance(birth_date, str):
-        try:
-            birth_date = date.fromisoformat(birth_date)
-        except (ValueError, TypeError):
-            return _("Unknown")
-
-    if as_of_date is None:
-        as_of_date = date.today()
-
-    # Calculate age
-    age = as_of_date.year - birth_date.year
-    # Adjust if birthday hasn't occurred yet this year
-    if (as_of_date.month, as_of_date.day) < (birth_date.month, birth_date.day):
-        age -= 1
-
-    # Find matching range
-    for min_age, max_age, label in AGE_RANGES:
-        if min_age <= age <= max_age:
-            return label
-
-    return _("Unknown")
+    return _find_age_bin(birth_date, as_of_date, AGE_RANGES)
 
 
 def group_clients_by_age(
@@ -98,8 +74,12 @@ def group_clients_by_age(
     else:
         bins = AGE_RANGES
 
-    # Load clients — encrypted birth_date requires Python access
-    clients = ClientFile.objects.filter(pk__in=client_ids)
+    # Load clients — encrypted birth_date requires Python access.
+    # Only fetch pk and encrypted birth_date to avoid loading other
+    # encrypted PII fields (names, phone) unnecessarily.
+    clients = ClientFile.objects.filter(pk__in=client_ids).only(
+        "pk", "_birth_date_encrypted",
+    )
 
     for client in clients:
         age_range = _find_age_bin(client.birth_date, as_of_date, bins)
@@ -336,17 +316,17 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     Returns a curated list of fields safe for reporting — blocking PII,
     operational fields, and text fields that produce unique groups.
 
-    If a program is confidential or has fewer than 50 enrolled clients,
-    only "No grouping" is returned.
+    If a program is confidential, only "No grouping" is returned.
+    Small-cell suppression (applied at export time) protects individual
+    cells regardless of program size.
 
     Args:
-        program: Optional Program instance to check confidentiality
-                 and enrolment count.
+        program: Optional Program instance to check confidentiality.
 
     Returns:
         List of (value, label) tuples for form choices.
     """
-    from apps.clients.models import ClientProgramEnrolment, CustomFieldDefinition
+    from apps.clients.models import CustomFieldDefinition
 
     choices = [
         ("", _("No grouping")),
@@ -356,13 +336,10 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     if program and getattr(program, "is_confidential", False):
         return choices
 
-    # Small programs: grouping is unsafe (k-anonymity)
-    if program:
-        enrolled_count = ClientProgramEnrolment.objects.filter(
-            program=program, status="active",
-        ).count()
-        if enrolled_count < 50:
-            return choices
+    # Small programs: not enough participants for meaningful breakdowns
+    MIN_ENROLMENTS_FOR_GROUPING = 50
+    if program and program.client_enrolments.count() < MIN_ENROLMENTS_FOR_GROUPING:
+        return choices
 
     choices.append(("age_range", _("Age Range")))
 

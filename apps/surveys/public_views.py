@@ -6,10 +6,18 @@ link token can view and submit a survey response.
 import logging
 
 from django.db import transaction
+from django_ratelimit.decorators import ratelimit
 from django.http import Http404, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
+from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from apps.audit.models import AuditLog
+from apps.portal.survey_helpers import (
+    calculate_section_scores,
+    filter_visible_sections,
+)
 
 from .models import (
     SurveyAnswer,
@@ -20,6 +28,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
+@ratelimit(key="ip", rate="30/h", method="POST", block=True)
 def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
     try:
@@ -44,9 +53,30 @@ def public_survey_form(request, token):
         )
 
     survey = link.survey
+
+    # Single-response check: show friendly message if cookie exists
+    cookie_key = f"survey_done_{link.token[:8]}"
+    if link.single_response:
+        try:
+            request.get_signed_cookie(cookie_key)
+            already_responded = True
+        except Exception:  # BadSignature, KeyError, etc. — any failure means "not yet responded"
+            already_responded = False
+    else:
+        already_responded = False
+    if already_responded:
+        return render(request, "surveys/public_already_responded.html", {
+            "survey": survey,
+        })
+
     sections = survey.sections.filter(
         is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+    ).prefetch_related("questions").select_related(
+        "condition_question",
+    ).order_by("sort_order")
+
+    # Materialise queryset once to support conditional filtering
+    sections_list = list(sections)
 
     if request.method == "POST":
         # Honeypot anti-spam check
@@ -54,10 +84,9 @@ def public_survey_form(request, token):
             # Bots fill in hidden fields; real users won't see it
             return redirect("public_survey_thank_you", token=link.token)
 
-        errors = []
-        answers_data = []
-
-        for section in sections:
+        # 1. Collect all submitted answers
+        all_answers = {}
+        for section in sections_list:
             for question in section.questions.all().order_by("sort_order"):
                 field_name = f"q_{question.pk}"
                 if question.question_type == "multiple_choice":
@@ -65,8 +94,22 @@ def public_survey_form(request, token):
                     raw_value = ";".join(raw_values) if raw_values else ""
                 else:
                     raw_value = request.POST.get(field_name, "").strip()
+                if raw_value:
+                    all_answers[question.pk] = raw_value
 
-                if question.required and not raw_value:
+        # 2. Determine which sections are visible based on answers
+        visible_sections = filter_visible_sections(sections_list, all_answers)
+        visible_section_pks = {s.pk for s in visible_sections}
+
+        # 3. Validate required fields only in visible sections
+        errors = []
+        answers_data = []
+        for section in sections_list:
+            for question in section.questions.all().order_by("sort_order"):
+                raw_value = all_answers.get(question.pk, "")
+                if (question.required
+                        and not raw_value
+                        and section.pk in visible_section_pks):
                     errors.append(question.question_text)
                 if raw_value:
                     answers_data.append((question, raw_value))
@@ -74,7 +117,7 @@ def public_survey_form(request, token):
         if errors:
             # Build repopulation dict keyed by question PK
             repopulate = {}
-            for section in sections:
+            for section in sections_list:
                 for q in section.questions.all():
                     field_name = f"q_{q.pk}"
                     if q.question_type == "multiple_choice":
@@ -83,7 +126,7 @@ def public_survey_form(request, token):
                         repopulate[q.pk] = request.POST.get(field_name, "")
             return render(request, "surveys/public_form.html", {
                 "survey": survey,
-                "sections": sections,
+                "sections": sections_list,
                 "link": link,
                 "posted": request.POST,
                 "repopulate": repopulate,
@@ -120,11 +163,43 @@ def public_survey_form(request, token):
                             break
                 answer.save()
 
-        return redirect("public_survey_thank_you", token=link.token)
+        # Audit trail — do NOT log respondent_name or IP (PIPEDA 4.4)
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            action="post",
+            resource_type="survey",
+            resource_id=response.pk,
+            metadata={
+                "channel": "public_link",
+                "survey_id": survey.pk,
+                "survey_name": survey.name,
+                "link_token_prefix": link.token[:8],
+                "is_anonymous": survey.is_anonymous,
+            },
+        )
+
+        # Store scores in session if survey allows score display
+        if survey.show_scores_to_participant:
+            scores = calculate_section_scores(visible_sections, all_answers)
+            if scores:
+                request.session[f"survey_scores_{link.token}"] = scores
+
+        resp = redirect("public_survey_thank_you", token=link.token)
+
+        # Set signed cookie to discourage repeat submissions
+        if link.single_response:
+            resp.set_signed_cookie(
+                cookie_key, "1",
+                max_age=365 * 24 * 60 * 60,  # 1 year
+                httponly=True,
+                samesite="Lax",
+            )
+
+        return resp
 
     return render(request, "surveys/public_form.html", {
         "survey": survey,
-        "sections": sections,
+        "sections": sections_list,
         "link": link,
         "posted": {},
         "repopulate": {},
@@ -141,6 +216,12 @@ def public_survey_thank_you(request, token):
         return render(request, "surveys/public_expired.html", {
             "survey": None,
         })
+
+    # Retrieve scores from session (one-time read, then clean up)
+    session_key = f"survey_scores_{link.token}"
+    scores = request.session.pop(session_key, None)
+
     return render(request, "surveys/public_thank_you.html", {
         "survey": link.survey,
+        "scores": scores,
     })

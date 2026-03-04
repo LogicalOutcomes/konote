@@ -1,4 +1,5 @@
 {% load i18n %}<!DOCTYPE html>
+{# Django's default 500 handler renders with an empty context, so LANGUAGE_CODE is unavailable. Hardcode lang="en". #}
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -101,6 +102,30 @@
             outline: 2px solid #3176aa;
             outline-offset: 2px;
         }
+        .visually-hidden-focusable {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .visually-hidden-focusable:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            padding: .5rem 1rem;
+            margin: 0;
+            overflow: visible;
+            clip: auto;
+            white-space: normal;
+            background: #3176aa;
+            color: #fff;
+            z-index: 9999;
+        }
         @media (prefers-color-scheme: dark) {
             body { background: #1a202c; color: #e2e8f0; }
             .error-page { background: #2d3748; }
@@ -115,7 +140,8 @@
     </style>
 </head>
 <body>
-    <main>
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+    <main id="main-content" tabindex="-1">
         <article class="error-page" role="alert">
             <header>
                 <span class="error-brand" aria-hidden="true">KoNote</span>

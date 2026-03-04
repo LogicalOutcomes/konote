@@ -1,7 +1,16 @@
+# Log rotation — prevents Docker logs from filling the disk.
+# Applied to all services via the *default-logging anchor.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   web:
     build: .
     restart: unless-stopped
+    logging: *default-logging
     environment:
       - DJANGO_SETTINGS_MODULE=konote.settings.production
       - KONOTE_MODE=${KONOTE_MODE:-production}
@@ -48,6 +57,7 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -65,6 +75,7 @@ services:
   audit_db:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     volumes:
       - audit_pgdata:/var/lib/postgresql/data
       - ./scripts/audit_db_init.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -83,6 +94,7 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - "80:80"
       - "443:443"
@@ -100,12 +112,68 @@ services:
   autoheal:
     image: willfarrell/autoheal
     restart: always
+    logging: *default-logging
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
       - AUTOHEAL_INTERVAL=30
       - AUTOHEAL_START_PERIOD=60
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  # -----------------------------------------------------------------------
+  # Ops sidecar — automated backups, monitoring, health reports
+  # All scheduled tasks run inside this container. No host-level cron needed.
+  # See docs/deploy-ovhcloud.md Section 11 for configuration.
+  # -----------------------------------------------------------------------
+  ops:
+    build:
+      context: .
+      dockerfile: Dockerfile.ops
+      args:
+        KONOTE_VERSION: "${KONOTE_VERSION:-dev}"
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      # Database credentials (for pg_dump / pg_isready)
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-konote}
+      - AUDIT_POSTGRES_USER=${AUDIT_POSTGRES_USER}
+      - AUDIT_POSTGRES_PASSWORD=${AUDIT_POSTGRES_PASSWORD}
+      - AUDIT_POSTGRES_DB=${AUDIT_POSTGRES_DB:-konote_audit}
+      # Domain (for health report subject line)
+      - DOMAIN=${DOMAIN:-localhost}
+      # Email (for health report delivery — same SMTP settings as Django)
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-KoNote <noreply@konote.app>}
+      # Ops-specific settings (all optional — see .env.example)
+      - OPS_HEALTH_REPORT_TO=${OPS_HEALTH_REPORT_TO:-}
+      - HEALTHCHECK_PING_URL=${HEALTHCHECK_PING_URL:-}
+      - ALERT_WEBHOOK_URL=${ALERT_WEBHOOK_URL:-}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - AUDIT_RETENTION_DAYS=${AUDIT_RETENTION_DAYS:-90}
+      - DISK_THRESHOLD=${DISK_THRESHOLD:-80}
+      - OPS_PRUNE_ENABLED=${OPS_PRUNE_ENABLED:-true}
+      - OPS_VERIFY_BACKUPS=${OPS_VERIFY_BACKUPS:-true}
+    volumes:
+      - ./backups:/backups                         # Host-bind backup directory
+      - /var/run/docker.sock:/var/run/docker.sock  # For docker system prune
+    depends_on:
+      db:
+        condition: service_healthy
+      audit_db:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "pgrep", "crond"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   pgdata:

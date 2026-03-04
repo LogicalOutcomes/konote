@@ -37,7 +37,10 @@ from apps.programs.access import (
 )
 from apps.programs.models import UserProgramRole
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
-from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteTemplate
+from .models import (
+    MetricValue, PlausibilityOverrideLog, ProgressNote, ProgressNoteTarget,
+    ProgressNoteTemplate,
+)
 
 
 # Use shared access helpers from apps.programs.access
@@ -104,6 +107,52 @@ def _compute_auto_calc_values(client):
     ).count()
     computed["session_count"] = count
     return computed
+
+
+def _log_plausibility_override(metric_form, final_value, progress_note, user):
+    """Create a PlausibilityOverrideLog entry when a plausibility warning was confirmed.
+
+    Determines which threshold was breached and whether the staff corrected the value.
+    """
+    md = metric_form.metric_def
+    original_str = metric_form.cleaned_data.get("plausibility_original_value", "")
+    try:
+        final_num = float(final_value)
+    except (ValueError, TypeError):
+        return  # Cannot log non-numeric values
+
+    try:
+        original_num = float(original_str) if original_str else final_num
+    except (ValueError, TypeError):
+        original_num = final_num
+
+    # Determine which threshold was breached (use original value to detect)
+    threshold_type = None
+    threshold_value = None
+    if md.warn_min is not None and original_num < md.warn_min:
+        threshold_type = "warn_min"
+        threshold_value = md.warn_min
+    elif md.warn_max is not None and original_num > md.warn_max:
+        threshold_type = "warn_max"
+        threshold_value = md.warn_max
+
+    if not threshold_type:
+        return  # No threshold breach detected
+
+    # Determine if staff corrected the value
+    value_changed = abs(final_num - original_num) > 0.001
+    action = "corrected" if value_changed else "confirmed"
+
+    PlausibilityOverrideLog.objects.create(
+        metric_definition=md,
+        progress_note=progress_note,
+        entered_value=original_num,
+        threshold_type=threshold_type,
+        threshold_value=threshold_value,
+        action=action,
+        corrected_value=final_num if value_changed else None,
+        user=user,
+    )
 
 
 def _get_circle_choices_for_client(client, user=None):
@@ -651,11 +700,19 @@ def note_create(request, client_id):
                         else:
                             val = mf.cleaned_data.get("value", "")
                             if val:
+                                plaus_confirmed = mf.cleaned_data.get("plausibility_confirmed", False)
                                 MetricValue.objects.create(
                                     progress_note_target=pnt,
                                     metric_def_id=mf.cleaned_data["metric_def_id"],
                                     value=val,
+                                    plausibility_confirmed=bool(plaus_confirmed),
+                                    plausibility_confirmed_by=request.user if plaus_confirmed else None,
                                 )
+                                # Log plausibility override if warning was triggered
+                                if plaus_confirmed and hasattr(mf, "metric_def"):
+                                    _log_plausibility_override(
+                                        mf, val, note, request.user,
+                                    )
 
                 # Auto-complete any pending follow-ups from this author for this client
                 ProgressNote.objects.filter(

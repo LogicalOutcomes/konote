@@ -81,7 +81,7 @@ class GoalBuilderBaseTest(TestCase):
         )
 
         # Enable AI
-        FeatureToggle.objects.create(feature_key="ai_assist", is_enabled=True)
+        FeatureToggle.objects.create(feature_key="ai_assist_tools_only", is_enabled=True)
 
     def tearDown(self):
         enc_module._fernet = None
@@ -114,7 +114,7 @@ class GoalBuilderStartTest(GoalBuilderBaseTest):
         self.assertContains(resp, "Goal Builder")
 
     def test_ai_disabled_returns_403(self):
-        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        FeatureToggle.objects.filter(feature_key="ai_assist_tools_only").update(is_enabled=False)
         self.http.login(username="staff", password="pass")
         resp = self.http.get(self.start_url)
         self.assertEqual(resp.status_code, 403)

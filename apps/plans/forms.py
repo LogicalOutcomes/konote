@@ -111,7 +111,8 @@ class MetricDefinitionForm(forms.ModelForm):
         model = MetricDefinition
         fields = [
             "name", "name_fr", "definition", "definition_fr", "category",
-            "metric_type", "min_value", "max_value", "unit", "unit_fr",
+            "metric_type", "min_value", "max_value", "warn_min", "warn_max",
+            "unit", "unit_fr",
             "higher_is_better", "threshold_low", "threshold_high",
             "achievement_options", "achievement_success_values",
             "target_rate", "target_band_high_pct",
@@ -130,6 +131,8 @@ class MetricDefinitionForm(forms.ModelForm):
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
             "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
+            "warn_min": forms.NumberInput(attrs={"step": "any"}),
+            "warn_max": forms.NumberInput(attrs={"step": "any"}),
             "threshold_low": forms.NumberInput(attrs={"step": "any"}),
             "threshold_high": forms.NumberInput(attrs={"step": "any"}),
             "target_rate": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
@@ -146,6 +149,16 @@ class MetricDefinitionForm(forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Help text for non-technical admins
+        self.fields["name"].help_text = _("The name shown when staff select this metric for a goal.")
+        self.fields["name_fr"].help_text = _("French name, shown when a user's language is French. Leave blank to use the English name.")
+        self.fields["definition"].help_text = _("Describe what this metric measures and how to score it. Shown to staff during note entry.")
+        self.fields["definition_fr"].help_text = _("French definition. Leave blank to use the English definition.")
+        self.fields["higher_is_better"].help_text = _("Uncheck for metrics where lower scores indicate improvement (e.g. PHQ-9 depression scale).")
+        self.fields["warn_min"].help_text = _("Soft warning minimum. Values below this trigger a plausibility alert.")
+        self.fields["warn_max"].help_text = _("Soft warning maximum. Values above this trigger a plausibility alert.")
+
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole
             pm_program_ids = set(

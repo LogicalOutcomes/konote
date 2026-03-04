@@ -94,11 +94,16 @@ TENANT_MODEL = "tenants.Agency"
 TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
 
 MIDDLEWARE = [
-    # TenantMainMiddleware MUST be first — it sets the PostgreSQL schema
-    # search_path based on the request's subdomain before anything else runs.
-    "django_tenants.middleware.main.TenantMainMiddleware",
+    # HealthCheckMiddleware MUST be first — it responds to GET /health/ before
+    # TenantMainMiddleware attempts domain lookup (which fails for internal IPs
+    # used by Railway / Docker health probes and load-balancers).
+    "konote.middleware.health_check.HealthCheckMiddleware",
+    # SecurityMiddleware MUST be second for security headers
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoiseMiddleware serves static files directly, before tenant resolution
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # TenantMainMiddleware sets the PostgreSQL schema based on subdomain
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "konote.middleware.htmx_vary.HtmxVaryMiddleware",
@@ -179,8 +184,12 @@ if "postgresql" in DATABASES["default"].get("ENGINE", ""):
     DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
 
 DATABASE_ROUTERS = [
-    "django_tenants.routers.TenantSyncRouter",
+    # AuditRouter MUST come first: it returns True/False definitively for the
+    # audit DB so TenantSyncRouter never sees audit-DB migration calls.
+    # TenantSyncRouter returns False for any db != 'default', which would
+    # incorrectly block audit migrations if it ran before AuditRouter.
     "konote.db_router.AuditRouter",
+    "django_tenants.routers.TenantSyncRouter",
 ]
 
 # Password hashing — Argon2 first
@@ -318,8 +327,14 @@ FIELD_ENCRYPTION_KEY = require_env("FIELD_ENCRYPTION_KEY")
 
 # Portal — participant-facing portal configuration
 EMAIL_HASH_KEY = os.environ.get("EMAIL_HASH_KEY", "")
-if not EMAIL_HASH_KEY and DEMO_MODE:
-    EMAIL_HASH_KEY = "demo-email-hash-key-not-for-production"
+if not EMAIL_HASH_KEY:
+    if DEMO_MODE:
+        EMAIL_HASH_KEY = "demo-email-hash-key-not-for-production"
+    else:
+        raise ImproperlyConfigured(
+            "EMAIL_HASH_KEY must be set in production. "
+            'Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"'
+        )
 PORTAL_DOMAIN = os.environ.get("PORTAL_DOMAIN", "")
 STAFF_DOMAIN = os.environ.get("STAFF_DOMAIN", "")
 

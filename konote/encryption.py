@@ -224,7 +224,7 @@ def check_encryption_key(app_configs, **kwargs):
         )
     finally:
         # Leave the cache clean so the first real use re-initialises normally
-        _master_fernet = None
+        _fernet = None
     return errors
 
 
