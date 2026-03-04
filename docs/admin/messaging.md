@@ -123,9 +123,7 @@ python manage.py send_reminders --hours 24
 0 * * * * docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_reminders >> /var/log/konote-reminders.log 2>&1
 ```
 
-**Railway:**
-
-Add a cron job service in your Railway project configuration that runs `python manage.py send_reminders` on an hourly schedule (e.g., `0 * * * *`).
+**OVHcloud VPS or other Linux host:** Use the cron method above (Linux/Mac cron).
 
 **Windows Task Scheduler:**
 

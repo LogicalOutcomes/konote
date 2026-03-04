@@ -190,7 +190,7 @@ python manage.py cleanup_expired_exports --dry-run
 
 This command should be run as a daily scheduled task (cron job). See the [Export Runbook](export-runbook.md) for setup instructions.
 
-**On Railway:** Files are stored in `/tmp` which is ephemeral -- files disappear when the container restarts or redeploys. This means Railway effectively does its own cleanup, but the database records still need to be cleaned up by the command.
+**Ephemeral storage warning:** If export files are stored in `/tmp` or another ephemeral location, files will disappear when the container restarts or redeploys. Database records still need to be cleaned up by the command. Use a persistent volume for the export directory in production.
 
 ### 9. Audit Trail
 

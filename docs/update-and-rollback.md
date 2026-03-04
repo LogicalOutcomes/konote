@@ -2,9 +2,7 @@
 
 This guide covers how to safely update your KoNote instance to a new version, verify the update worked, and roll back if something goes wrong.
 
-**Applies to:** OVHcloud VPS (Docker Compose), any self-hosted Docker deployment
-
-For Railway or Azure, see the platform-specific sections in [Deploying KoNote](deploying-konote.md).
+**Applies to:** OVHcloud VPS (Docker Compose), any self-hosted Docker deployment, Azure
 
 ---
 
@@ -197,24 +195,6 @@ sudo docker compose up -d --build
 This gives you a safe testing environment before touching production data.
 
 ---
-
-## Railway Updates
-
-Railway auto-deploys from GitHub when you merge to `main`. To roll back:
-
-1. Go to your Railway project → **Deployments**
-2. Find the last working deployment
-3. Click the three dots (⋯) → **Rollback**
-4. Railway redeploys the previous image
-
-If the failed deployment ran database migrations, you may need to restore from a backup. Use the Railway CLI:
-
-```bash
-# Download the backup from Railway
-railway run pg_dump $DATABASE_URL > rollback_main.sql
-
-# Contact Railway support for point-in-time recovery (Pro plan)
-```
 
 ## Azure Updates
 

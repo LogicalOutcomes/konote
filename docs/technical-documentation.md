@@ -137,7 +137,7 @@ KoNote-web/
 │
 ├── Dockerfile                 # Container build
 ├── docker-compose.yml         # Local development stack
-├── railway.json               # Railway deployment config
+├── railway.json               # Legacy Railway deployment config (kept for reference)
 ├── entrypoint.sh              # Container startup script
 ├── requirements.txt           # Python dependencies
 └── manage.py                  # Django CLI
@@ -186,7 +186,7 @@ python manage.py migrate --database=audit
 ### Backups
 
 Both databases should be backed up regularly. See [Backup & Restore Runbook](backup-restore-runbook.md) for:
-- Manual backup commands for Docker Compose, Railway, and Azure
+- Manual backup commands for Docker Compose (OVHcloud VPS) and Azure
 - Automated backup scripts (Windows Task Scheduler, cron)
 - Cloud storage integration (Azure Blob Storage)
 - Disaster recovery scenarios and testing schedule
@@ -1325,7 +1325,7 @@ KoNote includes several custom management commands for scheduled tasks, maintena
 
 ### Scheduled Commands
 
-These commands are intended to run on a schedule (cron, Railway cron, Azure scheduled task, etc.).
+These commands are intended to run on a schedule (Docker Compose ops sidecar, Azure scheduled task, cron, etc.).
 
 #### `send_reminders` — Automated Appointment Reminders
 

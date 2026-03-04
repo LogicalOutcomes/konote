@@ -6,7 +6,7 @@ Usage:
     python manage.py send_export_summary --dry-run     # Preview without sending
     python manage.py send_export_summary --days 14     # Custom lookback window
 
-Intended to run as a weekly scheduled task (cron, Railway cron, etc.).
+Intended to run as a weekly scheduled task (cron, ops sidecar, etc.).
 Stateless and idempotent — safe to run multiple times.
 """
 import logging

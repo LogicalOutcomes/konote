@@ -4,7 +4,6 @@
 > deployment guides originally planned as separate files (deploy-azure.md,
 > deploy-elestio.md, deploy-railway.md) were consolidated into:
 > - `docs/deploying-konote.md` (main deployment guide)
-> - `docs/deploy-fullhost.md` (full-host deployment)
 >
 > The individual `docs/deploy-azure.md`, `docs/deploy-elestio.md`, and
 > `docs/deploy-railway.md` files were never created as separate documents.
@@ -25,7 +24,7 @@ I'm building KoNote Web, a nonprofit client management system. Phases 1-6 are do
 - The app uses Django 5, PostgreSQL (two databases: app + audit), Docker Compose, Caddy for TLS
 - Auth: Azure AD SSO or local with Argon2
 - PII encrypted with Fernet, audit logs in separate INSERT-only database
-- Deployable to: Azure (production), Elest.io (EU/GDPR), Railway (dev/prototype)
+- Deployable to: Azure (production), OVHcloud VPS / Docker Compose (primary managed deployment)
 
 ### What to Build
 

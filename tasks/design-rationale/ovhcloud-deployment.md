@@ -4,7 +4,7 @@
 
 ## Context
 
-KoNote handles PHIPA-protected health data for Ontario nonprofits. The current Railway hosting (US-incorporated, US data centres) does not meet data sovereignty requirements for production agency deployments. This document records the architectural decisions for hosting KoNote on OVHcloud Beauharnois, QC — including the full deployment stack, automated self-healing, backup strategy, and encryption key management.
+KoNote handles PHIPA-protected health data for Ontario nonprofits. OVHcloud Beauharnois (QC) is the recommended production hosting — a French-incorporated company not subject to the US CLOUD Act. This document records the architectural decisions for the full deployment stack, automated self-healing, backup strategy, and encryption key management.
 
 **Related documents:**
 - [Hosting cost comparison](../hosting-cost-comparison.md) — Azure vs OVHcloud pricing at 1, 5, and 10 agency scales
@@ -16,25 +16,24 @@ KoNote handles PHIPA-protected health data for Ontario nonprofits. The current R
 
 ### Why OVHcloud
 
-| Factor | OVHcloud | Azure | Railway |
-|--------|----------|-------|---------|
-| Parent company | OVH Groupe SA (French) | Microsoft (US) | Railway (US) |
-| US CLOUD Act | **Not subject** | Subject | Subject |
-| Data centre | Beauharnois, QC | Toronto (Canada Central) | US only |
-| Canadian LE jurisdiction | Yes (Sept 2025 Ontario ruling) | Yes | N/A |
-| Cost (10 agencies, multi-tenant) | ~$116 CAD/mo total | ~$456 CAD/mo total | Not viable |
+| Factor | OVHcloud | Azure |
+|--------|----------|-------|
+| Parent company | OVH Groupe SA (French) | Microsoft (US) |
+| US CLOUD Act | **Not subject** | Subject |
+| Data centre | Beauharnois, QC | Toronto (Canada Central) |
+| Canadian LE jurisdiction | Yes (Sept 2025 Ontario ruling) | Yes |
+| Cost (10 agencies, multi-tenant) | ~$116 CAD/mo total | ~$456 CAD/mo total |
 
 **Key rationale:** The US CLOUD Act applies to US-incorporated companies regardless of where their data centres are located. OVHcloud's parent (OVH Groupe SA) is French-incorporated and not subject to US government data requests for Canadian operations. Canadian law enforcement jurisdiction over Canadian data at OVHcloud is expected and acceptable for KoNote's threat model.
 
 **Exception for populations with Canadian LE concerns:** Agencies serving undocumented newcomers or populations with specific concerns about Canadian law enforcement should evaluate whether the Sept 2025 Ontario court ruling (RCMP compelling OVH Canada to produce data) affects their risk profile.
 
-### What Azure Key Vault Adds
+### Encryption Key Management
 
-Even in the OVHcloud scenario, Azure Key Vault is used for encryption key management (see [Encryption Key Management](#encryption-key-management) below). This introduces a limited Azure dependency:
+KoNote's `FIELD_ENCRYPTION_KEY` must be stored in a managed key service — not just in `.env`. Two options are supported (see [Encryption Key Management](#encryption-key-management) below):
 
-- Only the `FIELD_ENCRYPTION_KEY` is stored in Azure — not participant data
-- The key alone is useless without access to the encrypted database on OVHcloud
-- If zero Azure dependency is required, alternatives exist (see below)
+- **OVHcloud KMS** (recommended) — Same provider as hosting, no cross-provider dependency, full data sovereignty
+- **Azure Key Vault** — Mature service, strong audit logging. Introduces a limited Azure dependency (key only, not participant data)
 
 ---
 
@@ -69,7 +68,7 @@ Even in the OVHcloud scenario, Azure Key Vault is used for encryption key manage
 └─────────────────────────────────────────────────────────┘
 
 External:
-  ├── Azure Key Vault (encryption key storage)
+  ├── OVHcloud KMS or Azure Key Vault (encryption key storage)
   ├── OpenRouter API (translation + metrics/targets AI)
   ├── UptimeRobot (external uptime monitoring)
   └── Let's Encrypt (TLS via Caddy auto-HTTPS)
@@ -77,7 +76,7 @@ External:
 
 ### Container Stack
 
-The `docker-compose.yml` runs unmodified on any Docker host (OVHcloud, Azure, FullHost). Four application containers plus two operational containers:
+The `docker-compose.yml` runs unmodified on any Docker host (OVHcloud, Azure, or any VPS). Four application containers plus two operational containers:
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
@@ -109,7 +108,7 @@ The production `docker-compose.yml` needs two additions for OVHcloud deployment:
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
-**2. HEALTHCHECK on the web container** — the web container currently relies on Railway's external health check (`/auth/login/`). For OVHcloud, add an internal Docker HEALTHCHECK:
+**2. HEALTHCHECK on the web container** — add an internal Docker HEALTHCHECK so autoheal can detect and restart unhealthy containers:
 
 ```yaml
   web:
@@ -232,7 +231,7 @@ The ops container connects directly to `db:5432` and `audit_db:5432` over the Do
 | Audit PostgreSQL (audit log) | `pg_dump` via cron | Nightly (2 AM ET) | 90 days (compliance) |
 | Docker volumes (pgdata) | Implicit in pg_dump | — | — |
 | `.env` file | Manual backup | On change | Stored in password manager |
-| `FIELD_ENCRYPTION_KEY` | Azure Key Vault | Always available | Key Vault versioning |
+| `FIELD_ENCRYPTION_KEY` | OVHcloud KMS or Azure Key Vault | Always available | KMS versioning |
 
 ### Off-Site Backup Storage
 
@@ -257,6 +256,32 @@ On-VPS backups protect against application failures but not hardware failures. O
 
 ### Architecture
 
+The `FIELD_ENCRYPTION_KEY` is stored in a managed key service and read at container startup. Two options:
+
+#### Option A: OVHcloud KMS (Recommended)
+
+```
+┌──────────────────────┐         ┌──────────────────────┐
+│  OVHcloud VPS        │         │  OVHcloud KMS         │
+│                      │         │  (Beauharnois, QC)    │
+│  Django app reads    │◄────────│  FIELD_ENCRYPTION_KEY  │
+│  key at startup      │  HTTPS  │  stored as CMK        │
+│  via REST/KMIP API   │         │                      │
+│                      │         │  Access: certificate- │
+│  Key cached in       │         │  based authentication │
+│  process memory      │         │                      │
+└──────────────────────┘         └──────────────────────┘
+```
+
+OVHcloud KMS supports Customer Managed Keys (CMK) via REST API or KMIP API. The key stays within the same provider and jurisdiction as the database — full data sovereignty with no cross-provider dependency.
+
+- KMS is accessible via REST API with certificate-based authentication
+- Key lifecycle management (create, rotate, revoke) through OVHcloud Control Panel or API
+- OVHcloud is pursuing ISO 27001 and FIPS 140-3 certification for KMS
+- Cost: included with OVHcloud account (pay-per-key pricing)
+
+#### Option B: Azure Key Vault
+
 ```
 ┌──────────────────────┐         ┌──────────────────────┐
 │  OVHcloud VPS        │         │  Azure Key Vault      │
@@ -270,37 +295,37 @@ On-VPS backups protect against application failures but not hardware failures. O
 └──────────────────────┘         └──────────────────────┘
 ```
 
-### How It Works
+Azure Key Vault is a mature service with strong audit logging and versioning. It introduces a limited Azure dependency — only the encryption key is stored there, not participant data. The key alone is useless without access to the encrypted database on OVHcloud.
 
-1. **At container startup**, Django reads `FIELD_ENCRYPTION_KEY` from Azure Key Vault using the Azure Identity SDK
+### How It Works (Both Options)
+
+1. **At container startup**, Django reads `FIELD_ENCRYPTION_KEY` from the key management service (OVHcloud KMS or Azure Key Vault)
 2. The key is cached in process memory for the lifetime of the Gunicorn workers
-3. All Fernet encrypt/decrypt operations use the in-memory key — no per-operation Key Vault calls
-4. Key Vault operations: ~2 per day (startup + any worker recycle) = negligible cost (~$1–5 CAD/mo)
-
-### Access Control
-
-- **Azure AD service principal** with `Key Vault Secrets User` role (read-only)
-- Service principal credentials (`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`) stored in `.env` on the VPS
-- Key Vault access policy: deny all except the service principal
-- Key Vault audit logging enabled (who accessed what, when)
+3. All Fernet encrypt/decrypt operations use the in-memory key — no per-operation KMS calls
+4. KMS operations: ~2 per day (startup + any worker recycle) = negligible cost
 
 ### Key Custody
 
-- **Primary:** Azure Key Vault (always available, versioned, audited)
+- **Primary:** Managed key service (OVHcloud KMS or Azure Key Vault) — always available, versioned
 - **Emergency backup:** Printed key stored in sealed envelope, held by two designated officers (executive director + board member). Neither person alone can access the key.
 - **Key rotation:** Supported by Fernet (decrypt with old key, re-encrypt with new key). Schedule: annually or on personnel change.
 
-### Alternative to Azure Key Vault
+### Comparison
 
-If zero Azure dependency is required:
+| Factor | OVHcloud KMS | Azure Key Vault |
+|--------|-------------|-----------------|
+| Data sovereignty | Full (same provider/jurisdiction) | Limited Azure dependency (US CLOUD Act applies to key, not data) |
+| Audit logging | Via OVHcloud API | Built-in, mature |
+| Maturity | Newer service (launched 2025) | Established, widely used |
+| Authentication | Certificate-based | Azure AD service principal |
+| Cost | Included with OVHcloud account | ~$1–5 CAD/month |
+| Cross-provider dependency | None | Yes (Azure account required) |
 
-| Alternative | Pros | Cons |
-|-------------|------|------|
-| HashiCorp Vault (self-hosted on OVHcloud) | No Azure dependency, full sovereignty | Operational overhead, another service to maintain |
-| Manual key custody (`.env` file + sealed envelope) | Simple, no external dependency | No audit trail, no programmatic rotation |
-| OVHcloud KMS (if available in BHS) | Same provider, no cross-provider dependency | Limited availability, less mature than Azure KV |
+**Current recommendation:** OVHcloud KMS for full data sovereignty. Azure Key Vault remains a valid alternative for organisations already using Azure AD or needing its mature audit logging.
 
-**Current recommendation:** Azure Key Vault. The CLOUD Act exposure is limited to the encryption key only, and the operational benefits (audit logging, versioning, access policies) outweigh the theoretical risk.
+### Anti-pattern: Key in `.env` Only
+
+Do not store `FIELD_ENCRYPTION_KEY` only in the `.env` file. This creates a single point of failure with no audit trail, no programmatic rotation, and no access control beyond SSH. Always use a managed key service plus a sealed envelope emergency backup.
 
 ---
 
@@ -355,7 +380,7 @@ Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 
 **Prerequisites:**
 - MT-CORE1: Integrate django-tenants for schema-per-tenant
-- MT-ENCRYPT1: Per-tenant encryption keys (each agency's FIELD_ENCRYPTION_KEY in Key Vault)
+- MT-ENCRYPT1: Per-tenant encryption keys (each agency's FIELD_ENCRYPTION_KEY in KMS)
 - Caddy wildcard or multi-domain config for tenant routing
 
 ---
@@ -367,18 +392,17 @@ For the first OVHcloud deployment (single agency):
 1. **Provision VPS-2** on OVHcloud Canada (Beauharnois)
 2. **Install Docker + Docker Compose** on the VPS
 3. **Generate credentials:** `SECRET_KEY`, database passwords (via `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)
-4. **Create Azure Key Vault** in Canada Central, store `FIELD_ENCRYPTION_KEY`
-5. **Create Azure AD service principal** with read-only Key Vault access
-6. **Configure `.env`** with all environment variables (see `.env.example`)
-7. **Set `DOMAIN`** in `.env` for Caddy auto-HTTPS
-8. **Configure DNS** — point agency domain to VPS IP
-9. **Create backup directory:** `sudo mkdir -p /opt/konote/backups`
-10. **Deploy:** `docker compose up -d` — this starts all services including the ops sidecar (automated backups, monitoring, health reports)
-11. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE), ops container running
-12. **Configure UptimeRobot** — monitor HTTPS endpoint for external uptime monitoring
-13. **Optional:** Set `OPS_HEALTH_REPORT_TO`, `HEALTHCHECK_PING_URL`, `ALERT_WEBHOOK_URL` in `.env` for enhanced monitoring
-14. **Test backup/restore** — run `docker compose exec ops /usr/local/bin/ops-backup.sh`, verify files in `./backups/`
-15. **Document:** VPS IP, domain, Key Vault name, service principal, backup location
+4. **Store `FIELD_ENCRYPTION_KEY`** in OVHcloud KMS (or Azure Key Vault if using Azure)
+5. **Configure `.env`** with all environment variables (see `.env.example`)
+6. **Set `DOMAIN`** in `.env` for Caddy auto-HTTPS
+7. **Configure DNS** — point agency domain to VPS IP
+8. **Create backup directory:** `sudo mkdir -p /opt/konote/backups`
+9. **Deploy:** `docker compose up -d` — this starts all services including the ops sidecar (automated backups, monitoring, health reports)
+10. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE), ops container running
+11. **Configure UptimeRobot** — monitor HTTPS endpoint for external uptime monitoring
+12. **Optional:** Set `OPS_HEALTH_REPORT_TO`, `HEALTHCHECK_PING_URL`, `ALERT_WEBHOOK_URL` in `.env` for enhanced monitoring
+13. **Test backup/restore** — run `docker compose exec ops /usr/local/bin/ops-backup.sh`, verify files in `./backups/`
+14. **Document:** VPS IP, domain, KMS configuration, backup location
 
 ---
 
@@ -389,7 +413,7 @@ For the first OVHcloud deployment (single agency):
 | OVHcloud Beauharnois outage | Low | High (downtime) | UptimeRobot alerts, backup restore to new VPS |
 | VPS hardware failure | Low | High (data loss if no off-site backup) | Nightly off-site backups, test monthly restore |
 | OVHcloud discontinues BHS region | Very low | Medium | Architecture is provider-agnostic — migrate Docker Compose to any VPS |
-| Azure Key Vault outage | Very low | Medium (can't restart) | Emergency key in sealed envelope, restart with env var fallback |
+| KMS outage (OVHcloud or Azure) | Very low | Medium (can't restart) | Emergency key in sealed envelope, restart with env var fallback |
 | Disk full | Medium | High (DB crash) | Preventive cron, disk alerts, log rotation |
 | Unpatched vulnerability | Medium | High | Automated `apt upgrade` via `unattended-upgrades`, Docker image updates |
 | LLM batch failure | Low | Low (suggestions queue) | Retry next night, alert on failure, no data loss |
@@ -656,7 +680,7 @@ At full automation, one person can manage 10 multi-tenant agency instances in ~3
 - Store database backups on Azure Blob Storage or AWS S3 (reintroduces CLOUD Act exposure)
 - Run PostgreSQL without Docker volumes (data loss on container recreation)
 - Skip the autoheal container (silent failures with no recovery)
-- Store `FIELD_ENCRYPTION_KEY` only in `.env` (single point of failure — use Key Vault)
+- Store `FIELD_ENCRYPTION_KEY` only in `.env` (single point of failure — use OVHcloud KMS or Azure Key Vault)
 - Run Ollama on the same VPS as a high-traffic multi-tenant deployment (resource contention)
 - Send agency identifiers to the LLM endpoint (unnecessary data exposure)
 - Use OVHcloud's built-in VPS backup feature as the only backup (no granular restore, no off-site copy)

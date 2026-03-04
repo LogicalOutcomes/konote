@@ -41,7 +41,7 @@ $$;
 -- ---------------------------------------------------------------
 -- 2. audit_writer — the role Django uses for the audit database
 -- ---------------------------------------------------------------
--- This role is created by Docker Compose / Railway environment variables.
+-- This role is created by Docker Compose environment variables.
 -- The statements below are for reference and will be applied by the
 -- lockdown_audit_db management command AFTER migrations complete.
 --

@@ -426,7 +426,7 @@ class SecureExportLink(models.Model):
     24 hours and can be revoked by admins at any time.
 
     File storage: Files are saved to SECURE_EXPORT_DIR (outside web root).
-    On Railway, this is ephemeral /tmp — files disappear on deploy, which
+    On some platforms, this is ephemeral /tmp — files disappear on deploy, which
     is acceptable for 24-hour links.
     """
 

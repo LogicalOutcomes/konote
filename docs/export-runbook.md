@@ -8,13 +8,13 @@ For a detailed explanation of how the export system works internally, see [Secur
 
 ### Required Environment Variables
 
-These environment variables must be set in your hosting environment (Railway, Azure, etc.).
+These environment variables must be set in your hosting environment (Azure, OVHcloud VPS, etc.).
 
 **Essential for exports to work:**
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `SECURE_EXPORT_DIR` | No | System temp folder + `konote_exports` | Where export files are stored on disk. Must be outside the web root. On Railway, the default (`/tmp/konote_exports`) is fine. |
+| `SECURE_EXPORT_DIR` | No | System temp folder + `konote_exports` | Where export files are stored on disk. Must be outside the web root. |
 | `SECURE_EXPORT_LINK_EXPIRY_HOURS` | No | `24` | How long download links remain active. |
 | `ELEVATED_EXPORT_DELAY_MINUTES` | No | `10` | How long elevated exports (100+ clients or including notes) are held before download is allowed. |
 
@@ -36,7 +36,7 @@ These environment variables must be set in your hosting environment (Railway, Az
 
 PDF exports (funder reports, client progress reports) require **WeasyPrint**, which needs native GTK libraries installed on the server.
 
-**On Docker/Railway:** These are installed in the Dockerfile automatically.
+**On Docker:** These are installed in the Dockerfile automatically.
 
 **On a local Windows machine:** PDF generation may not be available. If WeasyPrint is not installed, users will see a "PDF generation unavailable" page, but CSV exports will still work.
 
@@ -64,13 +64,7 @@ python manage.py cleanup_expired_exports --dry-run
 
 ### Setting Up the Cron Job
 
-**On Railway:** Railway does not have built-in cron. Options:
-
-1. **Use Railway's cron service** -- create a separate service in your Railway project that runs the cleanup command on a schedule
-2. **Use an external scheduler** -- services like cron-job.org or GitHub Actions can call a management command via a health-check endpoint
-3. **Accept ephemeral cleanup** -- on Railway, the `/tmp` folder is wiped on every deploy, so files are cleaned up naturally. You still need the command to clean up database records, but it is less urgent
-
-**On a Linux server (Azure VM, Elest.io, etc.):**
+**On a Linux server (OVHcloud VPS, Azure VM, etc.):**
 
 Add this to your crontab (`crontab -e`):
 
@@ -124,8 +118,6 @@ python manage.py send_export_summary --days 14
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Yes (production) | (empty) | SMTP credentials. See the email settings table above. |
 
 **Setting up the weekly cron job:**
-
-*On Railway:* Create a separate Railway service (cron service) or use an external scheduler (GitHub Actions scheduled workflow, cron-job.org) to invoke this command once per week.
 
 *On a Linux server:*
 
@@ -187,8 +179,6 @@ python manage.py check_report_deadlines --dry-run
 
 **Setting up the daily cron job:**
 
-*On Railway:* Create a Railway cron service or use an external scheduler to invoke this command once per day.
-
 *On a Linux server:*
 
 ```cron
@@ -237,7 +227,7 @@ All three commands should be scheduled in production:
 0 8 * * 1   cd /path/to/konote-web && python manage.py send_export_summary >> /var/log/konote_export_summary.log 2>&1
 ```
 
-**On Railway with Docker Compose**, run these from the host machine's crontab using `docker compose exec`:
+**On OVHcloud VPS or any Docker Compose host**, run these from the host machine's crontab using `docker compose exec`:
 
 ```cron
 0 3 * * *   docker compose -f /path/to/docker-compose.yml exec -T web python manage.py cleanup_expired_exports
@@ -367,12 +357,12 @@ az containerapp job update --name konote-export-summary --resource-group KoNote-
 
 **What the user sees:** A page saying "The export file is no longer available on the server."
 
-**What happened:** The download link is still valid (not expired, not revoked), but the actual file has been deleted from disk. This typically happens on Railway when the container restarts or redeploys.
+**What happened:** The download link is still valid (not expired, not revoked), but the actual file has been deleted from disk. This can happen when the container restarts or redeploys (if using ephemeral storage), or if the cleanup command ran too aggressively.
 
 **What to do:**
 - The user needs to create a new export
-- This is expected behaviour on Railway because of ephemeral storage
-- On persistent servers, this could indicate the cleanup command ran too aggressively, or someone manually deleted files from the export directory
+- Check that the export directory is on a persistent volume (not ephemeral `/tmp`)
+- If using Docker Compose, verify the export directory is mounted as a volume
 
 ### "Permission denied" (403 error)
 
@@ -444,7 +434,7 @@ If the scheduled tasks are configured correctly (see the Scheduled Tasks section
 | Symptom | Possible Cause | Action |
 |---|---|---|
 | No email notifications for elevated exports | Email not configured, or SMTP credentials wrong | Check `EMAIL_BACKEND` and SMTP settings in environment variables |
-| "File Missing" status on recent exports | Container restarted (Railway), or cleanup ran early | Expected on Railway; on persistent servers, check disk and cleanup schedule |
+| "File Missing" status on recent exports | Container restarted with ephemeral storage, or cleanup ran early | Check export directory is on a persistent volume; review cleanup schedule |
 | Unexpectedly high download counts | Link may have been shared too widely | Review the audit log; consider revoking the link |
 | Exports from unexpected users | Permission misconfiguration | Review user roles on the Admin > Users page |
 | Disk space growing in export directory | Cleanup not running | Run `cleanup_expired_exports` manually; set up cron |
@@ -505,7 +495,7 @@ ORDER BY event_timestamp DESC;
    - **Pending** -- it is an elevated export still in the delay period. Tell the user to wait
    - **Expired** -- the link has passed its expiry time. The user needs to create a new export
    - **Revoked** -- an admin revoked this link. Check with the admin team why
-   - **File Missing** -- the file was deleted from disk (common after Railway redeploys). The user needs to create a new export
+   - **File Missing** -- the file was deleted from disk (container restart with ephemeral storage, or cleanup). The user needs to create a new export
 
 ### Step-by-step: Admin not receiving elevated export emails
 
@@ -518,7 +508,7 @@ ORDER BY event_timestamp DESC;
 
 ### Step-by-step: Weekly summary or deadline reminder emails are not arriving
 
-1. **Check that the commands are scheduled** — verify the cron job or Railway service is configured to run them
+1. **Check that the commands are scheduled** — verify the cron job is configured to run them
 2. **Run manually with `--dry-run`** to confirm the command itself works:
    ```
    python manage.py send_export_summary --dry-run
