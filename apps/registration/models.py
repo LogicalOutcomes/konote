@@ -192,15 +192,11 @@ class RegistrationSubmission(models.Model):
                 # Fallback with timestamp
                 self.reference_number = f"REG-{secrets.token_hex(4).upper()}"
 
-        # Update email hash if email is set (HMAC-SHA-256, matching portal)
+        # Update email hash if email is set
         if self._email_encrypted:
             email = self.email.lower().strip() if self.email else ""
             if email:
-                self.email_hash = hmac.new(
-                    settings.EMAIL_HASH_KEY.encode(),
-                    email.encode(),
-                    hashlib.sha256,
-                ).hexdigest()
+                self.email_hash = self._compute_email_hash(email)
 
         super().save(*args, **kwargs)
 
@@ -237,15 +233,19 @@ class RegistrationSubmission(models.Model):
     @email.setter
     def email(self, value):
         self._email_encrypted = encrypt_field(value)
-        # Update hash when email is set (HMAC-SHA-256, matching portal)
         if value:
-            self.email_hash = hmac.new(
-                settings.EMAIL_HASH_KEY.encode(),
-                value.lower().strip().encode(),
-                hashlib.sha256,
-            ).hexdigest()
+            self.email_hash = self._compute_email_hash(value.lower().strip())
         else:
             self.email_hash = ""
+
+    @staticmethod
+    def _compute_email_hash(email):
+        """Keyed HMAC-SHA-256 hash matching the portal's pattern."""
+        return hmac.new(
+            settings.EMAIL_HASH_KEY.encode(),
+            email.encode(),
+            hashlib.sha256,
+        ).hexdigest()
 
     @property
     def phone(self):

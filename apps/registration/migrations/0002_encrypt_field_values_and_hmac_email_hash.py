@@ -20,7 +20,7 @@ def encrypt_field_values_and_rehash_emails(apps, schema_editor):
     # Import encryption helpers directly
     from konote.encryption import decrypt_field, encrypt_field
 
-    for sub in RegistrationSubmission.objects.all():
+    for sub in RegistrationSubmission.objects.all().iterator():
         changed = False
 
         # --- PRIV-M3: Encrypt field_values ---
@@ -63,7 +63,7 @@ def reverse_encrypt_field_values(apps, schema_editor):
     RegistrationSubmission = apps.get_model("registration", "RegistrationSubmission")
     from konote.encryption import decrypt_field
 
-    for sub in RegistrationSubmission.objects.all():
+    for sub in RegistrationSubmission.objects.all().iterator():
         if sub._field_values_encrypted:
             try:
                 raw = decrypt_field(sub._field_values_encrypted)
