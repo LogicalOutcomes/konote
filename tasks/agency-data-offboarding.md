@@ -304,7 +304,7 @@ These pieces already exist and can be reused:
 - **`rotate_encryption_key` command** — pattern for iterating all encrypted models
 - **`AuditLog`** — audit database logging
 - **`SecureExportLink`** — time-limited download links (for Tier 1 delivery and SaaS Tier 2 delivery)
-- **`backup-restore.md`** — documents `pg_dump` procedures for all platforms
+- **`docs/deploying-konote.md`** — documents `pg_dump` procedures
 - **Django `_meta` API** — for automatic model discovery and relationship walking
 
 ---
