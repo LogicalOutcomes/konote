@@ -18808,3 +18808,146 @@ msgstr "Demande reçue par"
 
 msgid "Withdrawal date cannot be in the future."
 msgstr "La date de retrait ne peut pas être dans le futur."
+
+#: templates/admin_settings/configuration_overview.html
+msgid "Configuration Overview"
+msgstr "Aperçu de la configuration"
+
+msgid "Read-only summary of all active settings. Designed for printing."
+msgstr "Résumé en lecture seule de tous les paramètres actifs. Conçu pour l'impression."
+
+msgid "Back to Settings"
+msgstr "Retour aux paramètres"
+
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Legal Name"
+msgstr "Nom légal"
+
+msgid "Operating Name"
+msgstr "Nom d'exploitation"
+
+msgid "Legal Status"
+msgstr "Statut juridique"
+
+msgid "Sector Codes"
+msgstr "Codes sectoriels"
+
+msgid "Access Tier"
+msgstr "Niveau d'accès"
+
+msgid "Tier"
+msgstr "Niveau"
+
+msgid "Privacy Officer"
+msgstr "Responsable de la protection de la vie privée"
+
+msgid "Consent Requirement"
+msgstr "Exigence de consentement"
+
+msgid "Required"
+msgstr "Requis"
+
+msgid "Not required"
+msgstr "Non requis"
+
+msgid "Cross-Program Note Sharing"
+msgstr "Partage de notes entre programmes"
+
+msgid "Feature"
+msgstr "Fonctionnalité"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Off"
+msgstr "Désactivé"
+
+msgid "Missing config:"
+msgstr "Configuration manquante :"
+
+msgid "Term"
+msgstr "Terme"
+
+msgid "Default"
+msgstr "Par défaut"
+
+msgid "English Override"
+msgstr "Remplacement anglais"
+
+msgid "French Override"
+msgstr "Remplacement français"
+
+msgid "No terminology overrides. All terms use defaults."
+msgstr "Aucun remplacement de terminologie. Tous les termes utilisent les valeurs par défaut."
+
+msgid "Metrics & Assessments"
+msgstr "Indicateurs et évaluations"
+
+msgid "%(enabled)s of %(total)s metrics enabled."
+msgstr "%(enabled)s indicateurs sur %(total)s activés."
+
+msgid "Library Instruments"
+msgstr "Instruments de la bibliothèque"
+
+msgid "Range"
+msgstr "Plage"
+
+msgid "Scoring Bands"
+msgstr "Bandes de cotation"
+
+msgid "Low"
+msgstr "Faible"
+
+msgid "Mid"
+msgstr "Moyen"
+
+msgid "High"
+msgstr "Élevé"
+
+msgid "No library instruments are currently enabled."
+msgstr "Aucun instrument de la bibliothèque n'est actuellement activé."
+
+msgid "Brand Colour"
+msgstr "Couleur de marque"
+
+msgid "Date Format"
+msgstr "Format de date"
+
+msgid "Session Timeout"
+msgstr "Délai d'expiration de la session"
+
+msgid "%(mins)s minutes"
+msgstr "%(mins)s minutes"
+
+msgid "Document Storage"
+msgstr "Stockage de documents"
+
+msgid "SMS (Twilio)"
+msgstr "SMS (Twilio)"
+
+msgid "ODK Central (Field Collection)"
+msgstr "ODK Central (collecte sur le terrain)"
+
+msgid "Staff Messaging"
+msgstr "Messagerie du personnel"
+
+msgid "Automated Reminders"
+msgstr "Rappels automatisés"
+
+msgid "Recent Configuration Changes"
+msgstr "Modifications récentes de la configuration"
+
+msgid "Detail"
+msgstr "Détail"
+
+msgid "No recent configuration changes found in the audit log."
+msgstr "Aucune modification récente de la configuration trouvée dans le journal d'audit."
+
+#: templates/admin_settings/dashboard.html (Configuration Overview card)
+msgid "Read-only summary of all active settings in one place. Designed for printing."
+msgstr "Résumé en lecture seule de tous les paramètres actifs en un seul endroit. Conçu pour l'impression."
+
+msgid "View Configuration"
+msgstr "Voir la configuration"
