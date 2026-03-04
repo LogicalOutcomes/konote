@@ -233,9 +233,13 @@ def _local_login(request):
     demo_users = []
     demo_portal_participants = []
     if settings.DEMO_MODE:
+        # Auto-detect: if instance-specific demo users exist (any group
+        # other than 'default'), show only those and suppress the defaults.
+        all_demo = User.objects.filter(is_demo=True, is_active=True)
+        instance_specific = all_demo.exclude(demo_group="default")
+        qs = instance_specific if instance_specific.exists() else all_demo
         demo_users = list(
-            User.objects.filter(is_demo=True, is_active=True)
-            .order_by("display_name")
+            qs.order_by("display_name")
             .values("username", "display_name")
         )
         from apps.portal.models import ParticipantUser
