@@ -337,12 +337,13 @@ Visit `http://localhost:8000` to access the application.
 
 ## Deployment
 
-KoNote is designed to run on your own infrastructure. See [Deploying KoNote](docs/deploying-KoNote.md) for complete instructions, including:
+KoNote is designed to run on your own infrastructure. The recommended deployment is an **OVHcloud VPS** (Beauharnois, QC — Canadian data residency, ~$22 CAD/month) running Docker Compose with built-in automated backups, health monitoring, and self-healing.
 
+See [Deploying KoNote](docs/deploying-KoNote.md) for the full guide, or jump straight to the [OVHcloud deployment guide](docs/deploy-ovhcloud.md).
+
+- **[OVHcloud VPS](docs/deploy-ovhcloud.md)** — Recommended: Docker Compose with automated ops (backups, monitoring, self-healing)
 - **[Local Development (Docker)](docs/deploying-KoNote.md#local-development-docker)** — Try KoNote locally
-- **[Railway](docs/deploying-KoNote.md#deploy-to-railway)** — Platform-as-a-Service, easy setup
-- **[Azure](docs/deploying-KoNote.md#deploy-to-azure)** — Azure Container Apps + managed PostgreSQL
-- **[Elestio](docs/deploying-KoNote.md#deploy-to-elestio)** — Docker Compose on managed hosting
+- **Any Docker-capable VPS** — The stack is portable to any Linux server with Docker
 
 ### Docker
 

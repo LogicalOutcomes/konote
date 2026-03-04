@@ -14,7 +14,7 @@ Every new KoNote instance starts with no users. You need to create the first adm
 # Docker:
 docker-compose exec web python manage.py createsuperuser
 
-# Direct / Railway:
+# Direct (OVHcloud VPS, Azure, etc.):
 python manage.py createsuperuser
 ```
 

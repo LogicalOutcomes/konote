@@ -264,13 +264,14 @@ After confirming everything works:
 
 ---
 
-## Migrating Data from Railway
+## Migrating Data from Another Deployment
 
-If you have existing data on Railway:
+If you have existing data on an OVHcloud VPS or another deployment:
 
-1. **Export from Railway:**
-   - Use `pg_dump` to export your database (Railway provides connection details)
+1. **Export from the existing server:**
+   - SSH into the server and use `pg_dump` to export your database
    - Export both the main database and audit database
+   - See `docs/backup-restore-runbook.md` for exact commands
 
 2. **Import to Azure:**
    - Use the Azure Cloud Shell or a local PostgreSQL client
@@ -281,7 +282,7 @@ If you have existing data on Railway:
    - You MUST use the same `FIELD_ENCRYPTION_KEY`
    - Test that you can view existing client names after migration
 
-Detailed migration steps depend on your Railway setup — ask for help when you're ready to migrate.
+Detailed migration steps depend on your source setup — ask for help when you're ready to migrate.
 
 ---
 

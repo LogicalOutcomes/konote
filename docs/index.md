@@ -83,9 +83,8 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 ### For Deployment
 
 - [Local Development (Docker)](deploying-KoNote.md#local-development-docker)
-- [Deploy to Railway](deploying-KoNote.md#deploy-to-railway)
+- [Deploy to OVHcloud VPS](deploy-ovhcloud.md)
 - [Deploy to Azure](deploying-KoNote.md#deploy-to-azure)
-- [Deploy to Elestio](deploying-KoNote.md#deploy-to-elestio)
 - [PDF Reports Setup](deploying-KoNote.md#pdf-report-setup)
 
 ---

@@ -6,7 +6,7 @@ Usage:
     python manage.py send_reminders --dry-run    # Preview without sending
     python manage.py send_reminders --hours 24   # Custom lookahead window
 
-Intended to run as a scheduled task (e.g., hourly cron via Railway, Azure, etc.).
+Intended to run as a scheduled task (e.g., hourly cron via ops sidecar).
 Finds meetings in the next N hours that haven't had a reminder sent yet,
 sends via the client's preferred channel (SMS or email), and logs results.
 Failed reminders are retried on subsequent runs.

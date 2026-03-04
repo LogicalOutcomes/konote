@@ -13,12 +13,12 @@ Summary of completed work across all phases. For detailed history, see `ARCHIVE.
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
 | **French** | 2,146 system strings (100% translated), bilingual login, language switcher, translate_strings command |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports, AI participant feedback (categorised with verbatim quotes) |
-| **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io, FullHost) |
+| **Documentation** | Getting started, security ops, deployment guides (Azure, OVHcloud VPS / Docker Compose) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |
 | **Privacy** | Tiered client data erasure (anonymise/purge/delete), multi-PM approval, erasure codes, PDF receipts, PIPEDA compliance |
 | **Accessibility** | WCAG 2.2 AA — semantic HTML, colour contrast, aria attributes |
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
-| **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
+| **Deployment** | Docker Compose on OVHcloud VPS (primary), Azure App Service (enterprise option) |
 | **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
 | **Permissions** | Program-scoped access, field-level visibility, ClientAccessBlock, cross-program consent, expanded permissions matrix, privacy-by-design checklist |
 | **Surveys** | Survey builder (6 question types), conditional sections, section scoring, trigger rules (event/enrolment/time/characteristic), shareable links, auto-save, CSV import, portal + staff + link delivery, bilingual |
