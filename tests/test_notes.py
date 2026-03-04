@@ -1541,3 +1541,76 @@ class TestMetricCadence(TestCase):
         self.assertEqual(len(cadence_skipped), 1)
         # cadence=3, 0 notes since → 3-1-0 = 2 sessions until due
         self.assertEqual(cadence_skipped[0]["sessions_until_due"], 2)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestAllianceRotation(TestCase):
+    """Tests for ALLIANCE-ROTATE1: alliance prompt rotation."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(username="allitest", password="pass", is_admin=True)
+        self.prog = Program.objects.create(name="Alliance Prog", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.user, program=self.prog, role="staff")
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client=self.client_file, program=self.prog, status="active"
+        )
+
+    def test_first_note_uses_prompt_0(self):
+        """First note for client should use prompt set 0."""
+        from apps.notes.views import _get_next_alliance_prompt
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 0)
+
+    def test_rotation_cycles_through_sets(self):
+        """Prompt index cycles 0 -> 1 -> 2 -> 0."""
+        from apps.notes.views import _get_next_alliance_prompt
+        from apps.notes.models import ALLIANCE_PROMPT_SETS
+
+        # Create note with index 0
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=0,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 1)
+
+        # Create note with index 1
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=1,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 2)
+
+        # Create note with index 2 — should wrap to 0
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=2,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 0)
+
+    def test_prompt_index_stored_on_note(self):
+        """alliance_prompt_index is persisted on the note."""
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=2,
+        )
+        note.refresh_from_db()
+        self.assertEqual(note.alliance_prompt_index, 2)
+
+    def test_prompt_sets_backward_compatible(self):
+        """Prompt set 0 anchors match existing ALLIANCE_RATING_CHOICES labels."""
+        from apps.notes.models import ALLIANCE_PROMPT_SETS
+        existing_labels = dict(ProgressNote.ALLIANCE_RATING_CHOICES)
+        set0_anchors = ALLIANCE_PROMPT_SETS[0]["anchors"]
+        for key, label in existing_labels.items():
+            # existing labels are lazy strings, compare as str
+            self.assertEqual(set0_anchors[key], str(label))
