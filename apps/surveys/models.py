@@ -330,6 +330,10 @@ class SurveyResponse(models.Model):
         null=True, blank=True,
         help_text=_("When the respondent agreed to the consent text, if applicable."),
     )
+    consent_withdrawn_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When the respondent withdrew consent, if applicable."),
+    )
     submitted_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=64, blank=True, default="", unique=False)
 
