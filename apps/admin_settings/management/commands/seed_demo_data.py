@@ -4317,7 +4317,7 @@ class Command(BaseCommand):
                 question_type="long_text",
             )
 
-        # --- Survey 2: Programme Feedback Survey (active, bilingual) ---
+        # --- Survey 2: Programme Feedback Survey (active, bilingual, with consent) ---
         feedback, created_fb = Survey.objects.get_or_create(
             name="Programme Feedback Survey",
             defaults={
@@ -4326,6 +4326,20 @@ class Command(BaseCommand):
                 "description_fr": "Aidez-nous à comprendre comment le programme fonctionne pour vous.",
                 "status": "active",
                 "portal_visible": True,
+                "is_anonymous": True,
+                "consent_text": (
+                    "This survey is anonymous. Your responses will not be linked "
+                    "to your name or file. The information you provide will be "
+                    "used to improve our programmes and services. By clicking "
+                    "'Continue', you consent to participating in this survey."
+                ),
+                "consent_text_fr": (
+                    "Ce sondage est anonyme. Vos réponses ne seront pas liées à "
+                    "votre nom ou votre dossier. Les informations que vous "
+                    "fournissez seront utilisées pour améliorer nos programmes et "
+                    "services. En cliquant sur « Continuer », vous consentez à "
+                    "participer à ce sondage."
+                ),
                 "created_by": created_by,
             },
         )
@@ -4599,6 +4613,100 @@ class Command(BaseCommand):
                         status="completed",
                         completed_at=now - timedelta(days=1),
                     )
+
+        # --- Anonymous survey responses for Programme Feedback Survey ---
+        # 10 responses spread across 2 weeks, with consent_given_at timestamps
+        existing_anon = SurveyResponse.objects.filter(
+            survey=feedback, channel="link",
+        ).count()
+        if existing_anon == 0:
+            fb_questions = list(SurveyQuestion.objects.filter(
+                section__survey=feedback,
+            ).order_by("section__sort_order", "sort_order"))
+
+            # Each response: (days_ago, attendance, helpfulness, useful_aspects, suggestion, partial)
+            # attendance: weekly/biweekly/monthly/rarely
+            # helpfulness: 1-5 rating
+            # useful_aspects: list of values from multiple_choice
+            # suggestion: short_text or "" for skipped
+            # partial: if True, skip the suggestion section entirely
+            anon_response_data = [
+                (13, "weekly", 5, ["one_on_one", "goal_setting"],
+                 "Nothing really — everything has been great so far.", False),
+                (12, "biweekly", 4, ["group", "resources"],
+                 "More evening options would be really helpful for people who work.", False),
+                (11, "weekly", 4, ["one_on_one", "group", "resources"],
+                 "", False),  # skipped suggestion
+                (10, "monthly", 3, ["resources"],
+                 "I wish there were more activities in French.", False),
+                (9, "weekly", 5, ["one_on_one", "goal_setting", "resources"],
+                 "Everything is good. Maybe a WhatsApp group for quick questions.", False),
+                (7, "biweekly", 3, ["group"],
+                 "Smaller groups would be better. Hard to participate when its crowded.", False),
+                (6, "rarely", 4, ["resources"],
+                 "", True),  # partially complete — skipped section 2 entirely
+                (5, "weekly", 4, ["one_on_one", "group"],
+                 "transit passes or bus tickets would help a LOT", False),
+                (3, "biweekly", 5, ["one_on_one", "goal_setting"],
+                 "Maybe have some graduates come back and talk to us about what worked for them", False),
+                (2, "monthly", 3, ["group", "resources"],
+                 "the hours don't work for me. i can only come on weekends", False),
+            ]
+
+            for days_ago, attend, helpful, aspects, suggestion, partial in anon_response_data:
+                submit_time = now - timedelta(days=days_ago, hours=random.randint(9, 20))
+                consent_time = submit_time - timedelta(minutes=random.randint(1, 5))
+
+                response = SurveyResponse.objects.create(
+                    survey=feedback,
+                    assignment=None,
+                    client_file=None,  # anonymous
+                    channel="link",
+                    consent_given_at=consent_time,
+                )
+                SurveyResponse.objects.filter(pk=response.pk).update(
+                    submitted_at=submit_time,
+                )
+
+                # Answer questions — fb_questions order: attendance, helpfulness, useful_aspects, suggestion
+                if len(fb_questions) >= 3:
+                    # Q1: attendance (single_choice)
+                    attend_scores = {"weekly": 5, "biweekly": 4, "monthly": 3, "rarely": 1}
+                    a1 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[0],
+                        numeric_value=attend_scores.get(attend),
+                    )
+                    a1.value = attend
+                    a1.save()
+
+                    # Q2: helpfulness (rating_scale)
+                    a2 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[1],
+                        numeric_value=helpful,
+                    )
+                    a2.value = str(helpful)
+                    a2.save()
+
+                    # Q3: useful aspects (multiple_choice)
+                    a3 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[2],
+                    )
+                    a3.value = ",".join(aspects)
+                    a3.save()
+
+                    # Q4: suggestion (short_text) — skip for partial responses
+                    if not partial and len(fb_questions) >= 4 and suggestion:
+                        a4 = SurveyAnswer(
+                            response=response,
+                            question=fb_questions[3],
+                        )
+                        a4.value = suggestion
+                        a4.save()
+
+                responses_created += 1
 
         survey_count = Survey.objects.count()
         self.stdout.write(
