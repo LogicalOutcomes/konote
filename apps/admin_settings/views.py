@@ -78,25 +78,26 @@ def dashboard(request):
         ).count()
         active_reason_count = AccessGrantReason.objects.filter(is_active=True).count()
 
-    # Metrics card — counts for metric library
-    total_metrics = MetricDefinition.objects.filter(status="active").count()
-    enabled_metrics = MetricDefinition.objects.filter(
-        status="active", is_enabled=True,
-    ).count()
-    custom_metrics = MetricDefinition.objects.filter(
-        status="active", is_library=False,
-    ).count()
+    # Metrics card — single query with conditional aggregation
+    from django.db.models import Count, Q
+    metric_counts = MetricDefinition.objects.filter(status="active").aggregate(
+        total=Count("id"),
+        enabled=Count("id", filter=Q(is_enabled=True)),
+        custom=Count("id", filter=Q(is_library=False)),
+    )
+    total_metrics = metric_counts["total"]
+    enabled_metrics = metric_counts["enabled"]
+    custom_metrics = metric_counts["custom"]
 
     # Plan templates card
     plan_template_count = PlanTemplate.objects.count()
 
     # Organisation profile card
     org_profile = OrganizationProfile.objects.first()
-    org_name = org_profile.operating_name if org_profile else ""
+    org_name = (org_profile.operating_name or org_profile.legal_name) if org_profile else ""
 
     # Plausibility tuning card — count metrics with high override rate (>80%)
     from datetime import timedelta
-    from django.db.models import Count, Q
     cutoff = tz.now() - timedelta(days=90)
     override_stats = (
         PlausibilityOverrideLog.objects.filter(created_at__gte=cutoff)
