@@ -11,6 +11,8 @@
     </p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Feature toggles turn modules on or off for your whole organisation. Disabling a feature hides it from all users but preserves existing data. Some features depend on others — the confirmation dialog will show you the impact before you commit.') %}
+
 <figure>
 <table role="grid" aria-label="{% trans 'Feature toggles' %}">
     <thead>

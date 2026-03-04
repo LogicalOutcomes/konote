@@ -9,6 +9,8 @@
     <p>{% trans "Configure branding, date format, and session behaviour." %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Instance settings control branding, date format, session timeout, and external integrations like document storage. These settings affect everyone who uses this KoNote instance.') %}
+
 <form method="post">
     {% csrf_token %}
 
@@ -35,6 +37,8 @@
         <small class="badge badge-danger">{{ form.access_tier.errors.0 }}</small>
         {% endif %}
     </fieldset>
+
+    {% include "admin_settings/_tip.html" with text=_('Higher tiers add more controls but also more steps for staff. Most organisations start at Tier 1 and move up when they need finer control.') %}
 
     <fieldset>
         <legend>{% trans "Branding & Display" %}</legend>
