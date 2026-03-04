@@ -97,9 +97,12 @@ def public_survey_form(request, token):
         if not request.session.get(consent_key):
             # Consent not yet given — show consent page
             consent_text = _get_consent_text(survey)
+            lang = get_language() or "en"
+            consent_lang = "fr" if lang.startswith("fr") and survey.consent_text_fr else "en"
             return render(request, "surveys/public_consent.html", {
                 "survey": survey,
                 "consent_text": consent_text,
+                "consent_lang": consent_lang,
                 "link": link,
             })
 

@@ -45,7 +45,9 @@ class SurveyForm(forms.ModelForm):
             "consent_text": _(
                 "If provided, respondents must agree to this text before "
                 "they can see the survey questions. Leave blank to skip "
-                "the consent step."
+                "the consent step. Good consent text explains: what data "
+                "is collected, how it will be used, and whether responses "
+                "are anonymous."
             ),
             "consent_text_fr": _(
                 "French version of the consent text. If left blank, the "

@@ -25,7 +25,7 @@
 
 <article>
     <header><h2>{% trans "Consent to Participate" %}</h2></header>
-    <div class="consent-text" style="white-space: pre-wrap;">{{ consent_text }}</div>
+    <div class="consent-text" lang="{{ consent_lang }}" style="white-space: pre-wrap;">{{ consent_text }}</div>
 </article>
 
 <form method="post">
@@ -33,7 +33,7 @@
     <fieldset>
         <label for="consent_agree">
             <input type="checkbox" id="consent_agree" name="consent_agree" value="1" required aria-required="true">
-            {% trans "I have read and agree to the above" %}
+            {% trans "I have read and agree to the consent information above" %}
         </label>
     </fieldset>
     <button type="submit" id="consent-continue-btn">{% trans "Continue" %}</button>
