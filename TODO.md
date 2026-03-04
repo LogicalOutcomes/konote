@@ -24,8 +24,6 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 ### Phase: Session 7 — Compliance, Safety, Data Quality
 
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
-- [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 
 ### Phase: Launch Readiness
 
@@ -41,7 +39,8 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recurring-tasks.md).
 
 - [ ] **UX walkthrough** — run after UI changes. In Claude Code: `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` and add fixes to TODO (UX-WALK1)
-- [ ] **Code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the prompt from [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results stored in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 deep review (REV1)
+- [ ] **Quick code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the review prompt from [tasks/code-review-process.md](tasks/code-review-process.md) (REV1)
+- [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
@@ -62,7 +61,7 @@ Multiple agencies can deploy today on independent instances ($35–100/month eac
 
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
-- [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
+- [x] Improve admin UI for self-service configuration — PR #252 — 2026-03-04 (ADMIN-UX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -79,7 +78,7 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Empty — all items moved to Recently Done._
+- [ ] Fill 863 empty French translations in django.po — run `translate_strings --auto-translate` then review output (I18N-FILL1)
 
 ## Parking Lot: Needs Review
 
@@ -103,6 +102,16 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+### Session 8 — Admin UX Improvements
+
+- [x] Admin dashboard reorganised with section headings + 4 new cards (metrics, plausibility, plan templates, org profile) — PR #252 — 2026-03-04 (ADMIN-UX1)
+- [x] Contextual help added to 6 admin pages + SMS character counter — PR #252 — 2026-03-04 (ADMIN-UX1)
+- [x] Metric library: category filter, help text, plausibility link — PR #252 — 2026-03-04 (ADMIN-UX1)
+
+### Code Review Fixes
+
+- [x] Fix export_agency_data.py to exclude demo data by default — added `--include-demo` flag — 2026-03-04 (SEC-EXPORT1)
+
 ### Session 7 — PR Cleanup + TODO Housekeeping
 
 - [x] Merge PR #236 — DQ1-TIER2 thresholds + docs verification — 2026-03-03 (DQ1-TIER2)
@@ -115,8 +124,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verify docs: DOC-DEMO1, DOC-PERM1-3, QA-PA-TEST1-2 — all accurate — 2026-03-03
 - [x] Implement two-tier AI feature toggle split — 2026-03-03 (AI-TOGGLE1)
 - [x] Verified: note sharing toggle (6/7 checks pass) — 2026-03-03 (QA-R7-PRIVACY2)
-- [x] Build SRE workflow — PR #243 open, needs conflict resolution — 2026-03-03 (SRE1)
-- [x] Build plausibility tuning dashboard — PR #244 open, needs conflict resolution — 2026-03-03 (DQ1-TUNE)
+- [x] Build SRE workflow — PR #243 merged — 2026-03-03 (SRE1)
+- [x] Build plausibility tuning dashboard — PR #244 merged — 2026-03-03 (DQ1-TUNE)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 

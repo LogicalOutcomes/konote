@@ -10,6 +10,8 @@
     <p class="secondary"><small>{% trans "Identity fields (name, record ID, status) are always visible to all roles and cannot be hidden." %}</small></p>
 </div>
 
+{% include "admin_settings/_page_help.html" with content=_('Field access controls what the front desk role can see and edit on participant records. Workers, managers, and executives always have full access. Identity fields (name, record ID) are always visible and cannot be hidden.') %}
+
 <form method="post">
     {% csrf_token %}
 

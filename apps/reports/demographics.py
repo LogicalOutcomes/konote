@@ -336,6 +336,11 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     if program and getattr(program, "is_confidential", False):
         return choices
 
+    # Small programs: not enough participants for meaningful breakdowns
+    MIN_ENROLMENTS_FOR_GROUPING = 50
+    if program and program.client_enrolments.count() < MIN_ENROLMENTS_FOR_GROUPING:
+        return choices
+
     choices.append(("age_range", _("Age Range")))
 
     # Groups whose fields should NEVER appear in reports

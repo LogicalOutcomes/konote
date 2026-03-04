@@ -1,6 +1,6 @@
 # Design Rationale: OVHcloud Deployment Architecture
 
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-04*
 
 ## Context
 
@@ -131,7 +131,7 @@ The `db` and `audit_db` containers already have `pg_isready` health checks.
 | 1 agency (app + DB) | VPS-2 | 4 vCores, 16 GB RAM, 100 GB NVMe | ~$22 |
 | 5 agencies (multi-tenant) | VPS-3 | 8 vCores, 24 GB RAM, 200 GB NVMe | ~$30 |
 | 10 agencies (multi-tenant) | VPS-3 or VPS-4 | 8 vCores, 24–32 GB RAM, 200 GB NVMe | ~$30–44 |
-| LLM (shared, all agencies) | VPS-1 | 4 vCores, 8 GB RAM, 75 GB NVMe | ~$11 |
+| LLM (shared, all agencies) | VPS-4 | 12 vCores, 48 GB RAM, 300 GB NVMe | ~$40 |
 
 ---
 
@@ -310,7 +310,7 @@ If zero Azure dependency is required:
 
 | Option | When to Use | Cost (CAD/mo) |
 |--------|-------------|---------------|
-| Ollama on separate VPS-1 | Default — isolates LLM from app | ~$11 (shared) |
+| Ollama on separate VPS-4 | Default — isolates LLM from app | ~$40 (shared) |
 | Ollama on same VPS | 1–3 agencies, cost-sensitive | $0 additional |
 
 ### Batch Processing
@@ -340,7 +340,7 @@ Each agency gets its own VPS with its own Docker Compose stack. Simple but expen
 Agency A: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency B: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency C: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 ### Multi-Tenant (Future — requires MT-CORE1)
@@ -350,7 +350,7 @@ All agencies share one VPS with schema-per-tenant isolation via django-tenants. 
 ```
 Shared:   VPS-3 ($30) → Docker Compose (web + db + audit_db + caddy)
                          └── Schema per tenant (agency_a, agency_b, agency_c)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 **Prerequisites:**
@@ -460,11 +460,16 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 
 ### Recommended Progression
 
-| Stage | Second-Level Support | Estimated Cost |
-|-------|---------------------|----------------|
-| Launch (1–2 agencies) | KoNote team + runbook | $0 |
-| Early growth (3–5 agencies) | Add freelance sysadmin retainer | ~$100 CAD/mo |
-| Scale (5–10+ agencies) | Transition to Canadian MSP | ~$300–500 CAD/mo |
+With the 4-layer self-healing stack handling ~99% of incidents automatically, the second-level support role is primarily on-call for the rare cases that self-healing can't resolve (hardware failure, data corruption, security incidents). This dramatically reduces the retainer needed compared to a manually-managed VPS.
+
+| Stage | Second-Level Support | Estimated Cost | Est. Hours/Mo |
+|-------|---------------------|----------------|---------------|
+| Launch (1–2 agencies) | KoNote team + runbook | $0 | ~4–5 |
+| Early growth (3–5 agencies) | KoNote team + freelance sysadmin on-call | ~$75–150 CAD/mo | ~8–12 total |
+| Scale (5–10 agencies) | Freelance sysadmin retainer | ~$100–200 CAD/mo | ~10–15 total |
+| Enterprise (10+ agencies) | Canadian MSP | ~$300–500 CAD/mo | ~10–15 total (MT) |
+
+**Note:** The MSP threshold has moved from 5 agencies to 10+ because self-healing eliminates the routine monitoring and restart tasks that previously justified an MSP. A freelance sysadmin on retainer is sufficient through 10 agencies. See the [automation roadmap](#automation-roadmap-reducing-tech-support-further) for reducing hours further.
 
 ---
 
@@ -527,6 +532,123 @@ These are implementation items to harden demo mode. Items 1-3 should be verified
 - **Do not disable DEMO_MODE in production to "harden" the instance.** Demo users are a training and onboarding feature, not a security risk. Removing them pushes agencies toward creating test participants in the real database, which is worse.
 - **Do not let demo admin modify production configuration.** View-only access for demo admin users.
 - **Do not commingle demo data in reports.** Every query that produces output for real users must exclude `is_demo=True` records.
+
+## Automation Roadmap: Reducing Tech Support Further
+
+The 4-layer self-healing stack already reduces manual support from ~10–15 hours/month to ~4–5 hours/month per agency. This section identifies further automations to push that number toward ~1–2 hours/month — the goal being that a single person can manage 10+ agency instances with minimal ongoing effort.
+
+### Current support hours breakdown (per agency, per month)
+
+| Task | Current hours | Target | How to reduce |
+|------|--------------|--------|---------------|
+| Review health report emails | 1.0 | 0.25 | Consolidated dashboard + anomaly-only alerts |
+| Apply software updates | 1.0 | 0.1 | GitOps auto-update pipeline |
+| Investigate escalation alerts | 0.5 | 0.25 | Better runbook scripts + auto-remediation |
+| Agency support requests | 1.0–2.0 | 0.5 | Self-service admin portal |
+| Quarterly security review | 0.25 | 0.1 | Automated CVE scanning |
+| Capacity review | 0.125 | 0 | Automated capacity alerts |
+| **Total** | **~4–5** | **~1–2** | |
+
+### Phase 1: Quick wins (add to ops sidecar — ~1 week of work)
+
+These can be added as new cron entries in the existing ops sidecar container.
+
+**1. Automated Django security advisory check**
+- Weekly cron: `docker compose exec web pip-audit --json` — runs inside the web container where Python packages are installed (not in the ops sidecar, which is Alpine-based and doesn't have the app's dependencies)
+- Email alert only if vulnerabilities found (no alert = no action needed)
+- Requires adding `pip-audit` to the web container's `requirements.txt`
+- Eliminates manual CVE review (~0.25 hr/quarter saved)
+
+**2. Automated capacity alerts with upgrade recommendations**
+- Enhance existing `ops-disk-check.sh` to also check CPU and RAM trends
+- When 7-day average exceeds 70%: email with "Consider upgrading to VPS-X"
+- Eliminates manual capacity review (~0.5 hr/quarter saved)
+
+**3. Automated database maintenance**
+- PostgreSQL's built-in autovacuum handles routine `VACUUM` automatically — the manual weekly cron is a safety net, not the primary mechanism
+- Weekly cron: `VACUUM ANALYZE` on both databases (catches anything autovacuum missed, e.g., after bulk imports)
+- Monthly cron: `REINDEX DATABASE` during maintenance window (Sunday 3 AM) — autovacuum does not handle reindexing, so this is the primary mechanism for index maintenance
+- Prevents gradual performance degradation that would generate support tickets
+
+**4. Consolidated health dashboard email (multi-agency)**
+- When managing 3+ instances: single daily digest email summarising health of all instances
+- Replace per-instance health reports with one consolidated view
+- At 5 agencies, saves ~0.5 hr/mo of email review
+
+### Phase 2: Auto-update pipeline (~2 weeks of work)
+
+This is the single highest-impact automation — it eliminates the most frequent manual task.
+
+**Option A: Watchtower (simple, for single-tenant)**
+- [Watchtower](https://containrrr.dev/watchtower/) watches for new Docker images and auto-restarts containers
+- KoNote publishes images to a private registry (GitHub Container Registry or OVHcloud Container Registry)
+- Watchtower polls the registry on a schedule (e.g., weekly)
+- On new image: pull → stop → restart → verify health check passes
+- Cost: $0 (open source). Complexity: low.
+- **Limitation:** Watchtower does not natively roll back to a previous image on health check failure — it will keep restarting the new image. Rollback requires either a custom wrapper script that tags the current image before pulling, or switching to Option B.
+- **Risk:** Untested updates could break production. Mitigate with: staging instance that auto-updates first, production updates delayed 48 hours. The staging-first pattern also catches migration failures before they reach production.
+
+**Option B: Webhook-triggered deploy (for multi-tenant or controlled rollout)**
+- GitHub Actions builds and pushes Docker image on `develop` merge
+- Webhook notifies each VPS to pull and restart
+- Deploy script: `git pull && docker compose up -d --build && docker compose exec web python manage.py migrate --nolimit && docker compose exec web python manage.py check --deploy`
+- Health check verification after deploy; roll back on failure
+- Cost: $0 (GitHub Actions free tier). Complexity: medium.
+- **Advantage over Watchtower:** Can control rollout order (staging → production), run migrations, run deploy checks.
+
+**Recommendation:** Start with Option A (Watchtower) for simplicity. Move to Option B when managing 5+ agencies or when migration-heavy releases become common.
+
+### Phase 3: Self-service admin portal (deferred — high value, high effort)
+
+Many agency support requests are configuration changes that an agency admin could do themselves if the interface supported it. Currently, some admin operations require SSH or Django management commands.
+
+**Self-serviceable operations (already in admin UI):**
+- User account management (invite, deactivate, change role)
+- Terminology customisation
+- Feature toggles
+- Program configuration
+- Metric library management
+
+**Not yet self-serviceable (still require LogicalOutcomes):**
+- Custom field creation/modification (admin UI exists but needs review)
+- Report template creation
+- Azure AD SSO configuration changes
+- Encryption key rotation
+- Database operations
+
+**Impact:** Each self-service operation that moves from "email LogicalOutcomes" to "agency admin does it themselves" removes ~15 minutes of support time per request. At 5 agencies generating ~2 requests/month each, this saves ~2.5 hr/mo.
+
+**Recommendation:** Audit the current admin UI for completeness. Most of this is already built. Focus on documentation and training so agencies know they can self-serve.
+
+### Phase 4: Monitoring consolidation (~1 week of work)
+
+When managing 5+ instances, individual UptimeRobot monitors and health report emails become noisy. Consolidate monitoring into a single view.
+
+**Option A: UptimeRobot status page (free)**
+- UptimeRobot provides free [status pages](https://uptimerobot.com/status-pages/) showing uptime for all monitored endpoints
+- Agencies can check status themselves instead of emailing support
+- URL: e.g., `status.konote.ca`
+
+**Option B: Uptime Kuma (self-hosted, free)**
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma) is an open-source monitoring dashboard
+- Run on the LLM VPS (lightweight — minimal resource impact)
+- Consolidates all instance health into one dashboard
+- Supports notifications to Slack, email, Teams, etc.
+- More customisable than UptimeRobot (can add custom health endpoints)
+
+**Recommendation:** Start with UptimeRobot status page (free, no setup). Move to Uptime Kuma when managing 5+ agencies for the consolidated dashboard.
+
+### Summary: Projected Support Hours After Full Automation
+
+| Scale | Current (hr/mo) | After Phase 1 (hr/mo) | After Phase 2 (hr/mo) | After all phases (hr/mo) |
+|-------|----------------|----------------------|----------------------|-------------------------|
+| 1 agency | 4–5 | 3–4 | 2–3 | 1–2 |
+| 5 agencies | 8–12 | 6–8 | 4–6 | 2–4 |
+| 10 agencies (MT) | 10–15 | 7–10 | 5–7 | 3–5 |
+
+At full automation, one person can manage 10 multi-tenant agency instances in ~3–5 hours/month — roughly one hour per week.
+
+---
 
 ## Anti-Patterns
 

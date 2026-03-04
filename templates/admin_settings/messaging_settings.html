@@ -10,6 +10,8 @@
     <p>{% trans "Configure how your organisation communicates with clients through KoNote." %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Messaging settings control how KoNote communicates with participants via email and SMS. Safety-First mode disables all outbound messaging for organisations where contacting participants could create safety risks.') %}
+
 <form method="post">
 {% csrf_token %}
 
@@ -151,15 +153,18 @@
     <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Message Templates" %}</h2></summary>
 
     <h3 style="font-size: 0.9375rem; margin-top: 1rem;">{% trans "SMS Templates" %}</h3>
+    {% include "admin_settings/_tip.html" with text=_('Standard SMS messages are limited to 160 characters. Longer messages may be split into multiple texts, which can increase costs.') %}
     <div class="grid">
         <div>
             <label for="{{ form.reminder_sms_en.id_for_label }}">{{ form.reminder_sms_en.label }}</label>
             {{ form.reminder_sms_en }}
             <small class="secondary">{{ form.reminder_sms_en.help_text }}</small>
+            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_en.id_for_label }}" aria-live="polite"></small>
         </div>
         <div>
             <label for="{{ form.reminder_sms_fr.id_for_label }}">{{ form.reminder_sms_fr.label }}</label>
             {{ form.reminder_sms_fr }}
+            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_fr.id_for_label }}" aria-live="polite"></small>
         </div>
     </div>
 
@@ -179,6 +184,20 @@
 
 <button type="submit" style="margin-top: 1rem;">{% trans "Save Settings" %}</button>
 </form>
+
+<script>
+document.querySelectorAll('.sms-char-count').forEach(function(counter) {
+    var ta = document.getElementById(counter.dataset['for']);
+    if (!ta) return;
+    function update() {
+        var len = ta.value.length;
+        counter.textContent = len + ' / 160 {% trans "characters" %}';
+        counter.style.color = len > 160 ? 'var(--kn-danger-fg)' : '';
+    }
+    ta.addEventListener('input', update);
+    update();
+});
+</script>
 {% endblock %}
 
 {% block extra_head %}

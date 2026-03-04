@@ -79,6 +79,38 @@ This ensures cross-program clinical notes are only visible when the agency or pa
 
 **Exempt from consent filtering:** aggregate counts (dashboards), de-identified reports, plan views (already program-scoped), portal views (participant's own data).
 
+## Cost File Reconciliation Protocol
+
+Cost data lives in multiple files across two repos. Before updating any cost deliverable, reconcile the source chain.
+
+### Source-of-truth chain (upstream → downstream)
+
+```
+tasks/hosting-cost-comparison.md (this repo)     ← component pricing source
+        ↓
+tasks/p0-managed-service-plan.md (this repo)     ← managed service model
+        ↓
+konote-prosper-canada/deliverables/costing-model.md        ← detailed scenarios
+        ↓
+konote-prosper-canada/deliverables/hosting-budget-scenarios.md  ← client-facing summary
+konote-prosper-canada/deliverables/costing-model-calculator.*   ← interactive calculator
+```
+
+### Before updating any cost file
+
+1. **Read the `<!-- COST_VERSION -->` header** in each file in the chain
+2. **Compare key values** (LLM VPS cost, per-agency costs, ops hours) across files
+3. **If any values don't match**, stop and reconcile from upstream to downstream before proceeding
+4. **If you're changing a pricing decision** (e.g., VPS tier, model choice), update the upstream file first, then cascade downstream
+5. **After updating**, bump the `date` and values in the `COST_VERSION` header
+
+### Cross-repo updates
+
+The konote-prosper-canada repo cannot be updated in the same session as konote. When updating cost files in one repo:
+- Update the `COST_VERSION` header with the new values
+- Note in the commit message which downstream files need updating
+- Flag in TODO.md: "Sync cost files to konote-prosper-canada" with the specific values that changed
+
 ## Development Rules (from expert review)
 
 These rules apply to **every phase**. Do not skip them.
