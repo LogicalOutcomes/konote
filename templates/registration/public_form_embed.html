@@ -223,19 +223,23 @@
                     <label>
                         <input type="checkbox"
                                name="{{ field_key }}"
-                               value="{{ option }}">
+                               value="{{ option }}"
+                               {% if option in form_field.value %}checked{% endif %}>
                         {{ option }}
                     </label>
                     {% endfor %}
                 </fieldset>
 
                 {% elif field_def.input_type == "multi_select_other" %}
+                {% with other_key=field_key|add:"_other" %}
+                {% with other_field=form|get_field:other_key %}
                 <fieldset role="group" aria-labelledby="id_{{ field_key }}_label">
                     {% for option in field_def.options_json %}
                     <label>
                         <input type="checkbox"
                                name="{{ field_key }}"
-                               value="{{ option }}">
+                               value="{{ option }}"
+                               {% if option in form_field.value %}checked{% endif %}>
                         {{ option }}
                     </label>
                     {% endfor %}
@@ -245,8 +249,11 @@
                     <input type="text"
                            name="{{ field_key }}_other"
                            id="id_{{ field_key }}_other"
+                           value="{% if other_field %}{{ other_field.value|default:'' }}{% endif %}"
                            placeholder="{% trans 'Please specify…' %}">
                 </div>
+                {% endwith %}
+                {% endwith %}
 
                 {% else %}
                 <!-- Default text input -->
