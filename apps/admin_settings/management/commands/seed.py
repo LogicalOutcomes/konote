@@ -101,6 +101,7 @@ class Command(BaseCommand):
                     "category": m["category"],
                     "is_library": True,
                     "is_universal": m.get("is_universal", False),
+                    "status": m.get("status", "active"),
                     "is_enabled": True,
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
@@ -109,6 +110,9 @@ class Command(BaseCommand):
                     "achievement_options": m.get("achievement_options", []),
                     "achievement_success_values": m.get("achievement_success_values", []),
                     "target_rate": m.get("target_rate"),
+                    # Convention: set higher_is_better=false in metric_library.json
+                    # for distress/deficit scales (PHQ-9, GAD-7, K10, Nights in
+                    # Shelter) where lower scores indicate better outcomes.
                     "higher_is_better": m.get("higher_is_better", True),
                     "portal_visibility": m.get("portal_visibility", "no"),
                     "name_fr": m.get("name_fr", ""),
