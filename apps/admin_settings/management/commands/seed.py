@@ -375,6 +375,7 @@ class Command(BaseCommand):
                     "display_name": display_name,
                     "is_admin": is_admin,
                     "is_demo": True,
+                    "demo_group": "default",
                     "email": demo_email,
                     "preferred_language": "en",
                 },
@@ -383,13 +384,16 @@ class Command(BaseCommand):
                 user.set_password("demo1234")
                 user.save()
             else:
-                # Backfill email and preferred_language on existing demo users
+                # Backfill fields on existing demo users
                 changed = False
                 if not user.email and demo_email:
                     user.email = demo_email
                     changed = True
                 if not user.preferred_language:
                     user.preferred_language = "en"
+                    changed = True
+                if not user.demo_group:
+                    user.demo_group = "default"
                     changed = True
                 if changed:
                     user.save()
