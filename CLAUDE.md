@@ -27,35 +27,30 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 ## Git Workflow
 
-**Branch model:** `main` is the production branch (deploy-ready). `develop` is the integration branch (all feature work merges here). Periodically, `develop` is merged into `main` for releases.
+**Branch model:** `main` is the production branch (deploy-ready). `develop` is the integration branch (all feature work merges here). `staging` is the testing branch — PB merges `develop` → `staging`, tests there, then merges into `main` for releases.
 
 **Pull develop before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin develop`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
 
-**Branch before working.** `main` and `develop` have branch protection — never commit directly to either.
+**Branch before working.** `main` requires a PR. `develop` doesn't technically require PRs, but we use them for traceability — always create a PR rather than pushing directly.
 
 1. **At the start of every task**, run `git pull origin develop`, then check the current branch with `git branch --show-current`
 2. If on `main` or `develop`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
 3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
 4. Commit frequently on the feature branch
-5. When work is done, push and create a PR to merge into `develop`
+5. When work is done, push, create a PR to merge into `develop`, and **merge it immediately** (no approval needed). Use `gh pr merge --merge` — never squash.
 
-**Never commit to `main` or `develop` directly.** If you accidentally do, stop and move the commit to a new branch before continuing.
+**Never commit to `main` directly** — PRs to `main` are handled by PB after staging review. Prefer PRs for `develop` too (for traceability), but a direct push isn't a rules violation.
 
 ### Concurrent Session Safety
 
-**Multiple Claude Code conversations sharing one repo directory WILL destroy each other's work.** When one session runs `git checkout`, it overwrites files on disk — wiping uncommitted edits from all other sessions.
+Global CLAUDE.md rules apply. Additional KoNote-specific rule:
 
-**Rules:**
-- **One session actively editing code at a time.** Do not run two Claude Code conversations that do git operations on the same repo simultaneously.
-- **If parallel work is needed**, use `git worktree add` to give each session its own directory.
-- **Verify branch immediately before every commit** — in the SAME Bash call as the commit, not in a separate tool call. Another session can switch the branch in the gap between calls.
-- **Never leave edits uncommitted across multiple tool calls.** Edit then commit then next edit. Do not batch.
 - **After merging a PR from a worktree session**, pull develop into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory. The user works from the worktree and needs to see changes there immediately.
 
 ## Terminal Command Rules
 
-- **Long-running commands** (pytest with Playwright, Django server, migrations): these can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands to check status — this causes an infinite loop. The terminal will return output automatically when the command finishes.
-- **PowerShell is the default shell** on this project. Use `$env:VAR = "value"` to set environment variables, not `set VAR=value` (that's CMD syntax).
+- **Long-running commands** (pytest with Playwright, Django server, migrations): can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands — this causes an infinite loop.
+- **Shell**: Claude Code uses bash. Use Unix syntax (`export VAR="value"`, forward slashes in paths).
 
 ## Consultation Gates — When to Involve GK (Gillian Kerr)
 
@@ -187,21 +182,21 @@ Some features involve complex trade-offs (legal, privacy, data modelling, adopti
 
 **Do not override DRR decisions without explicit stakeholder approval.** If circumstances have changed, document why in the DRR before proceeding.
 
-Current DRRs:
-- `tasks/design-rationale/circles-family-entity.md` — Circles (family/network entity). Covers relationship modelling, privacy, adoption risk, data model decisions from two expert panels.
-- `tasks/design-rationale/multi-tenancy.md` — Multi-tenancy architecture. Covers schema-per-tenant vs. alternatives, per-tenant encryption, consortium model, sequencing condition (after first single-tenant deployment).
-- `tasks/design-rationale/reporting-architecture.md` — Reporting system (canonical). Template-driven + ad-hoc paths, aggregation rules, period picker, consortium pipeline, privacy safeguards. Defers to multi-tenancy.md for suppression thresholds and consent.
-- `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
-- `tasks/design-rationale/offline-field-collection.md` — Offline field collection via ODK Central. PII tiers, program profiles, sync architecture, device loss protocol, iOS limitations. Three expert panels (16 perspectives).
-- `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
-- `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
-- `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
-- `tasks/design-rationale/ai-feature-toggles.md` — AI feature toggle split. Two-tier design: `ai_assist_tools_only` (no participant data, default enabled) vs `ai_assist_participant_data` (de-identified participant content, default disabled). Anti-patterns (including translation in toggles, single three-level toggle). Future path: self-hosted open-source LLM for participant data.
-- `tasks/design-rationale/ovhcloud-deployment.md` — OVHcloud Beauharnois deployment architecture. Full stack (Docker Compose, Caddy, PostgreSQL x2), 4-layer self-healing automation, backup strategy, Azure Key Vault for encryption keys, LLM integration, multi-agency hosting. Anti-patterns (US cloud backups, missing autoheal, single-point key storage).
-- `tasks/design-rationale/data-access-residency-policy.md` — Data access residency policy. Three access tiers (direct data access, indirect, no data access). Canadian residency required for Tier 1 (SSH, DB, backups). Open questions on VPN-from-Canada, temporary travel, contractor/MSP requirements. Anti-patterns (VPN as residency substitute, production data in non-Canadian staging).
-- `tasks/design-rationale/document-integration.md` — Dual document integration (SharePoint + Google Drive). SharePoint for staff-side internal documents (program-centric folders), Google Drive for participant portal working documents (digital toolkit handoff). Link-broker-only architecture, PHIPA compliance, discharge ownership transfer, operational setup guides. Anti-patterns (storing document contents, OAuth at launch, cross-program URL copying, client names in folder paths).
-- `tasks/design-rationale/no-live-api-individual-data.md` — No live API for individual participant data. Rejects persistent API access for individual PII between systems. Two-tier export model instead (individual via SecureExportLink, agency-wide via AES-256-GCM management command). Anti-patterns (live API, bidirectional sync, automated PII transfers, webhook-based data push, shared database access). Three expert panels.
-- `tasks/design-rationale/self-hosted-llm-infrastructure.md` — Lean Ollama inference endpoint on OVHcloud VPS-4 (48 GB RAM, Beauharnois QC). Qwen3.5-35B-A3B (MoE, 3B active). Serves KoNote participant data AI + external OpenWebUI connections + two-stage survey pipeline (self-hosted PII stripping → frontier LLM analysis). Provider consolidation path. Anti-patterns (hosting OpenWebUI on VPS, deep analysis on self-hosted model alone, GPU at current scale).
+Current DRRs (read the file before modifying related features — all in `tasks/design-rationale/`):
+- `circles-family-entity.md` — Circles (family/network entity)
+- `multi-tenancy.md` — Multi-tenancy architecture
+- `reporting-architecture.md` — Reporting system
+- `executive-dashboard-redesign.md` — Executive dashboard UX
+- `offline-field-collection.md` — Offline field collection (ODK Central)
+- `phipa-consent-enforcement.md` — PHIPA cross-program consent
+- `insights-metric-distributions.md` — Insights page & program reporting
+- `bilingual-requirements.md` — Bilingual (EN/FR) requirements
+- `ai-feature-toggles.md` — AI feature toggle split
+- `ovhcloud-deployment.md` — OVHcloud deployment architecture
+- `data-access-residency-policy.md` — Data access & residency policy
+- `document-integration.md` — SharePoint + Google Drive integration
+- `no-live-api-individual-data.md` — No live API for individual PII
+- `self-hosted-llm-infrastructure.md` — Self-hosted LLM (Ollama/OVHcloud)
 
 ### How Claude Manages Tasks
 
