@@ -242,6 +242,8 @@ document.body.addEventListener("htmx:responseError", function (event) {
         message = t("error403", "You don't have permission to do that.");
     } else if (status === 404) {
         message = t("error404", "The requested item was not found.");
+    } else if (status === 429) {
+        message = (window.KN && window.KN.rate_limited) || "Too many requests. Please wait a few minutes before trying again.";
     } else if (status >= 500) {
         message = t("error500", "A server error occurred. Please try again later.");
     } else if (status === 0) {
