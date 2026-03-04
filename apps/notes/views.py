@@ -198,7 +198,36 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
         # Get metrics assigned to this target
         ptm_qs = PlanTargetMetric.objects.filter(plan_target=target).select_related("metric_def").order_by("sort_order")
         metric_forms = []
+        skipped_metrics = []
         for ptm in ptm_qs:
+            # Cadence check: skip metric if not yet due
+            is_due = True
+            sessions_until_due = 0
+            if ptm.metric_def.cadence_sessions and ptm.metric_def.cadence_sessions > 1:
+                last_recorded = MetricValue.objects.filter(
+                    metric_def=ptm.metric_def,
+                    progress_note_target__progress_note__client_file=client,
+                    progress_note_target__progress_note__status="default",
+                ).order_by("-created_at").first()
+
+                if last_recorded:
+                    notes_since = ProgressNote.objects.filter(
+                        client_file=client,
+                        status="default",
+                        note_type="full",
+                        created_at__gt=last_recorded.created_at,
+                    ).count()
+                    if notes_since < ptm.metric_def.cadence_sessions - 1:
+                        is_due = False
+                        sessions_until_due = ptm.metric_def.cadence_sessions - 1 - notes_since
+
+            if not is_due:
+                skipped_metrics.append({
+                    "name": ptm.metric_def.translated_name,
+                    "sessions_until_due": sessions_until_due,
+                })
+                continue
+
             m_prefix = f"metric_{target.pk}_{ptm.metric_def.pk}"
             mf = MetricValueForm(
                 post_data,
@@ -217,6 +246,7 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
             "target": target,
             "note_form": note_form,
             "metric_forms": metric_forms,
+            "skipped_metrics": skipped_metrics,
         })
     return target_forms
 
