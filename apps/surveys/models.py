@@ -40,6 +40,18 @@ class Survey(models.Model):
         default=True,
         help_text=_("Whether this survey appears in the participant portal."),
     )
+    consent_text = models.TextField(
+        blank=True, default="",
+        help_text=_(
+            "Consent text shown before the survey begins. "
+            "The respondent must agree before proceeding. "
+            "Leave blank to skip the consent step."
+        ),
+    )
+    consent_text_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French consent text (displayed when language is French)."),
+    )
     expires_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

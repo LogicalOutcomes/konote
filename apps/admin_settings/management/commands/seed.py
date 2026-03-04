@@ -109,6 +109,8 @@ class Command(BaseCommand):
                     "achievement_options": m.get("achievement_options", []),
                     "achievement_success_values": m.get("achievement_success_values", []),
                     "target_rate": m.get("target_rate"),
+                    "higher_is_better": m.get("higher_is_better", True),
+                    "portal_visibility": m.get("portal_visibility", "no"),
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
@@ -162,11 +164,28 @@ class Command(BaseCommand):
             name__in=old_universals, is_universal=True
         ).update(is_universal=False)
 
+        # ── Deactivate v1 metrics removed from the library ──
+        # These were staff-assessed composites, abstinence-framed, or superseded
+        # by participant-voiced alternatives. Expert panel review 2026-03-04.
+        v1_removed = [
+            "Wellness Scale", "Coping Skills Rating", "Housing Stability Index",
+            "Housing Readiness", "Job Readiness Score", "Employment Status",
+            "Job Applications (past month)", "Days Clean", "Cravings Intensity",
+            "Harm Reduction Score", "Family Connection Score",
+            "Risk Behaviour Index", "Goal Progress (1-10)", "Client Satisfaction",
+            "Life Skills Assessment", "Social Support Network", "Service Engagement",
+        ]
+        deactivated = MetricDefinition.objects.filter(
+            name__in=v1_removed, is_library=True, status="active",
+        ).update(status="deactivated")
+
         msg = f"  Metrics: {created} created, {len(metrics) - created} already existed."
         if updated_fr:
             msg += f" {updated_fr} backfilled with French translations."
         if retired:
             msg += f" {retired} old universal metric(s) retired."
+        if deactivated:
+            msg += f" {deactivated} v1 metric(s) deactivated."
         self.stdout.write(msg)
 
     def _seed_feature_toggles(self):

@@ -21,6 +21,7 @@ class MetricDefinition(models.Model):
     METRIC_TYPE_CHOICES = [
         ("scale", _("Numeric scale")),
         ("achievement", _("Achievement")),
+        ("open_text", _("Open text")),
     ]
 
     CATEGORY_CHOICES = [
@@ -30,6 +31,7 @@ class MetricDefinition(models.Model):
         ("substance_use", _("Substance Use")),
         ("youth", _("Youth")),
         ("general", _("General")),
+        ("client_experience", _("Client Experience")),
         ("custom", _("Custom")),
     ]
 
