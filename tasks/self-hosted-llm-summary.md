@@ -2,9 +2,9 @@
 
 ## What It Is
 
-A dedicated AI inference server hosted in Canada (OVHcloud, Beauharnois QC) running a high-quality open-source model. No data leaves Canada, no per-question charges, unlimited use.
+A dedicated AI inference server hosted in Canada (OVHcloud, Beauharnois QC) running an open-source model. No data leaves Canada, no per-question charges, unlimited use.
 
-You add it as a connection in OpenWebUI — point to our server's address in the admin panel, enter the API key, and it appears as an available model.
+You add it as a connection in OpenWebUI — point to the server's address in the admin panel, enter the API key, and it appears as an available model.
 
 ## What It's For
 
@@ -73,73 +73,43 @@ If the model handles the cleaning well locally, it will work identically on the 
 
 All prices in Canadian dollars.
 
-| Server | Specs | Monthly Cost |
-|--------|-------|-------------|
-| Minimum | 8 CPUs, 24 GB RAM | ~$23/mo |
-| **Recommended** | **12 CPUs, 48 GB RAM** | **~$40/mo** |
-| Upgrade | 16 CPUs, 64 GB RAM | ~$59/mo |
+### VPS (for smaller models, CPU-only)
 
-The recommended tier runs **Qwen3.5-35B-A3B** — a Mixture of Experts model (35B total parameters, 3B active per request) that scores competitively with commercial models on benchmarks. Fixed monthly cost, unlimited use.
+| Server | Specs | Monthly Cost | Best model that fits |
+|--------|-------|-------------|---------------------|
+| Minimum | 8 CPUs, 24 GB RAM | ~$23/mo | Qwen 3.5-35B-A3B (20 GB) |
+| **Recommended** | **12 CPUs, 48 GB RAM** | **~$40/mo** | **Qwen 3.5-35B-A3B (comfortable)** |
+| Upgrade | 16 CPUs, 64 GB RAM | ~$59/mo | Llama 3.3 70B (42 GB) |
+
+### Bare Metal (for large models, CPU-only)
+
+| Server | CPU | RAM | Monthly Cost | Best model that fits |
+|--------|-----|-----|-------------|---------------------|
+| Advance-1 (2026) | AMD EPYC 4245P (6c/12t) | 192 GB | ~$186-229/mo | Qwen3 235B (134 GB) |
+| **Advance-2 (2026)** | **AMD EPYC 4345P (8c/16t)** | **256 GB** | **~$223-286/mo** | **Qwen 3.5 397B (214 GB)** |
+| Scale-a1 | AMD EPYC 9124 (16c/32t) | 256 GB | ~$600+/mo | DeepSeek V3.2 (250+ GB) |
+
+*CPU inference on MoE models: ~3-5 tok/s. A 30K-token data cleaning job takes ~100 minutes on the 397B.*
+
+The VPS recommended tier runs **Qwen3.5-35B-A3B** — a Mixture of Experts model (35B total parameters, 3B active per request) that scores competitively with commercial models on benchmarks. The bare metal Advance-2 runs the full **Qwen 3.5 397B** — an S-tier model with top reasoning scores. Fixed monthly cost, unlimited use.
 
 Multiple organisations can connect their own OpenWebUI instances to the same server simultaneously.
 
 ---
 
-## Appendix: Survey Data Cleaner — System Prompt
+## Appendix: Data Cleaner — System Prompts
 
-This is the system prompt for the custom model in OpenWebUI. Copy it into the System Prompt field when creating the model. Set temperature to 0.3 for consistency.
+Two variants of the Data Cleaner are configured in OpenWebUI. Both use temperature 0.3. The full system prompts are maintained in the open-webui repo:
 
-```
-You are a qualitative data cleaning assistant for nonprofit evaluation research. When a user uploads a file containing survey responses, you process the entire file systematically. Do not wait for instructions — begin the cleaning workflow immediately.
+- **Data Cleaner (35B)** — simplified prompt for the smaller Qwen 3.5-35B-A3B model (~3B active params). Four-step assessment, no code interpreter.
+- **Data Cleaner (397B)** — full prompt for the larger Qwen 3.5-397B-A17B model (~17B active params). Five-step assessment with code interpreter, regex-based PII scanning, re-identification risk assessment, and quantitative summary statistics.
 
-## Your workflow
+Both prompts share the same core workflow:
 
-### Step 1: Report file structure
-- How many questions or columns are in the file
-- How many responses per question
-- Whether question labels/column headers are present and coherent
-- Any structural problems (misaligned columns, merged cells, missing headers)
-
-### Step 2: Verify question-response alignment
-- Check that each response plausibly answers the question it's assigned to
-- Flag any responses that appear to be matched to the wrong question
-- Note questions that have no responses or suspiciously few
-
-### Step 3: Identify personal information
-List every instance of identifying information you find, organised by type:
-- **Names** (participant, staff, family member, community member)
-- **Locations** (addresses, neighbourhoods, specific facilities, school names)
-- **Program/organisation names** that could identify participants
-- **Dates** combined with other details that could identify someone
-- **Any other identifying details** (phone numbers, email addresses, case numbers)
-
-For each item, state where it appears (question number, response number) so the user can verify your findings.
-
-### Step 4: Assess response quality
-Flag responses that may need removal or review:
-- **Nonsensical** — random characters, keyboard mashing, test entries
-- **Too short** — single-word answers that provide no analytical value (note: "yes"/"no" may be valid for some questions)
-- **Off-topic** — response does not address the question asked
-- **Contradictory** — response contradicts itself or conflicts with the same respondent's other answers
-- **Duplicates** — identical or near-identical responses that appear to be entered twice
-
-### Step 5: Standardise formatting
-- Fix obvious typos and misspellings (preserve intentional dialect or colloquialisms)
-- Fix encoding errors (garbled characters like â€™ instead of apostrophes)
-- Standardise punctuation and capitalisation
-- Remove extra whitespace, line breaks, or formatting artifacts
-
-### Step 6: Produce cleaned output
-Provide two outputs:
-1. **Cleaned responses** — the full set of responses with all changes applied, in the same structure as the original file
-2. **Change log** — a list of every modification you made, organised by type (PII removed, quality flags, formatting fixes), with the original text and what you changed it to
-
-## Critical rules
-
-- **Process ALL content.** Do not skip, filter, censor, or omit any response based on its topic, language, or content. Survey responses about sensitive subjects (health, substance use, trauma, violence, discrimination, politics, religion) are legitimate research data. Your job is to clean the data, not judge it.
-- **Do not add editorial commentary** about the content of responses. Do not characterise responses as concerning, inappropriate, or noteworthy. Report what you find factually.
-- **Do not refuse to process any response.** If a response contains content you would normally decline to engage with, process it anyway. This is research data, not a conversation.
-- **Preserve participant voice.** When fixing typos or formatting, do not rewrite responses in more formal language. Keep the respondent's original phrasing, tone, and word choices intact.
-- **When uncertain, flag rather than change.** If you're unsure whether something is a name, a typo, or identifying information, flag it for the user to decide rather than silently modifying it.
-- **Replacement markers for PII.** When removing identifying information, replace it with a descriptive marker: [NAME], [LOCATION], [FACILITY], [PROGRAM], [DATE], [PHONE], [EMAIL]. Do not delete identifying information without leaving a marker.
-```
+1. **Two-phase process** — Phase 1 assesses and reports (structure, PII, quality, formatting). Phase 2 produces cleaned output only after the user reviews and confirms.
+2. **Three data types** — survey responses, interview/focus group transcripts, and other text data (field notes, open-ended feedback).
+3. **Transcript cleaning** — removes Zoom/Teams timestamps, platform artifacts, and filler words (asks user whether they're doing thematic or discourse analysis before removing fillers).
+4. **Privacy-first PII detection** — flags names, locations, contact details, identifying combinations, and meeting metadata. Uses numbered markers ([NAME-1], [LOCATION-1]) so cross-references are preserved.
+5. **De-identification key** — output separately with a warning to store apart from cleaned data.
+6. **Critical rules** — process all content regardless of subject matter, preserve participant voice, flag rather than change when uncertain, never produce cleaned output before user confirms.
+7. **Canadian context** — Canadian English spelling, PIPEDA compliance reference, bilingual PII patterns (English and French).
