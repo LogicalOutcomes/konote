@@ -6,6 +6,7 @@ program names, aggregate stats). Client PII never reaches this module.
 """
 import json
 import logging
+from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
@@ -359,6 +360,14 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         api_key = getattr(settings, "INSIGHTS_API_KEY", "")
         model = getattr(settings, "INSIGHTS_MODEL", "llama3")
         url = f"{insights_base.rstrip('/')}/chat/completions"
+        parsed = urlparse(url)
+        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
+            logger.warning(
+                "INSIGHTS_API_BASE uses HTTP for remote host %s — "
+                "de-identified data will transit unencrypted. "
+                "Use HTTPS for production deployments.",
+                parsed.hostname,
+            )
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -464,12 +473,12 @@ def generate_outcome_insights(
         "Return a JSON object with these keys:\n"
         "- summary: 2-3 paragraphs of narrative text\n"
         "- themes: array of 3-5 theme strings with counts\n"
-        "- cited_quotes: array of {text, note_id, context} — verbatim only\n"
+        "- cited_quotes: array of {text, context} — verbatim only\n"
         "- participant_feedback: array of objects (max 3), each with:\n"
         "    - category: one of 'request', 'suggestion', 'concern', 'praise'\n"
         "    - finding: 1 sentence describing the feedback\n"
         "    - count: how many participants expressed this\n"
-        "    - supporting_quotes: array of {text, note_id} — verbatim only\n"
+        "    - supporting_quotes: array of {text} — verbatim only\n"
         "- suggestion_themes: array of objects, each with:\n"
         "    - name: short theme label (reuse existing names when possible)\n"
         "    - description: 1 sentence describing the theme\n"
@@ -554,6 +563,9 @@ def validate_insights_response(response, original_quotes):
             # Check if the quoted text is a substring of any provided quote
             is_verbatim = any(cq["text"] in orig for orig in original_texts)
             if is_verbatim:
+                # Strip note_id — AI has no access to real IDs and would
+                # fabricate values that produce broken links.
+                cq.pop("note_id", None)
                 verified_quotes.append(cq)
             else:
                 logger.info("AI quote not verbatim, skipping: %s", cq["text"][:80])
@@ -582,6 +594,8 @@ def validate_insights_response(response, original_quotes):
                         continue
                     is_verbatim = any(sq["text"] in orig for orig in original_texts)
                     if is_verbatim:
+                        # Strip note_id — AI fabricates IDs.
+                        sq.pop("note_id", None)
                         verified_sq.append(sq)
                     else:
                         logger.info("Feedback quote not verbatim, skipping: %s", sq.get("text", "")[:80])
