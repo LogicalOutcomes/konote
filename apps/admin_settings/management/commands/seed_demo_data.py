@@ -619,6 +619,173 @@ CROSS_ENROLMENT_PLANS = {
 
 
 # ---------------------------------------------------------------------------
+# Client experience metrics — inclusivity battery + open-text per program
+# ---------------------------------------------------------------------------
+
+# Which inclusivity items each program uses (exact names from metric_library.json)
+ALL_INCLUSIVITY_METRICS = [
+    "Everyone is made to feel welcome",
+    "Everyone is valued equally",
+    "I am treated with respect",
+    "People help each other",
+    "I get help when I need it",
+]
+
+PROGRAM_EXPERIENCE_METRICS = {
+    "Supported Employment": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Housing Stability": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Youth Drop-In": {
+        "inclusivity": [
+            "Everyone is made to feel welcome",
+            "I am treated with respect",
+            "I get help when I need it",
+        ],  # 3 of 5
+        "open_text_impact": True,
+        "open_text_improve": False,
+    },
+    "Newcomer Connections": {
+        "inclusivity": ALL_INCLUSIVITY_METRICS,  # all 5
+        "open_text_impact": True,
+        "open_text_improve": True,
+    },
+    "Community Kitchen": {
+        "inclusivity": [
+            "Everyone is made to feel welcome",
+            "Everyone is valued equally",
+            "I get help when I need it",
+        ],  # 3 of 5
+        "open_text_impact": False,
+        "open_text_improve": True,
+    },
+}
+
+# Open-text response pools — real participant voices, not clinical language
+# Keyed by (metric_name, program_name, record_id) or (metric_name, program_name)
+OPEN_TEXT_IMPACT_RESPONSES = {
+    # "How has taking part in this program changed things for you?"
+    ("DEMO-001", "Supported Employment"): (
+        "I didn't think anyone would hire me but now I have a real resume "
+        "and I've been to two interviews. That's more than I did in the "
+        "whole year before I came here."
+    ),
+    ("DEMO-002", "Supported Employment"): (
+        "honestly I'm still figuring it out. some days are better than "
+        "others but at least I'm not sitting at home doing nothing anymore"
+    ),
+    ("DEMO-003", "Supported Employment"): (
+        "The biggest thing is the routine. I get up, I come here, I work "
+        "on applications. Before this I was just sleeping all day."
+    ),
+    ("DEMO-004", "Housing Stability"): (
+        "Before I came here I was sleeping in the shelter every night not "
+        "knowing what was gonna happen. Now I have my own room with a lock "
+        "on the door. That's everything."
+    ),
+    ("DEMO-005", "Housing Stability"): (
+        "C'est dur encore. Je suis toujours inquiet pour mon appartement "
+        "mais au moins j'ai quelqu'un qui m'aide avec les papiers."
+    ),
+    ("DEMO-006", "Housing Stability"): (
+        "its ups and downs tbh. some weeks I feel like things are getting "
+        "better and then something happens with the landlord and im back "
+        "to square one"
+    ),
+    ("DEMO-007", "Youth Drop-In"): (
+        "I used to just go home after school and play games by myself. "
+        "Now I have people who actually want to hang out with me."
+    ),
+    ("DEMO-008", "Youth Drop-In"): (
+        "idk. its ok I guess. I still don't really talk to anyone but "
+        "at least I come now"
+    ),
+    ("DEMO-009", "Youth Drop-In"): (
+        "I love the activities! Especially when we do art stuff. School "
+        "is still hard but coming here makes the week better."
+    ),
+    ("DEMO-010", "Newcomer Connections"): (
+        "Mon anglais s'améliore beaucoup. La semaine dernière j'ai pris "
+        "un rendez-vous chez le médecin toute seule — en anglais! Avant "
+        "j'aurais jamais pu faire ça."
+    ),
+    ("DEMO-011", "Newcomer Connections"): (
+        "I feel less alone. Before I was scared to go outside. Now I know "
+        "the people at the centre and they know me."
+    ),
+    ("DEMO-012", "Newcomer Connections"): (
+        "I know where everything is in the neighbourhood now. The library, "
+        "the clinic, the bank. I can help other new people find things too. "
+        "That feels good."
+    ),
+}
+
+OPEN_TEXT_IMPROVE_RESPONSES = {
+    # "How can we improve our program or services?"
+    ("DEMO-001", "Supported Employment"): (
+        "More evening sessions would be really helpful. Its hard to come "
+        "during the day when I'm trying to pick up shifts at the same time."
+    ),
+    ("DEMO-002", "Supported Employment"): (
+        "maybe have some kind of group thing where we can talk to other "
+        "people going through the same stuff? like a support group but "
+        "for job hunting"
+    ),
+    ("DEMO-003", "Supported Employment"): (
+        "Everything's been good. I guess more help with keeping a job "
+        "once you get one would be useful, not just getting the job."
+    ),
+    ("DEMO-004", "Housing Stability"): (
+        "I wish the appointments weren't always in the morning. When you "
+        "don't sleep good at the shelter its hard to get up for a 9am meeting."
+    ),
+    ("DEMO-005", "Housing Stability"): (
+        "Plus de services en français svp. Je comprends l'anglais un peu "
+        "mais pour les choses importantes comme le logement, j'ai besoin "
+        "de comprendre exactement."
+    ),
+    ("DEMO-006", "Housing Stability"): (
+        "the bus tickets help a lot. if you could give more that would "
+        "be great because I run out halfway through the month and then "
+        "I can't get to appointments"
+    ),
+    ("DEMO-010", "Newcomer Connections"): (
+        "Peut-être avoir plus d'activités en français pour les nouvelles "
+        "personnes qui arrivent. Au début c'est vraiment difficile quand "
+        "tout est en anglais seulement."
+    ),
+    ("DEMO-011", "Newcomer Connections"): (
+        "Childcare. I cannot come to the sessions because I have no one "
+        "to watch my children. If there was someone to help with the kids "
+        "I could come every time."
+    ),
+    ("DEMO-012", "Newcomer Connections"): (
+        "Maybe a WhatsApp group? Sometimes I want to ask a quick question "
+        "and don't want to wait until the next session."
+    ),
+    ("DEMO-013", "Community Kitchen"): (
+        "More vegetarian options please! My family doesn't eat meat and "
+        "some weeks I can't use the recipe because it has chicken."
+    ),
+    ("DEMO-014", "Community Kitchen"): (
+        "printed recipe cards to take home would be great. I try to "
+        "remember what we did but by the time I get to the store I "
+        "forget half the ingredients"
+    ),
+    ("DEMO-015", "Community Kitchen"): (
+        "I think smaller groups would be better. Sometimes its so crowded "
+        "I can't see what the instructor is doing."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
 # Client goals — participant-voiced, set on the first target of each client
 # ---------------------------------------------------------------------------
 
@@ -970,6 +1137,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Workshop debrief. Attended workplace safety certification. Discussed how this opens up new positions.",
         "Reviewed application tracker. Several applications submitted this month. One callback received.",
         "Session focused on workplace communication skills. Role-played difficult conversations with a supervisor.",
+        "Completed mid-program feedback today. Rated inclusivity highly across the board — feels welcome and respected in the program. Mentioned wanting more evening sessions in the open-text response.",
+        "Did the programme feedback form today. Wrote about how the mock interviews have changed things — said having someone believe in them made the difference.",
     ],
     "Housing Stability": [
         "Apartment viewing debrief. Looked at two units today. One is affordable but far from transit. Discussed trade-offs.",
@@ -980,6 +1149,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Session focused on tenant rights. Reviewed what landlords can and cannot do. Feeling more empowered.",
         "Monthly review of housing stability. Reports feeling safer and more settled. Neighbours have been friendly.",
         "Joint session with income support worker. Explored additional benefits client may be eligible for.",
+        "Collected client experience feedback. Inclusivity scores are mixed — feels welcome but not always sure help is available when needed. Feedback noted for team discussion.",
+        "Programme feedback completed. Participant shared how having a stable address has changed everything — can finally receive mail and apply for jobs. Powerful reflection.",
     ],
     "Youth Drop-In": [
         "Group activity: team-building exercises. Took a leadership role organising teams. Strong positive energy.",
@@ -990,6 +1161,7 @@ PROGRAM_FULL_SUMMARIES = {
         "Cooking activity — made trail mix. Practised measuring and following instructions. Lots of laughing.",
         "Group discussion about online safety. Youth engaged well and shared their own experiences.",
         "End-of-month celebration. Youth reflected on what they enjoyed most. 'This place feels like home.'",
+        "Quick inclusivity check-in with group. Most youth rated feeling welcome and respected highly. One youth said they feel more welcome here than at school.",
     ],
     "Newcomer Connections": [
         "Conversation circle session. Practised ordering at a restaurant. Helped translate for newer members.",
@@ -1000,6 +1172,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Conversation circle focused on weather and seasons. Good energy. Spoke more than usual today.",
         "Settlement planning session. Reviewed progress toward program goals. Close to graduation.",
         "Group activity: potluck lunch. Brought dishes from home countries. Beautiful cultural exchange.",
+        "Completed programme feedback. Participant wrote about how improving their English has changed daily life. Mentioned wanting more French-language services in the improvement section.",
+        "Mid-program inclusivity check-in. Scores reflect growing comfort in the program — especially on feeling helped and welcomed. Discussed how the buddy system could be improved.",
     ],
     "Community Kitchen": [
         "Today's recipe: lentil soup. Group worked together well. Helped each other with knife skills.",
@@ -1010,6 +1184,7 @@ PROGRAM_FULL_SUMMARIES = {
         "Today's recipe: banana bread. Several had never baked before. Excitement when it came out of the oven.",
         "Session on cooking for picky eaters. Parents shared tips. Kids now ask to help cook.",
         "End-of-month review. Shared recipes tried at home. 'Cooking has become my favourite part of the week.'",
+        "Collected client experience feedback today. Group feels very welcoming — high scores on people helping each other. Suggestion about more vegetarian options noted for next month's menu planning.",
     ],
 }
 
@@ -1539,6 +1714,11 @@ class Command(BaseCommand):
                 metrics_by_name, now,
             )
 
+        # --- Seed client experience metrics (inclusivity + open-text) ---
+        self._seed_client_experience_data(
+            workers, programs_by_name, metrics_by_name, now,
+        )
+
         # --- Create alerts for specific clients ---
         self._create_alerts(workers, programs_by_name)
 
@@ -1996,6 +2176,193 @@ class Command(BaseCommand):
                             metric_def=metric_def,
                             sort_order=m_idx,
                         )
+
+    def _seed_client_experience_data(
+        self, workers, programs_by_name, metrics_by_name, now,
+    ):
+        """Add client experience metrics (inclusivity + open-text) to existing notes.
+
+        For each client, creates a 'Client Experience' plan section with the
+        relevant inclusivity items and open-text metrics, then records values
+        on the last 2-3 full notes (periodic, not every note).
+        """
+        experience_count = 0
+
+        for record_id, plan_config in CLIENT_PLANS.items():
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                continue
+
+            program_name = plan_config["program"]
+            program = programs_by_name.get(program_name)
+            exp_config = PROGRAM_EXPERIENCE_METRICS.get(program_name)
+            if not program or not exp_config:
+                continue
+
+            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
+            author = workers.get(worker_username)
+            trend = plan_config["trend"]
+
+            # Collect the metric defs for this client's experience section
+            inclusivity_names = exp_config.get("inclusivity", [])
+            inclusivity_defs = []
+            for name in inclusivity_names:
+                md = metrics_by_name.get(name)
+                if md:
+                    inclusivity_defs.append(md)
+
+            open_text_defs = []
+            impact_name = "How has taking part in this program changed things for you?"
+            improve_name = "How can we improve our program or services?"
+            if exp_config.get("open_text_impact"):
+                md = metrics_by_name.get(impact_name)
+                if md:
+                    open_text_defs.append(md)
+            if exp_config.get("open_text_improve"):
+                md = metrics_by_name.get(improve_name)
+                if md:
+                    open_text_defs.append(md)
+
+            all_exp_metrics = inclusivity_defs + open_text_defs
+            if not all_exp_metrics:
+                continue
+
+            # Create the Client Experience plan section
+            section = PlanSection.objects.create(
+                client_file=client,
+                name="Client Experience",
+                program=program,
+                sort_order=20,  # after primary + cross-enrolment sections
+            )
+
+            target = PlanTarget.objects.create(
+                plan_section=section,
+                client_file=client,
+                name="Share feedback on program experience",
+                description="Tell us how the program is working for you.",
+                sort_order=0,
+            )
+
+            PlanTargetRevision.objects.create(
+                plan_target=target,
+                name=target.name,
+                description=target.description,
+                status="default",
+                changed_by=author,
+            )
+
+            for m_idx, md in enumerate(all_exp_metrics):
+                PlanTargetMetric.objects.create(
+                    plan_target=target,
+                    metric_def=md,
+                    sort_order=m_idx,
+                )
+
+            # Find the last 2-3 full notes for this client in this program
+            recent_notes = list(
+                ProgressNote.objects.filter(
+                    client_file=client,
+                    author_program=program,
+                    note_type="full",
+                ).order_by("-backdate")[:3]
+            )
+
+            if not recent_notes:
+                continue
+
+            # Generate inclusivity values based on trend
+            for note_idx, note in enumerate(recent_notes):
+                # Determine inclusivity values for this note
+                incl_values = self._inclusivity_values_for_trend(
+                    trend, note_idx, len(recent_notes)
+                )
+
+                pnt = ProgressNoteTarget.objects.create(
+                    progress_note=note,
+                    plan_target=target,
+                    notes="Mid-program feedback collected.",
+                    progress_descriptor="holding",
+                )
+
+                # Record inclusivity scale values
+                for i, md in enumerate(inclusivity_defs):
+                    val = incl_values[i] if i < len(incl_values) else 3
+                    MetricValue.objects.create(
+                        progress_note_target=pnt,
+                        metric_def=md,
+                        value=str(val),
+                    )
+
+                # Record open-text values only on the most recent note
+                if note_idx == 0:
+                    for md in open_text_defs:
+                        if md.name == impact_name:
+                            text = OPEN_TEXT_IMPACT_RESPONSES.get(
+                                (record_id, program_name), ""
+                            )
+                        elif md.name == improve_name:
+                            text = OPEN_TEXT_IMPROVE_RESPONSES.get(
+                                (record_id, program_name), ""
+                            )
+                        else:
+                            text = ""
+
+                        if text:
+                            MetricValue.objects.create(
+                                progress_note_target=pnt,
+                                metric_def=md,
+                                value=text,
+                            )
+
+                experience_count += 1
+
+        self.stdout.write(
+            f"  Client experience: {experience_count} notes updated "
+            f"with inclusivity + open-text metrics."
+        )
+
+    def _inclusivity_values_for_trend(self, trend, note_idx, total_notes):
+        """Generate 5 inclusivity values (1-4 scale) based on trend.
+
+        note_idx 0 = most recent note, higher = older.
+        """
+        if trend == "improving":
+            # Start 2-3, end 3-4
+            if note_idx == 0:
+                base = [4, 3, 4, 3, 4]
+            elif note_idx == 1:
+                base = [3, 3, 3, 3, 3]
+            else:
+                base = [2, 3, 2, 3, 3]
+        elif trend == "struggling":
+            # Fluctuate 1-3
+            if note_idx == 0:
+                base = [2, 1, 3, 2, 2]
+            elif note_idx == 1:
+                base = [3, 2, 2, 1, 2]
+            else:
+                base = [1, 2, 2, 2, 3]
+        elif trend == "stable":
+            # Consistently 3-4
+            base = [3, 4, 4, 3, 4]
+        elif trend == "crisis_then_improving":
+            if note_idx == 0:
+                base = [3, 3, 4, 3, 3]
+            elif note_idx == 1:
+                base = [2, 2, 3, 2, 3]
+            else:
+                base = [1, 1, 2, 1, 2]
+        elif trend == "mixed":
+            if note_idx == 0:
+                base = [3, 2, 4, 3, 3]
+            elif note_idx == 1:
+                base = [4, 3, 3, 2, 2]
+            else:
+                base = [2, 3, 3, 3, 4]
+        else:
+            base = [3, 3, 3, 3, 3]
+
+        return base
 
     def _create_alerts(self, workers, programs_by_name):
         """Create alerts for clients with notable situations.
@@ -3290,58 +3657,73 @@ class Command(BaseCommand):
         )
 
         # --- Journal entries ---
+        # Jordan's employment journey — 6 entries over ~3 months
         journal_data = [
             {
-                "days_ago": 52,
+                "days_ago": 90,
                 "target": interview_target,
                 "content": (
-                    "Had my first mock interview today. It was terrifying but Casey "
-                    "said I did okay. I keep replaying the parts I messed up."
+                    "First day at the employment program. I'm nervous but Casey "
+                    "seems nice. She says we're going to work on my resume first "
+                    "which makes sense because I literally don't have one. I don't "
+                    "even know what I'd put on it. But she says everyone starts "
+                    "somewhere so... here goes nothing I guess."
+                ),
+            },
+            {
+                "days_ago": 60,
+                "target": interview_target,
+                "content": (
+                    "Did a mock interview today and it was SO AWKWARD. I kept "
+                    "saying um and couldn't remember what to say when she asked "
+                    "about my strengths. But Casey recorded it and we watched it "
+                    "back together and honestly it wasn't as bad as I thought? "
+                    "She pointed out good things I didn't even notice."
                 ),
             },
             {
                 "days_ago": 40,
-                "target": None,
-                "content": (
-                    "Bad day. Couldn't get out of bed until noon. Feeling like "
-                    "nobody's going to hire me. But I made it to the drop-in at "
-                    "least."
-                ),
-            },
-            {
-                "days_ago": 28,
                 "target": applications_target,
                 "content": (
-                    "Sent out three applications this week! Two online and one in "
-                    "person at the cafe on Queen Street. The in-person one felt "
-                    "weird but I did it."
+                    "Went to the workshop today and we updated my resume again. "
+                    "Casey helped me rewrite the part about my volunteering at "
+                    "the community centre so it sounds more professional. I'm "
+                    "actually kind of proud of it now. Sent out two applications "
+                    "on the way home."
                 ),
             },
             {
-                "days_ago": 15,
+                "days_ago": 25,
                 "target": interview_target,
                 "content": (
-                    "Got called back for the retail job! Real interview next "
-                    "Wednesday. Casey is going to do one more practice run with me. "
-                    "Nervous but also kind of excited?"
+                    "I have a real interview on Thursday. REAL. Not a practice one. "
+                    "For a customer service job at a store downtown. I can't sleep. "
+                    "Casey says we'll do one more practice run tomorrow. I keep "
+                    "telling myself if I can get through the mock ones I can get "
+                    "through this one too."
                 ),
             },
             {
-                "days_ago": 6,
+                "days_ago": 20,
                 "target": None,
                 "content": (
-                    "Interview went better than I thought. I remembered to breathe "
-                    "and make eye contact like we practised. Haven't heard back yet "
-                    "though."
+                    "I GOT THE JOB!!! They called today and I start next week!! "
+                    "Part time to start but they said if it goes well they might "
+                    "increase my hours. I called my mom and she cried. I might "
+                    "have cried a little too. Casey said she knew I could do it "
+                    "and honestly maybe she's right."
                 ),
             },
             {
-                "days_ago": 1,
+                "days_ago": 5,
                 "target": None,
                 "content": (
-                    "Cooking class was fun — made lentil soup and brought some "
-                    "home. Having something good to eat when I got back made the "
-                    "whole day feel better."
+                    "Finished my first week at the job. It was exhausting but "
+                    "good? My supervisor is really patient and the other people "
+                    "are nice. I messed up the cash register twice but nobody got "
+                    "mad. I'm going to keep coming to see Casey for a while "
+                    "because she said the transition can be hard and I think "
+                    "she's right about that."
                 ),
             },
         ]
@@ -3415,27 +3797,32 @@ class Command(BaseCommand):
             ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
             msg_count += 1
 
-        # --- Staff portal notes ---
+        # --- Staff portal notes (Casey's messages to Jordan) ---
         note_data = [
             {
-                "days_ago": 38,
+                "days_ago": 55,
                 "content": (
-                    "Great work showing up every week, Jordan. Consistency matters "
-                    "and you're building a real routine."
+                    "Hi Jordan — just a reminder that your appointment is Thursday "
+                    "at 2pm. We'll be working on interview prep so bring the job "
+                    "postings you found. See you then!"
                 ),
             },
             {
-                "days_ago": 14,
+                "days_ago": 30,
                 "content": (
-                    "You've been doing amazing with the interview prep. Remember — "
-                    "they called YOU back. That says something."
+                    "You did really well in the mock interview today, Jordan. I "
+                    "know it didn't feel like it but you kept going even when "
+                    "you got stuck on the strengths question. That's what matters. "
+                    "I've attached the feedback notes we went over."
                 ),
             },
             {
-                "days_ago": 3,
+                "days_ago": 19,
                 "content": (
-                    "So proud of how the interview went. Whatever happens with this "
-                    "one, you showed you can do it. We'll keep going."
+                    "CONGRATULATIONS Jordan!! I'm so happy for you. You earned "
+                    "this. Let's meet this week to talk about what the first few "
+                    "days might look like and how to make the transition smooth. "
+                    "So proud of you."
                 ),
             },
         ]
@@ -3938,7 +4325,7 @@ class Command(BaseCommand):
                 question_type="long_text",
             )
 
-        # --- Survey 2: Programme Feedback Survey (active, bilingual) ---
+        # --- Survey 2: Programme Feedback Survey (active, bilingual, with consent) ---
         feedback, created_fb = Survey.objects.get_or_create(
             name="Programme Feedback Survey",
             defaults={
@@ -3947,6 +4334,20 @@ class Command(BaseCommand):
                 "description_fr": "Aidez-nous à comprendre comment le programme fonctionne pour vous.",
                 "status": "active",
                 "portal_visible": True,
+                "is_anonymous": True,
+                "consent_text": (
+                    "This survey is anonymous. Your responses will not be linked "
+                    "to your name or file. The information you provide will be "
+                    "used to improve our programmes and services. By clicking "
+                    "'Continue', you consent to participating in this survey."
+                ),
+                "consent_text_fr": (
+                    "Ce sondage est anonyme. Vos réponses ne seront pas liées à "
+                    "votre nom ou votre dossier. Les informations que vous "
+                    "fournissez seront utilisées pour améliorer nos programmes et "
+                    "services. En cliquant sur « Continuer », vous consentez à "
+                    "participer à ce sondage."
+                ),
                 "created_by": created_by,
             },
         )
@@ -4220,6 +4621,100 @@ class Command(BaseCommand):
                         status="completed",
                         completed_at=now - timedelta(days=1),
                     )
+
+        # --- Anonymous survey responses for Programme Feedback Survey ---
+        # 10 responses spread across 2 weeks, with consent_given_at timestamps
+        existing_anon = SurveyResponse.objects.filter(
+            survey=feedback, channel="link",
+        ).count()
+        if existing_anon == 0:
+            fb_questions = list(SurveyQuestion.objects.filter(
+                section__survey=feedback,
+            ).order_by("section__sort_order", "sort_order"))
+
+            # Each response: (days_ago, attendance, helpfulness, useful_aspects, suggestion, partial)
+            # attendance: weekly/biweekly/monthly/rarely
+            # helpfulness: 1-5 rating
+            # useful_aspects: list of values from multiple_choice
+            # suggestion: short_text or "" for skipped
+            # partial: if True, skip the suggestion section entirely
+            anon_response_data = [
+                (13, "weekly", 5, ["one_on_one", "goal_setting"],
+                 "Nothing really — everything has been great so far.", False),
+                (12, "biweekly", 4, ["group", "resources"],
+                 "More evening options would be really helpful for people who work.", False),
+                (11, "weekly", 4, ["one_on_one", "group", "resources"],
+                 "", False),  # skipped suggestion
+                (10, "monthly", 3, ["resources"],
+                 "I wish there were more activities in French.", False),
+                (9, "weekly", 5, ["one_on_one", "goal_setting", "resources"],
+                 "Everything is good. Maybe a WhatsApp group for quick questions.", False),
+                (7, "biweekly", 3, ["group"],
+                 "Smaller groups would be better. Hard to participate when its crowded.", False),
+                (6, "rarely", 4, ["resources"],
+                 "", True),  # partially complete — skipped section 2 entirely
+                (5, "weekly", 4, ["one_on_one", "group"],
+                 "transit passes or bus tickets would help a LOT", False),
+                (3, "biweekly", 5, ["one_on_one", "goal_setting"],
+                 "Maybe have some graduates come back and talk to us about what worked for them", False),
+                (2, "monthly", 3, ["group", "resources"],
+                 "the hours don't work for me. i can only come on weekends", False),
+            ]
+
+            for days_ago, attend, helpful, aspects, suggestion, partial in anon_response_data:
+                submit_time = now - timedelta(days=days_ago, hours=random.randint(9, 20))
+                consent_time = submit_time - timedelta(minutes=random.randint(1, 5))
+
+                response = SurveyResponse.objects.create(
+                    survey=feedback,
+                    assignment=None,
+                    client_file=None,  # anonymous
+                    channel="link",
+                    consent_given_at=consent_time,
+                )
+                SurveyResponse.objects.filter(pk=response.pk).update(
+                    submitted_at=submit_time,
+                )
+
+                # Answer questions — fb_questions order: attendance, helpfulness, useful_aspects, suggestion
+                if len(fb_questions) >= 3:
+                    # Q1: attendance (single_choice)
+                    attend_scores = {"weekly": 5, "biweekly": 4, "monthly": 3, "rarely": 1}
+                    a1 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[0],
+                        numeric_value=attend_scores.get(attend),
+                    )
+                    a1.value = attend
+                    a1.save()
+
+                    # Q2: helpfulness (rating_scale)
+                    a2 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[1],
+                        numeric_value=helpful,
+                    )
+                    a2.value = str(helpful)
+                    a2.save()
+
+                    # Q3: useful aspects (multiple_choice)
+                    a3 = SurveyAnswer(
+                        response=response,
+                        question=fb_questions[2],
+                    )
+                    a3.value = ",".join(aspects)
+                    a3.save()
+
+                    # Q4: suggestion (short_text) — skip for partial responses
+                    if not partial and len(fb_questions) >= 4 and suggestion:
+                        a4 = SurveyAnswer(
+                            response=response,
+                            question=fb_questions[3],
+                        )
+                        a4.value = suggestion
+                        a4.save()
+
+                responses_created += 1
 
         survey_count = Survey.objects.count()
         self.stdout.write(
