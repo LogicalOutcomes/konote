@@ -14,8 +14,10 @@ ovh_single_1_agency: $74 CAD/mo
 ovh_multi_10_agencies: $15 CAD/mo/agency
 azure_single_1_agency: $141 CAD/mo
 azure_multi_10_agencies: $47 CAD/mo/agency
-ops_hours_1_agency: 4-5 hr/mo
-ops_hours_10_agencies_mt: 10-15 hr/mo
+ops_hours_1_agency: ~1 hr/mo human (LLM-assisted)
+ops_hours_5_agencies_network: ~2.5 hr/mo human (LLM-assisted)
+ops_hours_10_agencies_mt: ~4.5-5 hr/mo human (LLM-assisted)
+ops_model: LLM-assisted (see docs/llm-operations-runbook.md)
 downstream: p0-managed-service-plan.md, konote-prosper-canada/deliverables/costing-model.md
 -->
 
@@ -355,7 +357,7 @@ Total automation cost: ~$0 additional (uses free tiers of monitoring services).
 
 ## Technical Support Cost Estimates
 
-The 4-layer self-healing automation (see [OVHcloud deployment DRR](design-rationale/ovhcloud-deployment.md)) eliminates most routine operational work. This section estimates the remaining human support burden at each scale.
+The 4-layer self-healing automation (see [OVHcloud deployment DRR](design-rationale/ovhcloud-deployment.md)) eliminates most routine operational work. The remaining tasks are managed by a capable LLM (Opus 4.6 or equivalent) with human review and approval. See `docs/llm-operations-runbook.md` for the full operational prompt.
 
 ### What Self-Healing Handles Automatically (~$0)
 
@@ -372,62 +374,52 @@ The 4-layer self-healing automation (see [OVHcloud deployment DRR](design-ration
 | Dead man's switch (missed backups) | None | Healthchecks.io/UptimeRobot push monitor |
 | OS security patches | Manual apt upgrade | unattended-upgrades (automatic) |
 
-### Remaining Human Support Tasks
+### LLM-Assisted Support Model
 
-These are the tasks that still require a person. Estimated hours assume OVHcloud hosting with the full self-healing stack.
+KoNote operations use a capable LLM (Opus 4.6 or equivalent) for all routine technical work. The LLM reviews diffs, deploys updates, reads health reports, investigates alerts, and drafts agency responses. A human reviews, approves, and handles relationship management. See `docs/llm-operations-runbook.md` for the detailed operational prompt.
 
-| Task | Frequency | Est. hours | Notes |
-|------|-----------|------------|-------|
-| Review health report emails | Daily (2 min) | 1 hr/mo | Scan for anomalies, mostly no action needed |
-| Apply KoNote software updates | 1–2×/month | 1 hr/mo | `git pull` + `docker compose up -d --build` |
-| Investigate escalation alerts | ~1×/month | 0.5 hr/mo | Layer 4 alerts that self-healing couldn't resolve |
-| Respond to agency support requests | As needed | 1–2 hr/mo | Config changes, user account issues, questions |
-| Quarterly security review | 1×/quarter | 1 hr/quarter | Check CVEs, review access logs, rotate secrets |
-| Azure AD client secret renewal | 1×/year per agency | 0.5 hr/year | Calendar reminder set during deployment |
-| VPS capacity review | 1×/quarter | 0.5 hr/quarter | Check resource usage trends, plan upgrades |
-| **Total (1 agency)** | | **~4–5 hr/mo** | |
-| **Total (5 agencies, single-tenant)** | | **~8–12 hr/mo** | Some tasks scale per-agency, others are fixed |
-| **Total (10 agencies, multi-tenant)** | | **~10–15 hr/mo** | Multi-tenant reduces per-agency overhead |
+The hours below are **human hours only** — the time the operator spends reviewing, approving, and communicating. The LLM's time is infrastructure, not a billable cost.
+
+| Task | LLM does | Human does | Human time |
+|------|----------|------------|------------|
+| Software update (1–2×/mo) | Reviews diff, checks migrations, deploys, verifies health | Reviews summary, approves | 5–10 min/mo |
+| Review health reports (daily) | Reads report, flags anomalies, presents one-line summary | Scans summary, acts only if flagged | ~5 min/mo |
+| Investigate alerts (~2/mo) | Runs diagnostics, identifies cause, proposes fix | Approves fix | ~4 min/mo |
+| Agency support (2–3/mo per agency) | Drafts response, prepares config commands | Reviews draft, sends to agency | ~12 min/agency/mo |
+| Security review (quarterly) | Runs CVE check, reviews accounts, verifies backups | Reviews findings, approves changes | ~3 min/mo (amortised) |
+| Backup restore test (quarterly) | Runs full test restore, compares row counts, reports | Nothing unless failure | ~2 min/mo (amortised) |
+
+### Human Hours by Scale
+
+| Scale | Human hours/mo | Notes |
+|-------|----------------|-------|
+| 1 agency | ~0.8–1.0 hr | Update review + health scan + 2–3 support requests |
+| 5 agencies (ops shared) | ~2.5 hr | ~0.5 hr shared ops + 5 × 25 min agency support |
+| 10 agencies (ops shared) | ~4.5–5 hr | ~0.5–0.75 hr shared ops + 10 × 25 min agency support |
 
 ### Tech Support Cost by Scale (CAD/month)
 
-These costs supplement the infrastructure costs in the tables above. They represent the human operational burden.
+| Scale | Support model | Monthly cost | Per agency |
+|-------|--------------|-------------|------------|
+| 1–2 agencies | KoNote team (internal) | $0 (absorbed) | $0 |
+| 3–5 agencies | KoNote team (billed) | ~$250/mo | ~$50 |
+| 5–10 agencies (network) | KoNote team (network pricing) | ~$100 shared + $42/agency | ~$52–62 |
+| 10+ agencies (network) | KoNote team (network pricing) | ~$150 shared + $42/agency | ~$47–57 |
 
-| Scale | Support model | Fixed cost | Variable cost | Total support cost | Per agency |
-|-------|--------------|------------|---------------|-------------------|------------|
-| 1–2 agencies | KoNote team (internal) | $0 | Internal time (~5 hr/mo) | $0 (absorbed) | $0 |
-| 3–5 agencies | KoNote team + freelance sysadmin on-call | $75/mo retainer | ~$75–125/hr if called | ~$75–150/mo | ~$15–30 |
-| 5–10 agencies (single-tenant) | Freelance sysadmin retainer | $100–150/mo | ~$75–125/hr if called | ~$100–250/mo | ~$10–25 |
-| 5–10 agencies (multi-tenant) | Freelance sysadmin retainer | $100/mo | ~$75–125/hr if called | ~$100–200/mo | ~$10–20 |
-| 10+ agencies | Canadian MSP | $300–500/mo | Included in retainer | ~$300–500/mo | ~$30–50 |
-
-**Key insight:** At 1–5 agencies with full self-healing, a freelance sysadmin on retainer (~$75–150/mo) is sufficient. The MSP option ($300–500/mo) is only justified at 10+ agencies or if 24/7 SLA coverage is contractually required.
-
-**Freelance billing model:** The retainer covers availability (responding to Layer 4 escalation alerts within a few hours). The hourly rate ($75–125/hr) applies to actual incident work beyond the retainer — e.g., if a hardware failure requires 2 hours of SSH troubleshooting and backup restoration. In a typical month with full self-healing, the retainer is the only cost (0–1 incidents requiring human intervention).
+**Key insight:** With LLM-assisted operations, KoNote does not require a traditional sysadmin or MSP. A single operator with LLM assistance can manage 30+ agencies. The limiting factor is relationship management (check-ins, training sessions, onboarding), not technical operations.
 
 ### All-In Per-Agency Cost (Infrastructure + Support)
 
-Combines infrastructure costs from Scenario B (OVHcloud) with tech support estimates above.
+Combines infrastructure costs from Scenario B (OVHcloud) with LLM-assisted support estimates above.
 
 | Scale | Infrastructure/agency | Support/agency | **All-in/agency** |
 |-------|----------------------|----------------|-------------------|
 | 1 agency | $74 | $0 (internal) | **$74** |
-| 3 agencies (single-tenant) | ~$47 | ~$25 | **~$72** |
-| 5 agencies (single-tenant) | $40 | ~$20 | **~$60** |
-| 5 agencies (multi-tenant) | $22 | ~$20 | **~$42** |
-| 10 agencies (multi-tenant) | $15 | ~$15 | **~$30** |
+| 5 agencies (single-tenant, network) | $40 | ~$62 | **~$102** |
+| 5 agencies (multi-tenant) | $22 | ~$62 | **~$84** |
+| 10 agencies (multi-tenant, network) | $15 | ~$52 | **~$67** |
 
-### Further Automation Opportunities
-
-These automations could reduce the remaining 4–5 hr/month further. See the [automation roadmap](design-rationale/ovhcloud-deployment.md#automation-roadmap-reducing-tech-support-further) in the OVHcloud deployment DRR for implementation details.
-
-| Automation | Reduces | Est. savings | Complexity |
-|-----------|---------|-------------|------------|
-| GitOps auto-update (Watchtower or webhook) | Manual update deploys | 1 hr/mo | Medium |
-| Automated Django security advisory checks | Manual CVE review | 0.25 hr/quarter | Low |
-| Agency self-service admin portal | Config change requests | 0.5–1 hr/mo | High |
-| Automated capacity alerts with upgrade recommendations | Manual capacity review | 0.5 hr/quarter | Low |
-| Consolidated multi-agency health dashboard | Per-agency health report review | 0.5 hr/mo at 5+ agencies | Medium |
+> **Note on support cost comparison:** The previous version of this section estimated 4–5 hr/mo (1 agency) assuming a traditional sysadmin doing all tasks manually. With the LLM-assisted model, human time drops to ~1 hr/mo because the LLM handles the technical work and the human only reviews and approves. The total *work* is similar — it's the *human portion* that's dramatically lower.
 
 ---
 
