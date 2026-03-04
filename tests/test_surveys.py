@@ -1850,3 +1850,115 @@ class StaffDataEntryConditionTests(TestCase):
         response = SurveyResponse.objects.first()
         # Both answers saved — extra data preserved
         self.assertEqual(response.answers.count(), 2)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveyConsentTests(TestCase):
+    """Test the survey consent gate for public shareable links."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="consent_staff", password="testpass123",
+            display_name="Consent Staff",
+        )
+        # Survey WITH consent text
+        self.survey_with_consent = Survey.objects.create(
+            name="Consent Survey",
+            status="active",
+            created_by=self.staff,
+            consent_text="By continuing, you agree to participate in this survey.",
+            consent_text_fr="En continuant, vous acceptez de participer.",
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey_with_consent, title="Feedback", sort_order=1,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.section, question_text="How was it?",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link_with_consent = SurveyLink.objects.create(
+            survey=self.survey_with_consent, created_by=self.staff,
+        )
+
+        # Survey WITHOUT consent text
+        self.survey_no_consent = Survey.objects.create(
+            name="No Consent Survey",
+            status="active",
+            created_by=self.staff,
+        )
+        self.section_nc = SurveySection.objects.create(
+            survey=self.survey_no_consent, title="Info", sort_order=1,
+        )
+        self.q_nc = SurveyQuestion.objects.create(
+            section=self.section_nc, question_text="Your name?",
+            question_type="short_text", sort_order=1,
+        )
+        self.link_no_consent = SurveyLink.objects.create(
+            survey=self.survey_no_consent, created_by=self.staff,
+        )
+
+    def test_consent_required_shows_consent_page(self):
+        """Survey with consent_text shows consent page on GET."""
+        resp = self.client.get(f"/s/{self.link_with_consent.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "agree to participate")
+        self.assertContains(resp, "consent_agree")
+        # Should NOT show the survey questions
+        self.assertNotContains(resp, "How was it?")
+
+    def test_no_consent_goes_directly_to_form(self):
+        """Survey without consent_text goes directly to the survey form."""
+        resp = self.client.get(f"/s/{self.link_no_consent.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Your name?")
+        self.assertNotContains(resp, "consent_agree")
+
+    def test_consent_agreement_redirects_to_form(self):
+        """Agreeing to consent stores session key and redirects to form."""
+        url = f"/s/{self.link_with_consent.token}/"
+        resp = self.client.post(url, {"consent_agree": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(self.link_with_consent.token, resp.url)
+
+        # Follow redirect — should now see the survey form
+        resp2 = self.client.get(url)
+        self.assertEqual(resp2.status_code, 200)
+        self.assertContains(resp2, "How was it?")
+
+    def test_consent_given_at_recorded_on_response(self):
+        """consent_given_at is set on SurveyResponse when consent was required."""
+        url = f"/s/{self.link_with_consent.token}/"
+        # Step 1: give consent
+        self.client.post(url, {"consent_agree": "1"})
+        # Step 2: submit survey
+        self.client.post(url, {f"q_{self.q1.pk}": "Great!"})
+
+        response = SurveyResponse.objects.filter(
+            survey=self.survey_with_consent,
+        ).first()
+        self.assertIsNotNone(response)
+        self.assertIsNotNone(response.consent_given_at)
+
+    def test_no_consent_response_has_null_consent_given_at(self):
+        """consent_given_at is null when survey has no consent text."""
+        url = f"/s/{self.link_no_consent.token}/"
+        self.client.post(url, {f"q_{self.q_nc.pk}": "Alice"})
+
+        response = SurveyResponse.objects.filter(
+            survey=self.survey_no_consent,
+        ).first()
+        self.assertIsNotNone(response)
+        self.assertIsNone(response.consent_given_at)
+
+    def test_consent_required_without_session_redirects_to_consent(self):
+        """Attempting to submit the form without consent session redirects back."""
+        url = f"/s/{self.link_with_consent.token}/"
+        # Try to submit without giving consent first
+        resp = self.client.post(url, {f"q_{self.q1.pk}": "sneaky"})
+        # Should show the consent page, not process the survey
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "consent_agree")
+        self.assertEqual(SurveyResponse.objects.count(), 0)
