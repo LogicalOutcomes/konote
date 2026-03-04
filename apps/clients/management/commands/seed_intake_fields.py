@@ -196,6 +196,10 @@ INTAKE_FIELD_GROUPS = [
     # Demographics (for equity reporting) — FRONT DESK: NONE
     # Stage 3: As trust builds (optional, staff explains equity purpose)
     # All fields optional with "Prefer not to answer"
+    #
+    # Aligned with LogicalOutcomes recommended survey measures (2025-12-01),
+    # Ontario Anti-Racism Directorate standards, CIHI race/Indigenous guidance,
+    # City of Toronto Data for Equity Strategy, and UBC Equity & Inclusion.
     # -------------------------------------------------------------------------
     (
         "Demographics",
@@ -204,51 +208,63 @@ INTAKE_FIELD_GROUPS = [
             ("Gender Identity", "select_other", False, False, "none", "", [
                 "Woman",
                 "Man",
-                "Non-binary",
-                "Two-Spirit",
-                "Gender diverse",
-                "Prefer to self-describe",
-                "Prefer not to answer",
+                "Non-binary and/or gender-diverse",
+                "Prefer not to say",
             ]),
-            ("Indigenous Identity", "select", False, False, "none", "", [
-                "First Nations",
-                "Métis",
-                "Inuit",
-                "Non-Indigenous",
-                "Prefer not to answer",
+            ("Transgender Experience", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Unsure or questioning",
+                "Prefer not to say",
             ]),
-            ("Racial/Ethnic Background", "select", False, False, "none", "", [
+            ("2SLGBTQIA+ Identity", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Unsure or questioning",
+                "Prefer not to say",
+            ]),
+            ("Born in Canada", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Prefer not to say",
+            ]),
+            ("Time in Canada", "select", False, False, "none", "", [
+                "0-5 years",
+                "6-10 years",
+                "More than 10 years",
+                "Don't know",
+                "Prefer not to say",
+            ]),
+            ("Indigenous Identity", "multi_select", False, False, "none", "", [
+                "Yes, First Nations",
+                "Yes, Inuk/Inuit",
+                "Yes, Métis",
+                "No",
+                "Unsure",
+                "Prefer not to say",
+            ]),
+            ("Racial Identity", "multi_select_other", False, False, "none", "", [
                 "Black",
                 "East Asian",
+                "Indigenous (First Nations, Inuk/Inuit, Métis)",
+                "Latin American",
                 "South Asian",
                 "Southeast Asian",
-                "Middle Eastern/North African",
-                "Latin American",
+                "Middle Eastern",
                 "White",
-                "Mixed/Multiple backgrounds",
-                "Prefer to self-describe",
-                "Prefer not to answer",
+                "Don't know",
+                "Prefer not to say",
             ]),
-            ("Immigration/Citizenship Status", "select", False, False, "none", "", [
-                "Canadian citizen (born in Canada)",
-                "Canadian citizen (naturalized)",
-                "Permanent resident",
-                "Refugee/Protected person",
-                "Temporary resident (work/study permit)",
-                "No status",
-                "Prefer not to answer",
-            ]),
-            ("Primary Language Spoken at Home", "text", False, False, "none", "", []),
-            ("Disability Status", "select", False, False, "none", "", [
-                "Yes - physical",
-                "Yes - sensory (vision, hearing)",
-                "Yes - cognitive/developmental",
-                "Yes - learning disability",
-                "Yes - mental health condition",
-                "Yes - chronic illness/pain",
-                "Yes - multiple",
+            ("Disability", "select", False, False, "none", "", [
+                "Yes",
                 "No",
-                "Prefer not to answer",
+                "Unsure",
+                "Prefer not to say",
+            ]),
+            ("Caregiver Status", "multi_select", False, False, "none", "", [
+                "Yes, I have a child or children under 18 years of age",
+                "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging",
+                "No",
             ]),
         ],
     ),
@@ -690,6 +706,90 @@ class Command(BaseCommand):
         for field_name, sort_val in CONTACT_SORT_ORDER.items():
             fixups += CustomFieldDefinition.objects.filter(
                 group__title="Contact Information",
+                name=field_name,
+            ).exclude(sort_order=sort_val).update(sort_order=sort_val)
+
+        # ── Demographics: LogicalOutcomes alignment (2026-03-04) ──
+        # Update Gender Identity options to match LogicalOutcomes standard
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Demographics", name="Gender Identity",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            # Consolidate Non-binary/Two-Spirit/Gender diverse into one option
+            lo_opts = [
+                "Woman", "Man", "Non-binary and/or gender-diverse", "Prefer not to say",
+            ]
+            if opts != lo_opts:
+                field.options_json = lo_opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        # Update Indigenous Identity: single-select → multi_select, distinctions-based
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Demographics",
+            name="Indigenous Identity",
+            input_type="select",
+        ).update(
+            input_type="multi_select",
+            options_json=[
+                "Yes, First Nations", "Yes, Inuk/Inuit", "Yes, Métis",
+                "No", "Unsure", "Prefer not to say",
+            ],
+        )
+
+        # Rename "Racial/Ethnic Background" → "Racial Identity" and switch to multi_select_other
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Demographics", name="Racial/Ethnic Background",
+        ):
+            field.name = "Racial Identity"
+            field.input_type = "multi_select_other"
+            field.options_json = [
+                "Black", "East Asian",
+                "Indigenous (First Nations, Inuk/Inuit, Métis)",
+                "Latin American", "South Asian", "Southeast Asian",
+                "Middle Eastern", "White", "Don't know", "Prefer not to say",
+            ]
+            field.save()
+            fixups += 1
+
+        # Archive old Immigration/Citizenship Status (replaced by Born in Canada + Time in Canada)
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Demographics",
+            name="Immigration/Citizenship Status",
+            status="active",
+        ).update(status="archived")
+
+        # Archive old Primary Language Spoken at Home (covered by Contact > Preferred Language)
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Demographics",
+            name="Primary Language Spoken at Home",
+            status="active",
+        ).update(status="archived")
+
+        # Simplify Disability Status options to match LogicalOutcomes standard
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Demographics", name="Disability Status",
+        ):
+            field.name = "Disability"
+            field.options_json = ["Yes", "No", "Unsure", "Prefer not to say"]
+            field.save()
+            fixups += 1
+
+        # Demographics sort order (LogicalOutcomes question sequence)
+        DEMO_SORT_ORDER = {
+            "Gender Identity": 0,
+            "Transgender Experience": 10,
+            "2SLGBTQIA+ Identity": 20,
+            "Born in Canada": 30,
+            "Time in Canada": 40,
+            "Indigenous Identity": 50,
+            "Racial Identity": 60,
+            "Disability": 70,
+            "Caregiver Status": 80,
+        }
+        for field_name, sort_val in DEMO_SORT_ORDER.items():
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Demographics",
                 name=field_name,
             ).exclude(sort_order=sort_val).update(sort_order=sort_val)
 
