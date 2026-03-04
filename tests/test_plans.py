@@ -684,3 +684,218 @@ class TestMetricReview(TestCase):
         response = http_client.post(url)
         self.assertEqual(response.status_code, 403)
 
+
+# ---------------------------------------------------------------------------
+# Rationale log, severity bands, and assessment-due detection
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricRationaleLogTest(TestCase):
+    """Tests for the MetricDefinition rationale_log append-only changelog."""
+
+    def setUp(self):
+        self.metric = MetricDefinition.objects.create(
+            name="Test Metric",
+            definition="A test metric",
+            category="wellbeing",
+            metric_type="scale",
+        )
+
+    def test_append_rationale_creates_entry(self):
+        self.metric.append_rationale(note="Initial setup", author="System")
+        self.metric.save()
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "Initial setup")
+        self.assertEqual(self.metric.rationale_log[0]["author"], "System")
+
+    def test_append_rationale_preserves_history(self):
+        self.metric.append_rationale(note="First note", author="System")
+        self.metric.append_rationale(note="Second note", author="Admin")
+        self.metric.save()
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 2)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "First note")
+        self.assertEqual(self.metric.rationale_log[1]["note"], "Second note")
+
+    def test_current_rationale_returns_most_recent(self):
+        self.metric.append_rationale(note="Old", author="System")
+        self.metric.append_rationale(note="Current", author="Admin")
+        self.assertEqual(self.metric.current_rationale, "Current")
+
+    def test_current_rationale_empty_when_no_log(self):
+        self.assertEqual(self.metric.current_rationale, "")
+
+    def test_append_rationale_includes_date(self):
+        self.metric.append_rationale(note="Test")
+        entry = self.metric.rationale_log[0]
+        self.assertIn("date", entry)
+        self.assertEqual(entry["date"], datetime.date.today().isoformat())
+
+    def test_append_rationale_with_french(self):
+        self.metric.append_rationale(note="English", note_fr="Français", author="System")
+        entry = self.metric.rationale_log[0]
+        self.assertEqual(entry["note_fr"], "Français")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricSeverityBandTest(TestCase):
+    """Tests for MetricDefinition.get_severity_band() display-only lookup."""
+
+    def setUp(self):
+        self.metric = MetricDefinition.objects.create(
+            name="PHQ-9 Test",
+            category="wellbeing",
+            metric_type="scale",
+            scoring_bands=[
+                {"label": "Minimal", "min": 0, "max": 4},
+                {"label": "Mild", "min": 5, "max": 9},
+                {"label": "Moderate", "min": 10, "max": 14},
+                {"label": "Moderately Severe", "min": 15, "max": 19},
+                {"label": "Severe", "min": 20, "max": 27},
+            ],
+        )
+
+    def test_exact_lower_bound(self):
+        self.assertEqual(self.metric.get_severity_band(0), "Minimal")
+
+    def test_exact_upper_bound(self):
+        self.assertEqual(self.metric.get_severity_band(4), "Minimal")
+
+    def test_mid_range(self):
+        self.assertEqual(self.metric.get_severity_band(12), "Moderate")
+
+    def test_severe_band(self):
+        self.assertEqual(self.metric.get_severity_band(22), "Severe")
+
+    def test_out_of_range_returns_none(self):
+        self.assertIsNone(self.metric.get_severity_band(30))
+
+    def test_no_scoring_bands_returns_none(self):
+        m = MetricDefinition.objects.create(
+            name="No Bands", category="wellbeing", metric_type="scale",
+        )
+        self.assertIsNone(m.get_severity_band(5))
+
+    def test_invalid_score_returns_none(self):
+        self.assertIsNone(self.metric.get_severity_band("not a number"))
+
+    def test_float_score(self):
+        self.assertEqual(self.metric.get_severity_band(7.5), "Mild")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AssessmentDueDetectionTest(TestCase):
+    """Tests for get_assessments_due() assessment scheduling logic."""
+
+    def setUp(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        self.user = User.objects.create_user(
+            username="assesstest", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.client_file = ClientFile.objects.create(
+            _first_name_encrypted=b"", _last_name_encrypted=b"",
+            record_id="ASSESS-001", status="active",
+        )
+
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Health",
+            program=self.program,
+        )
+        self.target = PlanTarget.objects.create(
+            client_file=self.client_file,
+            plan_section=section,
+            status="default",
+        )
+        self.target.name = "Reduce depression"
+        self.target.save()
+
+        self.phq9 = MetricDefinition.objects.create(
+            name="PHQ-9",
+            category="wellbeing",
+            metric_type="scale",
+            is_standardized_instrument=True,
+            assessment_at_intake=True,
+            assessment_interval_days=90,
+        )
+        PlanTargetMetric.objects.create(
+            plan_target=self.target,
+            metric_def=self.phq9,
+        )
+
+    def test_intake_due_when_no_values(self):
+        from apps.plans.assessment import get_assessments_due
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["reason"], "intake")
+        self.assertIsNone(results[0]["last_date"])
+
+    def test_no_assessments_due_for_non_standardized(self):
+        from apps.plans.assessment import get_assessments_due
+
+        self.phq9.is_standardized_instrument = False
+        self.phq9.save()
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 0)
+
+    def test_periodic_due_when_overdue(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.assessment import get_assessments_due
+
+        # Record a value 100 days ago (overdue for 90-day interval)
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            note_type="full",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=self.target,
+        )
+        mv = MetricValue.objects.create(
+            progress_note_target=pnt,
+            metric_def=self.phq9,
+            value=12,
+        )
+        # Backdate the created_at
+        from django.utils import timezone as tz
+        old_date = tz.now() - datetime.timedelta(days=100)
+        MetricValue.objects.filter(pk=mv.pk).update(created_at=old_date)
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["reason"], "periodic")
+        self.assertGreater(results[0]["days_overdue"], 0)
+
+    def test_not_due_when_recently_administered(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.assessment import get_assessments_due
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            note_type="assessment",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt,
+            metric_def=self.phq9,
+            value=8,
+        )
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 0)
+
