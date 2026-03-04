@@ -810,6 +810,12 @@ def metric_library(request):
         metrics = MetricDefinition.objects.filter(
             Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
         )
+
+    # Category filter
+    category_filter = request.GET.get("category", "")
+    if category_filter:
+        metrics = metrics.filter(category=category_filter)
+
     metrics_by_category = {}
     for metric in metrics:
         cat = metric.get_category_display()
@@ -818,6 +824,8 @@ def metric_library(request):
     return render(request, "plans/metric_library.html", {
         "metrics_by_category": metrics_by_category,
         "is_admin": request.user.is_admin,
+        "category_choices": MetricDefinition.CATEGORY_CHOICES,
+        "selected_category": category_filter,
     })
 
 

@@ -149,6 +149,16 @@ class MetricDefinitionForm(forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Help text for non-technical admins
+        self.fields["name"].help_text = _("The name shown when staff select this metric for a goal.")
+        self.fields["name_fr"].help_text = _("French name, shown when a user's language is French. Leave blank to use the English name.")
+        self.fields["definition"].help_text = _("Describe what this metric measures and how to score it. Shown to staff during note entry.")
+        self.fields["definition_fr"].help_text = _("French definition. Leave blank to use the English definition.")
+        self.fields["higher_is_better"].help_text = _("Uncheck for metrics where lower scores indicate improvement (e.g. PHQ-9 depression scale).")
+        self.fields["warn_min"].help_text = _("Soft warning minimum. Values below this trigger a plausibility alert.")
+        self.fields["warn_max"].help_text = _("Soft warning maximum. Values above this trigger a plausibility alert.")
+
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole
             pm_program_ids = set(
