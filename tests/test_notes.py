@@ -1090,3 +1090,320 @@ class AllianceRepairGuideTest(TestCase):
         self.assertContains(resp, "Repair Strategies")
         self.assertContains(resp, "When to Seek Support")
         self.assertContains(resp, "Quick Reference")
+
+
+# ── Plausibility Override Logging Tests (DQ1) ────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PlausibilityOverrideLogTest(TestCase):
+    """Tests for PlausibilityOverrideLog model and override logging."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+
+        self.prog = Program.objects.create(name="Financial Coaching", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.consent_given_at = timezone.now()
+        self.client_file.consent_type = "written"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+        self.metric_def = MetricDefinition.objects.create(
+            name="Total Debt",
+            definition="Total consumer debt",
+            category="custom",
+            min_value=0,
+            max_value=10000000,
+            warn_min=0,
+            warn_max=200000,
+            owning_program=self.prog,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_plausibility_override_log_creation(self):
+        """PlausibilityOverrideLog can be created with all required fields."""
+        from apps.notes.models import PlausibilityOverrideLog
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+        log_entry = PlausibilityOverrideLog.objects.create(
+            metric_definition=self.metric_def,
+            progress_note=note,
+            entered_value=500000,
+            threshold_type="warn_max",
+            threshold_value=200000,
+            action="confirmed",
+            user=self.staff,
+        )
+        self.assertEqual(log_entry.metric_definition, self.metric_def)
+        self.assertEqual(log_entry.entered_value, 500000)
+        self.assertEqual(log_entry.action, "confirmed")
+        self.assertIsNone(log_entry.corrected_value)
+
+    def test_plausibility_override_corrected_value(self):
+        """Corrected value is logged when staff changes the value after warning."""
+        from apps.notes.models import PlausibilityOverrideLog
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+        log_entry = PlausibilityOverrideLog.objects.create(
+            metric_definition=self.metric_def,
+            progress_note=note,
+            entered_value=700000,
+            threshold_type="warn_max",
+            threshold_value=200000,
+            action="corrected",
+            corrected_value=700,
+            user=self.staff,
+        )
+        self.assertEqual(log_entry.action, "corrected")
+        self.assertEqual(log_entry.corrected_value, 700)
+
+    def test_plausibility_log_helper_confirmed(self):
+        """_log_plausibility_override creates confirmed entry when value unchanged."""
+        from apps.notes.models import PlausibilityOverrideLog
+        from apps.notes.views import _log_plausibility_override
+        from apps.notes.forms import MetricValueForm
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+
+        # Simulate a form with plausibility data (prefix must be in data keys)
+        prefix = "metric_1_1"
+        form = MetricValueForm(
+            data={
+                f"{prefix}-metric_def_id": str(self.metric_def.pk),
+                f"{prefix}-value": "500000",
+                f"{prefix}-plausibility_confirmed": "True",
+                f"{prefix}-plausibility_original_value": "500000",
+            },
+            prefix=prefix,
+            metric_def=self.metric_def,
+        )
+        form.is_valid()
+
+        _log_plausibility_override(form, "500000", note, self.staff)
+
+        log = PlausibilityOverrideLog.objects.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.action, "confirmed")
+        self.assertEqual(log.entered_value, 500000)
+        self.assertEqual(log.threshold_type, "warn_max")
+        self.assertEqual(log.threshold_value, 200000)
+        self.assertIsNone(log.corrected_value)
+
+    def test_plausibility_log_helper_corrected(self):
+        """_log_plausibility_override creates corrected entry when value changed."""
+        from apps.notes.models import PlausibilityOverrideLog
+        from apps.notes.views import _log_plausibility_override
+        from apps.notes.forms import MetricValueForm
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+
+        # Simulate a form where original value was 700000 but submitted as 700
+        prefix = "metric_1_1"
+        form = MetricValueForm(
+            data={
+                f"{prefix}-metric_def_id": str(self.metric_def.pk),
+                f"{prefix}-value": "700",
+                f"{prefix}-plausibility_confirmed": "True",
+                f"{prefix}-plausibility_original_value": "700000",
+            },
+            prefix=prefix,
+            metric_def=self.metric_def,
+        )
+        form.is_valid()
+
+        _log_plausibility_override(form, "700", note, self.staff)
+
+        log = PlausibilityOverrideLog.objects.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.action, "corrected")
+        self.assertEqual(log.entered_value, 700000)
+        self.assertEqual(log.corrected_value, 700)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PlausibilityTuningDashboardTest(TestCase):
+    """Tests for the admin plausibility threshold tuning dashboard."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+
+        self.prog = Program.objects.create(name="Financial Coaching", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+
+        self.metric_def = MetricDefinition.objects.create(
+            name="Total Debt",
+            definition="Total consumer debt",
+            category="custom",
+            min_value=0,
+            max_value=10000000,
+            warn_min=0,
+            warn_max=200000,
+            owning_program=self.prog,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_dashboard_accessible_to_admin(self):
+        """Admin can access the plausibility tuning dashboard."""
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Plausibility Threshold Tuning")
+
+    def test_dashboard_returns_403_for_staff(self):
+        """Non-admin staff cannot access the dashboard."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_dashboard_empty_state(self):
+        """Dashboard shows empty state message when no logs exist."""
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
+        self.assertContains(resp, "No plausibility override data yet")
+
+    def test_dashboard_override_rate_calculation(self):
+        """Dashboard correctly calculates override rate for a metric."""
+        from apps.notes.models import PlausibilityOverrideLog
+
+        client_file = ClientFile()
+        client_file.first_name = "Test"
+        client_file.last_name = "Client"
+        client_file.status = "active"
+        client_file.save()
+
+        note = ProgressNote.objects.create(
+            client_file=client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+
+        # Create 10 override logs: 8 confirmed, 2 corrected
+        for i in range(8):
+            PlausibilityOverrideLog.objects.create(
+                metric_definition=self.metric_def,
+                progress_note=note,
+                entered_value=300000 + i * 1000,
+                threshold_type="warn_max",
+                threshold_value=200000,
+                action="confirmed",
+                user=self.staff,
+            )
+        for i in range(2):
+            PlausibilityOverrideLog.objects.create(
+                metric_definition=self.metric_def,
+                progress_note=note,
+                entered_value=700000,
+                threshold_type="warn_max",
+                threshold_value=200000,
+                action="corrected",
+                corrected_value=700,
+                user=self.staff,
+            )
+
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
+        self.assertContains(resp, "Total Debt")
+        # 8 out of 10 = 80% override rate
+        self.assertContains(resp, "80.0%")
+
+    def test_dashboard_date_range_filter(self):
+        """Date range filter restricts results to the selected period."""
+        from apps.notes.models import PlausibilityOverrideLog
+
+        client_file = ClientFile()
+        client_file.first_name = "Test"
+        client_file.last_name = "Client"
+        client_file.status = "active"
+        client_file.save()
+
+        note = ProgressNote.objects.create(
+            client_file=client_file,
+            note_type="full",
+            interaction_type="session",
+            author=self.staff,
+            author_program=self.prog,
+        )
+
+        # Create a recent override log
+        PlausibilityOverrideLog.objects.create(
+            metric_definition=self.metric_def,
+            progress_note=note,
+            entered_value=500000,
+            threshold_type="warn_max",
+            threshold_value=200000,
+            action="confirmed",
+            user=self.staff,
+        )
+
+        self.http.login(username="admin", password="pass")
+
+        # 30 days should include it
+        resp = self.http.get("/admin/settings/plausibility-tuning/?days=30")
+        self.assertContains(resp, "Total Debt")
+
+        # All time should include it too
+        resp = self.http.get("/admin/settings/plausibility-tuning/?days=0")
+        self.assertContains(resp, "Total Debt")
+
+    def test_dashboard_metric_with_zero_overrides_not_shown(self):
+        """Metrics with zero override logs do not appear in the table."""
+        # Create another metric with no overrides
+        MetricDefinition.objects.create(
+            name="Credit Score",
+            definition="Canadian credit score",
+            category="custom",
+            min_value=300,
+            max_value=900,
+            warn_min=300,
+            warn_max=900,
+        )
+
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/admin/settings/plausibility-tuning/")
+        # Neither metric should appear since both have 0 overrides
+        self.assertNotContains(resp, "Credit Score")
+        self.assertNotContains(resp, "Total Debt")

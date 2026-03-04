@@ -7,8 +7,17 @@ if [ -d ".git" ]; then
 fi
 
 echo "Running migrations..."
-python manage.py migrate --noinput
+# migrate_default uses Django's real migrate (bypassing django_tenants' migrate_schemas)
+# so the PUBLIC schema is kept in sync with all pending migrations, including
+# tenant-app migrations that migrate_schemas would skip for the public schema.
+python manage.py migrate_default --noinput
 echo "Migrations complete."
+
+echo "Running tenant schema migrations..."
+# migrate (overridden by django_tenants as migrate_schemas) now handles
+# per-tenant schema migrations for any existing agencies.
+python manage.py migrate --noinput
+echo "Tenant schema migrations complete."
 
 # Bootstrap single-tenant deployments: register the domain in the agency_domains
 # table so TenantMainMiddleware can route requests.  Safe to re-run (idempotent).

@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self._seed_feature_toggles()
         self._seed_instance_settings()
         self._seed_event_types()
+        self._seed_sre_categories()
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
@@ -64,6 +65,12 @@ class Command(BaseCommand):
         from django.core.management import call_command
 
         call_command("seed_event_types", stdout=self.stdout)
+
+    def _seed_sre_categories(self):
+        """Seed default Serious Reportable Event categories."""
+        from django.core.management import call_command
+
+        call_command("seed_sre_categories", stdout=self.stdout)
 
     def _seed_intake_fields(self):
         """Seed default custom fields for client intake forms."""
@@ -250,6 +257,12 @@ class Command(BaseCommand):
         demo_users = User.objects.filter(is_demo=True)
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
+        # ProgressNote.author is PROTECTED so demo users cannot be deleted while
+        # they still have notes.  The demo_clients.delete() above should cascade
+        # and remove these, but notes can survive (e.g. cross-program sharing).
+        # Explicitly delete any remaining notes authored by demo users first.
+        from apps.notes.models import ProgressNote
+        ProgressNote.objects.filter(author__in=demo_users).delete()
         demo_users.delete()
 
         # Remove old program names that no longer exist

@@ -94,7 +94,11 @@ TENANT_MODEL = "tenants.Agency"
 TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
 
 MIDDLEWARE = [
-    # SecurityMiddleware MUST be first for security headers
+    # HealthCheckMiddleware MUST be first — it responds to GET /health/ before
+    # TenantMainMiddleware attempts domain lookup (which fails for internal IPs
+    # used by Railway / Docker health probes and load-balancers).
+    "konote.middleware.health_check.HealthCheckMiddleware",
+    # SecurityMiddleware MUST be second for security headers
     "django.middleware.security.SecurityMiddleware",
     # WhiteNoiseMiddleware serves static files directly, before tenant resolution
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -180,8 +184,12 @@ if "postgresql" in DATABASES["default"].get("ENGINE", ""):
     DATABASES["default"]["ENGINE"] = "django_tenants.postgresql_backend"
 
 DATABASE_ROUTERS = [
-    "django_tenants.routers.TenantSyncRouter",
+    # AuditRouter MUST come first: it returns True/False definitively for the
+    # audit DB so TenantSyncRouter never sees audit-DB migration calls.
+    # TenantSyncRouter returns False for any db != 'default', which would
+    # incorrectly block audit migrations if it ran before AuditRouter.
     "konote.db_router.AuditRouter",
+    "django_tenants.routers.TenantSyncRouter",
 ]
 
 # Password hashing — Argon2 first

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "SRE Categories" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Serious Reportable Event Categories" %}</h1>
+    <p>{% trans "Manage the predefined list of SRE categories available to staff when flagging events." %}</p>
+</hgroup>
+
+<p><a href="{% url 'sre_categories:sre_category_create' %}" role="button">{% trans "New SRE Category" %}</a></p>
+
+{% if categories %}
+<figure>
+<table role="grid" aria-label="{% trans 'SRE categories' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Order" %}</th>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{% trans "French Name" %}</th>
+            <th scope="col">{% trans "Severity" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col"><span class="visually-hidden">{% trans "Actions" %}</span></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cat in categories %}
+        <tr>
+            <td>{{ cat.display_order }}</td>
+            <td>{{ cat.name }}</td>
+            <td>{{ cat.name_fr|default:"—" }}</td>
+            <td>
+                {% if cat.severity == 1 %}
+                    <span class="badge badge-danger">{% trans "Level 1 — Immediate" %}</span>
+                {% elif cat.severity == 2 %}
+                    <span class="badge badge-warning">{% trans "Level 2 — 24h" %}</span>
+                {% else %}
+                    <span class="badge badge-info">{% trans "Level 3 — 7 days" %}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if cat.is_active %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Archived" %}</span>
+                {% endif %}
+            </td>
+            <td>
+                <div role="group">
+                    <a href="{% url 'sre_categories:sre_category_edit' category_id=cat.pk %}">{% trans "Edit" %}</a>
+                    <form method="post" action="{% url 'sre_categories:sre_category_toggle_active' category_id=cat.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        {% if cat.is_active %}
+                        <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">{% trans "Archive" %}</button>
+                        {% else %}
+                        <button type="submit" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">{% trans "Activate" %}</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No SRE categories yet. Run the seed command or create one to get started." %}</p>
+</div>
+{% endif %}
+{% endblock %}
