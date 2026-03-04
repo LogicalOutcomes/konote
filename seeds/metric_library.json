@@ -371,8 +371,7 @@
     "definition_fr": "Réflexion ouverte sur l'impact auto-déclaré du programme. Le participant décrit dans ses propres mots ce qui a changé. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Les réponses peuvent être citées anonymement dans les rapports. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
-    "portal_visibility": "self_reported",
-    "status": "inactive"
+    "portal_visibility": "self_reported"
   },
   {
     "name": "How can we improve our program or services?",
@@ -381,7 +380,6 @@
     "definition_fr": "Suggestion ouverte pour l'amélioration du programme. Le participant donne ses commentaires dans ses propres mots. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
-    "portal_visibility": "self_reported",
-    "status": "inactive"
+    "portal_visibility": "self_reported"
   }
 ]
