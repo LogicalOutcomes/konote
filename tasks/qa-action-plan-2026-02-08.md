@@ -15,7 +15,7 @@
 | Active tickets | 13 | Unchanged (0 new, 0 closed this round) |
 | Blockers | 0 confirmed, 2 need verification | — |
 
-**Key finding:** BUG-7, BUG-9, BUG-10 were committed as fixed (45db041, merged via PR #37) but evaluation says NOT FIXED. Likely a deployment timing issue — screenshots taken at 14:40 may predate Railway deploy. **Re-test before writing code.**
+**Key finding:** BUG-7, BUG-9, BUG-10 were committed as fixed (45db041, merged via PR #37) but evaluation says NOT FIXED. Likely a deployment timing issue — screenshots taken at 14:40 may predate OVHcloud deploy. **Re-test before writing code.**
 
 ---
 
