@@ -1,3 +1,5 @@
+> **Archived:** This document was written when KoNote was deployed on Railway. KoNote now uses OVHcloud VPS with Docker Compose. See `docs/deploying-konote.md` for current backup procedures.
+
 # Backup and Restore Guide for KoNote Web
 
 ## What You Need to Know
