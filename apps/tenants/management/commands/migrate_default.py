@@ -86,13 +86,14 @@ class Command(DjangoMigrateCommand):
         fake_initial so re-applied initial migrations skip tables that already
         exist on disk), or False if the database is clean.
         """
+        import re
         from django.apps import apps as django_apps
         from django.conf import settings as django_settings
+        from django.db.migrations.exceptions import InconsistentMigrationHistory
         from django.db.migrations.loader import MigrationLoader
         from django.db.migrations.operations.fields import AddField
         from django.db.migrations.operations.models import CreateModel
         from django.db.migrations.recorder import MigrationRecorder
-
         from django.db import router as dj_router
 
         recorder = MigrationRecorder(connection)
@@ -239,10 +240,8 @@ class Command(DjangoMigrateCommand):
                         changed = True
                         break
 
-        if not to_remove:
-            return False
-
         # --- Phase 3: bulk removal ---
+        # (runs only when Phase 1/2 found ghost/orphan records)
         for app_label, migration_name in sorted(to_remove):
             recorder.record_unapplied(app_label, migration_name)
             self.stdout.write(
@@ -251,7 +250,33 @@ class Command(DjangoMigrateCommand):
                 )
             )
 
-        return True
+        # --- Phase 4: direct consistency pre-flight ---
+        #
+        # Phases 1–3 propagate through the dependency graph but Phase 2 skips
+        # deps with dep_name == '__first__' (used by swappable_dependency, e.g.
+        # admin.0001_initial -> ('auth_app', '__first__')).  Phase 4 runs
+        # Django's own check_consistent_history iteratively, removing whichever
+        # migration it reports as inconsistent until the database is clean.
+        # This is the authoritative catch-all for any shape Phase 2 missed.
+        phase4_removed = False
+        while True:
+            try:
+                MigrationLoader(connection).check_consistent_history(connection)
+                break
+            except InconsistentMigrationHistory as exc:
+                m = re.match(r"Migration (\w+)\.(\w+) is applied", str(exc))
+                if not m:
+                    raise
+                bad_app, bad_name = m.group(1), m.group(2)
+                recorder.record_unapplied(bad_app, bad_name)
+                self.stdout.write(
+                    self.style.NOTICE(
+                        f"    Pre-flight removed: {bad_app}.{bad_name}"
+                    )
+                )
+                phase4_removed = True
+
+        return bool(to_remove or phase4_removed)
 
     # ------------------------------------------------------------------
     # Main entry point
