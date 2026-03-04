@@ -811,10 +811,13 @@ def metric_library(request):
             Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
         )
 
-    # Category filter
+    # Category filter (validated against known choices)
     category_filter = request.GET.get("category", "")
-    if category_filter:
+    valid_categories = {c[0] for c in MetricDefinition.CATEGORY_CHOICES}
+    if category_filter and category_filter in valid_categories:
         metrics = metrics.filter(category=category_filter)
+    else:
+        category_filter = ""
 
     metrics_by_category = {}
     for metric in metrics:
