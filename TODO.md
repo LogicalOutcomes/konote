@@ -86,7 +86,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 - [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
-- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
+- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules (QA-R7-PRIVACY2)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
@@ -94,7 +94,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
-- [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
+- [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md (AI-SELFHOST1)
 
 ## Recently Done
 
