@@ -123,6 +123,25 @@
             <div class="target-metrics">
             {% for mf in tf.metric_forms %}
                 {{ mf.metric_def_id }}
+                {% if mf.review_due %}
+                <div class="metric-review-banner" id="review-banner-{{ mf.ptm_pk }}" role="alert">
+                    <small>
+                        {% trans "This metric has been tracked for 90+ days. Is it still the right measure?" %}
+                        <button type="button" class="outline secondary"
+                                style="padding: 0.1rem 0.5rem; font-size: 0.8rem; margin-left: 0.5rem;"
+                                hx-post="{% url 'plans:confirm_metric_review' ptm_id=mf.ptm_pk %}"
+                                hx-target="#review-banner-{{ mf.ptm_pk }}"
+                                hx-swap="innerHTML">
+                            {% trans "Still right" %}
+                        </button>
+                        <a href="{% url 'plans:target_metrics' target_id=tf.target.pk %}"
+                           class="outline secondary"
+                           style="padding: 0.1rem 0.5rem; font-size: 0.8rem; margin-left: 0.25rem;">
+                            {% trans "Change metric" %}
+                        </a>
+                    </small>
+                </div>
+                {% endif %}
                 {% if mf.auto_calc_value != None %}
                 <div class="auto-calc-metric">
                     <span class="badge outline" aria-label="{{ mf.value.label }}: {{ mf.auto_calc_value }}, {% trans 'auto-calculated' %}">
