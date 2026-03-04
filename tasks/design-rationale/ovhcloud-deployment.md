@@ -460,11 +460,16 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 
 ### Recommended Progression
 
-| Stage | Second-Level Support | Estimated Cost |
-|-------|---------------------|----------------|
-| Launch (1–2 agencies) | KoNote team + runbook | $0 |
-| Early growth (3–5 agencies) | Add freelance sysadmin retainer | ~$100 CAD/mo |
-| Scale (5–10+ agencies) | Transition to Canadian MSP | ~$300–500 CAD/mo |
+With the 4-layer self-healing stack handling ~99% of incidents automatically, the second-level support role is primarily on-call for the rare cases that self-healing can't resolve (hardware failure, data corruption, security incidents). This dramatically reduces the retainer needed compared to a manually-managed VPS.
+
+| Stage | Second-Level Support | Estimated Cost | Est. Hours/Mo |
+|-------|---------------------|----------------|---------------|
+| Launch (1–2 agencies) | KoNote team + runbook | $0 | ~4–5 |
+| Early growth (3–5 agencies) | KoNote team + freelance sysadmin on-call | ~$75–150 CAD/mo | ~8–12 total |
+| Scale (5–10 agencies) | Freelance sysadmin retainer | ~$100–200 CAD/mo | ~10–15 total |
+| Enterprise (10+ agencies) | Canadian MSP | ~$300–500 CAD/mo | ~10–15 total (MT) |
+
+**Note:** The MSP threshold has moved from 5 agencies to 10+ because self-healing eliminates the routine monitoring and restart tasks that previously justified an MSP. A freelance sysadmin on retainer is sufficient through 10 agencies. See the [automation roadmap](#automation-roadmap-reducing-tech-support-further) for reducing hours further.
 
 ---
 
