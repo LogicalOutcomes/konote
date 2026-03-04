@@ -2,7 +2,8 @@
 Custom field values for demo clients (DEMO-001 through DEMO-015).
 
 Shared between seed_demo_data and update_demo_client_fields so that
-the data stays in sync. Field names must match those in seed_intake_fields.py.
+the data stays in sync. Field names must match those in seed_intake_fields.py
+or Prosper Canada custom-fields.json (for RF Social Identity fields).
 """
 
 CLIENT_CUSTOM_FIELDS = {
@@ -30,6 +31,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Latin American"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-002": {
         "Preferred Name": "Taylor",
@@ -52,6 +57,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["East Asian"]',
         "Disability": "Yes",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Mandarin",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-003": {
         "Preferred Name": "Avery",
@@ -73,6 +82,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Black"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed full-time",
+        "Household Income Bracket": "$40,000-$59,999",
     },
     # =========================================================================
     # Housing Stability (Casey Worker)
@@ -96,6 +109,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["White"]',
         "Disability": "Yes",
         "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "On disability",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-005": {
         "Primary Phone": "(647) 555-0567",
@@ -116,6 +133,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Indigenous (First Nations, Inuk/Inuit, Métis)", "White"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "French",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     "DEMO-006": {
         "Primary Phone": "(416) 555-0678",
@@ -136,6 +157,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Latin American", "White"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Spanish",
+        "Employment Status at Intake": "Student",
+        "Household Income Bracket": "Under $20,000",
     },
     # =========================================================================
     # Youth Drop-In (Noor Worker)
@@ -159,6 +184,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Latin American"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Student",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-008": {
         "Preferred Name": "Maya",
@@ -180,6 +209,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Indigenous (First Nations, Inuk/Inuit, Métis)"]',
         "Disability": "Unsure",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Unemployed - not seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-009": {
         "Preferred Name": "Zara",
@@ -202,6 +235,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Middle Eastern"]',
         "Disability": "No",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Arabic",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     # =========================================================================
     # Newcomer Connections (Noor Worker)
@@ -228,6 +265,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Black"]',
         "Disability": "No",
         "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "French",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-011": {
         "Primary Phone": "(416) 555-1123",
@@ -250,6 +291,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Black"]',
         "Disability": "No",
         "Caregiver Status": '["Yes, I have a child or children under 18 years of age", "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Somali",
+        "Employment Status at Intake": "Unemployed - not seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-012": {
         "Preferred Name": "Carlos",
@@ -273,6 +318,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["Latin American"]',
         "Disability": "No",
         "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Spanish",
+        "Employment Status at Intake": "Self-employed",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     # =========================================================================
     # Community Kitchen (Both workers)
@@ -298,6 +347,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["South Asian"]',
         "Disability": "No",
         "Caregiver Status": '["Yes, I have a child or children under 18 years of age", "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Tamil",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     "DEMO-014": {
         "Preferred Name": "Liam",
@@ -319,6 +372,10 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["White"]',
         "Disability": "Prefer not to say",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed full-time",
+        "Household Income Bracket": "$40,000-$59,999",
     },
     "DEMO-015": {
         "Primary Phone": "(647) 555-1567",
@@ -340,5 +397,9 @@ CLIENT_CUSTOM_FIELDS = {
         "Racial Identity": '["White"]',
         "Disability": "Yes",
         "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Other",
+        "Employment Status at Intake": "On disability",
+        "Household Income Bracket": "Under $20,000",
     },
 }
