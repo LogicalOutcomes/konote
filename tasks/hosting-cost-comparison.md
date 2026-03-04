@@ -114,17 +114,6 @@ This document compares two hosting approaches for KoNote, both using Azure Key V
 
 *See [self-hosted LLM infrastructure DRR](design-rationale/self-hosted-llm-infrastructure.md) for full analysis of model selection, VPS sizing, and dual-model architecture.*
 
-### Railway (Current Hosting — for comparison)
-
-| Component | Price (USD/mo) | Price (CAD/mo) |
-|-----------|----------------|----------------|
-| Pro plan base | $5 | ~$7 |
-| Django app (usage) | ~$15–25 | ~$21–36 |
-| 2x PostgreSQL (usage) | ~$10–20 | ~$14–29 |
-| **Total** | **~$30–50** | **~$42–72** |
-
-*Railway hosts in US regions only. US-incorporated. Not appropriate for PHIPA data sovereignty requirements. Source: [Railway pricing](https://railway.app/pricing).*
-
 ---
 
 ## Scenario A: Azure Hosting (Canada Central)
