@@ -899,3 +899,149 @@ class AssessmentDueDetectionTest(TestCase):
         results = get_assessments_due(self.client_file)
         self.assertEqual(len(results), 0)
 
+
+# ---------------------------------------------------------------------------
+# HTTP-level view tests for rationale and assessment endpoints
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricRationaleViewTest(TestCase):
+    """HTTP-level tests for rationale add/generate HTMX endpoints."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="rationale_admin", password="testpass123", is_admin=True,
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Rationale Test Metric",
+            definition="A test metric",
+            category="wellbeing",
+            metric_type="scale",
+        )
+        self.http_client = self.client
+        self.http_client.login(username="rationale_admin", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_rationale_add_requires_post(self):
+        """GET to rationale/add/ should return 405."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_rationale_add_appends_entry(self):
+        """POST with note text appends to rationale_log."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.post(url, {"note": "Test rationale note"})
+        self.assertEqual(response.status_code, 200)
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "Test rationale note")
+
+    def test_rationale_add_creates_audit_log(self):
+        """Rationale add should create an audit log entry."""
+        from django.urls import reverse
+        from apps.audit.models import AuditLog
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(url, {"note": "Audited note"})
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="MetricDefinition",
+            resource_id=str(self.metric.pk),
+            action="update",
+        ).last()
+        self.assertIsNotNone(log)
+        self.assertIn("rationale", log.metadata.get("detail", ""))
+
+    def test_rationale_add_ignores_empty_note(self):
+        """POST with empty note should not append."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(url, {"note": "  "})
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 0)
+
+    def test_rationale_generate_requires_post(self):
+        """GET to rationale/generate/ should return 405."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_generate", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_rationale_generate_creates_entry(self):
+        """POST to generate uses template fallback (no AI in test) and appends entry."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_generate", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["author"], "AI")
+        self.assertIn("initial configuration", self.metric.rationale_log[0]["note"])
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AssessmentDueBannerViewTest(TestCase):
+    """HTTP-level test for assessment-due banner HTMX partial."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="banner_user", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Banner Program", status="active")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Banner"
+        self.client_file.last_name = "Test"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        self.http_client = self.client
+        self.http_client.login(username="banner_user", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_banner_renders_empty_when_no_instruments(self):
+        """Banner partial returns 200 with no content when no standardized instruments assigned."""
+        from django.urls import reverse
+        url = reverse("clients:assessment_due_banner", kwargs={"client_id": self.client_file.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Assessment due")
+
+    def test_banner_shows_intake_due(self):
+        """Banner shows assessment-due when PHQ-9 assigned with assessment_at_intake."""
+        from django.urls import reverse
+        phq9 = MetricDefinition.objects.create(
+            name="PHQ-9", category="wellbeing", metric_type="scale",
+            is_standardized_instrument=True, assessment_at_intake=True,
+        )
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Health", program=self.program,
+        )
+        target = PlanTarget(plan_section=section, client_file=self.client_file)
+        target.name = "Mental health"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=phq9)
+
+        url = reverse("clients:assessment_due_banner", kwargs={"client_id": self.client_file.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Assessment due")
+
