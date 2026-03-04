@@ -73,7 +73,6 @@ def dashboard(request):
     active_reason_count = 0
     if access_tier >= 3:
         from apps.auth_app.models import AccessGrant, AccessGrantReason
-        from django.utils import timezone as tz
         active_grant_count = AccessGrant.objects.filter(
             is_active=True, expires_at__gt=tz.now()
         ).count()
@@ -96,8 +95,9 @@ def dashboard(request):
     org_name = org_profile.operating_name if org_profile else ""
 
     # Plausibility tuning card — count metrics with high override rate (>80%)
+    from datetime import timedelta
     from django.db.models import Count, Q
-    cutoff = tz.now() - tz.timedelta(days=90)
+    cutoff = tz.now() - timedelta(days=90)
     override_stats = (
         PlausibilityOverrideLog.objects.filter(created_at__gte=cutoff)
         .values("metric_definition_id")
