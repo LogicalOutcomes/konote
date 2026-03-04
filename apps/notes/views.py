@@ -1184,7 +1184,7 @@ def qualitative_summary(request, client_id):
 
 
 @login_required
-@requires_permission("note.create", get_program_func=lambda request, **kwargs: _get_program_from_client(request, kwargs["client_id"]))
+@requires_permission("note.create", _get_program_from_client)
 def assessment_create(request, client_id, metric_id):
     """Create a simplified assessment note for a standardized instrument."""
     import json as _json
