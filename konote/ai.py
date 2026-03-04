@@ -560,12 +560,15 @@ def validate_insights_response(response, original_quotes):
         for cq in response["cited_quotes"]:
             if not isinstance(cq, dict) or "text" not in cq:
                 continue
-            # Check if the quoted text is a substring of any provided quote
-            is_verbatim = any(cq["text"] in orig for orig in original_texts)
-            if is_verbatim:
-                # Strip note_id — AI has no access to real IDs and would
-                # fabricate values that produce broken links.
+            # Find the matching source quote so we can restore the real note_id
+            matching_orig = next(
+                (q for q in original_quotes if cq["text"] in q["text"]), None
+            )
+            if matching_orig is not None:
+                # Strip AI-provided note_id (AI fabricates IDs), restore from source
                 cq.pop("note_id", None)
+                if "note_id" in matching_orig:
+                    cq["note_id"] = matching_orig["note_id"]
                 verified_quotes.append(cq)
             else:
                 logger.info("AI quote not verbatim, skipping: %s", cq["text"][:80])
