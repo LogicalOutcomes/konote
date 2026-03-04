@@ -121,6 +121,15 @@ class PublicRegistrationForm(forms.Form):
             for field_def in field_definitions:
                 field_key = f"custom_{field_def.pk}"
                 self.fields[field_key] = self._create_field_for_definition(field_def)
+                # multi_select_other needs a companion text field for "Other"
+                if field_def.input_type == "multi_select_other":
+                    self.fields[f"{field_key}_other"] = forms.CharField(
+                        required=False,
+                        label=_("Other (please specify)"),
+                        widget=forms.TextInput(attrs={
+                            "placeholder": field_def.placeholder or "",
+                        }),
+                    )
 
     def _create_field_for_definition(self, field_def):
         """Create a form field from a CustomFieldDefinition."""
@@ -170,8 +179,8 @@ class PublicRegistrationForm(forms.Form):
         elif field_def.input_type == "multi_select_other" and field_def.options_json:
             choices = [(opt, opt) for opt in field_def.options_json]
             return forms.MultipleChoiceField(
-                required=False,
-                label=field_def.name,
+                **common_attrs,
+                required=False,  # "Other" text may fulfil the requirement instead
                 choices=choices,
                 widget=forms.CheckboxSelectMultiple,
             )
@@ -196,13 +205,19 @@ class PublicRegistrationForm(forms.Form):
         """Extract custom field values from cleaned data.
 
         Returns a dict of {field_def_pk: value} for storage in JSONField.
-        Multi-select lists are serialized to JSON strings.
+        Multi-select lists are serialized to JSON strings.  For
+        multi_select_other fields, the free-text "Other" value is appended
+        to the list before serialization.
         """
         values = {}
         for key, value in self.cleaned_data.items():
-            if key.startswith("custom_"):
+            if key.startswith("custom_") and not key.endswith("_other"):
                 pk = key.replace("custom_", "")
                 if isinstance(value, list):
+                    # Merge "Other" text if present
+                    other_text = self.cleaned_data.get(f"{key}_other", "").strip()
+                    if other_text:
+                        value = list(value) + [other_text]
                     values[pk] = json.dumps(value)
                 else:
                     values[pk] = value
