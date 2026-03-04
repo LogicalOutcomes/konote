@@ -1362,7 +1362,25 @@ def client_consent_save(request, client_id):
                 timezone.datetime.combine(consent_date, timezone.datetime.min.time())
             )
             client.consent_type = form.cleaned_data["consent_type"]
-            client.save(update_fields=["consent_given_at", "consent_type"])
+
+            # Clear retention expiry on re-grant (consent withdrawal clock resets)
+            update_fields = ["consent_given_at", "consent_type"]
+            if client.retention_expires is not None:
+                client.retention_expires = None
+                update_fields.append("retention_expires")
+
+            client.save(update_fields=update_fields)
+
+            # Record consent event for audit trail (QA-R7-PRIVACY2)
+            ConsentEvent.objects.create(
+                client_file=client,
+                event_type="granted",
+                event_date=consent_date,
+                recorded_by=request.user,
+                recorded_by_display=str(request.user),
+                consent_type=form.cleaned_data["consent_type"],
+            )
+
             messages.success(request, _("Consent recorded."))
         else:
             messages.error(request, _("Please correct the errors."))
