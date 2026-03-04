@@ -107,7 +107,7 @@ The 4-layer self-healing automation handles ~99% of operational incidents automa
 
 | Item | Estimate | When needed |
 |------|----------|-------------|
-| KoNote team time (~4–5 hr/mo per agency) | Internal cost | Always |
+| KoNote team time (~4–5 hr/mo for 1 agency; ~2 hr/mo per agency at scale) | Internal cost | Always |
 | Freelance sysadmin on-call retainer | ~$75–150 CAD/mo | 3–5 agencies (recommended) |
 | Canadian MSP | ~$300–500 CAD/mo | 10+ agencies or when 24/7 SLA required |
 | SaaS agreement legal review | One-time ~$2,000–5,000 | Before first managed agency |

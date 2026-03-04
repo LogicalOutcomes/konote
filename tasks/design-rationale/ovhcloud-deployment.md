@@ -554,8 +554,9 @@ The 4-layer self-healing stack already reduces manual support from ~10–15 hour
 These can be added as new cron entries in the existing ops sidecar container.
 
 **1. Automated Django security advisory check**
-- Weekly cron: `pip audit --json` against the installed packages
+- Weekly cron: `docker compose exec web pip-audit --json` — runs inside the web container where Python packages are installed (not in the ops sidecar, which is Alpine-based and doesn't have the app's dependencies)
 - Email alert only if vulnerabilities found (no alert = no action needed)
+- Requires adding `pip-audit` to the web container's `requirements.txt`
 - Eliminates manual CVE review (~0.25 hr/quarter saved)
 
 **2. Automated capacity alerts with upgrade recommendations**
@@ -564,8 +565,9 @@ These can be added as new cron entries in the existing ops sidecar container.
 - Eliminates manual capacity review (~0.5 hr/quarter saved)
 
 **3. Automated database maintenance**
-- Weekly cron: `VACUUM ANALYZE` on both databases
-- Monthly cron: `REINDEX DATABASE` during maintenance window (Sunday 3 AM)
+- PostgreSQL's built-in autovacuum handles routine `VACUUM` automatically — the manual weekly cron is a safety net, not the primary mechanism
+- Weekly cron: `VACUUM ANALYZE` on both databases (catches anything autovacuum missed, e.g., after bulk imports)
+- Monthly cron: `REINDEX DATABASE` during maintenance window (Sunday 3 AM) — autovacuum does not handle reindexing, so this is the primary mechanism for index maintenance
 - Prevents gradual performance degradation that would generate support tickets
 
 **4. Consolidated health dashboard email (multi-agency)**
@@ -582,9 +584,9 @@ This is the single highest-impact automation — it eliminates the most frequent
 - KoNote publishes images to a private registry (GitHub Container Registry or OVHcloud Container Registry)
 - Watchtower polls the registry on a schedule (e.g., weekly)
 - On new image: pull → stop → restart → verify health check passes
-- If health check fails: roll back to previous image automatically
 - Cost: $0 (open source). Complexity: low.
-- **Risk:** Untested updates could break production. Mitigate with: staging instance that auto-updates first, production updates delayed 48 hours.
+- **Limitation:** Watchtower does not natively roll back to a previous image on health check failure — it will keep restarting the new image. Rollback requires either a custom wrapper script that tags the current image before pulling, or switching to Option B.
+- **Risk:** Untested updates could break production. Mitigate with: staging instance that auto-updates first, production updates delayed 48 hours. The staging-first pattern also catches migration failures before they reach production.
 
 **Option B: Webhook-triggered deploy (for multi-tenant or controlled rollout)**
 - GitHub Actions builds and pushes Docker image on `develop` merge

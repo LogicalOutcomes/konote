@@ -202,6 +202,14 @@ KoNote application, databases, and LLM all on OVHcloud VPS(es) in Beauharnois. S
 
 ## Summary Comparison
 
+**Supporting documents for technical review:**
+- [OVHcloud deployment architecture](design-rationale/ovhcloud-deployment.md) — full stack, self-healing layers, backup strategy, encryption key management, automation roadmap
+- [Self-hosted LLM infrastructure](design-rationale/self-hosted-llm-infrastructure.md) — Ollama endpoint, model selection, batch processing, provider consolidation path
+- [Managed service plan](p0-managed-service-plan.md) — service model, support tiers, deployment protocol, scaling plan
+- [Deployment guide](../docs/deploy-ovhcloud.md) — step-by-step OVHcloud VPS deployment (automated + manual paths)
+- [Data access residency policy](design-rationale/data-access-residency-policy.md) — access tiers, Canadian residency requirements
+- [Multi-tenancy architecture](design-rationale/multi-tenancy.md) — schema-per-tenant design for multi-agency hosting
+
 ### Per-Agency Monthly Cost (CAD)
 
 | Scale | Azure Single-Tenant | Azure Multi-Tenant | OVH Single-Tenant | OVH Multi-Tenant |
@@ -376,6 +384,8 @@ These costs supplement the infrastructure costs in the tables above. They repres
 | 10+ agencies | Canadian MSP | $300–500/mo | Included in retainer | ~$300–500/mo | ~$30–50 |
 
 **Key insight:** At 1–5 agencies with full self-healing, a freelance sysadmin on retainer (~$75–150/mo) is sufficient. The MSP option ($300–500/mo) is only justified at 10+ agencies or if 24/7 SLA coverage is contractually required.
+
+**Freelance billing model:** The retainer covers availability (responding to Layer 4 escalation alerts within a few hours). The hourly rate ($75–125/hr) applies to actual incident work beyond the retainer — e.g., if a hardware failure requires 2 hours of SSH troubleshooting and backup restoration. In a typical month with full self-healing, the retainer is the only cost (0–1 incidents requiring human intervention).
 
 ### All-In Per-Agency Cost (Infrastructure + Support)
 
