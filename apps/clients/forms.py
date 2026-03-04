@@ -392,7 +392,7 @@ class CustomFieldValuesForm(forms.Form):
                     choices = [(opt, opt) for opt in field_def.options_json]
                     self.fields[field_key] = forms.MultipleChoiceField(
                         choices=choices,
-                        required=False,  # overall required check done in clean()
+                        required=False,  # "Other" text may fulfil the requirement
                         label=field_def.name,
                         widget=forms.CheckboxSelectMultiple,
                     )
