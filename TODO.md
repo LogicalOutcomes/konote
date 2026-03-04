@@ -79,7 +79,8 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Empty — all items moved to Recently Done._
+- [ ] Fill 863 empty French translations in django.po — run `translate_strings --auto-translate` then review output (I18N-FILL1)
+- [ ] Fix export_agency_data.py to exclude demo data — change `ClientFile.objects.all()` to `.real()` on lines 375/402/460, add `--include-demo` flag (SEC-EXPORT1)
 
 ## Parking Lot: Needs Review
 
