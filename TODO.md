@@ -99,6 +99,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Self-hosted LLM infrastructure DRR — Ollama VPS-4, Qwen3.5-35B-A3B, OVHcloud Beauharnois — PR #237 — 2026-03-03 (AI-SELFHOST1)
 - [x] In-app configuration overview dashboard — all active settings with decision rationale — PR #278 — 2026-03-04 (DEPLOY-CONFIG-UI1)
 - [x] Metric rationale log + scheduled assessments — append-only rationale changelog, AI auto-generation, assessment-due detection, severity bands, assessment note form — PR #283 — 2026-03-04 (ASSESS1)
+- [x] PR #283 review fixes — French rationale display, @require_POST on HTMX endpoints, audit logging for rationale changes, restored missing ai.py functions, 8 new view tests — PR #286 — 2026-03-04 (ASSESS1-FIX)
+- [x] Updated konote-qa-scenarios page-inventory.yaml v2.3 — 6 new pages for assessments, rationale, config dashboard — 2026-03-04 (QA-PAGES1)
 
 ### Session 10 — Translations & Consent
 
