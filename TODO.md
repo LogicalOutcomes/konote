@@ -24,8 +24,6 @@ Items from `requirements-analysis.md` that need work before the deliverable dead
 ### Phase: Session 7 — Compliance, Safety, Data Quality
 
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
-- [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 
 ### Phase: Launch Readiness
 
@@ -120,8 +118,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verify docs: DOC-DEMO1, DOC-PERM1-3, QA-PA-TEST1-2 — all accurate — 2026-03-03
 - [x] Implement two-tier AI feature toggle split — 2026-03-03 (AI-TOGGLE1)
 - [x] Verified: note sharing toggle (6/7 checks pass) — 2026-03-03 (QA-R7-PRIVACY2)
-- [x] Build SRE workflow — PR #243 open, needs conflict resolution — 2026-03-03 (SRE1)
-- [x] Build plausibility tuning dashboard — PR #244 open, needs conflict resolution — 2026-03-03 (DQ1-TUNE)
+- [x] Build SRE workflow — PR #243 merged — 2026-03-03 (SRE1)
+- [x] Build plausibility tuning dashboard — PR #244 merged — 2026-03-03 (DQ1-TUNE)
 
 ### Session 5 — Small-Cell Suppression + Compliance Summary
 
