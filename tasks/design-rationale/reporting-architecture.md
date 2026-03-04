@@ -232,6 +232,18 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 - Aggregation rule definitions (do they match evaluation methodology?)
 - Entry point labels (dashboard button wording, nav menu labels)
 
+## Data Storage Constraints for Reporting
+
+### Multi-select custom fields (demographics)
+
+Multi-select fields (e.g., Racial Identity) store values as **JSON arrays in a CharField** — e.g., `["Black", "South Asian"]`. This is the right storage convention for the custom field system but has reporting implications:
+
+- **SQL-level counting is unreliable.** `LIKE '%Black%'` would false-match a substring inside another value. Accurate demographic counts require loading values into Python and parsing the JSON array.
+- **This is acceptable at KoNote's scale** (up to ~2,000 clients per agency). The ad-hoc export path already loads data through Python for suppression and consent checks.
+- **If reporting performance becomes an issue**, consider a denormalised reporting table or Django's `JSONField` (which supports `__contains` lookup). This is a future optimisation, not a current requirement.
+
+Added 2026-03-04 per PR #289 review.
+
 ## Anti-Patterns (rejected)
 
 - **Removing aggregate-only enforcement on ad-hoc for executives** — executives may use Custom Export but MUST only receive aggregate output (enforced by `is_aggregate_only_user()`). Never expose individual participant data to executives via any path
