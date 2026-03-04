@@ -810,6 +810,24 @@ def metric_library(request):
         metrics = MetricDefinition.objects.filter(
             Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
         )
+
+    # Category filter (validated against known choices)
+    category_filter = request.GET.get("category", "")
+    valid_categories = {c[0] for c in MetricDefinition.CATEGORY_CHOICES}
+    if category_filter and category_filter in valid_categories:
+        metrics = metrics.filter(category=category_filter)
+    else:
+        category_filter = ""
+
+    # Status filter (enabled / disabled / all)
+    status_filter = request.GET.get("status", "")
+    if status_filter == "enabled":
+        metrics = metrics.filter(is_enabled=True)
+    elif status_filter == "disabled":
+        metrics = metrics.filter(is_enabled=False)
+    else:
+        status_filter = ""
+
     metrics_by_category = {}
     for metric in metrics:
         cat = metric.get_category_display()
@@ -818,6 +836,9 @@ def metric_library(request):
     return render(request, "plans/metric_library.html", {
         "metrics_by_category": metrics_by_category,
         "is_admin": request.user.is_admin,
+        "category_choices": MetricDefinition.CATEGORY_CHOICES,
+        "selected_category": category_filter,
+        "selected_status": status_filter,
     })
 
 

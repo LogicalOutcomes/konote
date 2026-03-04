@@ -9,6 +9,8 @@
     <p>{% trans "Customise the words used throughout the system. Changes take effect immediately." %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Terminology lets you change the words used throughout KoNote. For example, rename "Participant" to "Client" or "Youth." Changes take effect immediately for all users. French terms are shown when a user\'s language preference is set to French.') %}
+
 <form method="post">
     {% csrf_token %}
 

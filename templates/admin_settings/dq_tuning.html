@@ -5,7 +5,10 @@
 
 {% block content %}
 <h1>{% trans "Plausibility Threshold Tuning" %}</h1>
-<p>{% trans "This dashboard shows how often plausibility warnings are triggered and whether staff confirm or correct flagged values. High override rates suggest thresholds may be too tight." %}</p>
+
+{% include "admin_settings/_page_help.html" with content=_('This dashboard shows how often plausibility warnings are triggered and whether staff confirm or correct the flagged values. A high override rate means the thresholds are too tight — staff are getting warnings for values that turn out to be correct. Use this information to adjust metric thresholds in the Metric Library.') %}
+
+{% include "admin_settings/_tip.html" with text=_('A high override rate (red) means staff are constantly confirming flagged values as correct. This causes alert fatigue. Edit the metric\'s warning thresholds in the Metric Library to widen the accepted range.') %}
 
 <form method="get" role="search" aria-label="{% trans 'Filter override logs' %}">
     <div class="grid" style="align-items: end;">

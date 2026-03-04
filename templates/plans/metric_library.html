@@ -9,6 +9,8 @@
     <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}Manage available {{ metrics }} for outcome tracking.{% endblocktrans %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('The metric library contains all measurement scales and achievement metrics available for outcome plans. Library metrics are built-in. Custom metrics are specific to your organisation. Disabled metrics are hidden from staff but their historical data is preserved.') %}
+
 <div role="group" style="margin-bottom: 1rem;">
     <a href="{% url 'metrics:metric_create' %}" role="button" class="outline">
         {% blocktrans with metric=term.metric|default:"Metric" %}Add Custom {{ metric }}{% endblocktrans %}
@@ -19,7 +21,34 @@
     <a href="{% url 'metrics:metric_export' %}" role="button" class="outline secondary">
         {% trans "Export to CSV" %}
     </a>
+    {% if is_admin %}
+    <a href="{% url 'admin_settings:plausibility_tuning' %}" role="button" class="outline secondary">
+        {% trans "Plausibility Tuning" %}
+    </a>
+    {% endif %}
 </div>
+
+{% if category_choices %}
+<form method="get" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: end;">
+    <div>
+        <label for="category-filter" class="visually-hidden">{% trans "Filter by category" %}</label>
+        <select name="category" id="category-filter" onchange="this.form.submit()" aria-label="{% trans 'Filter by category' %}">
+            <option value="">{% trans "All categories" %}</option>
+            {% for value, label in category_choices %}
+            <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="status-filter" class="visually-hidden">{% trans "Filter by status" %}</label>
+        <select name="status" id="status-filter" onchange="this.form.submit()" aria-label="{% trans 'Filter by status' %}">
+            <option value="">{% trans "All statuses" %}</option>
+            <option value="enabled" {% if selected_status == "enabled" %}selected{% endif %}>{% trans "Enabled" %}</option>
+            <option value="disabled" {% if selected_status == "disabled" %}selected{% endif %}>{% trans "Disabled" %}</option>
+        </select>
+    </div>
+</form>
+{% endif %}
 
 {% for category, metrics in metrics_by_category.items %}
 <section aria-labelledby="cat-{{ forloop.counter }}">

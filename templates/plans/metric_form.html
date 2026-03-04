@@ -34,6 +34,8 @@
     {% endif %}
     {% endfor %}
 
+    {% include "admin_settings/_tip.html" with text=_('Check the Plausibility Tuning Dashboard (in Admin Settings) to see how often each threshold triggers in practice.') %}
+
     {# CIDS Standards Metadata — collapsible so it doesn't clutter the form #}
     <details>
         <summary>{% trans "CIDS Standards Metadata" %}</summary>

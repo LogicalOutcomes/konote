@@ -1,0 +1,17 @@
+{% load i18n %}
+<details class="page-help" open>
+    <summary><strong>{% trans "About this page" %}</strong></summary>
+    <div class="page-help-content">
+        {{ content }}
+    </div>
+</details>
+<script>
+(function() {
+    var KEY = 'kn-page-help-closed';
+    var el = document.currentScript.previousElementSibling;
+    if (localStorage.getItem(KEY) === '1') el.removeAttribute('open');
+    el.addEventListener('toggle', function() {
+        localStorage.setItem(KEY, el.open ? '0' : '1');
+    });
+})();
+</script>
