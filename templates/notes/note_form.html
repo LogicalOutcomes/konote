@@ -123,6 +123,25 @@
             <div class="target-metrics">
             {% for mf in tf.metric_forms %}
                 {{ mf.metric_def_id }}
+                {% if mf.review_due %}
+                <div class="metric-review-banner" id="review-banner-{{ mf.ptm_pk }}" role="alert">
+                    <small>
+                        {% trans "This metric has been tracked for 90+ days. Is it still the right measure?" %}
+                        <button type="button" class="outline secondary"
+                                style="padding: 0.1rem 0.5rem; font-size: 0.8rem; margin-left: 0.5rem;"
+                                hx-post="{% url 'plans:confirm_metric_review' ptm_id=mf.ptm_pk %}"
+                                hx-target="#review-banner-{{ mf.ptm_pk }}"
+                                hx-swap="innerHTML">
+                            {% trans "Still right" %}
+                        </button>
+                        <a href="{% url 'plans:target_metrics' target_id=tf.target.pk %}"
+                           class="outline secondary"
+                           style="padding: 0.1rem 0.5rem; font-size: 0.8rem; margin-left: 0.25rem;">
+                            {% trans "Change metric" %}
+                        </a>
+                    </small>
+                </div>
+                {% endif %}
                 {% if mf.auto_calc_value != None %}
                 <div class="auto-calc-metric">
                     <span class="badge outline" aria-label="{{ mf.value.label }}: {{ mf.auto_calc_value }}, {% trans 'auto-calculated' %}">
@@ -174,6 +193,12 @@
             </div>
             {% endif %}
 
+            {% for sm in tf.skipped_metrics %}
+            <div class="metric-skipped" role="note">
+                <small class="secondary">{{ sm.name }} — {% blocktrans with n=sm.sessions_until_due %}next due in {{ n }} session(s){% endblocktrans %}</small>
+            </div>
+            {% endfor %}
+
             <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "What did they say about this?" %}</label>
             {{ tf.note_form.client_words }}
             {% if tf.note_form.client_words.help_text %}<small>{{ tf.note_form.client_words.help_text }}</small>{% endif %}
@@ -205,7 +230,8 @@
                 <h3>{% trans "Their perspective" %}</h3>
 
                 <fieldset class="alliance-fieldset">
-                    <legend>{% trans "Working relationship check-in" %}</legend>
+                    <legend>{{ alliance_prompt|default:"Working relationship check-in" }}</legend>
+                    <input type="hidden" name="alliance_prompt_index" value="{{ alliance_prompt_index }}">
                     <small class="alliance-intro">{% trans "Ratings of 1–3 are normal and helpful — they tell you what to adjust." %}
                         <a href="{% url 'notes:alliance_repair_guide' %}" target="_blank" rel="noopener" title="{% trans 'Opens the Alliance Repair Guide in a new tab' %}">{% trans "Alliance Repair Guide" %}</a>
                     </small>

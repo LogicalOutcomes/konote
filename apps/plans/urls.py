@@ -20,4 +20,6 @@ urlpatterns = [
     path("targets/<int:target_id>/metrics/", views.target_metrics, name="target_metrics"),
     path("targets/<int:target_id>/history/", views.target_history, name="target_history"),
     path("targets/<int:target_id>/achievement/", views.target_achievement_override, name="target_achievement_override"),
+    # 90-day metric review
+    path("target-metric/<int:ptm_id>/confirm-review/", views.confirm_metric_review, name="confirm_metric_review"),
 ]

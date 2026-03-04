@@ -94,13 +94,16 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
-- [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
-- [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
-- [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
-- [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 - [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 9 — Metric Freshness & Alliance
+
+- [x] Metric cadence system — configurable per-metric recording frequency, skips metrics not yet due — 2026-03-04 (METRIC-CADENCE1)
+- [x] 90-day metric relevance check — HTMX banner prompts worker to confirm or change stale metrics — 2026-03-04 (METRIC-REVIEW1)
+- [x] Alliance prompt rotation — cycles 3 prompt phrasings to prevent habituation — 2026-03-04 (ALLIANCE-ROTATE1)
+- [x] Portal async alliance rating — post-session participant self-rating via portal, auto-created on note save — 2026-03-04 (PORTAL-ALLIANCE1)
 
 ### Session 8 — Admin UX Improvements
 

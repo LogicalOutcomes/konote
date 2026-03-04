@@ -1407,3 +1407,210 @@ class PlausibilityTuningDashboardTest(TestCase):
         # Neither metric should appear since both have 0 overrides
         self.assertNotContains(resp, "Credit Score")
         self.assertNotContains(resp, "Total Debt")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestMetricCadence(TestCase):
+    """Tests for METRIC-CADENCE1: configurable metric recording frequency."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(username="cadtest", password="pass", is_admin=True)
+
+        self.prog = Program.objects.create(name="Cadence Prog", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.user, program=self.prog, role="staff")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+        self.metric_cadence = MetricDefinition.objects.create(
+            name="Test Cadence Metric",
+            definition="Test",
+            metric_type="scale",
+            min_value=1,
+            max_value=10,
+            cadence_sessions=3,
+        )
+        self.metric_always = MetricDefinition.objects.create(
+            name="Always Metric",
+            definition="Test",
+            metric_type="scale",
+            min_value=1,
+            max_value=10,
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Test Section",
+        )
+        self.target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file,
+        )
+        self.target.name = "Test Target"
+        self.target.save()
+        PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric_cadence)
+        PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric_always)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_metric_without_cadence_always_shown(self):
+        """Metric with no cadence setting appears every session."""
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        metric_names = [mf.metric_def.name for mf in forms[0]["metric_forms"]]
+        self.assertIn("Always Metric", metric_names)
+
+    def test_cadence_metric_shown_on_first_note(self):
+        """Metric with cadence=3 appears when no previous notes exist."""
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        metric_names = [mf.metric_def.name for mf in forms[0]["metric_forms"]]
+        self.assertIn("Test Cadence Metric", metric_names)
+
+    def test_cadence_metric_skipped_after_recording(self):
+        """Metric with cadence=3 is skipped on next note after recording."""
+        # Create a note with the metric recorded
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt, metric_def=self.metric_cadence, value="5",
+        )
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        metric_names = [mf.metric_def.name for mf in forms[0]["metric_forms"]]
+        self.assertNotIn("Test Cadence Metric", metric_names)
+        # Should be in skipped_metrics
+        skipped = forms[0].get("skipped_metrics", [])
+        self.assertTrue(any(s["name"] == "Test Cadence Metric" for s in skipped))
+
+    def test_cadence_metric_due_after_enough_sessions(self):
+        """Metric with cadence=3 appears again after 2 subsequent full notes."""
+        # Record the metric in a note
+        note0 = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+        )
+        pnt0 = ProgressNoteTarget.objects.create(
+            progress_note=note0, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt0, metric_def=self.metric_cadence, value="5",
+        )
+
+        # Create 2 more full notes (no metric recorded)
+        for _ in range(2):
+            ProgressNote.objects.create(
+                client_file=self.client_file, note_type="full",
+                author=self.user, interaction_type="session",
+            )
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        metric_names = [mf.metric_def.name for mf in forms[0]["metric_forms"]]
+        self.assertIn("Test Cadence Metric", metric_names)
+
+    def test_skipped_metric_shows_sessions_until_due(self):
+        """Skipped metric reports correct sessions_until_due count."""
+        # Record the metric
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt, metric_def=self.metric_cadence, value="5",
+        )
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        skipped = forms[0].get("skipped_metrics", [])
+        cadence_skipped = [s for s in skipped if s["name"] == "Test Cadence Metric"]
+        self.assertEqual(len(cadence_skipped), 1)
+        # cadence=3, 0 notes since → 3-1-0 = 2 sessions until due
+        self.assertEqual(cadence_skipped[0]["sessions_until_due"], 2)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestAllianceRotation(TestCase):
+    """Tests for ALLIANCE-ROTATE1: alliance prompt rotation."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(username="allitest", password="pass", is_admin=True)
+        self.prog = Program.objects.create(name="Alliance Prog", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.user, program=self.prog, role="staff")
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.prog, status="active"
+        )
+
+    def test_first_note_uses_prompt_0(self):
+        """First note for client should use prompt set 0."""
+        from apps.notes.views import _get_next_alliance_prompt
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 0)
+
+    def test_rotation_cycles_through_sets(self):
+        """Prompt index cycles 0 -> 1 -> 2 -> 0."""
+        from apps.notes.views import _get_next_alliance_prompt
+        from apps.notes.models import ALLIANCE_PROMPT_SETS
+
+        # Create note with index 0
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=0,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 1)
+
+        # Create note with index 1
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=1,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 2)
+
+        # Create note with index 2 — should wrap to 0
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=2,
+        )
+        self.assertEqual(_get_next_alliance_prompt(self.client_file), 0)
+
+    def test_prompt_index_stored_on_note(self):
+        """alliance_prompt_index is persisted on the note."""
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.user, interaction_type="session",
+            alliance_prompt_index=2,
+        )
+        note.refresh_from_db()
+        self.assertEqual(note.alliance_prompt_index, 2)
+
+    def test_prompt_sets_backward_compatible(self):
+        """Prompt set 0 anchors match existing ALLIANCE_RATING_CHOICES labels."""
+        from apps.notes.models import ALLIANCE_PROMPT_SETS
+        existing_labels = dict(ProgressNote.ALLIANCE_RATING_CHOICES)
+        set0_anchors = ALLIANCE_PROMPT_SETS[0]["anchors"]
+        for key, label in existing_labels.items():
+            # existing labels are lazy strings, compare as str
+            self.assertEqual(set0_anchors[key], str(label))

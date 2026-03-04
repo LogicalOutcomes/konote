@@ -18359,7 +18359,8 @@ msgid "Event updated."
 msgstr "Événement mis à jour."
 
 msgid "Too many requests. Please wait a few minutes before trying again."
-msgstr "Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
+msgstr ""
+"Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
 
 msgid "Data & Measurement"
 msgstr "Données et mesure"
@@ -18587,3 +18588,100 @@ msgid "%(count)d metric with high override rate"
 msgid_plural "%(count)d metrics with high override rate"
 msgstr[0] "%(count)d indicateur avec un taux de dérogation élevé"
 msgstr[1] "%(count)d indicateurs avec un taux de dérogation élevé"
+
+msgid "Confirmed — still relevant"
+msgstr "Confirmé — toujours pertinent"
+
+msgid ""
+"How many sessions between prompts for this metric. Leave blank to prompt "
+"every session."
+msgstr ""
+"Combien de séances entre les invites pour cet indicateur. Laisser vide pour "
+"demander à chaque séance."
+
+msgid ""
+"How often to prompt for this metric (in sessions). Blank = every session."
+msgstr ""
+"Fréquence de l'invite pour cet indicateur (en séances). Vide = chaque "
+"séance."
+
+msgid "Recording cadence (sessions)"
+msgstr "Cadence d'enregistrement (séances)"
+
+#: templates/notes/note_form.html
+#, python-format
+msgid "next due in %(n)s session(s)"
+msgstr "prochaine saisie dans %(n)s séance(s)"
+
+msgid "Sign in as"
+msgstr "Se connecter en tant que"
+
+msgid "When the worker last confirmed this metric is still relevant."
+msgstr "Date de la dernière confirmation de la pertinence de cet indicateur."
+
+msgid "Which alliance prompt set was shown (index into ALLIANCE_PROMPT_SETS)."
+msgstr "Quel ensemble d'invites d'alliance a été affiché (index dans ALLIANCE_PROMPT_SETS)."
+
+msgid "Change metric"
+msgstr "Changer l'indicateur"
+
+msgid "Still right"
+msgstr "Toujours pertinent"
+
+msgid ""
+"This metric has been tracked for 90+ days. Is it still the right measure?"
+msgstr ""
+"Cet indicateur est suivi depuis plus de 90 jours. Est-ce toujours la bonne "
+"mesure?"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "How did your session go?"
+msgstr "Comment s'est passée votre séance?"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "This rating has expired"
+msgstr "Cette évaluation a expiré"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"This alliance rating request is no longer available. Ratings expire 7 days "
+"after your session."
+msgstr ""
+"Cette demande d'évaluation de l'alliance n'est plus disponible. Les "
+"évaluations expirent 7 jours après votre séance."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "Back to dashboard"
+msgstr "Retour au tableau de bord"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your rating has been recorded. Your feedback helps improve the support you "
+"receive."
+msgstr ""
+"Votre évaluation a été enregistrée. Vos commentaires aident à améliorer le "
+"soutien que vous recevez."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your worker recorded a session. Take a moment to share how you feel about "
+"working together."
+msgstr ""
+"Votre intervenant·e a enregistré une séance. Prenez un moment pour partager "
+"comment vous vous sentez par rapport à votre collaboration."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your honest feedback helps your worker understand what's working and what to "
+"adjust."
+msgstr ""
+"Vos commentaires honnêtes aident votre intervenant·e à comprendre ce qui "
+"fonctionne et ce qu'il faut ajuster."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "Submit rating"
+msgstr "Soumettre l'évaluation"
+
+#: apps/portal/templates/portal/dashboard.html
+msgid "Rate now"
+msgstr "Évaluer maintenant"

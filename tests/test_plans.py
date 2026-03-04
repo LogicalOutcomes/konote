@@ -3,12 +3,15 @@
 Covers the post_save signal on PlanTarget that auto-updates achievement_status
 when a goal's lifecycle status changes.
 """
+import datetime
+
 from cryptography.fernet import Fernet
 from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
+from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 
 import konote.encryption as enc_module
+from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import (
     MetricDefinition,
@@ -16,7 +19,7 @@ from apps.plans.models import (
     PlanTarget,
     PlanTargetMetric,
 )
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -553,4 +556,105 @@ class Tier2DataMigrationTest(TestCase):
             self.assertGreaterEqual(
                 t2["very_unlikely_max"], t1["warn_max"],
             )
+
+
+# ── 90-day metric relevance review (METRIC-REVIEW1) ──────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestMetricReview(TestCase):
+    """Tests for METRIC-REVIEW1: 90-day metric relevance check."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.program = Program.objects.create(name="Review Program")
+        self.user = User.objects.create_user(
+            username="revtest", password="testpass123", is_admin=True,
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active",
+        )
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Review Metric",
+            definition="Test metric for review",
+            metric_type="scale",
+            min_value=1,
+            max_value=10,
+        )
+
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Test Section",
+            program=self.program,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        self.target.name = "Test Target"
+        self.target.save()
+
+        self.ptm = PlanTargetMetric.objects.create(
+            plan_target=self.target,
+            metric_def=self.metric,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_new_metric_no_review_banner(self):
+        """Metric assigned today (< 90 days) should not show review banner."""
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        # Find the metric form for our PTM
+        mf = forms[0]["metric_forms"][0]
+        self.assertFalse(mf.review_due)
+
+    def test_old_metric_shows_review_banner(self):
+        """Metric assigned 91+ days ago should show review banner."""
+        self.ptm.assigned_date = datetime.date.today() - datetime.timedelta(days=91)
+        self.ptm.save(update_fields=["assigned_date"])
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        mf = forms[0]["metric_forms"][0]
+        self.assertTrue(mf.review_due)
+
+    def test_reviewed_metric_no_banner(self):
+        """Metric reviewed 10 days ago should not show banner even if assigned 91+ days ago."""
+        self.ptm.assigned_date = datetime.date.today() - datetime.timedelta(days=100)
+        self.ptm.last_reviewed_date = datetime.date.today() - datetime.timedelta(days=10)
+        self.ptm.save(update_fields=["assigned_date", "last_reviewed_date"])
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        mf = forms[0]["metric_forms"][0]
+        self.assertFalse(mf.review_due)
+
+    def test_confirm_review_endpoint(self):
+        """POST to confirm-review updates last_reviewed_date."""
+        http_client = Client()
+        http_client.login(username="revtest", password="testpass123")
+        from django.urls import reverse
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        response = http_client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.ptm.refresh_from_db()
+        self.assertEqual(self.ptm.last_reviewed_date, datetime.date.today())
 

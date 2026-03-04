@@ -66,6 +66,12 @@ def _get_program_from_target(request, target_id, **kwargs):
     return _get_program_from_client(request, target.client_file_id)
 
 
+def _get_program_from_ptm(request, ptm_id, **kwargs):
+    """Extract program via plan-target-metric → target → client."""
+    ptm = get_object_or_404(PlanTargetMetric, pk=ptm_id)
+    return _get_program_from_client(request, ptm.plan_target.client_file_id)
+
+
 def _can_edit_plan(user, client_file):
     """Return True if the user may modify this client's plan.
 
@@ -1239,3 +1245,24 @@ def metric_import(request):
         "update_count": update_count,
         "new_count": new_count,
     })
+
+
+# ---------------------------------------------------------------------------
+# 90-day metric relevance review (METRIC-REVIEW1)
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("plan.edit", _get_program_from_ptm)
+def confirm_metric_review(request, ptm_id):
+    """HTMX endpoint: confirm a metric is still relevant (90-day review)."""
+    import datetime
+
+    ptm = get_object_or_404(PlanTargetMetric, pk=ptm_id)
+    if request.method == "POST":
+        ptm.last_reviewed_date = datetime.date.today()
+        ptm.save(update_fields=["last_reviewed_date"])
+        return HttpResponse(
+            '<small class="secondary">\u2713 ' + str(_("Confirmed — still relevant")) + "</small>",
+            content_type="text/html",
+        )
+    return HttpResponse(status=405)

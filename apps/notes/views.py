@@ -38,6 +38,7 @@ from apps.programs.access import (
 from apps.programs.models import UserProgramRole
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
 from .models import (
+    ALLIANCE_PROMPT_SETS,
     MetricValue, PlausibilityOverrideLog, ProgressNote, ProgressNoteTarget,
     ProgressNoteTemplate,
 )
@@ -88,6 +89,22 @@ def _check_client_consent(client):
     if not flags.get("require_client_consent", True):
         return True  # Feature disabled, allow notes
     return client.consent_given_at is not None
+
+
+def _get_next_alliance_prompt(client):
+    """Return the next alliance prompt set index for rotation.
+
+    Looks at the client's most recent note with an alliance_prompt_index
+    and returns the next index in rotation.
+    """
+    last_note = ProgressNote.objects.filter(
+        client_file=client,
+        alliance_prompt_index__isnull=False,
+    ).order_by("-pk").first()
+
+    if last_note and last_note.alliance_prompt_index is not None:
+        return (last_note.alliance_prompt_index + 1) % len(ALLIANCE_PROMPT_SETS)
+    return 0
 
 
 def _compute_auto_calc_values(client):
@@ -198,7 +215,36 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
         # Get metrics assigned to this target
         ptm_qs = PlanTargetMetric.objects.filter(plan_target=target).select_related("metric_def").order_by("sort_order")
         metric_forms = []
+        skipped_metrics = []
         for ptm in ptm_qs:
+            # Cadence check: skip metric if not yet due
+            is_due = True
+            sessions_until_due = 0
+            if ptm.metric_def.cadence_sessions and ptm.metric_def.cadence_sessions > 1:
+                last_recorded = MetricValue.objects.filter(
+                    metric_def=ptm.metric_def,
+                    progress_note_target__progress_note__client_file=client,
+                    progress_note_target__progress_note__status="default",
+                ).order_by("-created_at").first()
+
+                if last_recorded:
+                    notes_since = ProgressNote.objects.filter(
+                        client_file=client,
+                        status="default",
+                        note_type="full",
+                        created_at__gt=last_recorded.created_at,
+                    ).count()
+                    if notes_since < ptm.metric_def.cadence_sessions - 1:
+                        is_due = False
+                        sessions_until_due = ptm.metric_def.cadence_sessions - 1 - notes_since
+
+            if not is_due:
+                skipped_metrics.append({
+                    "name": ptm.metric_def.translated_name,
+                    "sessions_until_due": sessions_until_due,
+                })
+                continue
+
             m_prefix = f"metric_{target.pk}_{ptm.metric_def.pk}"
             mf = MetricValueForm(
                 post_data,
@@ -212,11 +258,21 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
                 mf.auto_calc_value = auto_calc.get(ptm.metric_def.computation_type)
             else:
                 mf.auto_calc_value = None
+            # 90-day metric review check
+            import datetime
+            if ptm.last_reviewed_date:
+                days_since_review = (datetime.date.today() - ptm.last_reviewed_date).days
+                mf.review_due = days_since_review >= 90
+            else:
+                days_since_assign = (datetime.date.today() - ptm.assigned_date).days if ptm.assigned_date else 0
+                mf.review_due = days_since_assign >= 90
+            mf.ptm_pk = ptm.pk  # For the HTMX confirm endpoint
             metric_forms.append(mf)
         target_forms.append({
             "target": target,
             "note_form": note_form,
             "metric_forms": metric_forms,
+            "skipped_metrics": skipped_metrics,
         })
     return target_forms
 
@@ -611,8 +667,19 @@ def note_create(request, client_id):
     auto_calc = _compute_auto_calc_values(client)
     circle_choices = _get_circle_choices_for_client(client, request.user)
 
+    # Alliance prompt rotation — determine which prompt set to show
+    from django.utils.translation import get_language
     if request.method == "POST":
-        form = FullNoteForm(request.POST, circle_choices=circle_choices or None)
+        prompt_index = int(request.POST.get("alliance_prompt_index", 0))
+    else:
+        prompt_index = _get_next_alliance_prompt(client)
+    lang = get_language()
+    prompt_set = ALLIANCE_PROMPT_SETS[prompt_index]
+    alliance_prompt = prompt_set["prompt_fr"] if lang == "fr" else prompt_set["prompt"]
+    alliance_anchors = prompt_set["anchors_fr"] if lang == "fr" else prompt_set["anchors"]
+
+    if request.method == "POST":
+        form = FullNoteForm(request.POST, circle_choices=circle_choices or None, alliance_anchors=alliance_anchors)
         target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
@@ -641,6 +708,7 @@ def note_create(request, client_id):
                     engagement_observation=form.cleaned_data.get("engagement_observation", ""),
                     alliance_rating=form.cleaned_data.get("alliance_rating") or None,
                     alliance_rater=form.cleaned_data.get("alliance_rater", ""),
+                    alliance_prompt_index=prompt_index,
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                     duration_minutes=form.cleaned_data.get("duration_minutes") or None,
                     modality=form.cleaned_data.get("modality") or "",
@@ -766,10 +834,28 @@ def note_create(request, client_id):
                         _("This suggestion has been recorded. A Program Manager can group it with similar feedback."),
                     )
 
+            # PORTAL-ALLIANCE1: Create async alliance rating request if applicable
+            if not note.alliance_rating:
+                try:
+                    from apps.admin_settings.models import FeatureToggle
+                    flags = FeatureToggle.get_all_flags()
+                    if flags.get("portal_alliance_ratings", False):
+                        if hasattr(client, "portal_account") and client.portal_account.is_active:
+                            from datetime import timedelta
+                            from apps.portal.models import PortalAllianceRequest
+                            PortalAllianceRequest.objects.create(
+                                progress_note=note,
+                                client_file=client,
+                                prompt_index=prompt_index,
+                                expires_at=timezone.now() + timedelta(days=7),
+                            )
+                except Exception:
+                    logger.exception("Portal alliance request creation failed for note %s", note.pk)
+
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None)
+        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None, alliance_anchors=alliance_anchors)
         target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
@@ -790,6 +876,9 @@ def note_create(request, client_id):
         "client": client,
         "breadcrumbs": breadcrumbs,
         "template_defaults": template_defaults,
+        "alliance_prompt": alliance_prompt,
+        "alliance_anchors": alliance_anchors,
+        "alliance_prompt_index": prompt_index,
     })
 
 

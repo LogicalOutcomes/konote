@@ -699,6 +699,18 @@ def dashboard(request):
             "date": formatted,
         }
 
+    # Pending alliance rating requests
+    pending_alliance = None
+    try:
+        from apps.portal.models import PortalAllianceRequest
+        pending_alliance = PortalAllianceRequest.objects.filter(
+            client_file=client_file,
+            status="pending",
+            expires_at__gt=timezone.now(),
+        ).order_by("-created_at").first()
+    except Exception:
+        pass
+
     return render(request, "portal/dashboard.html", {
         "participant": participant,
         "latest_note_date": latest_note,
@@ -708,6 +720,7 @@ def dashboard(request):
         "staff_notes": staff_notes,
         "pending_surveys": pending_surveys,
         "single_survey_url": single_survey_url,
+        "pending_alliance": pending_alliance,
     })
 
 
@@ -2028,4 +2041,84 @@ def portal_survey_thank_you(request, assignment_id):
         "participant": participant,
         "survey": survey,
         "scores": scores,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Alliance Rating (PORTAL-ALLIANCE1)
+# ---------------------------------------------------------------------------
+
+
+@portal_login_required
+def portal_alliance_rating(request, request_id):
+    """Portal view for async alliance self-rating.
+
+    GET: shows the rating form with the rotated prompt.
+    POST: saves the rating and marks the request as completed.
+    """
+    from apps.notes.models import ALLIANCE_PROMPT_SETS
+    from apps.portal.models import PortalAllianceRequest
+
+    client_file = _get_client_file(request)
+    alliance_req = get_object_or_404(
+        PortalAllianceRequest,
+        pk=request_id,
+        client_file=client_file,
+    )
+
+    # Check if expired
+    if alliance_req.status == "expired" or (
+        alliance_req.status == "pending" and timezone.now() >= alliance_req.expires_at
+    ):
+        if alliance_req.status == "pending":
+            alliance_req.status = "expired"
+            alliance_req.save(update_fields=["status"])
+        return render(request, "portal/alliance_rating.html", {"expired": True})
+
+    # Check if already completed
+    if alliance_req.status == "completed":
+        return render(request, "portal/alliance_rating.html", {"completed": True})
+
+    # Get the prompt set
+    prompt_index = alliance_req.prompt_index
+    if prompt_index >= len(ALLIANCE_PROMPT_SETS):
+        prompt_index = 0
+    prompt_set = ALLIANCE_PROMPT_SETS[prompt_index]
+
+    # Language-aware prompt and anchors
+    lang = request.participant_user.preferred_language or "en"
+    alliance_prompt = prompt_set["prompt_fr"] if lang.startswith("fr") else prompt_set["prompt"]
+    anchors = prompt_set["anchors_fr"] if lang.startswith("fr") else prompt_set["anchors"]
+    alliance_choices = list(anchors.items())
+
+    if request.method == "POST":
+        rating_str = request.POST.get("rating", "")
+        try:
+            rating = int(rating_str)
+            if 1 <= rating <= 5:
+                alliance_req.rating = rating
+                alliance_req.status = "completed"
+                alliance_req.completed_at = timezone.now()
+                alliance_req.save(update_fields=["rating", "status", "completed_at"])
+
+                # Also save the rating on the progress note
+                note = alliance_req.progress_note
+                if not note.alliance_rating:
+                    note.alliance_rating = rating
+                    note.alliance_rater = "client"
+                    note.alliance_prompt_index = prompt_index
+                    note.save(update_fields=["alliance_rating", "alliance_rater", "alliance_prompt_index"])
+
+                _audit_portal_event(request, "alliance_rating_submitted", metadata={
+                    "request_id": str(alliance_req.pk),
+                    "rating": rating,
+                })
+                return render(request, "portal/alliance_rating.html", {"completed": True})
+        except (ValueError, TypeError):
+            pass
+
+    return render(request, "portal/alliance_rating.html", {
+        "alliance_prompt": alliance_prompt,
+        "alliance_choices": alliance_choices,
+        "alliance_req": alliance_req,
     })
