@@ -207,8 +207,18 @@ class FullNoteForm(forms.Form):
         label=_("Priority"),
     )
 
-    def __init__(self, *args, circle_choices=None, **kwargs):
+    def __init__(self, *args, circle_choices=None, alliance_anchors=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if alliance_anchors:
+            # Override alliance_rating choices with rotated anchors
+            self.fields["alliance_rating"] = forms.TypedChoiceField(
+                choices=[("", "")] + [(k, v) for k, v in alliance_anchors.items()],
+                required=False,
+                coerce=int,
+                empty_value=None,
+                label=_("Working relationship check-in"),
+                widget=forms.RadioSelect,
+            )
         if circle_choices:
             self.fields["circle"] = forms.ChoiceField(
                 choices=[("", _("— None —"))] + list(circle_choices),
