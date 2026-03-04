@@ -1106,7 +1106,12 @@ def client_detail(request, client_id):
 
 @login_required
 def assessment_due_banner(request, client_id):
-    """HTMX partial: show assessments due for this client."""
+    """HTMX partial: show assessments due for this client.
+
+    No @requires_permission needed — get_client_or_403 already enforces
+    program-scoped access. This view returns read-only assessment-due status
+    (no PII beyond what client_detail already shows).
+    """
     from apps.programs.access import get_client_or_403, get_user_program_ids
     from apps.plans.assessment import get_assessments_due
 
