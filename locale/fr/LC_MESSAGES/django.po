@@ -18620,7 +18620,9 @@ msgid "When the worker last confirmed this metric is still relevant."
 msgstr "Date de la dernière confirmation de la pertinence de cet indicateur."
 
 msgid "Which alliance prompt set was shown (index into ALLIANCE_PROMPT_SETS)."
-msgstr "Quel ensemble d'invites d'alliance a été affiché (index dans ALLIANCE_PROMPT_SETS)."
+msgstr ""
+"Quel ensemble d'invites d'alliance a été affiché (index dans "
+"ALLIANCE_PROMPT_SETS)."
 
 msgid "Change metric"
 msgstr "Changer l'indicateur"
@@ -18672,8 +18674,8 @@ msgstr ""
 
 #: apps/portal/templates/portal/alliance_rating.html
 msgid ""
-"Your honest feedback helps your worker understand what's working and what to "
-"adjust."
+"Your honest feedback helps your worker understand what's working and what to"
+" adjust."
 msgstr ""
 "Vos commentaires honnêtes aident votre intervenant·e à comprendre ce qui "
 "fonctionne et ce qu'il faut ajuster."
@@ -18685,3 +18687,92 @@ msgstr "Soumettre l'évaluation"
 #: apps/portal/templates/portal/dashboard.html
 msgid "Rate now"
 msgstr "Évaluer maintenant"
+
+msgid "Additional context about the withdrawal..."
+msgstr "Contexte additionnel sur le retrait..."
+
+msgid "Consent has been withdrawn."
+msgstr "Le consentement a été retiré."
+
+msgid "Consent has been withdrawn. This record is now read-only."
+msgstr ""
+"Le consentement a été retiré. Ce dossier est maintenant en lecture seule."
+
+msgid "Consent withdrawn."
+msgstr "Consentement retiré."
+
+msgid "Date of withdrawal"
+msgstr "Date du retrait"
+
+msgid "Guardian/substitute decision-maker requested"
+msgstr "Tuteur/mandataire spécial l'a demandé"
+
+msgid "I confirm this participant has requested consent withdrawal"
+msgstr ""
+"Je confirme que ce participant a demandé le retrait de son consentement"
+
+msgid "Make this record read-only — no new notes or edits"
+msgstr ""
+"Rendre ce dossier en lecture seule — aucune nouvelle note ni modification"
+
+msgid "No active consent to withdraw."
+msgstr "Aucun consentement actif à retirer."
+
+msgid "Re-record Consent"
+msgstr "Ré-enregistrer le consentement"
+
+msgid "Re-record consent"
+msgstr "Ré-enregistrer le consentement"
+
+msgid "Reason for withdrawal"
+msgstr "Raison du retrait"
+
+msgid "Record the withdrawal in the audit trail"
+msgstr "Enregistrer le retrait dans la piste de vérification"
+
+msgid "Service relationship ended"
+msgstr "Fin de la relation de service"
+
+msgid "Set a data retention period per your agency's policy"
+msgstr ""
+"Définir une période de conservation des données selon la politique de votre "
+"organisme"
+
+msgid "This action will:"
+msgstr "Cette action va :"
+
+msgid "This record is read-only because consent has been withdrawn."
+msgstr "Ce dossier est en lecture seule car le consentement a été retiré."
+
+msgid "This record is read-only. Data will be retained until"
+msgstr ""
+"Ce dossier est en lecture seule. Les données seront conservées jusqu'au"
+
+msgid "This record is read-only. No new notes or edits can be made."
+msgstr ""
+"Ce dossier est en lecture seule. Aucune nouvelle note ni modification ne "
+"peut être effectuée."
+
+msgid "Transferred to another agency"
+msgstr "Transféré à un autre organisme"
+
+msgid "Withdraw"
+msgstr "Retirer"
+
+msgid "Withdraw Consent"
+msgstr "Retirer le consentement"
+
+msgid "Withdraw Privacy Consent"
+msgstr "Retirer le consentement à la protection des renseignements personnels"
+
+msgid "Withdraw consent"
+msgstr "Retirer le consentement"
+
+msgid "Consent Granted"
+msgstr "Consentement accordé"
+
+msgid "Consent Withdrawn"
+msgstr "Consentement retiré"
+
+msgid "Date the consent event occurred."
+msgstr "Date à laquelle l'événement de consentement s'est produit."
