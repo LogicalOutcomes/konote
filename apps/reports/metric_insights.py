@@ -449,7 +449,11 @@ def get_instrument_aggregates(program, date_from, date_to):
                 continue
 
             # Compute top-two-box for this item
-            # Top-two-box: % of responses scoring >= 3 on a 4-point scale
+            # Top-two-box threshold: >= 3 on a 4-point scale (1=Not true,
+            # 2=Somewhat false, 3=Somewhat true, 4=Very true).
+            # This threshold is specific to 4-point Likert scales.
+            # If instruments with other scale ranges are added, this
+            # logic must be updated to derive the threshold from max_value.
             item_top_two = 0
             item_total = 0
 
