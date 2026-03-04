@@ -77,6 +77,10 @@ class MetricDefinition(models.Model):
         choices=COMPUTATION_TYPE_CHOICES,
         help_text="If set, value is computed automatically instead of manual entry.",
     )
+    cadence_sessions = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("How often to prompt for this metric (in sessions). Blank = every session."),
+    )
     portal_description = models.TextField(
         blank=True, default="",
         help_text=_(
