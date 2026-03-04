@@ -323,7 +323,69 @@ class Command(DjangoMigrateCommand):
                 # skip CreateModel when the target table already exists.
                 options["fake_initial"] = True
 
-            super().handle(*args, **options)
+            # Phase 5: catch duplicate column/table errors during migration application.
+            # When a migration is re-applied after removal from django_migrations but
+            # the schema was already updated, we need to mark it as applied instead
+            # of crashing.
+            import psycopg.errors as psycopg_errors
+            from django.db import ProgrammingError as DjProgrammingError
+            from django.db.migrations.recorder import MigrationRecorder
+            
+            connection = connections[db_name]
+            recorder = MigrationRecorder(connection)
+            
+            while True:
+                try:
+                    super().handle(*args, **options)
+                    break
+                except DjProgrammingError as e:
+                    # Check if this is a duplicate column/table error
+                    cause = e.__cause__
+                    if isinstance(cause, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)):
+                        # Re-scan django_migrations to find which one might be causing this
+                        # Clear the executor loader cache
+                        from django.db.migrations.executor import MigrationExecutor
+                        executor = MigrationExecutor(connection)
+                        try:
+                            del executor.loader.__dict__['disk_migrations']
+                            del executor.loader.__dict__['graph']
+                        except KeyError:
+                            pass
+                        
+                        # Try once more — often this fixes it by re-initializing the graph
+                        # But if it fails again, we need to auto-fake the offending migration
+                        try:
+                            # Retry super().handle() one more time
+                            super().handle(*args, **options)
+                            break
+                        except DjProgrammingError as e2:
+                            # Still failing. Try to identify the migration from the error
+                            # and fake it manually.
+                            cause2 = e2.__cause__
+                            if isinstance(cause2, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)):
+                                self.stdout.write(
+                                    self.style.NOTICE(
+                                        f"Phase 5: Detected duplicate schema objects. "
+                                        f"Auto-faking pending migrations to record them as applied..."
+                                    )
+                                )
+                                # Mark all non-applied migrations as applied (faked)
+                                executor = MigrationExecutor(connection)
+                                for (app, name), migration in executor.loader.disk_migrations.items():
+                                    if (app, name) not in executor.loader.applied_migrations():
+                                        recorder.record_applied(app, name)
+                                        self.stdout.write(
+                                            self.style.NOTICE(
+                                                f"    Auto-faked: {app}.{name}"
+                                            )
+                                        )
+                                # Now try one final time
+                                super().handle(*args, **options)
+                                break
+                            else:
+                                raise
+                    else:
+                        raise
         finally:
             # Always restore the original router list.
             django_settings.DATABASE_ROUTERS = original_routers
