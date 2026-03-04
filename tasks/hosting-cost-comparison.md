@@ -1,6 +1,6 @@
 # Hosting Cost Comparison: Azure vs OVHcloud
 
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-04*
 
 This document compares two hosting approaches for KoNote, both using Azure Key Vault for encryption key management. All prices are estimates in CAD unless noted. Verify current prices with provider pricing calculators before committing.
 
@@ -324,6 +324,82 @@ Total automation cost: ~$0 additional (uses free tiers of monitoring services).
 4. **LLM hosting**: Keep on OVHcloud regardless of app hosting choice. The self-hosted Ollama VPS is $11 CAD/month shared across all agencies — negligible cost for complete data sovereignty on participant suggestions.
 
 5. **Key Vault**: Use Azure Key Vault in both scenarios. The CLOUD Act exposure is limited to the encryption key only, and the operational simplicity of managed KMS outweighs the theoretical risk for KoNote's threat model.
+
+---
+
+## Technical Support Cost Estimates
+
+The 4-layer self-healing automation (see [OVHcloud deployment DRR](design-rationale/ovhcloud-deployment.md)) eliminates most routine operational work. This section estimates the remaining human support burden at each scale.
+
+### What Self-Healing Handles Automatically (~$0)
+
+| Task | Before automation | After automation |
+|------|-------------------|------------------|
+| Container crash recovery | Manual SSH + restart | Autoheal restarts in 30–90 seconds |
+| VPS-level outage | Manual detection + reboot | UptimeRobot triggers API reboot in 15–20 min |
+| Nightly database backups | Manual cron setup per VPS | Ops sidecar runs automatically with `docker compose up` |
+| Disk space monitoring | Manual checks | Hourly automated check with email alerts |
+| Docker image cleanup | Manual | Weekly automated prune |
+| Backup integrity verification | Manual monthly restore | Weekly automated test restore |
+| Daily health status | Manual spot checks | Daily health report email at 7 AM |
+| Log rotation | Manual logrotate config | Docker json-file driver with size limits |
+| Dead man's switch (missed backups) | None | Healthchecks.io/UptimeRobot push monitor |
+| OS security patches | Manual apt upgrade | unattended-upgrades (automatic) |
+
+### Remaining Human Support Tasks
+
+These are the tasks that still require a person. Estimated hours assume OVHcloud hosting with the full self-healing stack.
+
+| Task | Frequency | Est. hours | Notes |
+|------|-----------|------------|-------|
+| Review health report emails | Daily (2 min) | 1 hr/mo | Scan for anomalies, mostly no action needed |
+| Apply KoNote software updates | 1–2×/month | 1 hr/mo | `git pull` + `docker compose up -d --build` |
+| Investigate escalation alerts | ~1×/month | 0.5 hr/mo | Layer 4 alerts that self-healing couldn't resolve |
+| Respond to agency support requests | As needed | 1–2 hr/mo | Config changes, user account issues, questions |
+| Quarterly security review | 1×/quarter | 1 hr/quarter | Check CVEs, review access logs, rotate secrets |
+| Azure AD client secret renewal | 1×/year per agency | 0.5 hr/year | Calendar reminder set during deployment |
+| VPS capacity review | 1×/quarter | 0.5 hr/quarter | Check resource usage trends, plan upgrades |
+| **Total (1 agency)** | | **~4–5 hr/mo** | |
+| **Total (5 agencies, single-tenant)** | | **~8–12 hr/mo** | Some tasks scale per-agency, others are fixed |
+| **Total (10 agencies, multi-tenant)** | | **~10–15 hr/mo** | Multi-tenant reduces per-agency overhead |
+
+### Tech Support Cost by Scale (CAD/month)
+
+These costs supplement the infrastructure costs in the tables above. They represent the human operational burden.
+
+| Scale | Support model | Fixed cost | Variable cost | Total support cost | Per agency |
+|-------|--------------|------------|---------------|-------------------|------------|
+| 1–2 agencies | KoNote team (internal) | $0 | Internal time (~5 hr/mo) | $0 (absorbed) | $0 |
+| 3–5 agencies | KoNote team + freelance sysadmin on-call | $75/mo retainer | ~$75–125/hr if called | ~$75–150/mo | ~$15–30 |
+| 5–10 agencies (single-tenant) | Freelance sysadmin retainer | $100–150/mo | ~$75–125/hr if called | ~$100–250/mo | ~$10–25 |
+| 5–10 agencies (multi-tenant) | Freelance sysadmin retainer | $100/mo | ~$75–125/hr if called | ~$100–200/mo | ~$10–20 |
+| 10+ agencies | Canadian MSP | $300–500/mo | Included in retainer | ~$300–500/mo | ~$30–50 |
+
+**Key insight:** At 1–5 agencies with full self-healing, a freelance sysadmin on retainer (~$75–150/mo) is sufficient. The MSP option ($300–500/mo) is only justified at 10+ agencies or if 24/7 SLA coverage is contractually required.
+
+### All-In Per-Agency Cost (Infrastructure + Support)
+
+Combines infrastructure costs from Scenario B (OVHcloud) with tech support estimates above.
+
+| Scale | Infrastructure/agency | Support/agency | **All-in/agency** |
+|-------|----------------------|----------------|-------------------|
+| 1 agency | $45 | $0 (internal) | **$45** |
+| 3 agencies (single-tenant) | $35 | ~$25 | **~$60** |
+| 5 agencies (single-tenant) | $35 | ~$20 | **~$55** |
+| 5 agencies (multi-tenant) | $16 | ~$20 | **~$36** |
+| 10 agencies (multi-tenant) | $12 | ~$15 | **~$27** |
+
+### Further Automation Opportunities
+
+These automations could reduce the remaining 4–5 hr/month further. See the [automation roadmap](design-rationale/ovhcloud-deployment.md#automation-roadmap-reducing-tech-support-further) in the OVHcloud deployment DRR for implementation details.
+
+| Automation | Reduces | Est. savings | Complexity |
+|-----------|---------|-------------|------------|
+| GitOps auto-update (Watchtower or webhook) | Manual update deploys | 1 hr/mo | Medium |
+| Automated Django security advisory checks | Manual CVE review | 0.25 hr/quarter | Low |
+| Agency self-service admin portal | Config change requests | 0.5–1 hr/mo | High |
+| Automated capacity alerts with upgrade recommendations | Manual capacity review | 0.5 hr/quarter | Low |
+| Consolidated multi-agency health dashboard | Per-agency health report review | 0.5 hr/mo at 5+ agencies | Medium |
 
 ---
 
