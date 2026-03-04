@@ -290,6 +290,12 @@ def target_create(request, section_id):
     if not _can_edit_plan(request.user, section.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = section.client_file
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
+
     if request.method == "POST":
         form = PlanTargetForm(request.POST)
         if form.is_valid():
@@ -331,6 +337,12 @@ def target_edit(request, target_id):
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = target.client_file
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
 
     if request.method == "POST":
         form = PlanTargetForm(request.POST)
@@ -374,6 +386,12 @@ def target_status(request, target_id):
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = target.client_file
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
 
     if request.GET.get("cancel"):
         return render(request, "plans/_target.html", {

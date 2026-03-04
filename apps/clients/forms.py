@@ -35,6 +35,40 @@ class ConsentRecordForm(forms.Form):
     )
 
 
+class ConsentWithdrawalForm(forms.Form):
+    """Form to record consent withdrawal (PIPEDA/PHIPA compliance)."""
+
+    WITHDRAWAL_REASON_CHOICES = [
+        ("participant_requested", _("Participant requested")),
+        ("guardian_requested", _("Guardian/substitute decision-maker requested")),
+        ("service_ended", _("Service relationship ended")),
+        ("transferred", _("Transferred to another agency")),
+        ("other", _("Other")),
+    ]
+
+    withdrawal_date = forms.DateField(
+        label=_("Date of withdrawal"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    withdrawal_reason = forms.ChoiceField(
+        choices=WITHDRAWAL_REASON_CHOICES,
+        label=_("Reason for withdrawal"),
+        required=True,
+    )
+    notes = forms.CharField(
+        required=False,
+        label=_("Notes (optional)"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Additional context about the withdrawal..."),
+        }),
+    )
+    confirm = forms.BooleanField(
+        label=_("I confirm this participant has requested consent withdrawal"),
+        required=True,
+    )
+
+
 class ClientContactForm(forms.Form):
     """Dynamic form for editing client contact fields.
 

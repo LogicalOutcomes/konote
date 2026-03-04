@@ -1,5 +1,5 @@
 {% load i18n %}
-{# Partial: Read-only display of consent status with record button #}
+{# Partial: Read-only display of consent status with record/withdraw buttons #}
 {% if client.consent_given_at %}
 {# Compact display when consent exists - shown inside a details element #}
 <dl class="quick-info">
@@ -23,12 +23,39 @@
                     aria-label="{% trans 'Update consent record' %}">
                 {% trans "Update" %}
             </button>
+            <button type="button"
+                    class="outline contrast"
+                    style="padding: var(--kn-space-xs) var(--kn-space-sm); font-size: 0.75rem; margin: 0;"
+                    hx-get="{% url 'clients:client_consent_withdraw_form' client_id=client.pk %}"
+                    hx-target="#consent-section"
+                    hx-swap="innerHTML"
+                    aria-label="{% trans 'Withdraw consent' %}">
+                {% trans "Withdraw" %}
+            </button>
         </dd>
     </div>
     {% endif %}
 </dl>
+{% elif client.retention_expires %}
+{# Consent has been withdrawn — show withdrawn state #}
+<div class="consent-warning">
+    <p class="notice warning" role="alert">
+        <strong>{% trans "Consent has been withdrawn." %}</strong>
+        {% trans "This record is read-only. Data will be retained until" %} {{ client.retention_expires|date:"Y-m-d" }}.
+    </p>
+    {% if not is_receptionist %}
+    <button type="button"
+            class="outline"
+            hx-get="{% url 'clients:client_consent_edit' client_id=client.pk %}"
+            hx-target="#consent-section"
+            hx-swap="innerHTML"
+            aria-label="{% trans 'Re-record consent' %}">
+        {% trans "Re-record Consent" %}
+    </button>
+    {% endif %}
+</div>
 {% else %}
-{# Warning display when consent is missing #}
+{# Warning display when consent is missing (never recorded) #}
 <div class="consent-warning">
     <p class="notice warning" role="alert">
         <strong>{% trans "No consent on file." %}</strong>
