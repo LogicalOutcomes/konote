@@ -478,6 +478,12 @@ def client_edit(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     if request.method == "POST":
         form = ClientFileForm(request.POST)
         if form.is_valid():
@@ -879,6 +885,11 @@ def client_contact_edit(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
 
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     # Use field access map from decorator if available (PER_FIELD),
     # otherwise default to phone + email editable (staff/admin).
     field_access_map = getattr(request, "field_access_map", {"phone": "edit", "email": "edit"})
@@ -1198,6 +1209,12 @@ def client_save_custom_fields(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.consent_given_at is None and client.retention_expires is not None:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
 
