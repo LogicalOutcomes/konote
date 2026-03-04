@@ -483,6 +483,11 @@ class PlanTargetMetric(models.Model):
     plan_target = models.ForeignKey(PlanTarget, on_delete=models.CASCADE)
     metric_def = models.ForeignKey(MetricDefinition, on_delete=models.CASCADE)
     sort_order = models.IntegerField(default=0)
+    assigned_date = models.DateField(auto_now_add=True)
+    last_reviewed_date = models.DateField(
+        null=True, blank=True,
+        help_text=_("When the worker last confirmed this metric is still relevant."),
+    )
 
     class Meta:
         app_label = "plans"
