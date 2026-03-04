@@ -890,7 +890,7 @@ class ConsentWithdrawalTest(TestCase):
         self.cf.save()
 
         self.http.login(username="staff", password="testpass123")
-        resp = self.http.get(f"/participants/{self.cf.pk}/notes/new/")
+        resp = self.http.get(f"/notes/participant/{self.cf.pk}/new/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "consent")
 
