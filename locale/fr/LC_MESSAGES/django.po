@@ -18608,6 +18608,8 @@ msgstr ""
 msgid "Recording cadence (sessions)"
 msgstr "Cadence d'enregistrement (séances)"
 
+# NOTE: This is a blocktrans string — translate_strings cannot auto-extract it.
+# If the English wording changes in note_form.html, update this msgid manually.
 #: templates/notes/note_form.html
 #, python-format
 msgid "next due in %(n)s session(s)"
@@ -18681,6 +18683,18 @@ msgstr ""
 #: apps/portal/templates/portal/alliance_rating.html
 msgid "Submit rating"
 msgstr "Soumettre l'évaluation"
+
+#: apps/portal/templates/portal/dashboard.html
+msgid ""
+"Your worker recorded a session recently. Take a moment to share how you felt "
+"about working together."
+msgstr ""
+"Votre intervenant·e a enregistré une séance récemment. Prenez un moment pour "
+"partager comment vous vous êtes senti(e) par rapport à votre collaboration."
+
+#: apps/portal/views.py
+msgid "Please select a rating."
+msgstr "Veuillez sélectionner une évaluation."
 
 #: apps/portal/templates/portal/dashboard.html
 msgid "Rate now"
