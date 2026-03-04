@@ -37,6 +37,22 @@ The _remove_ghost_tenant_migrations helper detects these by querying
 information_schema and deletes any ghost records before super().handle() runs,
 so Django will re-apply the truly missing schema changes cleanly.
 
+Two-phase algorithm:
+  Phase 1 — Physical detection: scan TENANT_APP migrations and check
+    information_schema for missing columns (AddField) and tables (CreateModel).
+    Collect refs into a to_remove set without touching the DB yet.
+  Phase 2 — Dependency propagation: walk ALL applied migrations repeatedly
+    and add any whose dependency is in to_remove.  Repeat until stable.
+    This handles cross-app chains (e.g. auth_app.0001 depends on auth.0012).
+  Phase 3 — Bulk removal: delete all records in to_remove from
+    django_migrations in one pass.
+
+When ghosts were removed and the healer re-queues initial migrations, tables
+that already exist (e.g. auth_app_user from a reseed that only cleared rows)
+would cause CREATE TABLE to fail.  fake_initial=True tells Django to skip
+CreateModel for tables that already exist, so those migrations are faked
+instead of re-executed.
+
 Usage in entrypoint.sh
 ----------------------
     python manage.py migrate_default --noinput
@@ -66,16 +82,9 @@ class Command(DjangoMigrateCommand):
     def _remove_ghost_tenant_migrations(self, connection):
         """Remove django_migrations records whose schema changes were never applied.
 
-        When TenantSyncRouter is in place, Django skips the ALTER TABLE /
-        CREATE TABLE SQL for TENANT_APPS but still calls
-        recorder.record_applied().  This healer detects such "ghost" records
-        by comparing what django_migrations claims was applied against what
-        information_schema actually contains, then deletes the ghost records so
-        that the subsequent super().handle() call can re-apply them properly.
-
-        Only AddField and CreateModel operations are checked — these are the
-        structural changes that leave a detectable signature in
-        information_schema.columns / information_schema.tables.
+        Returns True if any records were removed (caller should enable
+        fake_initial so re-applied initial migrations skip tables that already
+        exist on disk), or False if the database is clean.
         """
         from django.apps import apps as django_apps
         from django.conf import settings as django_settings
@@ -86,10 +95,10 @@ class Command(DjangoMigrateCommand):
 
         recorder = MigrationRecorder(connection)
         if not recorder.has_table():
-            return
-        applied = recorder.applied_migrations()
+            return False
+        applied = set(recorder.applied_migrations())
         if not applied:
-            return
+            return False
 
         shared_labels = {app.rsplit(".", 1)[-1] for app in django_settings.SHARED_APPS}
         tenant_labels = {
@@ -101,30 +110,17 @@ class Command(DjangoMigrateCommand):
         loader = MigrationLoader(connection, ignore_no_migrations=True)
         apps_to_check = {app for (app, _) in applied if app in tenant_labels}
 
+        # --- Phase 1: physically detect missing schema ---
+        to_remove = set()
+
         with connection.cursor() as cursor:
             for app_label in sorted(apps_to_check):
-                app_applied = sorted(
+                for migration_name in sorted(
                     name for (a, name) in applied if a == app_label
-                )
-                ghost_found = False
-
-                for migration_name in app_applied:
-                    if ghost_found:
-                        # Cascade: once a ghost is found, subsequent
-                        # migrations for this app may also be incomplete.
-                        recorder.record_unapplied(app_label, migration_name)
-                        self.stdout.write(
-                            self.style.NOTICE(
-                                f"    Removed dependent ghost record:"
-                                f" {app_label}.{migration_name}"
-                            )
-                        )
-                        continue
-
+                ):
                     try:
                         migration = loader.get_migration(app_label, migration_name)
                     except KeyError:
-                        # File missing (squashed or deleted) — skip.
                         continue
 
                     for op in migration.operations:
@@ -148,15 +144,13 @@ class Command(DjangoMigrateCommand):
                                 [table_name, col_name],
                             )
                             if not cursor.fetchone():
-                                ghost_found = True
-                                recorder.record_unapplied(app_label, migration_name)
+                                to_remove.add((app_label, migration_name))
                                 self.stdout.write(
                                     self.style.WARNING(
                                         f"  Ghost migration detected:"
                                         f" {app_label}.{migration_name}"
                                         f" — column {table_name}.{col_name}"
-                                        f" is missing from the database."
-                                        f" Record removed; will re-apply."
+                                        f" is missing. Will re-apply."
                                     )
                                 )
                                 break
@@ -178,18 +172,57 @@ class Command(DjangoMigrateCommand):
                                 [table_name],
                             )
                             if not cursor.fetchone():
-                                ghost_found = True
-                                recorder.record_unapplied(app_label, migration_name)
+                                to_remove.add((app_label, migration_name))
                                 self.stdout.write(
                                     self.style.WARNING(
                                         f"  Ghost migration detected:"
                                         f" {app_label}.{migration_name}"
                                         f" — table {table_name}"
-                                        f" is missing from the database."
-                                        f" Record removed; will re-apply."
+                                        f" is missing. Will re-apply."
                                     )
                                 )
                                 break
+
+        if not to_remove:
+            return False
+
+        # --- Phase 2: transitive dependency propagation ---
+        # Any applied migration whose dependency (direct or transitive) is in
+        # to_remove must also be removed.  Repeat until the set stabilises.
+        # This handles cross-app chains like auth_app.0001 → auth.0012.
+        changed = True
+        while changed:
+            changed = False
+            for app, name in set(applied):
+                if (app, name) in to_remove:
+                    continue
+                try:
+                    migration = loader.get_migration(app, name)
+                except KeyError:
+                    continue
+                for dep in migration.dependencies:
+                    # deps are always (app_label, migration_name) 2-tuples;
+                    # skip special markers like "__first__" / "__latest__"
+                    if len(dep) != 2:
+                        continue
+                    dep_app, dep_name = dep
+                    if dep_name in ("__first__", "__latest__"):
+                        continue
+                    if (dep_app, dep_name) in to_remove:
+                        to_remove.add((app, name))
+                        changed = True
+                        break
+
+        # --- Phase 3: bulk removal ---
+        for app_label, migration_name in sorted(to_remove):
+            recorder.record_unapplied(app_label, migration_name)
+            self.stdout.write(
+                self.style.NOTICE(
+                    f"    Removed record: {app_label}.{migration_name}"
+                )
+            )
+
+        return True
 
     # ------------------------------------------------------------------
     # Main entry point
@@ -227,7 +260,14 @@ class Command(DjangoMigrateCommand):
             # when a previous run recorded migrations in django_migrations but
             # TenantSyncRouter silently skipped the underlying SQL.
             db_name = options.get("database", "default")
-            self._remove_ghost_tenant_migrations(connections[db_name])
+            ghosts_removed = self._remove_ghost_tenant_migrations(connections[db_name])
+
+            if ghosts_removed:
+                # Some initial migrations were re-queued.  If their tables
+                # already exist on disk (e.g. after a reseed that only cleared
+                # rows), CreateModel would fail.  fake_initial tells Django to
+                # skip CreateModel when the target table already exists.
+                options["fake_initial"] = True
 
             super().handle(*args, **options)
         finally:
