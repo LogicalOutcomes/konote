@@ -1559,7 +1559,7 @@ class TestAllianceRotation(TestCase):
         self.client_file.status = "active"
         self.client_file.save()
         ClientProgramEnrolment.objects.create(
-            client=self.client_file, program=self.prog, status="active"
+            client_file=self.client_file, program=self.prog, status="active"
         )
 
     def test_first_note_uses_prompt_0(self):

@@ -100,7 +100,7 @@ def _get_next_alliance_prompt(client):
     last_note = ProgressNote.objects.filter(
         client_file=client,
         alliance_prompt_index__isnull=False,
-    ).order_by("-created_at").first()
+    ).order_by("-pk").first()
 
     if last_note and last_note.alliance_prompt_index is not None:
         return (last_note.alliance_prompt_index + 1) % len(ALLIANCE_PROMPT_SETS)
