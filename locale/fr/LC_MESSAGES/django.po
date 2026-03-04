@@ -18790,3 +18790,21 @@ msgstr "Consentement retiré"
 
 msgid "Date the consent event occurred."
 msgstr "Date à laquelle l'événement de consentement s'est produit."
+
+msgid "How the withdrawal request was received (written, verbal, representative)."
+msgstr "Comment la demande de retrait a été reçue (écrite, verbale, représentant)."
+
+msgid "Written request"
+msgstr "Demande écrite"
+
+msgid "Verbal request"
+msgstr "Demande verbale"
+
+msgid "Representative / substitute decision-maker"
+msgstr "Représentant / mandataire spécial"
+
+msgid "Request received via"
+msgstr "Demande reçue par"
+
+msgid "Withdrawal date cannot be in the future."
+msgstr "La date de retrait ne peut pas être dans le futur."

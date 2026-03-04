@@ -42,6 +42,12 @@
         <small class="error" role="alert">{{ form.withdrawal_reason.errors.0 }}</small>
         {% endif %}
 
+        <label for="{{ form.request_received_via.id_for_label }}">{{ form.request_received_via.label }}</label>
+        {{ form.request_received_via }}
+        {% if form.request_received_via.errors %}
+        <small class="error" role="alert">{{ form.request_received_via.errors.0 }}</small>
+        {% endif %}
+
         <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
         {{ form.notes }}
         {% if form.notes.errors %}

@@ -128,6 +128,11 @@ class ClientFile(models.Model):
         self._preferred_name_encrypted = encrypt_field(value)
 
     @property
+    def is_consent_withdrawn(self):
+        """True when consent was withdrawn and retention clock is ticking."""
+        return self.consent_given_at is None and self.retention_expires is not None
+
+    @property
     def display_name(self):
         """Return preferred name if set, otherwise first name.
 
@@ -380,6 +385,12 @@ class ConsentEvent(models.Model):
         blank=True,
         default="",
         choices=WITHDRAWAL_REASON_CHOICES,
+    )
+    request_received_via = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text=_("How the withdrawal request was received (written, verbal, representative)."),
     )
     notes = models.TextField(blank=True, default="")
 
