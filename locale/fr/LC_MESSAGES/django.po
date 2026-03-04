@@ -19136,8 +19136,9 @@ msgid "positive (top-two-box)"
 msgstr "positif (top-two-box)"
 
 #: templates/reports/_insights_instruments.html
-msgid "View item breakdown"
-msgstr "Voir le détail par item"
+#, python-format
+msgid "View item breakdown for %(name)s"
+msgstr "Voir le détail par item pour %(name)s"
 
 #: templates/reports/_insights_instruments.html
 msgid "Item"
@@ -19161,6 +19162,11 @@ msgstr "Pourcentage top-two-box pour %(name)s"
 #, python-format
 msgid "Item breakdown for %(name)s"
 msgstr "Détail par item pour %(name)s"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "%(count)s item(s) not shown due to insufficient responses for privacy."
+msgstr "%(count)s item(s) non affiché(s) en raison d'un nombre insuffisant de réponses pour la confidentialité."
 
 msgid "Client Experience"
 msgstr "Expérience client"

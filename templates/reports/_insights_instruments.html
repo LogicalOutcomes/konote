@@ -9,20 +9,18 @@
     <h4>{{ inst.name }} <small class="muted">({% blocktrans with count=inst.total_responses %}{{ count }} responses{% endblocktrans %})</small></h4>
 
     {# Aggregate top-two-box bar #}
-    <div class="insights-distribution-bar" role="img"
-         aria-label="{% blocktrans with name=inst.name %}Top-two-box percentage for {{ name }}{% endblocktrans %}">
-        <div class="insights-bar-segment band-high" style="width: {{ inst.aggregate_top_two_box_pct }}%;"
-             title="{% trans 'Positive' %}: {{ inst.aggregate_top_two_box_pct }}%">
+    <div class="insights-distribution-bar" aria-hidden="true">
+        <div class="insights-bar-segment band-high" style="width: {{ inst.aggregate_top_two_box_pct }}%;">
+            <span style="font-size: 0.75em; padding-left: 0.3em;">{{ inst.aggregate_top_two_box_pct }}%</span>
         </div>
-        <div class="insights-bar-segment band-low" style="width: calc(100% - {{ inst.aggregate_top_two_box_pct }}%);"
-             title="{% trans 'Other' %}">
+        <div class="insights-bar-segment band-low" style="width: calc(100% - {{ inst.aggregate_top_two_box_pct }}%);">
         </div>
     </div>
     <p><strong>{{ inst.aggregate_top_two_box_pct }}%</strong> {% trans "positive (top-two-box)" %}</p>
 
     {# Per-item breakdown #}
     <details class="chart-data-table">
-        <summary>{% trans "View item breakdown" %}</summary>
+        <summary>{% blocktrans with name=inst.name %}View item breakdown for {{ name }}{% endblocktrans %}</summary>
         <table role="table" aria-label="{% blocktrans with name=inst.name %}Item breakdown for {{ name }}{% endblocktrans %}">
             <thead>
                 <tr>
@@ -42,5 +40,8 @@
             </tbody>
         </table>
     </details>
+    {% if inst.suppressed_count %}
+    <p><small class="muted">{% blocktrans with count=inst.suppressed_count %}{{ count }} item(s) not shown due to insufficient responses for privacy.{% endblocktrans %}</small></p>
+    {% endif %}
 </div>
 {% endfor %}
