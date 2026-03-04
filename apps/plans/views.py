@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -1020,6 +1021,7 @@ def metric_edit(request, metric_id):
 # ---------------------------------------------------------------------------
 
 
+@require_POST
 @login_required
 @requires_permission("metric.manage", allow_admin=True)
 def metric_rationale_add(request, metric_id):
@@ -1028,16 +1030,28 @@ def metric_rationale_add(request, metric_id):
     if not _can_edit_metric(request.user, metric):
         return HttpResponseForbidden(_("Access denied."))
 
-    if request.method == "POST":
-        note = request.POST.get("note", "").strip()
-        if note:
-            author = getattr(request.user, "display_name", str(request.user))
-            metric.append_rationale(note=note, author=author)
-            metric.save(update_fields=["rationale_log"])
+    note = request.POST.get("note", "").strip()
+    if note:
+        author = getattr(request.user, "display_name", str(request.user))
+        metric.append_rationale(note=note, author=author)
+        metric.save(update_fields=["rationale_log"])
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=author,
+            action="update",
+            resource_type="MetricDefinition",
+            resource_id=str(metric.pk),
+            ip_address=request.META.get("REMOTE_ADDR", ""),
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={"detail": f"Added rationale note to '{metric.name}'"},
+        )
 
     return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
 
 
+@require_POST
 @login_required
 @requires_permission("metric.manage", allow_admin=True)
 def metric_rationale_generate(request, metric_id):
@@ -1046,34 +1060,46 @@ def metric_rationale_generate(request, metric_id):
     if not _can_edit_metric(request.user, metric):
         return HttpResponseForbidden(_("Access denied."))
 
-    if request.method == "POST":
-        from konote.ai import default_metric_rationale, generate_metric_rationale
+    from konote.ai import default_metric_rationale, generate_metric_rationale
 
-        scale_range = ""
-        if metric.min_value is not None and metric.max_value is not None:
-            scale_range = f"{metric.min_value}–{metric.max_value}"
+    scale_range = ""
+    if metric.min_value is not None and metric.max_value is not None:
+        scale_range = f"{metric.min_value}–{metric.max_value}"
 
-        result = generate_metric_rationale(
+    result = generate_metric_rationale(
+        name=metric.name,
+        definition=metric.definition or "",
+        category=metric.get_category_display(),
+        metric_type=metric.get_metric_type_display(),
+        scale_range=scale_range,
+    )
+    if result is None:
+        result = default_metric_rationale(
             name=metric.name,
-            definition=metric.definition or "",
             category=metric.get_category_display(),
             metric_type=metric.get_metric_type_display(),
-            scale_range=scale_range,
+            date_str=datetime.date.today().isoformat(),
         )
-        if result is None:
-            result = default_metric_rationale(
-                name=metric.name,
-                category=metric.get_category_display(),
-                metric_type=metric.get_metric_type_display(),
-                date_str=datetime.date.today().isoformat(),
-            )
 
-        metric.append_rationale(
-            note=result["note"],
-            note_fr=result.get("note_fr", ""),
-            author="AI",
-        )
-        metric.save(update_fields=["rationale_log"])
+    source = "AI" if result.get("note_fr") else "template"
+    metric.append_rationale(
+        note=result["note"],
+        note_fr=result.get("note_fr", ""),
+        author="AI",
+    )
+    metric.save(update_fields=["rationale_log"])
+
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="update",
+        resource_type="MetricDefinition",
+        resource_id=str(metric.pk),
+        ip_address=request.META.get("REMOTE_ADDR", ""),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={"detail": f"Auto-generated rationale ({source}) for '{metric.name}'"},
+    )
 
     return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
 

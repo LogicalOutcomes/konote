@@ -112,12 +112,19 @@ class Command(BaseCommand):
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
+                    # Rationale & assessment fields
+                    "rationale_log": m.get("rationale_log", []),
+                    "is_standardized_instrument": m.get("is_standardized_instrument", False),
+                    "scoring_bands": m.get("scoring_bands"),
+                    "assessment_interval_days": m.get("assessment_interval_days"),
+                    "assessment_at_intake": m.get("assessment_at_intake", False),
+                    "assessment_at_discharge": m.get("assessment_at_discharge", False),
                 },
             )
             if was_created:
                 created += 1
             else:
-                # Backfill French translations and is_universal for existing metrics
+                # Backfill French translations, is_universal, and new fields
                 changed = False
                 for fr_field in ("name_fr", "definition_fr", "unit_fr"):
                     new_val = m.get(fr_field, "")
@@ -126,6 +133,25 @@ class Command(BaseCommand):
                         changed = True
                 if m.get("is_universal") and not obj.is_universal:
                     obj.is_universal = True
+                    changed = True
+                # Backfill rationale and assessment fields
+                if m.get("rationale_log") and not obj.rationale_log:
+                    obj.rationale_log = m["rationale_log"]
+                    changed = True
+                if m.get("is_standardized_instrument") and not obj.is_standardized_instrument:
+                    obj.is_standardized_instrument = True
+                    changed = True
+                if m.get("scoring_bands") and not obj.scoring_bands:
+                    obj.scoring_bands = m["scoring_bands"]
+                    changed = True
+                if m.get("assessment_interval_days") and not obj.assessment_interval_days:
+                    obj.assessment_interval_days = m["assessment_interval_days"]
+                    changed = True
+                if m.get("assessment_at_intake") and not obj.assessment_at_intake:
+                    obj.assessment_at_intake = True
+                    changed = True
+                if m.get("assessment_at_discharge") and not obj.assessment_at_discharge:
+                    obj.assessment_at_discharge = True
                     changed = True
                 if changed:
                     obj.save()

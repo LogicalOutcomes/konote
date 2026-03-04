@@ -5,15 +5,15 @@
     <h3 id="rationale-heading">{% trans "Rationale & History" %}</h3>
 
     {% if metric.rationale_log %}
-    {# Most recent entry displayed prominently #}
-    {% with metric.rationale_log|last as current %}
+    {# Most recent entry — use current_rationale property for language awareness #}
     <blockquote>
-        <p>{{ current.note }}</p>
+        <p>{{ metric.current_rationale }}</p>
+        {% with metric.rationale_log|last as current %}
         <footer>
             <small>{{ current.author }} — {{ current.date }}</small>
         </footer>
+        {% endwith %}
     </blockquote>
-    {% endwith %}
 
     {# Older entries collapsed #}
     {% if metric.rationale_log|length > 1 %}
