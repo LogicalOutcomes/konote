@@ -112,6 +112,64 @@ class ProgressNoteTemplateMetric(models.Model):
         ordering = ["sort_order"]
 
 
+ALLIANCE_PROMPT_SETS = [
+    {
+        "prompt": "How well are we working together?",
+        "prompt_fr": "Dans quelle mesure travaillons-nous bien ensemble\u202f?",
+        "anchors": {
+            1: "I don't feel heard by my worker",
+            2: "My worker and I aren't on the same page",
+            3: "We're working okay together",
+            4: "My worker gets what I need",
+            5: "I really trust my worker",
+        },
+        "anchors_fr": {
+            1: "Je ne me sens pas écouté(e) par mon intervenant(e)",
+            2: "Mon intervenant(e) et moi ne sommes pas sur la même longueur d'onde",
+            3: "Nous travaillons assez bien ensemble",
+            4: "Mon intervenant(e) comprend ce dont j'ai besoin",
+            5: "Je fais vraiment confiance à mon intervenant(e)",
+        },
+    },
+    {
+        "prompt": "Do you feel understood in our sessions?",
+        "prompt_fr": "Vous sentez-vous compris(e) lors de nos rencontres\u202f?",
+        "anchors": {
+            1: "Not at all understood",
+            2: "Somewhat misunderstood",
+            3: "Mostly understood",
+            4: "Well understood",
+            5: "Completely understood",
+        },
+        "anchors_fr": {
+            1: "Pas du tout compris(e)",
+            2: "Un peu incompris(e)",
+            3: "Plutôt compris(e)",
+            4: "Bien compris(e)",
+            5: "Tout à fait compris(e)",
+        },
+    },
+    {
+        "prompt": "Is our work together heading in the right direction?",
+        "prompt_fr": "Notre travail ensemble va-t-il dans la bonne direction\u202f?",
+        "anchors": {
+            1: "Completely off track",
+            2: "Mostly off track",
+            3: "On the right track",
+            4: "Making good progress",
+            5: "Exactly where I need to be",
+        },
+        "anchors_fr": {
+            1: "Complètement hors piste",
+            2: "Plutôt hors piste",
+            3: "Sur la bonne voie",
+            4: "En bonne progression",
+            5: "Exactement là où je dois être",
+        },
+    },
+]
+
+
 class ProgressNote(models.Model):
     """A progress note recorded against a client."""
 
@@ -260,6 +318,10 @@ class ProgressNote(models.Model):
     )
     alliance_rater = models.CharField(
         max_length=20, choices=ALLIANCE_RATER_CHOICES, default="", blank=True,
+    )
+    alliance_prompt_index = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Which alliance prompt set was shown (index into ALLIANCE_PROMPT_SETS)."),
     )
 
     MODALITY_CHOICES = [
