@@ -819,6 +819,15 @@ def metric_library(request):
     else:
         category_filter = ""
 
+    # Status filter (enabled / disabled / all)
+    status_filter = request.GET.get("status", "")
+    if status_filter == "enabled":
+        metrics = metrics.filter(is_enabled=True)
+    elif status_filter == "disabled":
+        metrics = metrics.filter(is_enabled=False)
+    else:
+        status_filter = ""
+
     metrics_by_category = {}
     for metric in metrics:
         cat = metric.get_category_display()
@@ -829,6 +838,7 @@ def metric_library(request):
         "is_admin": request.user.is_admin,
         "category_choices": MetricDefinition.CATEGORY_CHOICES,
         "selected_category": category_filter,
+        "selected_status": status_filter,
     })
 
 
