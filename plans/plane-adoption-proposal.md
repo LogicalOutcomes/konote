@@ -1,7 +1,9 @@
 # Plane Adoption Proposal
 
-**Prepared for**: Technical Manager  
-**Date**: February 2026  
+> **Note (2026-03):** KoNote itself now deploys on OVHcloud VPS. Railway references in this document are for hosting the Plane project management tool (not PHIPA-regulated), where Railway remains a viable option.
+
+**Prepared for**: Technical Manager
+**Date**: February 2026
 **Purpose**: Evaluate Plane as a replacement for Microsoft Planner
 
 ---
