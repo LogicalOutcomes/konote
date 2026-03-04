@@ -118,6 +118,10 @@ class MetricDefinitionForm(forms.ModelForm):
             "target_rate", "target_band_high_pct",
             "cadence_sessions",
             "owning_program",
+            # Assessment fields
+            "is_standardized_instrument",
+            "assessment_at_intake", "assessment_at_discharge",
+            "assessment_interval_days",
             # CIDS metadata fields
             "iris_metric_code", "sdg_goals",
             "cids_indicator_uri", "cids_unit_description",
@@ -162,6 +166,12 @@ class MetricDefinitionForm(forms.ModelForm):
         self.fields["warn_max"].help_text = _("Soft warning maximum. Values above this trigger a plausibility alert.")
         self.fields["cadence_sessions"].label = _("Recording cadence (sessions)")
         self.fields["cadence_sessions"].help_text = _("How many sessions between prompts for this metric. Leave blank to prompt every session.")
+        # Assessment fields
+        self.fields["is_standardized_instrument"].help_text = _("Check if this is a published, validated instrument (e.g. PHQ-9, GAD-7).")
+        self.fields["assessment_at_intake"].help_text = _("Administer this assessment at intake (first session).")
+        self.fields["assessment_at_discharge"].help_text = _("Administer this assessment at discharge.")
+        self.fields["assessment_interval_days"].label = _("Assessment interval (days)")
+        self.fields["assessment_interval_days"].help_text = _("Days between scheduled administrations (e.g. 90 for quarterly). Leave blank for no schedule.")
 
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole

@@ -114,14 +114,24 @@ def generate_metric_rationale(name, definition, category, metric_type, scale_ran
 
 def default_metric_rationale(name, category, metric_type, date_str):
     """Template-based rationale fallback when AI is unavailable."""
+    category_labels = {
+        "mental_health": "mental health",
+        "housing": "housing",
+        "employment": "employment",
+        "substance_use": "substance use",
+        "youth": "youth",
+        "general": "general",
+        "custom": "custom",
+    }
+    cat = category_labels.get(category, category)
     type_label = "scale" if metric_type == "scale" else "achievement"
     note = (
         f"Added on {date_str} during initial configuration. "
-        f"{category.title()}-category {type_label} metric."
+        f"{cat.title()}-category {type_label} metric."
     )
     note_fr = (
         f"Ajouté le {date_str} lors de la configuration initiale. "
-        f"Mesure de type {type_label} dans la catégorie {category}."
+        f"Mesure de type {type_label} dans la catégorie {cat}."
     )
     return {"note": note, "note_fr": note_fr}
 
