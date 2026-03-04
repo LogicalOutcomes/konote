@@ -307,8 +307,8 @@
   {
     "name": "Everyone is made to feel welcome",
     "name_fr": "Tout le monde se sent bienvenu",
-    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
-    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale: 1 = Not true, 2 = Somewhat false, 3 = Somewhat true, 4 = Very true. Part of a 5-item inclusivity battery developed by LogicalOutcomes based on literature scan on construct of inclusivity in social programs/schools. Scoring: 4-point scale supports top-two-box analysis (% selecting 'Very true' or 'Somewhat true'). Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points : 1 = Pas du tout vrai, 2 = Plutôt faux, 3 = Plutôt vrai, 4 = Tout à fait vrai. Fait partie d'une batterie de 5 questions sur l'inclusivité développée par LogicalOutcomes. Source : mesures de sondage recommandées par LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "min_value": 1,
     "max_value": 4,
@@ -319,8 +319,8 @@
   {
     "name": "Everyone is valued equally",
     "name_fr": "Tout le monde est apprécié de la même manière",
-    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
-    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale: 1 = Not true, 2 = Somewhat false, 3 = Somewhat true, 4 = Very true. Part of a 5-item inclusivity battery. Scoring: top-two-box analysis. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points : 1 = Pas du tout vrai, 2 = Plutôt faux, 3 = Plutôt vrai, 4 = Tout à fait vrai. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "min_value": 1,
     "max_value": 4,
@@ -331,8 +331,8 @@
   {
     "name": "I am treated with respect",
     "name_fr": "Je suis traité(e) avec respect",
-    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
-    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale: 1 = Not true, 2 = Somewhat false, 3 = Somewhat true, 4 = Very true. Part of a 5-item inclusivity battery. Scoring: top-two-box analysis. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points : 1 = Pas du tout vrai, 2 = Plutôt faux, 3 = Plutôt vrai, 4 = Tout à fait vrai. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "min_value": 1,
     "max_value": 4,
@@ -343,8 +343,8 @@
   {
     "name": "People help each other",
     "name_fr": "Les gens s'entraident",
-    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
-    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale: 1 = Not true, 2 = Somewhat false, 3 = Somewhat true, 4 = Very true. Part of a 5-item inclusivity battery. Scoring: top-two-box analysis. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points : 1 = Pas du tout vrai, 2 = Plutôt faux, 3 = Plutôt vrai, 4 = Tout à fait vrai. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "min_value": 1,
     "max_value": 4,
@@ -355,8 +355,8 @@
   {
     "name": "I get help when I need it",
     "name_fr": "J'obtiens de l'aide quand j'en ai besoin",
-    "definition": "Program inclusivity: How true is this statement? 4-point scale. Very true / Somewhat true / Somewhat false / Not true.",
-    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points. Tout à fait vrai / Plutôt vrai / Plutôt faux / Pas du tout vrai.",
+    "definition": "Program inclusivity: How true is this statement? 4-point scale: 1 = Not true, 2 = Somewhat false, 3 = Somewhat true, 4 = Very true. Part of a 5-item inclusivity battery. Scoring: top-two-box analysis. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Inclusivité du programme : dans quelle mesure cet énoncé est-il vrai? Échelle en 4 points : 1 = Pas du tout vrai, 2 = Plutôt faux, 3 = Plutôt vrai, 4 = Tout à fait vrai. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "min_value": 1,
     "max_value": 4,
@@ -367,8 +367,8 @@
   {
     "name": "How has taking part in this program changed things for you?",
     "name_fr": "Comment votre participation à ce programme a-t-elle changé les choses pour vous?",
-    "definition": "Open-text reflection on self-reported program impact. Participant describes in their own words what has changed. Source: LogicalOutcomes recommended survey measures.",
-    "definition_fr": "Réflexion ouverte sur l'impact auto-déclaré du programme. Le participant décrit dans ses propres mots ce qui a changé. Source : mesures de sondage recommandées par LogicalOutcomes.",
+    "definition": "Open-text reflection on self-reported program impact. Participant describes in their own words what has changed. Can be used in staff notes, participant portal, or anonymous surveys. Responses may be quoted anonymously in reports. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Réflexion ouverte sur l'impact auto-déclaré du programme. Le participant décrit dans ses propres mots ce qui a changé. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Les réponses peuvent être citées anonymement dans les rapports. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
     "portal_visibility": "self_reported"
@@ -376,8 +376,8 @@
   {
     "name": "How can we improve our program or services?",
     "name_fr": "Que devrions-nous faire pour améliorer notre programme ou nos services?",
-    "definition": "Open-text suggestion for program improvement. Participant provides feedback in their own words. Source: LogicalOutcomes recommended survey measures.",
-    "definition_fr": "Suggestion ouverte pour l'amélioration du programme. Le participant donne ses commentaires dans ses propres mots. Source : mesures de sondage recommandées par LogicalOutcomes.",
+    "definition": "Open-text suggestion for program improvement. Participant provides feedback in their own words. Can be used in staff notes, participant portal, or anonymous surveys. Source: LogicalOutcomes recommended survey measures (2025-12-01).",
+    "definition_fr": "Suggestion ouverte pour l'amélioration du programme. Le participant donne ses commentaires dans ses propres mots. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
     "portal_visibility": "self_reported"
