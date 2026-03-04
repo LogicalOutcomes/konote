@@ -3574,13 +3574,13 @@ class Command(BaseCommand):
         for sd in submission_data:
             sub = RegistrationSubmission(
                 registration_link=link,
-                field_values=sd["field_values"],
                 status=sd["status"],
             )
             sub.first_name = sd["first_name"]
             sub.last_name = sd["last_name"]
             sub.email = sd["email"]
             sub.phone = sd["phone"]
+            sub.field_values = sd["field_values"]
             sub.save()
 
             # Backdate submitted_at and optionally set reviewed_at/reviewed_by
