@@ -484,6 +484,9 @@ def get_instrument_aggregates(program, date_from, date_to):
             total_top_two += item_top_two
             total_responses += item_total
 
+        # Count items suppressed due to low N (below MIN_N_FOR_DISTRIBUTION)
+        suppressed_count = len(metrics_by_id) - len(items)
+
         if not items:
             continue
 
@@ -495,6 +498,7 @@ def get_instrument_aggregates(program, date_from, date_to):
             "aggregate_top_two_box_pct": aggregate_pct,
             "total_responses": total_responses,
             "is_multi_item": is_multi_item,
+            "suppressed_count": suppressed_count,
         }
 
     return results
