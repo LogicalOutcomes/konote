@@ -231,11 +231,20 @@ def _local_login(request):
         form = LoginForm()
 
     demo_users = []
+    demo_portal_participants = []
     if settings.DEMO_MODE:
         demo_users = list(
             User.objects.filter(is_demo=True, is_active=True)
             .order_by("display_name")
             .values("username", "display_name")
+        )
+        from apps.portal.models import ParticipantUser
+        demo_portal_participants = list(
+            ParticipantUser.objects.filter(
+                is_active=True, mfa_method="exempt",
+            )
+            .select_related("client_file")
+            .order_by("client_file__record_id")
         )
 
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))
@@ -245,6 +254,7 @@ def _local_login(request):
         "auth_mode": "local",
         "demo_mode": settings.DEMO_MODE,
         "demo_users": demo_users,
+        "demo_portal_participants": demo_portal_participants,
         "has_language_cookie": has_language_cookie,
     })
 
@@ -356,8 +366,8 @@ def demo_login(request, role):
 
 
 @require_POST
-def demo_portal_login(request):
-    """Quick-login as the demo participant. Only available when DEMO_MODE is enabled."""
+def demo_portal_login(request, record_id):
+    """Quick-login as a demo participant. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
         from django.http import Http404
         raise Http404
@@ -379,11 +389,16 @@ def demo_portal_login(request):
             "has_language_cookie": bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)),
         })
 
-    demo_client = ClientFile.objects.filter(record_id="DEMO-001").first()
+    # Only allow record IDs that look like demo data (DEMO-xxx or PC-xxx)
+    if not record_id.startswith(("DEMO-", "PC-")):
+        from django.http import Http404
+        raise Http404
+
+    demo_client = ClientFile.objects.filter(record_id=record_id).first()
     if not demo_client:
-        logger.warning("demo_portal_login: DEMO-001 client not found — seed may not have run")
+        logger.warning("demo_portal_login: %s client not found — seed may not have run", record_id)
         return render(request, "auth/login.html", {
-            "error": "Demo participant data is missing (DEMO-001 not found). "
+            "error": f"Demo participant data is missing ({record_id} not found). "
                      "Try redeploying to re-run the seed command.",
             "auth_mode": settings.AUTH_MODE,
             "demo_mode": settings.DEMO_MODE,
@@ -395,7 +410,7 @@ def demo_portal_login(request):
             client_file=demo_client, is_active=True
         )
     except ParticipantUser.DoesNotExist:
-        logger.warning("demo_portal_login: no active ParticipantUser for DEMO-001")
+        logger.warning("demo_portal_login: no active ParticipantUser for %s", record_id)
         return render(request, "auth/login.html", {
             "error": "Demo portal account not found. "
                      "Try redeploying to re-run the seed command.",

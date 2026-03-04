@@ -248,10 +248,21 @@ def portal_login(request):
     else:
         form = PortalLoginForm()
 
+    demo_portal_participants = []
+    if settings.DEMO_MODE:
+        demo_portal_participants = list(
+            ParticipantUser.objects.filter(
+                is_active=True, mfa_method="exempt",
+            )
+            .select_related("client_file")
+            .order_by("client_file__record_id")
+        )
+
     return render(request, "portal/login.html", {
         "form": form,
         "error": error,
         "demo_mode": settings.DEMO_MODE,
+        "demo_portal_participants": demo_portal_participants,
     })
 
 

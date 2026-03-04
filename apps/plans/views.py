@@ -149,8 +149,8 @@ def plan_view(request, client_id):
     )
 
     # Check if AI Goal Builder is available
-    from konote.ai_views import _ai_enabled
-    ai_enabled = can_edit and _ai_enabled()
+    from konote.ai_views import _ai_tools_enabled
+    ai_enabled = can_edit and _ai_tools_enabled()
 
     context = {
         "client": client,
@@ -665,8 +665,8 @@ def goal_create(request, client_id):
             pass
 
     # Check if AI Goal Builder is available
-    from konote.ai_views import _ai_enabled
-    ai_enabled = _can_edit_plan(request.user, client) and _ai_enabled()
+    from konote.ai_views import _ai_tools_enabled
+    ai_enabled = _can_edit_plan(request.user, client) and _ai_tools_enabled()
 
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
