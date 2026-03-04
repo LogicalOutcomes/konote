@@ -1045,3 +1045,71 @@ class AssessmentDueBannerViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Assessment due")
 
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricCSVImportTest(TestCase):
+    """Tests for the CSV metric import parser (_parse_metric_csv)."""
+
+    def _make_csv(self, content):
+        """Create an in-memory CSV file from string content."""
+        import io
+        return io.BytesIO(content.encode("utf-8"))
+
+    def test_parse_csv_with_metric_type_column(self):
+        """CSV with metric_type column parses scale, achievement, and open_text."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type,min_value,max_value,unit\n"
+            "Test Scale,A scale metric,general,scale,1,10,score\n"
+            "Test Open,An open text metric,client_experience,open_text,,,\n"
+            "Test Achievement,An achievement,employment,achievement,,,\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]["metric_type"], "scale")
+        self.assertEqual(rows[0]["min_value"], 1.0)
+        self.assertEqual(rows[0]["max_value"], 10.0)
+        self.assertEqual(rows[1]["metric_type"], "open_text")
+        self.assertIsNone(rows[1]["min_value"])
+        self.assertIsNone(rows[1]["max_value"])
+        self.assertEqual(rows[2]["metric_type"], "achievement")
+
+    def test_parse_csv_invalid_metric_type(self):
+        """CSV with invalid metric_type produces a row error."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type\n"
+            "Bad Metric,Something,general,bogus\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(len(rows), 0)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("metric_type", errors[0])
+
+    def test_parse_csv_defaults_to_scale(self):
+        """CSV without metric_type column defaults to scale."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,min_value,max_value\n"
+            "Simple Metric,A metric,general,1,5\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(rows[0]["metric_type"], "scale")
+
+    def test_parse_csv_client_experience_category(self):
+        """CSV with client_experience category is valid."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type\n"
+            "How was our service?,Feedback question,client_experience,open_text\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(rows[0]["category"], "client_experience")
+
