@@ -20,7 +20,7 @@
 
     {# Per-item breakdown #}
     <details class="chart-data-table">
-        <summary>{% trans "View item breakdown" %}</summary>
+        <summary>{% blocktrans with name=inst.name %}View item breakdown for {{ name }}{% endblocktrans %}</summary>
         <table role="table" aria-label="{% blocktrans with name=inst.name %}Item breakdown for {{ name }}{% endblocktrans %}">
             <thead>
                 <tr>
@@ -40,5 +40,8 @@
             </tbody>
         </table>
     </details>
+    {% if inst.suppressed_count %}
+    <p><small class="muted">{% blocktrans with count=inst.suppressed_count %}{{ count }} item(s) not shown due to insufficient responses for privacy.{% endblocktrans %}</small></p>
+    {% endif %}
 </div>
 {% endfor %}
