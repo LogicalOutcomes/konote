@@ -17,9 +17,9 @@ from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
+from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, ConsentWithdrawalForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, ConsentEvent, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -1363,6 +1363,133 @@ def client_consent_save(request, client_id):
             "is_receptionist": is_receptionist,
         })
 
+    return redirect("clients:client_detail", client_id=client.pk)
+
+
+@login_required
+@requires_permission("consent.manage")
+def client_consent_withdraw_form(request, client_id):
+    """HTMX: Return consent withdrawal form partial."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    user_role = getattr(request, "user_program_role", None)
+    is_receptionist = user_role == "receptionist"
+
+    if not client.consent_given_at:
+        messages.info(request, _("No active consent to withdraw."))
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_display.html", {
+                "client": client,
+                "is_receptionist": is_receptionist,
+            })
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    form = ConsentWithdrawalForm(initial={
+        "withdrawal_date": timezone.now().date(),
+    })
+    return render(request, "clients/_consent_withdraw.html", {
+        "client": client,
+        "form": form,
+    })
+
+
+@login_required
+@requires_permission("consent.manage")
+def client_consent_withdraw(request, client_id):
+    """Process consent withdrawal for a client (PIPEDA compliance)."""
+    from datetime import timedelta
+
+    from apps.admin_settings.models import InstanceSetting
+    from apps.audit.models import AuditLog
+
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    user_role = getattr(request, "user_program_role", None)
+    is_receptionist = user_role == "receptionist"
+
+    if request.method != "POST":
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    if not client.consent_given_at:
+        messages.error(request, _("No active consent to withdraw."))
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_display.html", {
+                "client": client,
+                "is_receptionist": is_receptionist,
+            })
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    form = ConsentWithdrawalForm(request.POST)
+    if form.is_valid():
+        withdrawal_date = form.cleaned_data["withdrawal_date"]
+
+        # Snapshot old values for audit
+        old_consent_at = client.consent_given_at
+        old_consent_type = client.consent_type
+
+        # 1. Record the consent event
+        ConsentEvent.objects.create(
+            client_file=client,
+            event_type="withdrawn",
+            event_date=withdrawal_date,
+            recorded_by=request.user,
+            recorded_by_display=str(request.user),
+            consent_type=old_consent_type,
+            withdrawal_reason=form.cleaned_data["withdrawal_reason"],
+            notes=form.cleaned_data.get("notes", ""),
+        )
+
+        # 2. Clear consent on the client record
+        client.consent_given_at = None
+        client.consent_type = ""
+
+        # 3. Set retention expiry (PHIPA default: 10 years)
+        retention_days = int(
+            InstanceSetting.get("consent_withdrawal_retention_days", "3650")
+        )
+        client.retention_expires = withdrawal_date + timedelta(days=retention_days)
+
+        client.save(update_fields=[
+            "consent_given_at", "consent_type", "retention_expires",
+        ])
+
+        # 4. Audit log
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=str(request.user),
+            ip_address=request.META.get("REMOTE_ADDR"),
+            action="update",
+            resource_type="consent",
+            resource_id=client.pk,
+            old_values={
+                "consent_given_at": old_consent_at.isoformat(),
+                "consent_type": old_consent_type,
+            },
+            new_values={
+                "consent_given_at": None,
+                "consent_type": "",
+                "withdrawal_reason": form.cleaned_data["withdrawal_reason"],
+                "retention_expires": client.retention_expires.isoformat(),
+            },
+        )
+
+        messages.success(
+            request,
+            _("Consent has been withdrawn. This record is now read-only."),
+        )
+    else:
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_withdraw.html", {
+                "client": client,
+                "form": form,
+            })
+
+    if request.headers.get("HX-Request"):
+        return render(request, "clients/_consent_display.html", {
+            "client": client,
+            "is_receptionist": is_receptionist,
+        })
     return redirect("clients:client_detail", client_id=client.pk)
 
 
