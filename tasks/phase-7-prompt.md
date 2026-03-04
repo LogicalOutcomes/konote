@@ -24,7 +24,7 @@ I'm building KoNote Web, a nonprofit client management system. Phases 1-6 are do
 - The app uses Django 5, PostgreSQL (two databases: app + audit), Docker Compose, Caddy for TLS
 - Auth: Azure AD SSO or local with Argon2
 - PII encrypted with Fernet, audit logs in separate INSERT-only database
-- Deployable to: Azure (production), OVHcloud VPS / Docker Compose (primary managed deployment)
+- Deployable to: OVHcloud VPS / Docker Compose (primary), Azure (alternative)
 
 ### What to Build
 
@@ -70,25 +70,12 @@ I'm building KoNote Web, a nonprofit client management system. Phases 1-6 are do
   - Verify audit DB lockdown
   - Set up custom domain and TLS
 
-**5. Deployment Guide: Elest.io**
-- Create `docs/deploy-elestio.md`
-- Step-by-step:
-  - Create Elest.io service using Docker Compose
-  - Configure environment variables
-  - Set AUTH_MODE=local (or integrate with external IdP)
-  - GDPR considerations: data residency, retention settings
-  - Verify TLS and security headers
+**5. Deployment Guide: OVHcloud VPS** *(consolidated into `docs/deploying-konote.md`)*
+- Docker Compose on OVHcloud VPS (Beauharnois, QC)
+- Caddy reverse proxy with automatic TLS
+- System crontab for scheduled tasks
 
-**6. Deployment Guide: Railway**
-- Create `docs/deploy-railway.md`
-- Step-by-step:
-  - Create Railway project from GitHub repo
-  - Add PostgreSQL plugin (x2 for app + audit)
-  - Set environment variables
-  - The `railway.json` handles build/deploy commands automatically
-  - Verify the app starts and runs migrations
-
-**7. Agency Setup Guide**
+**6. Agency Setup Guide**
 - Create `docs/agency-setup.md`
 - What a new agency does after deployment:
   - First admin logs in and creates their account
