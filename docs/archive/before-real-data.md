@@ -33,7 +33,7 @@ Complete these items before entering any real client information:
 
 **For Docker users:** See [Backup and Restore Guide](backup-restore.md)
 
-**For hosted deployments:** Your provider (Railway, Azure, Elestio) likely handles backups automatically. Verify this in their dashboard.
+**For hosted deployments:** KoNote now uses OVHcloud VPS with Docker Compose. See `docs/deploying-konote.md` for current backup procedures.
 
 ---
 
