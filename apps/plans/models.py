@@ -1,4 +1,6 @@
 """Plan sections, targets, metrics — the core outcomes tracking models."""
+import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -483,7 +485,7 @@ class PlanTargetMetric(models.Model):
     plan_target = models.ForeignKey(PlanTarget, on_delete=models.CASCADE)
     metric_def = models.ForeignKey(MetricDefinition, on_delete=models.CASCADE)
     sort_order = models.IntegerField(default=0)
-    assigned_date = models.DateField(auto_now_add=True)
+    assigned_date = models.DateField(default=datetime.date.today)
     last_reviewed_date = models.DateField(
         null=True, blank=True,
         help_text=_("When the worker last confirmed this metric is still relevant."),
