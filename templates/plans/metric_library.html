@@ -69,6 +69,9 @@
             <tr>
                 <td>
                     <strong>{{ metric.name }}</strong>
+                    {% if metric.instrument_name %}
+                    <br><mark style="font-size: 0.75em; padding: 0.1em 0.4em; border-radius: 3px;">{{ metric.instrument_name }}</mark>
+                    {% endif %}
                     <br><small>{{ metric.definition|truncatewords:15 }}</small>
                     {% if metric.current_rationale %}
                     <br><small style="color: var(--pico-muted-color);">{{ metric.current_rationale|truncatewords:20 }}</small>
