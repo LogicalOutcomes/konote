@@ -159,12 +159,12 @@
             <label for="{{ form.reminder_sms_en.id_for_label }}">{{ form.reminder_sms_en.label }}</label>
             {{ form.reminder_sms_en }}
             <small class="secondary">{{ form.reminder_sms_en.help_text }}</small>
-            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_en.id_for_label }}"></small>
+            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_en.id_for_label }}" aria-live="polite"></small>
         </div>
         <div>
             <label for="{{ form.reminder_sms_fr.id_for_label }}">{{ form.reminder_sms_fr.label }}</label>
             {{ form.reminder_sms_fr }}
-            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_fr.id_for_label }}"></small>
+            <small class="sms-char-count secondary" data-for="{{ form.reminder_sms_fr.id_for_label }}" aria-live="polite"></small>
         </div>
     </div>
 
