@@ -867,6 +867,7 @@ class ConsentWithdrawalTest(TestCase):
         resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
             "withdrawal_date": today,
             "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
             "notes": "Participant called to withdraw.",
             "confirm": "on",
         })
@@ -942,6 +943,7 @@ class ConsentWithdrawalTest(TestCase):
         resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
             "withdrawal_date": timezone.now().strftime("%Y-%m-%d"),
             "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
             "confirm": "on",
         })
         self.assertEqual(resp.status_code, 403)
@@ -954,6 +956,7 @@ class ConsentWithdrawalTest(TestCase):
         resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
             "withdrawal_date": today.isoformat(),
             "withdrawal_reason": "service_ended",
+            "request_received_via": "verbal",
             "confirm": "on",
         })
         self.assertIn(resp.status_code, [200, 302])
@@ -970,6 +973,7 @@ class ConsentWithdrawalTest(TestCase):
         self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
             "withdrawal_date": today,
             "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
             "confirm": "on",
         })
         # Re-grant

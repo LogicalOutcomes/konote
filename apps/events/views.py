@@ -358,6 +358,11 @@ def event_create(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("events:event_list", client_id=client.pk)
+
     can_flag_sre = _user_can_flag_sre(request.user)
 
     if request.method == "POST":
@@ -417,6 +422,12 @@ def event_edit(request, client_id, event_id):
     client = _get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("events:event_list", client_id=client.pk)
+
     event = get_object_or_404(Event, pk=event_id, client_file=client)
 
     can_flag_sre = _user_can_flag_sre(request.user)

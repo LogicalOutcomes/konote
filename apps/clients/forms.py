@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program
 
-from .models import ClientFile, CustomFieldDefinition, CustomFieldGroup
+from .models import ClientFile, ConsentEvent, CustomFieldDefinition, CustomFieldGroup
 from .validators import normalize_phone_number, validate_phone_number
 
 
@@ -38,12 +38,10 @@ class ConsentRecordForm(forms.Form):
 class ConsentWithdrawalForm(forms.Form):
     """Form to record consent withdrawal (PIPEDA/PHIPA compliance)."""
 
-    WITHDRAWAL_REASON_CHOICES = [
-        ("participant_requested", _("Participant requested")),
-        ("guardian_requested", _("Guardian/substitute decision-maker requested")),
-        ("service_ended", _("Service relationship ended")),
-        ("transferred", _("Transferred to another agency")),
-        ("other", _("Other")),
+    REQUEST_RECEIVED_VIA_CHOICES = [
+        ("written", _("Written request")),
+        ("verbal", _("Verbal request")),
+        ("representative", _("Representative / substitute decision-maker")),
     ]
 
     withdrawal_date = forms.DateField(
@@ -51,9 +49,15 @@ class ConsentWithdrawalForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
     )
     withdrawal_reason = forms.ChoiceField(
-        choices=WITHDRAWAL_REASON_CHOICES,
+        choices=ConsentEvent.WITHDRAWAL_REASON_CHOICES[1:],  # skip blank
         label=_("Reason for withdrawal"),
         required=True,
+    )
+    request_received_via = forms.ChoiceField(
+        choices=REQUEST_RECEIVED_VIA_CHOICES,
+        label=_("Request received via"),
+        required=True,
+        initial="written",
     )
     notes = forms.CharField(
         required=False,
@@ -67,6 +71,13 @@ class ConsentWithdrawalForm(forms.Form):
         label=_("I confirm this participant has requested consent withdrawal"),
         required=True,
     )
+
+    def clean_withdrawal_date(self):
+        """Reject future dates — withdrawal must have already occurred."""
+        dt = self.cleaned_data["withdrawal_date"]
+        if dt > timezone.now().date():
+            raise forms.ValidationError(_("Withdrawal date cannot be in the future."))
+        return dt
 
 
 class ClientContactForm(forms.Form):

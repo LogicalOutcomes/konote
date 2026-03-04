@@ -292,7 +292,7 @@ def target_create(request, section_id):
 
     # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
     client = section.client_file
-    if client.consent_given_at is None and client.retention_expires is not None:
+    if client.is_consent_withdrawn:
         messages.error(request, _("This record is read-only because consent has been withdrawn."))
         return redirect("plans:plan_view", client_id=client.pk)
 
@@ -340,7 +340,7 @@ def target_edit(request, target_id):
 
     # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
     client = target.client_file
-    if client.consent_given_at is None and client.retention_expires is not None:
+    if client.is_consent_withdrawn:
         messages.error(request, _("This record is read-only because consent has been withdrawn."))
         return redirect("plans:plan_view", client_id=client.pk)
 
@@ -389,7 +389,7 @@ def target_status(request, target_id):
 
     # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
     client = target.client_file
-    if client.consent_given_at is None and client.retention_expires is not None:
+    if client.is_consent_withdrawn:
         messages.error(request, _("This record is read-only because consent has been withdrawn."))
         return redirect("plans:plan_view", client_id=client.pk)
 
