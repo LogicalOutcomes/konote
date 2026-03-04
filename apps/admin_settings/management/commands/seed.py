@@ -115,6 +115,7 @@ class Command(BaseCommand):
                     # Shelter) where lower scores indicate better outcomes.
                     "higher_is_better": m.get("higher_is_better", True),
                     "portal_visibility": m.get("portal_visibility", "no"),
+                    "instrument_name": m.get("instrument_name", ""),
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
@@ -139,6 +140,9 @@ class Command(BaseCommand):
                         changed = True
                 if m.get("is_universal") and not obj.is_universal:
                     obj.is_universal = True
+                    changed = True
+                if m.get("instrument_name") and not obj.instrument_name:
+                    obj.instrument_name = m["instrument_name"]
                     changed = True
                 # Backfill rationale and assessment fields
                 if m.get("rationale_log") and not obj.rationale_log:
