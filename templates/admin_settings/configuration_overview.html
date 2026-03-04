@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Configuration Overview" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% trans "Configuration Overview" %}</h1>
+    <p>{% trans "Read-only summary of all active settings. Designed for printing." %}</p>
+    <p>
+        <a href="{% url 'admin_settings:dashboard' %}">← {% trans "Back to Settings" %}</a>
+        <button class="outline" onclick="window.print()" style="margin-left: 1rem;">{% trans "Print" %}</button>
+    </p>
+</div>
+
+{# ──────────── 1. Organisation ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Organisation" %}</h2>
+    <table class="config-table" role="grid">
+        <tbody>
+            <tr>
+                <th>{% trans "Legal Name" %}</th>
+                <td>{{ org.legal_name|default_if_none:"—" }}{% if not org.legal_name %}<span class="config-empty">{% trans "Not set" %}</span>{% endif %}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Operating Name" %}</th>
+                <td>{{ org.operating_name|default:"—" }}{% if not org.operating_name %}<span class="config-empty">{% trans "Not set" %}</span>{% endif %}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Legal Status" %}</th>
+                <td>{{ org.legal_status|default:"—" }}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Sector Codes" %}</th>
+                <td>{% if org.sector_codes %}{{ org.sector_codes|join:", " }}{% else %}—{% endif %}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Address" %}</th>
+                <td>
+                    {% if org.street_address %}
+                        {{ org.street_address }}<br>
+                        {{ org.city }}{% if org.province %}, {{ org.get_province_display }}{% endif %} {{ org.postal_code }}<br>
+                        {{ org.country }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Website" %}</th>
+                <td>{% if org.website %}<a href="{{ org.website }}">{{ org.website }}</a>{% else %}—{% endif %}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:organization_profile' %}">{% trans "Edit" %}</a></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+{# ──────────── 2. Access & Privacy ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Access & Privacy" %}</h2>
+    <table class="config-table" role="grid">
+        <tbody>
+            <tr>
+                <th>{% trans "Access Tier" %}</th>
+                <td>{% trans "Tier" %} {{ access_tier }} — {{ access_tier_label }}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Privacy Officer" %}</th>
+                <td>
+                    {% if privacy_officer_name %}
+                        {{ privacy_officer_name }}
+                        {% if privacy_officer_email %}({{ privacy_officer_email }}){% endif %}
+                    {% else %}
+                        <span class="config-empty">{% trans "Not set" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Consent Requirement" %}</th>
+                <td>
+                    {% if consent_required %}
+                        <span class="config-badge config-badge-on">{% trans "Required" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Not required" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:features' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Cross-Program Note Sharing" %}</th>
+                <td>
+                    {% if note_sharing_enabled %}
+                        <span class="config-badge config-badge-on">{% trans "Enabled" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Disabled" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:features' %}">{% trans "Edit" %}</a></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+{# ──────────── 3. Features ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Features" %}</h2>
+    <table class="config-table" role="grid">
+        <thead>
+            <tr>
+                <th>{% trans "Feature" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Description" %}</th>
+                <th class="config-edit">{% trans "Edit" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feat in feature_rows %}
+            <tr>
+                <td><strong>{{ feat.label }}</strong></td>
+                <td>
+                    {% if feat.is_enabled %}
+                        <span class="config-badge config-badge-on">{% trans "On" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Off" %}</span>
+                    {% endif %}
+                    {% if feat.missing_config %}
+                        <br><small class="config-warning">{% trans "Missing config:" %} {{ feat.missing_config|join:", " }}</small>
+                    {% endif %}
+                </td>
+                <td>{{ feat.description }}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:features' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{# ──────────── 4. Terminology ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Terminology" %}</h2>
+    {% if terminology_rows %}
+    <table class="config-table" role="grid">
+        <thead>
+            <tr>
+                <th>{% trans "Term" %}</th>
+                <th>{% trans "Default" %}</th>
+                <th>{% trans "English Override" %}</th>
+                <th>{% trans "French Override" %}</th>
+                <th class="config-edit">{% trans "Edit" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for term in terminology_rows %}
+            <tr>
+                <td><code>{{ term.key }}</code></td>
+                <td>{{ term.default_en }}</td>
+                <td>{{ term.current_en }}</td>
+                <td>{{ term.current_fr|default:"—" }}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:terminology' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>{% trans "No terminology overrides. All terms use defaults." %}</p>
+    {% endif %}
+</section>
+
+{# ──────────── 5. Metrics & Assessments ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Metrics & Assessments" %}</h2>
+    <p>
+        {% blocktrans with enabled=enabled_metrics total=total_metrics %}{{ enabled }} of {{ total }} metrics enabled.{% endblocktrans %}
+    </p>
+
+    {% if standardized_instruments %}
+    <h3>{% trans "Library Instruments" %}</h3>
+    <table class="config-table" role="grid">
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Category" %}</th>
+                <th>{% trans "Range" %}</th>
+                <th>{% trans "Scoring Bands" %}</th>
+                <th>{% trans "Type" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inst in standardized_instruments %}
+            <tr>
+                <td><strong>{{ inst.name }}</strong></td>
+                <td>{{ inst.get_category_display }}</td>
+                <td>
+                    {% if inst.min_value is not None and inst.max_value is not None %}
+                        {{ inst.min_value|floatformat:0 }}–{{ inst.max_value|floatformat:0 }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>
+                    {% if inst.threshold_low is not None and inst.threshold_high is not None %}
+                        {% trans "Low" %} &lt; {{ inst.threshold_low|floatformat:0 }},
+                        {% trans "Mid" %} {{ inst.threshold_low|floatformat:0 }}–{{ inst.threshold_high|floatformat:0 }},
+                        {% trans "High" %} &gt; {{ inst.threshold_high|floatformat:0 }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ inst.get_metric_type_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>{% trans "No library instruments are currently enabled." %}</p>
+    {% endif %}
+    <p class="config-edit-link"><a href="{% url 'metrics:metric_library' %}">{% trans "Manage Metrics" %}</a></p>
+</section>
+
+{# ──────────── 6. Branding ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Branding" %}</h2>
+    <table class="config-table" role="grid">
+        <tbody>
+            <tr>
+                <th>{% trans "Brand Colour" %}</th>
+                <td>
+                    {% if brand_colour %}
+                        <span class="config-colour-swatch" style="background-color: {{ brand_colour }};"></span>
+                        <code>{{ brand_colour }}</code>
+                    {% else %}
+                        <span class="config-empty">{% trans "Default" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Date Format" %}</th>
+                <td>{{ date_format }}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Session Timeout" %}</th>
+                <td>{% blocktrans with mins=session_timeout %}{{ mins }} minutes{% endblocktrans %}</td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+{# ──────────── 7. Integrations ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Integrations" %}</h2>
+    <table class="config-table" role="grid">
+        <tbody>
+            <tr>
+                <th>{% trans "Document Storage" %}</th>
+                <td>
+                    {% if document_storage %}
+                        {{ document_storage }}
+                    {% else %}
+                        <span class="config-empty">{% trans "Not configured" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:instance_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Email" %}</th>
+                <td>
+                    {% if email_configured %}
+                        <span class="config-badge config-badge-on">{% trans "Configured" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Not configured" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:messaging_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "SMS (Twilio)" %}</th>
+                <td>
+                    {% if sms_configured %}
+                        <span class="config-badge config-badge-on">{% trans "Configured" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Not configured" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:messaging_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "ODK Central (Field Collection)" %}</th>
+                <td>
+                    {% if odk_configured %}
+                        <span class="config-badge config-badge-on">{% trans "Configured" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Not configured" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:features' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Staff Messaging" %}</th>
+                <td>
+                    {% if staff_messaging %}
+                        <span class="config-badge config-badge-on">{% trans "Enabled" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Disabled" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:messaging_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+            <tr>
+                <th>{% trans "Automated Reminders" %}</th>
+                <td>
+                    {% if automated_reminders %}
+                        <span class="config-badge config-badge-on">{% trans "Enabled" %}</span>
+                    {% else %}
+                        <span class="config-badge config-badge-off">{% trans "Disabled" %}</span>
+                    {% endif %}
+                </td>
+                <td class="config-edit"><a href="{% url 'admin_settings:messaging_settings' %}">{% trans "Edit" %}</a></td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+{# ──────────── 8. Recent Config Changes ──────────── #}
+<section class="config-section">
+    <h2>{% trans "Recent Configuration Changes" %}</h2>
+    {% if audit_entries %}
+    <table class="config-table" role="grid">
+        <thead>
+            <tr>
+                <th>{% trans "Date" %}</th>
+                <th>{% trans "User" %}</th>
+                <th>{% trans "Action" %}</th>
+                <th>{% trans "Detail" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in audit_entries %}
+            <tr>
+                <td>{{ entry.event_timestamp|date:"Y-m-d H:i" }}</td>
+                <td>{{ entry.user_display|default:"—" }}</td>
+                <td>{{ entry.get_action_display }}</td>
+                <td>{{ entry.resource_type }}{% if entry.resource_id %} #{{ entry.resource_id }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>{% trans "No recent configuration changes found in the audit log." %}</p>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .config-section {
+        margin-bottom: 2rem;
+    }
+    .config-section h2 {
+        font-size: 1.25rem;
+        border-bottom: 2px solid var(--kn-border, #ddd);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .config-section h3 {
+        font-size: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .config-table {
+        width: 100%;
+    }
+    .config-table th {
+        white-space: nowrap;
+        vertical-align: top;
+        width: 20%;
+    }
+    .config-table td {
+        vertical-align: top;
+    }
+    .config-edit {
+        width: 4rem;
+        text-align: right;
+        white-space: nowrap;
+    }
+    .config-edit-link {
+        margin-top: 0.5rem;
+    }
+    .config-empty {
+        color: var(--kn-text-secondary, #666);
+        font-style: italic;
+    }
+    .config-badge {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+    .config-badge-on {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .config-badge-off {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .config-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+    }
+    .config-colour-swatch {
+        display: inline-block;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 3px;
+        border: 1px solid var(--kn-border, #ddd);
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+
+    /* ── Print styles ── */
+    @media print {
+        nav, footer, .config-edit, .config-edit-link, button,
+        .page-header p a, .page-header button {
+            display: none !important;
+        }
+        .page-header p:first-of-type {
+            display: none !important;
+        }
+        .config-section {
+            page-break-inside: avoid;
+        }
+        .config-section h2 {
+            page-break-after: avoid;
+        }
+        body {
+            font-size: 11pt;
+        }
+        .config-table {
+            font-size: 10pt;
+        }
+        .config-badge {
+            border: 1px solid #333;
+            background: none !important;
+            color: #000 !important;
+        }
+    }
+</style>
+{% endblock %}
