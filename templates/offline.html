@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Served by the service worker — no Django context is available. Hardcode lang="en". -->
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -11,12 +12,24 @@
         .icon { font-size: 3rem; margin-bottom: 1rem; }
         button { padding: 0.75rem 1.5rem; border: 1px solid #666; border-radius: 4px; background: #fff; cursor: pointer; font-size: 1rem; }
         button:hover { background: #f5f5f5; }
+        .visually-hidden-focusable {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+        .visually-hidden-focusable:focus {
+            position: static; width: auto; height: auto; padding: .5rem 1rem; margin: 0;
+            overflow: visible; clip: auto; white-space: normal;
+            background: #3176aa; color: #fff; z-index: 9999;
+        }
     </style>
 </head>
 <body>
-    <div class="icon" aria-hidden="true">&#128268;</div>
-    <h1>You're offline</h1>
-    <p>This page requires an internet connection. Please check your network and try again.</p>
-    <button onclick="location.reload()">Try again</button>
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+    <main id="main-content" tabindex="-1">
+        <div class="icon" aria-hidden="true">&#128268;</div>
+        <h1>You're offline</h1>
+        <p>This page requires an internet connection. Please check your network and try again.</p>
+        <button onclick="location.reload()">Try again</button>
+    </main>
 </body>
 </html>
