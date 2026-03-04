@@ -4073,14 +4073,17 @@ class Command(BaseCommand):
 
         # --- Shareable Link for satisfaction survey ---
         if satisfaction:
-            SurveyLink.objects.get_or_create(
-                survey=satisfaction,
-                defaults={
-                    "is_active": True,
-                    "collect_name": True,
-                    "created_by": created_by,
-                },
-            )
+            existing_links = SurveyLink.objects.filter(survey=satisfaction)
+            if existing_links.count() > 1:
+                keep_pk = existing_links.first().pk
+                existing_links.exclude(pk=keep_pk).delete()
+            elif not existing_links.exists():
+                SurveyLink.objects.create(
+                    survey=satisfaction,
+                    is_active=True,
+                    collect_name=True,
+                    created_by=created_by,
+                )
 
         # --- Assignments and Responses ---
         portal_clients = [
