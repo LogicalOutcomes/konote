@@ -324,68 +324,90 @@ class Command(DjangoMigrateCommand):
                 options["fake_initial"] = True
 
             # Phase 5: catch duplicate column/table errors during migration application.
-            # When a migration is re-applied after removal from django_migrations but
-            # the schema was already updated, we need to mark it as applied instead
-            # of crashing.
+            # When a pending migration tries to add a column/table that already exists
+            # in the DB (schema applied but record missing), fake just that migration
+            # and retry. Loop until all such cases are resolved or no progress is made.
             import psycopg.errors as psycopg_errors
+            from django.apps import apps as django_apps
             from django.db import ProgrammingError as DjProgrammingError
+            from django.db.migrations.executor import MigrationExecutor
+            from django.db.migrations.operations.fields import AddField
+            from django.db.migrations.operations.models import CreateModel
             from django.db.migrations.recorder import MigrationRecorder
-            
+
             connection = connections[db_name]
             recorder = MigrationRecorder(connection)
-            
-            while True:
+
+            for _attempt in range(50):  # safety limit
                 try:
                     super().handle(*args, **options)
                     break
                 except DjProgrammingError as e:
-                    # Check if this is a duplicate column/table error
                     cause = e.__cause__
-                    if isinstance(cause, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)):
-                        # Re-scan django_migrations to find which one might be causing this
-                        # Clear the executor loader cache
-                        from django.db.migrations.executor import MigrationExecutor
-                        executor = MigrationExecutor(connection)
-                        try:
-                            del executor.loader.__dict__['disk_migrations']
-                            del executor.loader.__dict__['graph']
-                        except KeyError:
-                            pass
-                        
-                        # Try once more — often this fixes it by re-initializing the graph
-                        # But if it fails again, we need to auto-fake the offending migration
-                        try:
-                            # Retry super().handle() one more time
-                            super().handle(*args, **options)
-                            break
-                        except DjProgrammingError as e2:
-                            # Still failing. Try to identify the migration from the error
-                            # and fake it manually.
-                            cause2 = e2.__cause__
-                            if isinstance(cause2, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)):
-                                self.stdout.write(
-                                    self.style.NOTICE(
-                                        f"Phase 5: Detected duplicate schema objects. "
-                                        f"Auto-faking pending migrations to record them as applied..."
-                                    )
-                                )
-                                # Mark all non-applied migrations as applied (faked)
-                                executor = MigrationExecutor(connection)
-                                for (app, name), migration in executor.loader.disk_migrations.items():
-                                    if (app, name) not in executor.loader.applied_migrations():
-                                        recorder.record_applied(app, name)
-                                        self.stdout.write(
-                                            self.style.NOTICE(
-                                                f"    Auto-faked: {app}.{name}"
-                                            )
-                                        )
-                                # Now try one final time
-                                super().handle(*args, **options)
-                                break
-                            else:
-                                raise
-                    else:
+                    if not isinstance(
+                        cause, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)
+                    ):
                         raise
+
+                    # Find pending migrations whose schema changes already exist in
+                    # the DB and fake only those (not all pending migrations).
+                    executor = MigrationExecutor(connection)
+                    applied = executor.loader.applied_migrations  # dict, not callable
+                    faked_any = False
+
+                    with connection.cursor() as cursor:
+                        for app, name in sorted(executor.loader.disk_migrations):
+                            if (app, name) in applied:
+                                continue
+                            migration = executor.loader.disk_migrations[(app, name)]
+                            for op in migration.operations:
+                                schema_exists = False
+                                if isinstance(op, AddField):
+                                    try:
+                                        model = django_apps.get_model(app, op.model_name)
+                                        col = model._meta.get_field(op.name).column
+                                        tbl = model._meta.db_table
+                                    except Exception:
+                                        continue
+                                    cursor.execute(
+                                        "SELECT 1 FROM information_schema.columns"
+                                        " WHERE table_schema='public'"
+                                        " AND table_name=%s AND column_name=%s",
+                                        [tbl, col],
+                                    )
+                                    schema_exists = bool(cursor.fetchone())
+                                elif isinstance(op, CreateModel):
+                                    try:
+                                        tbl = django_apps.get_model(
+                                            app, op.name
+                                        )._meta.db_table
+                                    except LookupError:
+                                        tbl = f"{app}_{op.name.lower()}"
+                                    cursor.execute(
+                                        "SELECT 1 FROM information_schema.tables"
+                                        " WHERE table_schema='public' AND table_name=%s",
+                                        [tbl],
+                                    )
+                                    schema_exists = bool(cursor.fetchone())
+
+                                if schema_exists:
+                                    recorder.record_applied(app, name)
+                                    self.stdout.write(
+                                        self.style.NOTICE(
+                                            f"  Phase 5: auto-faked {app}.{name}"
+                                            f" (schema already exists)"
+                                        )
+                                    )
+                                    faked_any = True
+                                    break  # next migration
+
+                    if not faked_any:
+                        raise  # no progress possible
+            else:
+                raise RuntimeError(
+                    "migrate_default Phase 5: exceeded safety limit faking"
+                    " duplicate-schema migrations"
+                )
         finally:
             # Always restore the original router list.
             django_settings.DATABASE_ROUTERS = original_routers
