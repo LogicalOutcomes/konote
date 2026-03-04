@@ -176,6 +176,34 @@ class MetricDefinition(models.Model):
         help_text=_("Admin override for CIDS theme derivation when auto-derivation is wrong."),
     )
 
+    # ── Rationale log ─────────────────────────────────────────────────
+    rationale_log = models.JSONField(
+        default=list, blank=True,
+        help_text=_("Append-only changelog: [{date, note, note_fr, author}]. Most recent entry is the current rationale."),
+    )
+
+    # ── Standardized instrument / assessment fields ───────────────────
+    is_standardized_instrument = models.BooleanField(
+        default=False,
+        help_text=_("True for published validated instruments (PHQ-9, GAD-7, K10, etc.)."),
+    )
+    scoring_bands = models.JSONField(
+        null=True, blank=True,
+        help_text=_('Published severity cutoffs, e.g. [{"label": "Minimal", "min": 0, "max": 4}]. Display-only.'),
+    )
+    assessment_interval_days = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=_("Days between scheduled administrations (e.g. 90 for quarterly). Global per-metric."),
+    )
+    assessment_at_intake = models.BooleanField(
+        default=False,
+        help_text=_("Administer this assessment at intake (first session)."),
+    )
+    assessment_at_discharge = models.BooleanField(
+        default=False,
+        help_text=_("Administer this assessment at discharge."),
+    )
+
     def clean(self):
         super().clean()
         if self.threshold_low is not None and self.threshold_high is not None:
@@ -250,6 +278,45 @@ class MetricDefinition(models.Model):
         if get_language() == "fr" and self.unit_fr:
             return self.unit_fr
         return self.unit
+
+    # ── Rationale helpers ────────────────────────────────────────────
+    @property
+    def current_rationale(self):
+        """Return the most recent rationale entry's note text, or empty string."""
+        if self.rationale_log:
+            entry = self.rationale_log[-1]
+            from django.utils.translation import get_language
+            if get_language() == "fr" and entry.get("note_fr"):
+                return entry["note_fr"]
+            return entry.get("note", "")
+        return ""
+
+    def append_rationale(self, note, note_fr="", author="System"):
+        """Append a new entry to the rationale log."""
+        import datetime as _dt
+        if self.rationale_log is None:
+            self.rationale_log = []
+        self.rationale_log.append({
+            "date": _dt.date.today().isoformat(),
+            "note": note,
+            "note_fr": note_fr,
+            "author": author,
+        })
+
+    # ── Scoring band lookup ───────────────────────────────────────────
+    def get_severity_band(self, score):
+        """Return the severity band label for a given score, or None."""
+        if not self.scoring_bands:
+            return None
+        try:
+            score_val = float(score)
+        except (ValueError, TypeError):
+            return None
+        for band in self.scoring_bands:
+            if band.get("min") is not None and band.get("max") is not None:
+                if band["min"] <= score_val <= band["max"]:
+                    return band.get("label")
+        return None
 
     @property
     def translated_portal_description(self):
