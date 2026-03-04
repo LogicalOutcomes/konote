@@ -69,6 +69,40 @@
                                value="{% if item.is_other_value %}{{ item.value }}{% endif %}"
                                placeholder="{% trans 'Please specify…' %}">
                     </div>
+                {% elif item.field_def.input_type == "multi_select" %}
+                    {# Checkbox group for multi-select fields #}
+                    <fieldset role="group" aria-labelledby="label_{{ item.field_def.pk }}">
+                        {% for opt in item.field_def.options_json %}
+                        <label>
+                            <input type="checkbox"
+                                   name="custom_{{ item.field_def.pk }}"
+                                   value="{{ opt }}"
+                                   {% if opt in item.selected_values %}checked{% endif %}>
+                            {{ opt }}
+                        </label>
+                        {% endfor %}
+                    </fieldset>
+                {% elif item.field_def.input_type == "multi_select_other" %}
+                    {# Checkbox group with free-text "Other" option #}
+                    <fieldset role="group" aria-labelledby="label_{{ item.field_def.pk }}">
+                        {% for opt in item.field_def.options_json %}
+                        <label>
+                            <input type="checkbox"
+                                   name="custom_{{ item.field_def.pk }}"
+                                   value="{{ opt }}"
+                                   {% if opt in item.selected_values %}checked{% endif %}>
+                            {{ opt }}
+                        </label>
+                        {% endfor %}
+                    </fieldset>
+                    <div style="margin-top: 0.5rem;">
+                        <label for="custom_{{ item.field_def.pk }}_other">{% trans "Other (please specify)" %}</label>
+                        <input type="text"
+                               name="custom_{{ item.field_def.pk }}_other"
+                               id="custom_{{ item.field_def.pk }}_other"
+                               value="{{ item.other_text|default:'' }}"
+                               placeholder="{% trans 'Please specify…' %}">
+                    </div>
                 {% elif item.field_def.input_type == "date" %}
                     <input type="date"
                            name="custom_{{ item.field_def.pk }}"

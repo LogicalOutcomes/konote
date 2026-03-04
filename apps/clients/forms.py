@@ -380,6 +380,27 @@ class CustomFieldValuesForm(forms.Form):
                         label=_("Other (please specify)"),
                         widget=forms.TextInput(attrs={"placeholder": field_def.placeholder or ""}),
                     )
+                elif field_def.input_type == "multi_select" and field_def.options_json:
+                    choices = [(opt, opt) for opt in field_def.options_json]
+                    self.fields[field_key] = forms.MultipleChoiceField(
+                        choices=choices,
+                        required=field_def.is_required,
+                        label=field_def.name,
+                        widget=forms.CheckboxSelectMultiple,
+                    )
+                elif field_def.input_type == "multi_select_other" and field_def.options_json:
+                    choices = [(opt, opt) for opt in field_def.options_json]
+                    self.fields[field_key] = forms.MultipleChoiceField(
+                        choices=choices,
+                        required=False,  # overall required check done in clean()
+                        label=field_def.name,
+                        widget=forms.CheckboxSelectMultiple,
+                    )
+                    self.fields[f"{field_key}_other"] = forms.CharField(
+                        required=False,
+                        label=_("Other (please specify)"),
+                        widget=forms.TextInput(attrs={"placeholder": field_def.placeholder or ""}),
+                    )
                 else:
                     self.fields[field_key] = forms.CharField(
                         required=field_def.is_required,

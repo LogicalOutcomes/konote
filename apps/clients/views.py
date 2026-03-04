@@ -1,4 +1,5 @@
 """Client CRUD views."""
+import json
 import unicodedata
 from datetime import date
 
@@ -1189,8 +1190,26 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
             is_other_value = False
             if field_def.input_type == "select_other" and value and field_def.options_json:
                 is_other_value = value not in field_def.options_json
+            # For multi_select fields, parse JSON array for template use
+            selected_values = []
+            other_text = ""
+            display_value = value
+            if field_def.input_type in ("multi_select", "multi_select_other") and value:
+                try:
+                    selected_values = json.loads(value)
+                    display_value = ", ".join(selected_values)
+                except (json.JSONDecodeError, TypeError):
+                    display_value = value
+                # For multi_select_other, detect custom "Other" entries
+                if field_def.input_type == "multi_select_other" and field_def.options_json:
+                    known = set(field_def.options_json)
+                    custom_vals = [v for v in selected_values if v not in known]
+                    other_text = custom_vals[0] if custom_vals else ""
             field_values.append({
                 "field_def": field_def, "value": value,
+                "display_value": display_value,
+                "selected_values": selected_values,
+                "other_text": other_text,
                 "is_editable": is_editable, "is_other_value": is_other_value,
             })
         # Only include groups that have visible fields
@@ -1285,6 +1304,15 @@ def client_save_custom_fields(request, client_id):
                 # For select_other: if "Other" was chosen, use the free-text value
                 if field_def.input_type == "select_other" and raw_value == "__other__":
                     raw_value = form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+                # For multi_select: serialize list to JSON array
+                elif field_def.input_type == "multi_select":
+                    raw_value = json.dumps(raw_value) if raw_value else ""
+                elif field_def.input_type == "multi_select_other":
+                    selected = raw_value if isinstance(raw_value, list) else []
+                    other_text = form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+                    if other_text:
+                        selected = list(selected) + [other_text]
+                    raw_value = json.dumps(selected) if selected else ""
                 # Validate and normalise based on field's validation_type (I18N-FIX2)
                 if field_def.validation_type == "postal_code" and raw_value:
                     try:

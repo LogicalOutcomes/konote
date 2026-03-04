@@ -1,4 +1,6 @@
 """Registration forms."""
+import json
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -157,6 +159,23 @@ class PublicRegistrationForm(forms.Form):
                 widget=forms.Textarea(attrs={"rows": 3}),
             )
 
+        elif field_def.input_type == "multi_select" and field_def.options_json:
+            choices = [(opt, opt) for opt in field_def.options_json]
+            return forms.MultipleChoiceField(
+                **common_attrs,
+                choices=choices,
+                widget=forms.CheckboxSelectMultiple,
+            )
+
+        elif field_def.input_type == "multi_select_other" and field_def.options_json:
+            choices = [(opt, opt) for opt in field_def.options_json]
+            return forms.MultipleChoiceField(
+                required=False,
+                label=field_def.name,
+                choices=choices,
+                widget=forms.CheckboxSelectMultiple,
+            )
+
         else:  # Default to text input
             return forms.CharField(
                 **common_attrs,
@@ -177,10 +196,14 @@ class PublicRegistrationForm(forms.Form):
         """Extract custom field values from cleaned data.
 
         Returns a dict of {field_def_pk: value} for storage in JSONField.
+        Multi-select lists are serialized to JSON strings.
         """
         values = {}
         for key, value in self.cleaned_data.items():
             if key.startswith("custom_"):
                 pk = key.replace("custom_", "")
-                values[pk] = value
+                if isinstance(value, list):
+                    values[pk] = json.dumps(value)
+                else:
+                    values[pk] = value
         return values
