@@ -74,7 +74,7 @@ For agency offboarding, CMS migration, or key-loss insurance backup.
 | Hosting model | Who runs the export | Backup cadence |
 |---|---|---|
 | Self-hosted | Agency's server admin (self-serve) | Agency decides; automated reminders |
-| SaaS (Railway/Azure) | KoNote team on request | Annual vendor-risk export; automated reminders to agency contact |
+| SaaS (OVHcloud VPS / Azure) | KoNote team on request | Annual vendor-risk export; automated reminders to agency contact |
 
 SLA for SaaS: 5 business days routine, 48 hours for PIPEDA requests.
 

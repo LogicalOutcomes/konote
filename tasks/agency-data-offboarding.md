@@ -62,7 +62,7 @@ For agency offboarding, CMS migration, or key-loss insurance backup.
 | Hosting model | Who runs the export | How they get the file |
 |---|---|---|
 | **Self-hosted** (Docker Compose) | Agency's server admin | File on their server |
-| **SaaS** (Railway/Azure/Elestio) | KoNote team on request | SecureExportLink (encrypted file via time-limited HTTPS) |
+| **SaaS** (OVHcloud VPS / Azure) | KoNote team on request | SecureExportLink (encrypted file via time-limited HTTPS) |
 
 **SLA for SaaS agencies:**
 - Routine exports: 5 business days
@@ -311,7 +311,7 @@ These pieces already exist and can be reused:
 
 ## Resolved Questions
 
-- [ ] **Who runs this command?** Agencies on Railway/Azure/Elestio likely don't have SSH access. If only the KoNote team can run it, the "agency-managed backup" flow needs a request/response process (agency requests → KoNote team runs → delivers file). If self-hosted agencies can run it themselves, the command needs to work for both models. This shapes the entire design.
+- [ ] **Who runs this command?** Agencies on OVHcloud VPS / Azure likely don't have SSH access. If only the KoNote team can run it, the "agency-managed backup" flow needs a request/response process (agency requests → KoNote team runs → delivers file). If self-hosted agencies can run it themselves, the command needs to work for both models. This shapes the entire design.
 - [ ] **Encryption format:** GPG requires expertise small nonprofits won't have. Password-protected ZIP is more accessible but weaker. What's the right balance for this audience?
 - [x] **Data agreement template:** ~~Do we provide the template, or does each agency draft their own?~~ **Resolved 2026-02-27:** We provide the template. See [docs/data-handling-acknowledgement.md](../docs/data-handling-acknowledgement.md) — Section 5 covers plaintext backup responsibilities, and the signed acknowledgement form covers all data handling areas. Wired into Phase 4 of the deployment protocol as a go-live prerequisite. Also added as Document 10 in the agency setup guide.
 All "must resolve" questions have been answered by expert panels (2026-02-27):
