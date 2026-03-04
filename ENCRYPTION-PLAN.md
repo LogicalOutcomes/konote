@@ -3,11 +3,11 @@
 ## Background
 
 ### The Problem: CLOUD Act Exposure
-The CLOUD Act (2018) allows US authorities to compel US companies to hand over data regardless of where it's stored. When KoNote was hosted on Railway (US cloud infrastructure), this was a direct concern:
-- Database encryption at rest (what Railway/PostgreSQL offer) doesn't help — the provider holds the keys
+The CLOUD Act (2018) allows US authorities to compel US companies to hand over data regardless of where it's stored. If a hosting provider is US-incorporated:
+- Database encryption at rest doesn't help — the provider holds the keys
 - Transit encryption (HTTPS/TLS) doesn't help — data is decrypted when stored
 
-> **Update (2026-03):** KoNote now deploys on OVHcloud VPS in Beauharnois, QC (French-owned parent company, not subject to US CLOUD Act). The hosting-level CLOUD Act exposure is resolved. Application-level encryption remains valuable as defence-in-depth.
+KoNote deploys on OVHcloud VPS in Beauharnois, QC (French-owned parent company, not subject to US CLOUD Act), so the hosting-level CLOUD Act exposure does not apply. Application-level encryption remains valuable as defence-in-depth.
 
 ### The Solution: Application-Level Encryption
 When data is encrypted by your application before it reaches the database, the hosting provider only sees encrypted blobs. Even if compelled to hand over data, they can't read it without your `FIELD_ENCRYPTION_KEY`.
@@ -236,15 +236,9 @@ def test_progress_note_encryption(self):
 
 ---
 
-## Alternative: Canadian Hosting
+## Canadian Hosting
 
-> **Update (2026-03):** KoNote has moved to OVHcloud VPS (Beauharnois, QC), resolving the US hosting concern described above. The encryption plan remains in effect as defence-in-depth.
-
-~~Instead of (or in addition to) encryption, you could host on Canadian-owned infrastructure:~~
-~~- OVHcloud Canada (French-owned, Canadian datacentre)~~
-~~- Self-hosted Canadian VPS~~
-
-~~This adds legal friction but doesn't completely solve the problem. The hybrid approach (encryption + stay on Railway) provides the strongest protection.~~
+KoNote is hosted on OVHcloud VPS (Beauharnois, QC — French-owned, Canadian data centre). This resolves the US hosting concern described above. The encryption plan remains in effect as defence-in-depth.
 
 ---
 
