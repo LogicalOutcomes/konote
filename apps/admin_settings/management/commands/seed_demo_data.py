@@ -1137,6 +1137,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Workshop debrief. Attended workplace safety certification. Discussed how this opens up new positions.",
         "Reviewed application tracker. Several applications submitted this month. One callback received.",
         "Session focused on workplace communication skills. Role-played difficult conversations with a supervisor.",
+        "Completed mid-program feedback today. Rated inclusivity highly across the board — feels welcome and respected in the program. Mentioned wanting more evening sessions in the open-text response.",
+        "Did the programme feedback form today. Wrote about how the mock interviews have changed things — said having someone believe in them made the difference.",
     ],
     "Housing Stability": [
         "Apartment viewing debrief. Looked at two units today. One is affordable but far from transit. Discussed trade-offs.",
@@ -1147,6 +1149,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Session focused on tenant rights. Reviewed what landlords can and cannot do. Feeling more empowered.",
         "Monthly review of housing stability. Reports feeling safer and more settled. Neighbours have been friendly.",
         "Joint session with income support worker. Explored additional benefits client may be eligible for.",
+        "Collected client experience feedback. Inclusivity scores are mixed — feels welcome but not always sure help is available when needed. Feedback noted for team discussion.",
+        "Programme feedback completed. Participant shared how having a stable address has changed everything — can finally receive mail and apply for jobs. Powerful reflection.",
     ],
     "Youth Drop-In": [
         "Group activity: team-building exercises. Took a leadership role organising teams. Strong positive energy.",
@@ -1157,6 +1161,7 @@ PROGRAM_FULL_SUMMARIES = {
         "Cooking activity — made trail mix. Practised measuring and following instructions. Lots of laughing.",
         "Group discussion about online safety. Youth engaged well and shared their own experiences.",
         "End-of-month celebration. Youth reflected on what they enjoyed most. 'This place feels like home.'",
+        "Quick inclusivity check-in with group. Most youth rated feeling welcome and respected highly. One youth said they feel more welcome here than at school.",
     ],
     "Newcomer Connections": [
         "Conversation circle session. Practised ordering at a restaurant. Helped translate for newer members.",
@@ -1167,6 +1172,8 @@ PROGRAM_FULL_SUMMARIES = {
         "Conversation circle focused on weather and seasons. Good energy. Spoke more than usual today.",
         "Settlement planning session. Reviewed progress toward program goals. Close to graduation.",
         "Group activity: potluck lunch. Brought dishes from home countries. Beautiful cultural exchange.",
+        "Completed programme feedback. Participant wrote about how improving their English has changed daily life. Mentioned wanting more French-language services in the improvement section.",
+        "Mid-program inclusivity check-in. Scores reflect growing comfort in the program — especially on feeling helped and welcomed. Discussed how the buddy system could be improved.",
     ],
     "Community Kitchen": [
         "Today's recipe: lentil soup. Group worked together well. Helped each other with knife skills.",
@@ -1177,6 +1184,7 @@ PROGRAM_FULL_SUMMARIES = {
         "Today's recipe: banana bread. Several had never baked before. Excitement when it came out of the oven.",
         "Session on cooking for picky eaters. Parents shared tips. Kids now ask to help cook.",
         "End-of-month review. Shared recipes tried at home. 'Cooking has become my favourite part of the week.'",
+        "Collected client experience feedback today. Group feels very welcoming — high scores on people helping each other. Suggestion about more vegetarian options noted for next month's menu planning.",
     ],
 }
 
