@@ -1,5 +1,16 @@
 # P0 Deliverable: Managed Service Model
 
+<!-- COST_VERSION
+date: 2026-03-04
+role: Managed service model (derives from hosting-cost-comparison.md)
+llm_vps: VPS-4, $40 CAD/mo
+ovh_single_1_agency: $74 CAD/mo
+ovh_multi_10_agencies: $15 CAD/mo/agency
+ops_hours_1_agency: 4-5 hr/mo
+upstream: tasks/hosting-cost-comparison.md
+downstream: konote-prosper-canada/deliverables/costing-model.md
+-->
+
 **Requirement ID:** MA5 (managed hosting and support), related to MA3/MA4
 **Deliverable type:** Costed plan
 **Date:** 2026-03-04 (updated with self-healing support cost impact)

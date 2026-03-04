@@ -2,6 +2,23 @@
 
 *Last updated: 2026-03-04*
 
+<!-- COST_VERSION
+date: 2026-03-04
+role: Component pricing source (all scenarios)
+llm_vps: VPS-4, $40 CAD/mo (shared, all agencies)
+app_vps_single: VPS-2, $22 CAD/mo (per agency)
+app_vps_multi: VPS-3, $30 CAD/mo (shared)
+ai_api_per_agency: ~$7 CAD/mo (translation + metrics)
+key_vault: ~$2 CAD/mo
+ovh_single_1_agency: $74 CAD/mo
+ovh_multi_10_agencies: $15 CAD/mo/agency
+azure_single_1_agency: $141 CAD/mo
+azure_multi_10_agencies: $47 CAD/mo/agency
+ops_hours_1_agency: 4-5 hr/mo
+ops_hours_10_agencies_mt: 10-15 hr/mo
+downstream: p0-managed-service-plan.md, konote-prosper-canada/deliverables/costing-model.md
+-->
+
 This document compares two hosting approaches for KoNote, both using Azure Key Vault for encryption key management. All prices are estimates in CAD unless noted. Verify current prices with provider pricing calculators before committing.
 
 **Related:** [OVHcloud deployment architecture](design-rationale/ovhcloud-deployment.md) — full deployment stack, self-healing automation, backup strategy, and encryption key management.
