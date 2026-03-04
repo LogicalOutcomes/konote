@@ -382,6 +382,11 @@ def get_two_lenses(program, date_from, date_to, structured=None, distributions=N
 def get_instrument_aggregates(program, date_from, date_to):
     """Compute aggregate scores for multi-item instrument batteries.
 
+    Note: This function loads all matching MetricValues into Python memory.
+    At current scale (<2,000 clients) this is performant. If the system
+    scales beyond 2,000 clients with instrument metrics, consider replacing
+    with a SQL aggregate query (COUNT + CASE WHEN) for efficiency.
+
     Groups metrics by instrument_name and computes:
     - For inclusivity-style batteries (4-point scale): top-two-box %
       (count of values >= 3 / total * 100)
@@ -406,7 +411,8 @@ def get_instrument_aggregates(program, date_from, date_to):
     instrument_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     metric_defs = {}
 
-    values_data = qs.select_related("metric_def").values_list(
+    # Note: select_related is not needed here — values_list bypasses it.
+    values_data = qs.values_list(
         "pk",
         "metric_def_id",
         "metric_def__instrument_name",
