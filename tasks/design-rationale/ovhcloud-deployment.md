@@ -131,7 +131,7 @@ The `db` and `audit_db` containers already have `pg_isready` health checks.
 | 1 agency (app + DB) | VPS-2 | 4 vCores, 16 GB RAM, 100 GB NVMe | ~$22 |
 | 5 agencies (multi-tenant) | VPS-3 | 8 vCores, 24 GB RAM, 200 GB NVMe | ~$30 |
 | 10 agencies (multi-tenant) | VPS-3 or VPS-4 | 8 vCores, 24–32 GB RAM, 200 GB NVMe | ~$30–44 |
-| LLM (shared, all agencies) | VPS-1 | 4 vCores, 8 GB RAM, 75 GB NVMe | ~$11 |
+| LLM (shared, all agencies) | VPS-4 | 12 vCores, 48 GB RAM, 300 GB NVMe | ~$40 |
 
 ---
 
@@ -310,7 +310,7 @@ If zero Azure dependency is required:
 
 | Option | When to Use | Cost (CAD/mo) |
 |--------|-------------|---------------|
-| Ollama on separate VPS-1 | Default — isolates LLM from app | ~$11 (shared) |
+| Ollama on separate VPS-4 | Default — isolates LLM from app | ~$40 (shared) |
 | Ollama on same VPS | 1–3 agencies, cost-sensitive | $0 additional |
 
 ### Batch Processing
@@ -340,7 +340,7 @@ Each agency gets its own VPS with its own Docker Compose stack. Simple but expen
 Agency A: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency B: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency C: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 ### Multi-Tenant (Future — requires MT-CORE1)
@@ -350,7 +350,7 @@ All agencies share one VPS with schema-per-tenant isolation via django-tenants. 
 ```
 Shared:   VPS-3 ($30) → Docker Compose (web + db + audit_db + caddy)
                          └── Schema per tenant (agency_a, agency_b, agency_c)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 **Prerequisites:**
