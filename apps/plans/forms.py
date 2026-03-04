@@ -116,6 +116,7 @@ class MetricDefinitionForm(forms.ModelForm):
             "higher_is_better", "threshold_low", "threshold_high",
             "achievement_options", "achievement_success_values",
             "target_rate", "target_band_high_pct",
+            "cadence_sessions",
             "owning_program",
             # CIDS metadata fields
             "iris_metric_code", "sdg_goals",
@@ -133,6 +134,7 @@ class MetricDefinitionForm(forms.ModelForm):
             "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
             "warn_min": forms.NumberInput(attrs={"step": "any"}),
             "warn_max": forms.NumberInput(attrs={"step": "any"}),
+            "cadence_sessions": forms.NumberInput(attrs={"min": "1", "max": "99"}),
             "threshold_low": forms.NumberInput(attrs={"step": "any"}),
             "threshold_high": forms.NumberInput(attrs={"step": "any"}),
             "target_rate": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
@@ -158,6 +160,8 @@ class MetricDefinitionForm(forms.ModelForm):
         self.fields["higher_is_better"].help_text = _("Uncheck for metrics where lower scores indicate improvement (e.g. PHQ-9 depression scale).")
         self.fields["warn_min"].help_text = _("Soft warning minimum. Values below this trigger a plausibility alert.")
         self.fields["warn_max"].help_text = _("Soft warning maximum. Values above this trigger a plausibility alert.")
+        self.fields["cadence_sessions"].label = _("Recording cadence (sessions)")
+        self.fields["cadence_sessions"].help_text = _("How many sessions between prompts for this metric. Leave blank to prompt every session.")
 
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole
