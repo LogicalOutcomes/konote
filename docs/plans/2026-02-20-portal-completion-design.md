@@ -70,7 +70,7 @@ The Participant Portal (Phases A-D from `tasks/participant-portal-implementation
 - Also catch accounts that have never logged in and were created > 90 days ago
 - Deactivate (set `is_active = False`), do NOT delete
 - Audit log each deactivation
-- Intended to run as a scheduled task (cron/Railway cron)
+- Intended to run as a scheduled task (cron/systemd timer on OVHcloud VPS)
 
 ### 6. Staff-Assisted Login (D6)
 
