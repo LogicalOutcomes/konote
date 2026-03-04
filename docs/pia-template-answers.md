@@ -26,7 +26,7 @@ This document provides template answers for common Privacy Impact Assessment (PI
 
 ### Q3. Where is personal information stored?
 
-**A:** Personal information is stored in a PostgreSQL database hosted by [your hosting provider, e.g., Railway.com]. All personally identifiable fields — including names, dates of birth, contact information, and progress notes — are encrypted at rest using AES-128 encryption with HMAC-SHA256 authentication (Fernet). The database and the encryption key are stored separately. A database breach alone would not expose readable client data.
+**A:** Personal information is stored in a PostgreSQL database hosted by [your hosting provider, e.g., OVHcloud VPS, Azure]. All personally identifiable fields — including names, dates of birth, contact information, and progress notes — are encrypted at rest using AES-128 encryption with HMAC-SHA256 authentication (Fernet). The database and the encryption key are stored separately. A database breach alone would not expose readable client data.
 
 ---
 
@@ -88,7 +88,7 @@ All data access is logged to a separate audit database.
 
 ### Q11. Is personal information transferred outside Canada?
 
-**A:** [This depends on your hosting provider. If using Railway.com, data may be stored in the United States. If using a Canadian hosting provider or self-hosting in Canada, data remains in Canada. Document your specific hosting arrangement here.] KoNote's encryption means that even if data is stored outside Canada, it is encrypted at rest and the encryption key can be managed separately by the agency. However, agencies subject to PHIPA or handling particularly sensitive data should consider hosting within Canada to avoid CLOUD Act implications.
+**A:** [This depends on your hosting provider. OVHcloud VPS with a Canadian data centre keeps data in Canada. Azure with Canada Central also keeps data in Canada. Document your specific hosting arrangement here.] KoNote's encryption means that even if data is stored outside Canada, it is encrypted at rest and the encryption key can be managed separately by the agency. However, agencies subject to PHIPA or handling particularly sensitive data should consider hosting within Canada to avoid CLOUD Act implications.
 
 ---
 

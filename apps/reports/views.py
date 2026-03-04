@@ -1806,7 +1806,7 @@ def download_export(request, link_id):
             "delay_minutes": getattr(settings, "ELEVATED_EXPORT_DELAY_MINUTES", 10),
         })
 
-    # Check file exists separately (Railway ephemeral storage may lose files)
+    # Check file exists separately (ephemeral storage may lose files)
     if not link.file_exists:
         return render(request, "reports/export_link_expired.html", {
             "reason": "missing",

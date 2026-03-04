@@ -35,7 +35,7 @@ KoNote stores data in three places. **All three must be backed up** for a comple
 | **Audit database** (`konote_audit`) | Append-only log of every data change | Critical — required for compliance |
 | **Encryption key** (`FIELD_ENCRYPTION_KEY`) | The key that encrypts client names, birth dates, and clinical notes | **Catastrophically critical** — without it, encrypted data is permanently unrecoverable |
 
-You also need your **environment configuration** (`.env` file, or environment variables in Railway/Azure) to redeploy.
+You also need your **environment configuration** (`.env` file, or environment variables in Azure/OVHcloud) to redeploy.
 
 ### What Happens If You Lose the Encryption Key
 
@@ -905,7 +905,7 @@ You **cannot recover:**
    python manage.py rotate_encryption_key --old-key="COMPROMISED_KEY" --new-key="NEW_KEY"
    ```
 
-2. **Update the key** in all environments (`.env`, Azure Key Vault, Railway, etc.)
+2. **Update the key** in all environments (`.env`, Azure Key Vault, etc.)
 
 3. **Restart the application** to pick up the new key
 

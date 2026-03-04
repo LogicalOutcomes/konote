@@ -94,9 +94,8 @@ Add to crontab: `0 2 * * * /home/user/backup_KoNote.sh`
 
 ### Cloud Provider Backups
 
-- **Railway:** Automatic daily backups (7 days retention). Restore via dashboard.
 - **Azure:** Automatic backups. Configure retention in PostgreSQL server settings.
-- **Elestio:** Configure via dashboard or use managed PostgreSQL.
+- **OVHcloud VPS:** Backups run via the ops sidecar container. See [Backup & Restore Runbook](../backup-restore-runbook.md).
 
 ### Restore from Backup
 

@@ -5,7 +5,7 @@ Usage:
     python manage.py send_backup_reminders              # Send if due
     python manage.py send_backup_reminders --dry-run    # Preview without sending
 
-Intended to run as a daily scheduled task (cron, Railway cron, etc.).
+Intended to run as a daily scheduled task (cron, ops sidecar, etc.).
 Checks whether a backup reminder is due based on the configured frequency
 and sends an email to the designated contact. Idempotent — safe to run
 multiple times per day.
