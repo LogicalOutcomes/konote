@@ -1,0 +1,56 @@
+{% load i18n %}
+
+{# Rationale & History section for metric edit form — HTMX swappable #}
+<section id="metric-rationale" aria-labelledby="rationale-heading">
+    <h3 id="rationale-heading">{% trans "Rationale & History" %}</h3>
+
+    {% if metric.rationale_log %}
+    {# Most recent entry displayed prominently #}
+    {% with metric.rationale_log|last as current %}
+    <blockquote>
+        <p>{{ current.note }}</p>
+        <footer>
+            <small>{{ current.author }} — {{ current.date }}</small>
+        </footer>
+    </blockquote>
+    {% endwith %}
+
+    {# Older entries collapsed #}
+    {% if metric.rationale_log|length > 1 %}
+    <details>
+        <summary>{% trans "History" %} ({{ metric.rationale_log|length }} {% trans "entries" %})</summary>
+        {% for entry in metric.rationale_log reversed %}
+        {% if not forloop.first %}
+        <article style="margin-bottom: 0.5rem; padding: 0.5rem;">
+            <p style="margin-bottom: 0.25rem;">{{ entry.note }}</p>
+            <small>{{ entry.author }} — {{ entry.date }}</small>
+        </article>
+        {% endif %}
+        {% endfor %}
+    </details>
+    {% endif %}
+    {% else %}
+    <p><small>{% trans "No rationale recorded yet." %}</small></p>
+    {% endif %}
+
+    {# Add note form #}
+    <form hx-post="{% url 'metrics:metric_rationale_add' metric_id=metric.pk %}"
+          hx-target="#metric-rationale"
+          hx-swap="outerHTML">
+        {% csrf_token %}
+        <label for="rationale-note">{% trans "Add a note about this metric" %}</label>
+        <textarea id="rationale-note" name="note" rows="2"
+                  placeholder="{% trans 'e.g., Required by United Way reporting, replaced OARS per clinical team' %}"></textarea>
+        <div role="group">
+            <button type="submit" class="outline">{% trans "Add Note" %}</button>
+            <button type="button" class="outline secondary"
+                    hx-post="{% url 'metrics:metric_rationale_generate' metric_id=metric.pk %}"
+                    hx-target="#metric-rationale"
+                    hx-swap="outerHTML"
+                    hx-indicator="#rationale-spinner">
+                {% trans "Auto-generate" %}
+            </button>
+            <span id="rationale-spinner" class="htmx-indicator" aria-busy="true"></span>
+        </div>
+    </form>
+</section>

@@ -950,6 +950,35 @@ def metric_create(request):
                 if len(pm_program_ids) == 1:
                     metric.owning_program_id = next(iter(pm_program_ids))
             metric.save()
+
+            # Auto-generate rationale entry for new custom metrics
+            from konote.ai import default_metric_rationale, generate_metric_rationale
+
+            scale_range = ""
+            if metric.min_value is not None and metric.max_value is not None:
+                scale_range = f"{metric.min_value}–{metric.max_value}"
+
+            result = generate_metric_rationale(
+                name=metric.name,
+                definition=metric.definition or "",
+                category=metric.get_category_display(),
+                metric_type=metric.get_metric_type_display(),
+                scale_range=scale_range,
+            )
+            if result is None:
+                result = default_metric_rationale(
+                    name=metric.name,
+                    category=metric.get_category_display(),
+                    metric_type=metric.get_metric_type_display(),
+                    date_str=datetime.date.today().isoformat(),
+                )
+            metric.append_rationale(
+                note=result["note"],
+                note_fr=result.get("note_fr", ""),
+                author="System",
+            )
+            metric.save(update_fields=["rationale_log"])
+
             messages.success(request, _("Metric created."))
             return redirect("metrics:metric_library")
     else:
@@ -984,6 +1013,69 @@ def metric_edit(request, metric_id):
         "editing": True,
         "metric": metric,
     })
+
+
+# ---------------------------------------------------------------------------
+# Metric rationale log (HTMX endpoints)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("metric.manage", allow_admin=True)
+def metric_rationale_add(request, metric_id):
+    """HTMX POST: append a rationale note to a metric."""
+    metric = get_object_or_404(MetricDefinition, pk=metric_id)
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied."))
+
+    if request.method == "POST":
+        note = request.POST.get("note", "").strip()
+        if note:
+            author = getattr(request.user, "display_name", str(request.user))
+            metric.append_rationale(note=note, author=author)
+            metric.save(update_fields=["rationale_log"])
+
+    return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
+
+
+@login_required
+@requires_permission("metric.manage", allow_admin=True)
+def metric_rationale_generate(request, metric_id):
+    """HTMX POST: auto-generate a rationale entry using AI (with template fallback)."""
+    metric = get_object_or_404(MetricDefinition, pk=metric_id)
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied."))
+
+    if request.method == "POST":
+        from konote.ai import default_metric_rationale, generate_metric_rationale
+
+        scale_range = ""
+        if metric.min_value is not None and metric.max_value is not None:
+            scale_range = f"{metric.min_value}–{metric.max_value}"
+
+        result = generate_metric_rationale(
+            name=metric.name,
+            definition=metric.definition or "",
+            category=metric.get_category_display(),
+            metric_type=metric.get_metric_type_display(),
+            scale_range=scale_range,
+        )
+        if result is None:
+            result = default_metric_rationale(
+                name=metric.name,
+                category=metric.get_category_display(),
+                metric_type=metric.get_metric_type_display(),
+                date_str=datetime.date.today().isoformat(),
+            )
+
+        metric.append_rationale(
+            note=result["note"],
+            note_fr=result.get("note_fr", ""),
+            author="AI",
+        )
+        metric.save(update_fields=["rationale_log"])
+
+    return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
 
 
 # ---------------------------------------------------------------------------
