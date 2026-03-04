@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ metric_def.translated_name }} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<hgroup>
+    <h1>{{ metric_def.translated_name }}</h1>
+    <p>{{ client.display_name }} {{ client.last_name }}</p>
+</hgroup>
+
+{% if metric_def.translated_definition %}
+<p class="secondary">{{ metric_def.translated_definition }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Assessment date -->
+    <label for="{{ form.session_date.id_for_label }}">{{ form.session_date.label }}</label>
+    {{ form.session_date }}
+    {% if form.session_date.help_text %}<small>{{ form.session_date.help_text }}</small>{% endif %}
+    {% if form.session_date.errors %}<small class="error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
+
+    <!-- Score input -->
+    <fieldset>
+        <legend>{% trans "Score" %}</legend>
+        {{ metric_form.metric_def_id }}
+        {% if metric_form.is_scale %}
+        <div class="scale-metric">
+            <label>{{ metric_form.value.label }}</label>
+            <div class="scale-pills">
+            {% for radio in metric_form.value %}
+                {% if radio.choice_value %}
+                <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                {% endif %}
+            {% endfor %}
+            </div>
+            {% if metric_form.value.help_text %}<small>{{ metric_form.value.help_text }}</small>{% endif %}
+            {% if metric_form.value.errors %}<small class="error" role="alert">{{ metric_form.value.errors.0 }}</small>{% endif %}
+        </div>
+        {% else %}
+        <div class="metric-number-input">
+            <label for="{{ metric_form.value.id_for_label }}">{{ metric_form.value.label }}</label>
+            {{ metric_form.value }}
+            {% if metric_form.plausibility_confirmed %}{{ metric_form.plausibility_confirmed }}{% endif %}
+            {% if metric_form.value.help_text %}<small>{{ metric_form.value.help_text }}</small>{% endif %}
+            {% if metric_form.value.errors %}<small class="error" role="alert">{{ metric_form.value.errors.0 }}</small>{% endif %}
+            <div class="plausibility-warning" style="display:none;" aria-live="polite">
+                <small class="warning-text"></small>
+                <button type="button" class="outline secondary plausibility-confirm-btn" style="padding: 0.15rem 0.5rem; margin-top: 0.25rem; font-size: 0.8125rem;">
+                    {% trans "Confirm this value" %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Severity band display (auto-computed via JS) -->
+        {% if scoring_bands_json %}
+        <div id="severity-band-display" class="severity-band" role="status" aria-live="polite" style="margin-top: 0.5rem;" hidden>
+            <strong>{% trans "Severity" %}:</strong> <span id="severity-band-label"></span>
+        </div>
+        {% endif %}
+    </fieldset>
+
+    <!-- Clinical observation -->
+    <label for="{{ form.clinical_observation.id_for_label }}">{{ form.clinical_observation.label }}</label>
+    {{ form.clinical_observation }}
+    {% if form.clinical_observation.errors %}<small class="error" role="alert">{{ form.clinical_observation.errors.0 }}</small>{% endif %}
+
+    <!-- Actions -->
+    <div class="button-group" style="margin-top: 1rem;">
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        <button type="submit">{% trans "Save Assessment" %}</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if scoring_bands_json %}
+{{ scoring_bands_json|json_script:"scoring-bands-data" }}
+<script>
+(function() {
+    var bandsData = JSON.parse(document.getElementById("scoring-bands-data").textContent);
+    var bandDisplay = document.getElementById("severity-band-display");
+    var bandLabel = document.getElementById("severity-band-label");
+    if (!bandsData || !bandDisplay || !bandLabel) return;
+
+    function findBand(score) {
+        var val = parseFloat(score);
+        if (isNaN(val)) return null;
+        for (var i = 0; i < bandsData.length; i++) {
+            var band = bandsData[i];
+            if (band.min !== null && band.max !== null && val >= band.min && val <= band.max) {
+                return band.label;
+            }
+        }
+        return null;
+    }
+
+    function updateBand() {
+        // Try number input first, then radio buttons
+        var input = document.querySelector('.metric-number-input input[type="number"]');
+        var score = null;
+        if (input) {
+            score = input.value;
+        } else {
+            var checked = document.querySelector('.scale-pills input[type="radio"]:checked');
+            if (checked) score = checked.value;
+        }
+
+        if (score) {
+            var label = findBand(score);
+            if (label) {
+                bandLabel.textContent = label;
+                bandDisplay.hidden = false;
+                return;
+            }
+        }
+        bandDisplay.hidden = true;
+    }
+
+    // Listen for changes on number inputs
+    var numInput = document.querySelector('.metric-number-input input[type="number"]');
+    if (numInput) {
+        numInput.addEventListener("input", updateBand);
+        numInput.addEventListener("change", updateBand);
+    }
+
+    // Listen for changes on radio inputs (scale pills)
+    document.querySelectorAll('.scale-pills input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener("change", updateBand);
+    });
+
+    // Initial check for pre-filled values
+    updateBand();
+})();
+</script>
+{% endif %}
+{% endblock %}

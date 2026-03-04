@@ -1181,3 +1181,141 @@ def qualitative_summary(request, client_id):
         "breadcrumbs": breadcrumbs,
         "consent_viewing_program": consent_viewing_program,
     })
+
+
+@login_required
+@requires_permission("note.create", get_program_func=lambda request, **kwargs: _get_program_from_client(request, kwargs["client_id"]))
+def assessment_create(request, client_id, metric_id):
+    """Create a simplified assessment note for a standardized instrument."""
+    import json as _json
+    from apps.plans.models import MetricDefinition
+
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
+
+    # PRIV1: Check client consent before allowing note creation
+    if not _check_client_consent(client):
+        return render(request, "notes/consent_required.html", {"client": client})
+
+    metric_def = get_object_or_404(
+        MetricDefinition,
+        pk=metric_id,
+        is_standardized_instrument=True,
+        status="active",
+    )
+
+    # Find a plan target that uses this metric (needed for ProgressNoteTarget)
+    from apps.plans.models import PlanTargetMetric
+    ptm = PlanTargetMetric.objects.filter(
+        plan_target__client_file=client,
+        plan_target__status="default",
+        metric_def=metric_def,
+    ).select_related("plan_target").first()
+
+    if not ptm:
+        messages.error(
+            request,
+            _("This assessment is not linked to any active plan target."),
+        )
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    from .forms import AssessmentNoteForm
+
+    # Prepare scoring bands for JS
+    scoring_bands_json = None
+    if metric_def.scoring_bands:
+        scoring_bands_json = metric_def.scoring_bands
+
+    if request.method == "POST":
+        form = AssessmentNoteForm(request.POST)
+        metric_form = MetricValueForm(
+            request.POST,
+            prefix="assessment",
+            metric_def=metric_def,
+            initial={"metric_def_id": metric_def.pk},
+        )
+
+        if form.is_valid() and metric_form.is_valid():
+            score_val = metric_form.cleaned_data.get("value", "")
+            if not score_val:
+                metric_form.add_error("value", _("A score is required for assessments."))
+            else:
+                with transaction.atomic():
+                    note = ProgressNote(
+                        client_file=client,
+                        note_type="assessment",
+                        interaction_type="session",
+                        author=request.user,
+                        author_program=_get_author_program(request.user, client),
+                        notes_text=form.cleaned_data.get("clinical_observation", ""),
+                    )
+                    session_date = form.cleaned_data.get("session_date")
+                    if session_date and session_date != timezone.localdate():
+                        note.backdate = timezone.make_aware(
+                            timezone.datetime.combine(
+                                session_date,
+                                timezone.datetime.min.time(),
+                            )
+                        )
+                    note.save()
+
+                    pnt = ProgressNoteTarget(
+                        progress_note=note,
+                        plan_target=ptm.plan_target,
+                    )
+                    pnt.save()
+
+                    plaus_confirmed = metric_form.cleaned_data.get("plausibility_confirmed", False)
+                    mv = MetricValue.objects.create(
+                        progress_note_target=pnt,
+                        metric_def=metric_def,
+                        value=score_val,
+                        plausibility_confirmed=bool(plaus_confirmed),
+                        plausibility_confirmed_by=request.user if plaus_confirmed else None,
+                    )
+
+                    # Log plausibility override if applicable
+                    if plaus_confirmed:
+                        _log_plausibility_override(metric_form, score_val, note, request.user)
+
+                # Build success message with severity band
+                severity = metric_def.get_severity_band(score_val)
+                msg = _("Assessment saved: %(name)s = %(value)s") % {
+                    "name": metric_def.translated_name,
+                    "value": score_val,
+                }
+                if severity:
+                    msg += f" ({severity})"
+                messages.success(request, msg)
+
+                # Reminder about portal access
+                _portal_access_reminder(request, client)
+
+                return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        form = AssessmentNoteForm()
+        metric_form = MetricValueForm(
+            prefix="assessment",
+            metric_def=metric_def,
+            initial={"metric_def_id": metric_def.pk},
+        )
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}),
+         "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": metric_def.translated_name},
+    ]
+
+    return render(request, "notes/assessment_form.html", {
+        "client": client,
+        "metric_def": metric_def,
+        "form": form,
+        "metric_form": metric_form,
+        "scoring_bands_json": scoring_bands_json,
+        "breadcrumbs": breadcrumbs,
+    })
