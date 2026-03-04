@@ -338,8 +338,8 @@ if not EMAIL_HASH_KEY:
 PORTAL_DOMAIN = os.environ.get("PORTAL_DOMAIN", "")
 STAFF_DOMAIN = os.environ.get("STAFF_DOMAIN", "")
 
-# Secure export file storage — outside web root, ephemeral on Docker Compose (OVHcloud VPS)
-# Files are temporary (24hr links) so ephemeral /tmp storage is acceptable
+# Secure export file storage — outside web root
+# Files are temporary (24hr links) so /tmp storage is acceptable
 SECURE_EXPORT_DIR = os.environ.get(
     "SECURE_EXPORT_DIR",
     os.path.join(tempfile.gettempdir(), "konote_exports"),

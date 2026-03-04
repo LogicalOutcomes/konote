@@ -137,7 +137,6 @@ KoNote-web/
 │
 ├── Dockerfile                 # Container build
 ├── docker-compose.yml         # Local development stack
-├── railway.json               # Legacy Railway deployment config (kept for reference)
 ├── entrypoint.sh              # Container startup script
 ├── requirements.txt           # Python dependencies
 └── manage.py                  # Django CLI

@@ -80,11 +80,11 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 - [Using the Calendar Feed](using-KoNote.md#using-the-calendar-feed)
 - [Viewing Plans](using-KoNote.md#viewing-the-outcome-plan)
 
-### For Deployment
+### For Deployment & Operations
 
 - [Local Development (Docker)](deploying-KoNote.md#local-development-docker)
 - [Deploy to OVHcloud VPS](deploy-ovhcloud.md)
-- [Deploy to Azure](deploying-KoNote.md#deploy-to-azure)
+- [LLM Operations Runbook](llm-operations-runbook.md) — prompt and reference for AI-assisted maintenance
 - [PDF Reports Setup](deploying-KoNote.md#pdf-report-setup)
 
 ---
