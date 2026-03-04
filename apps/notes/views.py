@@ -708,6 +708,7 @@ def note_create(request, client_id):
                     engagement_observation=form.cleaned_data.get("engagement_observation", ""),
                     alliance_rating=form.cleaned_data.get("alliance_rating") or None,
                     alliance_rater=form.cleaned_data.get("alliance_rater", ""),
+                    alliance_prompt_index=prompt_index,
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                     duration_minutes=form.cleaned_data.get("duration_minutes") or None,
                     modality=form.cleaned_data.get("modality") or "",
@@ -836,7 +837,7 @@ def note_create(request, client_id):
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None)
+        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None, alliance_anchors=alliance_anchors)
         target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
@@ -857,6 +858,9 @@ def note_create(request, client_id):
         "client": client,
         "breadcrumbs": breadcrumbs,
         "template_defaults": template_defaults,
+        "alliance_prompt": alliance_prompt,
+        "alliance_anchors": alliance_anchors,
+        "alliance_prompt_index": prompt_index,
     })
 
 
