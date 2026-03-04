@@ -1,0 +1,19 @@
+{% load i18n %}
+{% if assessments_due %}
+<article class="assessment-due-banner" role="alert" aria-label="{% trans 'Assessments due' %}" style="border-left: 4px solid var(--pico-primary); background: var(--pico-card-background-color); margin-bottom: 1rem;">
+    <strong>{% trans "Assessment due" %}</strong>
+    <ul style="margin-bottom: 0;">
+    {% for item in assessments_due %}
+        <li>
+            {{ item.metric_def.translated_name }}
+            {% if item.reason == "intake" %}
+                <small class="secondary">({% trans "no baseline recorded" %})</small>
+            {% elif item.reason == "periodic" and item.last_date %}
+                <small class="secondary">({% blocktrans with days=item.days_since %}last: {{ days }} days ago{% endblocktrans %})</small>
+            {% endif %}
+            — <a href="{% url 'notes:assessment_create' client_id=client.pk metric_id=item.metric_def.pk %}">{% trans "Record Assessment" %}</a>
+        </li>
+    {% endfor %}
+    </ul>
+</article>
+{% endif %}

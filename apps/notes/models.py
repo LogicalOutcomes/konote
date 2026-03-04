@@ -180,6 +180,7 @@ class ProgressNote(models.Model):
     NOTE_TYPE_CHOICES = [
         ("quick", _("Quick Note")),
         ("full", _("Detailed Note")),
+        ("assessment", _("Assessment")),
     ]
     INTERACTION_TYPE_CHOICES = ProgressNoteTemplate.INTERACTION_TYPE_CHOICES
     STATUS_CHOICES = [

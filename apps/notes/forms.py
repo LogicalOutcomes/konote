@@ -449,6 +449,29 @@ class NoteTemplateSectionForm(forms.ModelForm):
         fields = ["name", "name_fr", "section_type", "sort_order"]
 
 
+class AssessmentNoteForm(forms.Form):
+    """Simplified form for recording a standardized assessment.
+
+    No narrative fields, no engagement rating, no alliance prompt —
+    just the instrument score and optional clinical observation.
+    """
+
+    clinical_observation = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("Optional clinical observations about this assessment..."),
+        }),
+        required=False,
+        label=_("Clinical observation"),
+    )
+    session_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
+        label=_("Assessment date"),
+        help_text=_("Change if this assessment was done on a different day."),
+    )
+
+
 class NoteCancelForm(forms.Form):
     """Form for cancelling a progress note."""
 

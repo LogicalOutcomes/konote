@@ -18608,8 +18608,10 @@ msgstr ""
 msgid "Recording cadence (sessions)"
 msgstr "Cadence d'enregistrement (séances)"
 
-# NOTE: This is a blocktrans string — translate_strings cannot auto-extract it.
-# If the English wording changes in note_form.html, update this msgid manually.
+# NOTE: This is a blocktrans string — translate_strings cannot auto-extract
+# it.
+# If the English wording changes in note_form.html, update this msgid
+# manually.
 #: templates/notes/note_form.html
 #, python-format
 msgid "next due in %(n)s session(s)"
@@ -18688,11 +18690,11 @@ msgstr "Soumettre l'évaluation"
 
 #: apps/portal/templates/portal/dashboard.html
 msgid ""
-"Your worker recorded a session recently. Take a moment to share how you felt "
-"about working together."
+"Your worker recorded a session recently. Take a moment to share how you felt"
+" about working together."
 msgstr ""
-"Votre intervenant·e a enregistré une séance récemment. Prenez un moment pour "
-"partager comment vous vous êtes senti(e) par rapport à votre collaboration."
+"Votre intervenant·e a enregistré une séance récemment. Prenez un moment pour"
+" partager comment vous vous êtes senti(e) par rapport à votre collaboration."
 
 #: apps/portal/views.py
 msgid "Please select a rating."
@@ -18791,8 +18793,10 @@ msgstr "Consentement retiré"
 msgid "Date the consent event occurred."
 msgstr "Date à laquelle l'événement de consentement s'est produit."
 
-msgid "How the withdrawal request was received (written, verbal, representative)."
-msgstr "Comment la demande de retrait a été reçue (écrite, verbale, représentant)."
+msgid ""
+"How the withdrawal request was received (written, verbal, representative)."
+msgstr ""
+"Comment la demande de retrait a été reçue (écrite, verbale, représentant)."
 
 msgid "Written request"
 msgstr "Demande écrite"
@@ -18814,13 +18818,9 @@ msgid "Configuration Overview"
 msgstr "Aperçu de la configuration"
 
 msgid "Read-only summary of all active settings. Designed for printing."
-msgstr "Résumé en lecture seule de tous les paramètres actifs. Conçu pour l'impression."
-
-msgid "Back to Settings"
-msgstr "Retour aux paramètres"
-
-msgid "Print"
-msgstr "Imprimer"
+msgstr ""
+"Résumé en lecture seule de tous les paramètres actifs. Conçu pour "
+"l'impression."
 
 msgid "Legal Name"
 msgstr "Nom légal"
@@ -18834,44 +18834,14 @@ msgstr "Statut juridique"
 msgid "Sector Codes"
 msgstr "Codes sectoriels"
 
-msgid "Access Tier"
-msgstr "Niveau d'accès"
-
 msgid "Tier"
 msgstr "Niveau"
-
-msgid "Privacy Officer"
-msgstr "Responsable de la protection de la vie privée"
-
-msgid "Consent Requirement"
-msgstr "Exigence de consentement"
-
-msgid "Required"
-msgstr "Requis"
 
 msgid "Not required"
 msgstr "Non requis"
 
-msgid "Cross-Program Note Sharing"
-msgstr "Partage de notes entre programmes"
-
-msgid "Feature"
-msgstr "Fonctionnalité"
-
-msgid "On"
-msgstr "Activé"
-
-msgid "Off"
-msgstr "Désactivé"
-
 msgid "Missing config:"
 msgstr "Configuration manquante :"
-
-msgid "Term"
-msgstr "Terme"
-
-msgid "Default"
-msgstr "Par défaut"
 
 msgid "English Override"
 msgstr "Remplacement anglais"
@@ -18880,7 +18850,9 @@ msgid "French Override"
 msgstr "Remplacement français"
 
 msgid "No terminology overrides. All terms use defaults."
-msgstr "Aucun remplacement de terminologie. Tous les termes utilisent les valeurs par défaut."
+msgstr ""
+"Aucun remplacement de terminologie. Tous les termes utilisent les valeurs "
+"par défaut."
 
 msgid "Metrics & Assessments"
 msgstr "Indicateurs et évaluations"
@@ -18891,38 +18863,20 @@ msgstr "%(enabled)s indicateurs sur %(total)s activés."
 msgid "Library Instruments"
 msgstr "Instruments de la bibliothèque"
 
-msgid "Range"
-msgstr "Plage"
-
 msgid "Scoring Bands"
 msgstr "Bandes de cotation"
-
-msgid "Low"
-msgstr "Faible"
 
 msgid "Mid"
 msgstr "Moyen"
 
-msgid "High"
-msgstr "Élevé"
-
 msgid "No library instruments are currently enabled."
 msgstr "Aucun instrument de la bibliothèque n'est actuellement activé."
-
-msgid "Brand Colour"
-msgstr "Couleur de marque"
-
-msgid "Date Format"
-msgstr "Format de date"
 
 msgid "Session Timeout"
 msgstr "Délai d'expiration de la session"
 
 msgid "%(mins)s minutes"
 msgstr "%(mins)s minutes"
-
-msgid "Document Storage"
-msgstr "Stockage de documents"
 
 msgid "SMS (Twilio)"
 msgstr "SMS (Twilio)"
@@ -18943,11 +18897,138 @@ msgid "Detail"
 msgstr "Détail"
 
 msgid "No recent configuration changes found in the audit log."
-msgstr "Aucune modification récente de la configuration trouvée dans le journal d'audit."
+msgstr ""
+"Aucune modification récente de la configuration trouvée dans le journal "
+"d'audit."
 
 #: templates/admin_settings/dashboard.html (Configuration Overview card)
-msgid "Read-only summary of all active settings in one place. Designed for printing."
+msgid ""
+"Read-only summary of all active settings in one place. Designed for "
+"printing."
 msgstr "Résumé en lecture seule de tous les paramètres actifs en un seul endroit. Conçu pour l'impression."
+"Résumé en lecture seule de tous les paramètres actifs en un seul endroit. "
+"Conçu pour l'impression."
 
 msgid "View Configuration"
 msgstr "Voir la configuration"
+
+msgid "A score is required for assessments."
+msgstr "Un score est requis pour les évaluations."
+
+msgid "Access & Privacy"
+msgstr "Accès et confidentialité"
+
+msgid "Add Note"
+msgstr "Ajouter une note"
+
+msgid "Add a note about this metric"
+msgstr "Ajouter une note à propos de cette mesure"
+
+msgid "Administer this assessment at discharge."
+msgstr "Administrer cette évaluation au congé."
+
+msgid "Administer this assessment at intake (first session)."
+msgstr "Administrer cette évaluation à l'admission (première séance)."
+
+msgid ""
+"Append-only changelog: [{date, note, note_fr, author}]. Most recent entry is"
+" the current rationale."
+msgstr "Journal des modifications (ajout seulement) : [{date, note, note_fr, author}]. L'entrée la plus récente est la justification actuelle."
+
+msgid "Assessment date"
+msgstr "Date de l'évaluation"
+
+msgid "Assessment due"
+msgstr "Évaluation due"
+
+msgid "Assessment interval (days)"
+msgstr "Intervalle d'évaluation (jours)"
+
+msgid "Assessment saved: %(name)s = %(value)s"
+msgstr "Évaluation enregistrée : %(name)s = %(value)s"
+
+msgid "Assessments due"
+msgstr "Évaluations dues"
+
+msgid "Auto-generate"
+msgstr "Générer automatiquement"
+
+msgid "Branding"
+msgstr "Image de marque"
+
+msgid "Change if this assessment was done on a different day."
+msgstr "Modifier si cette évaluation a été faite un autre jour."
+
+msgid ""
+"Check if this is a published, validated instrument (e.g. PHQ-9, GAD-7)."
+msgstr "Cochez s'il s'agit d'un instrument publié et validé (p. ex. PHQ-9, GAD-7)."
+
+msgid "Clinical observation"
+msgstr "Observation clinique"
+
+msgid "Configured"
+msgstr "Configuré"
+
+msgid ""
+"Days between scheduled administrations (e.g. 90 for quarterly). Global per-"
+"metric."
+msgstr "Jours entre les administrations planifiées (p. ex. 90 pour trimestriel). Global par mesure."
+
+msgid ""
+"Days between scheduled administrations (e.g. 90 for quarterly). Leave blank "
+"for no schedule."
+msgstr "Jours entre les administrations planifiées (p. ex. 90 pour trimestriel). Laisser vide pour aucun calendrier."
+
+msgid "Integrations"
+msgstr "Intégrations"
+
+msgid "No rationale recorded yet."
+msgstr "Aucune justification enregistrée."
+
+msgid "Not set"
+msgstr "Non défini"
+
+msgid "Optional clinical observations about this assessment..."
+msgstr "Observations cliniques facultatives sur cette évaluation..."
+
+msgid "Participant's self-rated alliance score (1-5)."
+msgstr "Score d'alliance autoévalué par le participant (1-5)."
+
+msgid ""
+"Published severity cutoffs, e.g. [{\"label\": \"Minimal\", \"min\": 0, "
+"\"max\": 4}]. Display-only."
+msgstr "Seuils de sévérité publiés, p. ex. [{\"label\": \"Minimal\", \"min\": 0, \"max\": 4}]. Affichage seulement."
+
+msgid "Rationale & History"
+msgstr "Justification et historique"
+
+msgid "Record Assessment"
+msgstr "Enregistrer une évaluation"
+
+msgid "Request expires 7 days after creation."
+msgstr "La demande expire 7 jours après la création."
+
+msgid "Save Assessment"
+msgstr "Enregistrer l'évaluation"
+
+msgid "This assessment is not linked to any active plan target."
+msgstr "Cette évaluation n'est liée à aucun objectif de plan actif."
+
+msgid "True for published validated instruments (PHQ-9, GAD-7, K10, etc.)."
+msgstr "Vrai pour les instruments publiés et validés (PHQ-9, GAD-7, K10, etc.)."
+
+msgid "Which alliance prompt set to show (index into ALLIANCE_PROMPT_SETS)."
+msgstr "Quel ensemble de questions d'alliance afficher (index dans ALLIANCE_PROMPT_SETS)."
+
+msgid ""
+"e.g., Required by United Way reporting, replaced OARS per clinical team"
+msgstr "p. ex., Requis par les rapports de Centraide, a remplacé OARS selon l'équipe clinique"
+
+msgid "no baseline recorded"
+msgstr "aucune mesure de référence enregistrée"
+
+msgid "portal alliance request"
+msgstr "demande d'alliance du portail"
+
+msgid "portal alliance requests"
+msgstr "demandes d'alliance du portail"

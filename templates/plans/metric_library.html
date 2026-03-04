@@ -70,6 +70,9 @@
                 <td>
                     <strong>{{ metric.name }}</strong>
                     <br><small>{{ metric.definition|truncatewords:15 }}</small>
+                    {% if metric.current_rationale %}
+                    <br><small style="color: var(--pico-muted-color);">{{ metric.current_rationale|truncatewords:20 }}</small>
+                    {% endif %}
                 </td>
                 <td>{{ metric.unit|default:"—" }}</td>
                 <td>

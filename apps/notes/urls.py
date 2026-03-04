@@ -15,4 +15,5 @@ urlpatterns = [
     path("<int:note_id>/summary/", views.note_summary, name="note_summary"),
     path("<int:note_id>/cancel/", views.note_cancel, name="note_cancel"),
     path("participant/<int:client_id>/qualitative/", views.qualitative_summary, name="qualitative_summary"),
+    path("participant/<int:client_id>/assessment/<int:metric_id>/", views.assessment_create, name="assessment_create"),
 ]

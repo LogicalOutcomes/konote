@@ -66,6 +66,10 @@
     </div>
 </form>
 
+{% if editing and metric %}
+{% include "plans/includes/metric_rationale.html" with metric=metric %}
+{% endif %}
+
 <script>
 (function() {
     var metricTypeSelect = document.getElementById('id_metric_type');
