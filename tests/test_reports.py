@@ -2133,7 +2133,7 @@ class GenerateReportViewTest(TestCase):
         self.client_http.login(username="admin", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Generate Report")
+        self.assertContains(resp, "Standard Report")
 
     def test_unauthenticated_redirects_to_login(self):
         """Unauthenticated users should be redirected to login."""

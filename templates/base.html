@@ -148,11 +148,11 @@
                     <summary aria-haspopup="menu"{% if nav_active == "reports" or nav_active == "compliance" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
                     <ul role="menu">
                         {% if can_see_reports or user.is_admin %}
-                        <li role="none"><a role="menuitem" href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
-                        <li role="none"><a role="menuitem" href="{% url 'reports:export_form' %}">{% trans "Custom Export" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'reports:generate_report' %}">{% trans "Standard Report" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'reports:export_form' %}">{% trans "Build a Report" %}</a></li>
                         {% endif %}
                         {% if can_see_compliance %}
-                        <li role="none"><a role="menuitem" href="{% url 'audit:compliance_summary' %}">{% trans "Compliance Summary" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'audit:compliance_summary' %}">{% trans "Privacy & Access Audit" %}</a></li>
                         {% endif %}
                     </ul>
                 </details>
