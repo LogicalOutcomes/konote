@@ -120,6 +120,43 @@ class PageGroupingTests(TestCase):
         )
         self.assertEqual(len(visible), 2)
 
+    def test_skip_for_identified_hidden(self):
+        """Sections with skip_for_identified are hidden when is_identified=True."""
+        from apps.portal.survey_helpers import filter_visible_sections
+
+        survey = Survey.objects.create(
+            name="Demographics", created_by=self.staff, status="active",
+        )
+        SurveySection.objects.create(
+            survey=survey, title="About You", sort_order=1,
+            skip_for_identified=True,
+        )
+        SurveySection.objects.create(
+            survey=survey, title="Feedback", sort_order=2,
+        )
+        sections = list(survey.sections.filter(is_active=True).order_by("sort_order"))
+        visible = filter_visible_sections(sections, partial_answers={}, is_identified=True)
+        self.assertEqual(len(visible), 1)
+        self.assertEqual(visible[0].title, "Feedback")
+
+    def test_skip_for_identified_shown_anonymous(self):
+        """Sections with skip_for_identified are shown for anonymous responses."""
+        from apps.portal.survey_helpers import filter_visible_sections
+
+        survey = Survey.objects.create(
+            name="Demographics2", created_by=self.staff, status="active",
+        )
+        SurveySection.objects.create(
+            survey=survey, title="About You", sort_order=1,
+            skip_for_identified=True,
+        )
+        SurveySection.objects.create(
+            survey=survey, title="Feedback", sort_order=2,
+        )
+        sections = list(survey.sections.filter(is_active=True).order_by("sort_order"))
+        visible = filter_visible_sections(sections, partial_answers={}, is_identified=False)
+        self.assertEqual(len(visible), 2)
+
 
 @override_settings(
     FIELD_ENCRYPTION_KEY=TEST_KEY,

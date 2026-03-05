@@ -12560,6 +12560,28 @@ msgstr "Commencer"
 msgid "Start new page"
 msgstr "Commencer une nouvelle page"
 
+msgid "Skip for identified participants"
+msgstr "Masquer pour les participants identifiés"
+
+msgid ""
+"Check this for demographics sections. When the survey is assigned to a "
+"participant or entered by staff, this section will be hidden — that data is "
+"already on file."
+msgstr ""
+"Cochez cette case pour les sections démographiques. Lorsque le sondage est "
+"attribué à un participant ou saisi par le personnel, cette section sera "
+"masquée — ces données sont déjà au dossier."
+
+msgid ""
+"Hide this section when the survey is filled by or for an identified "
+"participant (portal or staff-entered). Use for demographics sections — that "
+"data is already in the participant record."
+msgstr ""
+"Masquer cette section lorsque le sondage est rempli par ou pour un "
+"participant identifié (portail ou saisie par le personnel). Utilisez pour "
+"les sections démographiques — ces données sont déjà au dossier du "
+"participant."
+
 msgid "Submit"
 msgstr "Soumettre"
 
