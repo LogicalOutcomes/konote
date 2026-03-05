@@ -19327,3 +19327,38 @@ msgstr "Score"
 msgid "To:"
 msgstr "À :"
 
+#: templates/clients/_client_list_sections.html (role-based grouped view)
+msgid "Your caseload"
+msgstr "Votre charge de travail"
+
+msgid "Programs you manage"
+msgstr "Programmes que vous gérez"
+
+#, python-format
+msgid ""
+"Your caseload — %(programs)s (%(count)s)"
+msgstr ""
+"Votre charge de travail — %(programs)s (%(count)s)"
+
+#, python-format
+msgid ""
+"Programs you manage — %(programs)s (%(count)s)"
+msgstr ""
+"Programmes que vous gérez — %(programs)s (%(count)s)"
+
+#, python-format
+msgid "Staff in %(staff)s \u00b7 Manager for %(pm)s"
+msgstr "Personnel pour %(staff)s \u00b7 Gestionnaire pour %(pm)s"
+
+msgid "No participants in your caseload match the current filters."
+msgstr "Aucun participant de votre charge de travail ne correspond aux filtres sélectionnés."
+
+msgid "No participants in managed programs match the current filters."
+msgstr "Aucun participant des programmes que vous gérez ne correspond aux filtres sélectionnés."
+
+msgid "Select all in caseload"
+msgstr "Tout sélectionner dans la charge de travail"
+
+msgid "Select all in managed programs"
+msgstr "Tout sélectionner dans les programmes gérés"
+
