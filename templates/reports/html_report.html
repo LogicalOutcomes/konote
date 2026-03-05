@@ -93,13 +93,6 @@
             color: #4a5568;
         }
         .pdf-header .meta-grid dd { margin: 0; }
-        .pdf-header .draft-notice {
-            margin-top: 0.5rem;
-            padding: 0.4rem 0.6rem;
-            background-color: #fef3c7;
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
 
         /* Table of contents */
         .report-toc {
@@ -365,11 +358,6 @@
         <dt>{% trans "Generated" %}</dt>
         <dd>{% blocktrans with date=report_data.generated_at|date:"Y-m-d" author=generated_by %}{{ date }} by {{ author }}{% endblocktrans %}</dd>
     </dl>
-    {% if is_draft_template %}
-    <div class="draft-notice">
-        <strong>{% trans "Draft Template:" %}</strong> {% trans "Verify this format matches the specific reporting requirements before submission." %}
-    </div>
-    {% endif %}
 </div>
 
 {% if sections %}
@@ -403,7 +391,6 @@
         <div class="label">{% trans "Total Individuals Served" %}</div>
         {% if report_data.prev_total_individuals_served is not None %}
         <div class="change">
-            {% widthratio report_data.total_individuals_served 1 1 as current_val %}
             {% if report_data.total_individuals_served > report_data.prev_total_individuals_served %}
             <span aria-hidden="true">&#9650;</span>
             <span class="sr-only">{% trans "Increased" %}</span>
@@ -704,10 +691,34 @@
     <div class="stat-box">
         <div class="value">{{ report_data.new_clients_this_period|default:"0" }}</div>
         <div class="label">{% trans "New Participants This Period" %}</div>
+        {% if report_data.prev_new_clients_this_period is not None %}
+        <div class="change">
+            {% if report_data.new_clients_this_period > report_data.prev_new_clients_this_period %}
+            <span aria-hidden="true">&#9650;</span>
+            <span class="sr-only">{% trans "Increased" %}</span>
+            {% elif report_data.new_clients_this_period < report_data.prev_new_clients_this_period %}
+            <span aria-hidden="true">&#9660;</span>
+            <span class="sr-only">{% trans "Decreased" %}</span>
+            {% endif %}
+            {% trans "from" %} {{ report_data.prev_new_clients_this_period }} {% trans "previous period" %}
+        </div>
+        {% endif %}
     </div>
     <div class="stat-box">
         <div class="value">{{ report_data.total_contacts|default:"0" }}</div>
         <div class="label">{% trans "Total Service Contacts" %}</div>
+        {% if report_data.prev_total_contacts is not None %}
+        <div class="change">
+            {% if report_data.total_contacts > report_data.prev_total_contacts %}
+            <span aria-hidden="true">&#9650;</span>
+            <span class="sr-only">{% trans "Increased" %}</span>
+            {% elif report_data.total_contacts < report_data.prev_total_contacts %}
+            <span aria-hidden="true">&#9660;</span>
+            <span class="sr-only">{% trans "Decreased" %}</span>
+            {% endif %}
+            {% trans "from" %} {{ report_data.prev_total_contacts }} {% trans "previous period" %}
+        </div>
+        {% endif %}
     </div>
 </div>
 

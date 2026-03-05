@@ -665,13 +665,6 @@ class Command(BaseCommand):
 
     def _seed_demo_reporting_template(self, programs):
         """Create demo report templates: a funder template and an org-wide template."""
-        from apps.reports.models import (
-            DemographicBreakdown,
-            Partner,
-            ReportMetric,
-            ReportTemplate,
-        )
-
         self._seed_ccf_funder_template(programs)
         self._seed_org_wide_template(programs)
 
