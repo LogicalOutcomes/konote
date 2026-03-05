@@ -724,7 +724,7 @@ def export_form(request):
 
         safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
-        if export_format == "pdf":
+        if export_format in ("pdf", "html"):
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
                 request, program, selected_metrics,
@@ -741,8 +741,10 @@ def export_form(request):
                 aggregate_rows=aggregate_rows,
                 demographic_aggregate_rows=demographic_aggregate_rows or None,
                 program_display_name=str(program_display_name),
+                output_format=export_format,
             )
-            filename = f"outcome_report_{safe_display}_{date_from}_{date_to}.pdf"
+            ext = "pdf" if export_format == "pdf" else "html"
+            filename = f"outcome_report_{safe_display}_{date_from}_{date_to}.{ext}"
             content = pdf_response.content
         else:
             # Aggregate CSV — summary statistics only
@@ -861,7 +863,7 @@ def export_form(request):
 
         safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
-        if export_format == "pdf":
+        if export_format in ("pdf", "html"):
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
                 request, program, selected_metrics,
@@ -872,8 +874,10 @@ def export_form(request):
                 total_clients_display=total_clients_display,
                 total_data_points_display=total_data_points_display,
                 program_display_name=str(program_display_name),
+                output_format=export_format,
             )
-            filename = f"outcome_report_{safe_display_indiv}_{date_from}_{date_to}.pdf"
+            ext = "pdf" if export_format == "pdf" else "html"
+            filename = f"outcome_report_{safe_display_indiv}_{date_from}_{date_to}.{ext}"
             content = pdf_response.content
         else:
             # Build CSV in memory buffer (not directly into HttpResponse)
@@ -993,6 +997,7 @@ def export_form(request):
         "download_path": download_path,
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
     })
 
 
@@ -1476,6 +1481,17 @@ def funder_report_approve(request):
             pdf_response = generate_funder_report_pdf(request, report_data)
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
             content = pdf_response.content
+        elif export_format == "html":
+            from .pdf_utils import render_html_string
+            report_data = data_or_sections
+            from .suppression import SMALL_CELL_THRESHOLD
+            html_context = {
+                "report_data": report_data,
+                "generated_by": request.user.display_name,
+                "suppression_threshold": SMALL_CELL_THRESHOLD,
+            }
+            content = render_html_string("reports/html_report.html", html_context)
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
         else:
             report_data = data_or_sections
             csv_buffer = io.StringIO()
@@ -1574,6 +1590,7 @@ def funder_report_approve(request):
         "download_path": download_path,
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
         "agency_notes": agency_notes,
     })
 
@@ -1713,6 +1730,7 @@ def generate_report_form(request):
         "download_path": download_path,
         "program_name": template.partner.translated_name,
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
     })
 
 

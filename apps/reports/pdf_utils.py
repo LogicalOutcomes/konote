@@ -52,6 +52,28 @@ def render_pdf(template_name, context, filename="report.pdf"):
     return response
 
 
+def render_html(template_name, context, filename="report.html"):
+    """Render a Django template to a downloadable HTML HttpResponse.
+
+    Uses the same templates as render_pdf() but returns the styled HTML
+    directly instead of converting through WeasyPrint.  The result is a
+    self-contained HTML file suitable for sharing or opening in a browser.
+    """
+    html_string = render_to_string(template_name, context)
+    response = HttpResponse(html_string, content_type="text/html; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+def render_html_string(template_name, context):
+    """Render a Django template to an HTML string (no HttpResponse wrapper).
+
+    Used by the export engine when the content needs to be saved to a file
+    via SecureExportLink rather than returned as a direct download.
+    """
+    return render_to_string(template_name, context)
+
+
 def audit_pdf_export(request, action, resource_type, metadata):
     """Create an audit log entry for a PDF export."""
     AuditLog.objects.using("audit").create(
