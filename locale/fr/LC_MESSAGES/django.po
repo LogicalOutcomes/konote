@@ -3508,6 +3508,77 @@ msgstr ""
 "d'inactivité. Reconnectez-vous pour continuer. Votre travail non enregistré "
 "pourrait être perdu."
 
+#: templates/pages/help.html — Groups, Projects, and Circles section
+msgid "Groups, Projects, and Circles"
+msgstr "Groupes, projets et cercles"
+
+msgid "KoNote gives you three ways to work with multiple people:"
+msgstr "KoNote vous offre trois façons de travailler avec plusieurs personnes :"
+
+msgid "Use when"
+msgstr "À utiliser quand"
+
+msgid "Examples"
+msgstr "Exemples"
+
+msgid "You'll track"
+msgstr "Vous suivrez"
+
+msgid "How to create"
+msgstr "Comment créer"
+
+msgid "You meet regularly as a group"
+msgstr "Vous vous réunissez régulièrement en groupe"
+
+msgid "You're working toward a goal with a deadline"
+msgstr "Vous travaillez vers un objectif avec une échéance"
+
+msgid "People are connected by family or caregiving"
+msgstr "Les personnes sont liées par la famille ou les soins"
+
+msgid "Parenting class, peer support group, drop-in program"
+msgstr "Cours de parentalité, groupe de soutien par les pairs, programme sans rendez-vous"
+
+msgid "Community garden, fundraiser, advocacy campaign"
+msgstr "Jardin communautaire, collecte de fonds, campagne de plaidoyer"
+
+msgid "The Garcia family, a child's care team"
+msgstr "La famille Garcia, l'équipe de soins d'un enfant"
+
+msgid "Attendance, session notes, individual highlights"
+msgstr "Présence, notes de séance, faits saillants individuels"
+
+msgid "Milestones, deadlines, outcomes with evidence"
+msgstr "Jalons, échéances, résultats avec preuves"
+
+msgid "Relationships and who to contact first"
+msgstr "Relations et qui contacter en premier"
+
+msgid "%(groups)s → Add → choose \"A recurring group\""
+msgstr "%(groups)s → Ajouter → choisir « Un groupe récurrent »"
+
+msgid "%(groups)s → Add → choose \"A project\""
+msgstr "%(groups)s → Ajouter → choisir « Un projet »"
+
+msgid "%(circles)s → New %(circle)s"
+msgstr "%(circles)s → Nouveau %(circle)s"
+
+msgid "Still not sure?"
+msgstr "Vous hésitez encore?"
+
+msgid "<em>\"Do we meet as a group?\"</em> → Create a Group"
+msgstr "<em>« Est-ce qu'on se réunit en groupe? »</em> → Créer un groupe"
+
+msgid "<em>\"Are we working toward a specific result?\"</em> → Create a Project"
+msgstr "<em>« Est-ce qu'on travaille vers un résultat précis? »</em> → Créer un projet"
+
+msgid ""
+"<em>\"Are these people connected to each other outside our agency?\"</em> → "
+"Create a %(circle)s"
+msgstr ""
+"<em>« Est-ce que ces personnes sont liées entre elles en dehors de notre "
+"organisme? »</em> → Créer un %(circle)s"
+
 #: templates/pages/help.html — Getting More Help and Quick Reference
 msgid "Getting More Help"
 msgstr "Obtenir plus d'aide"
@@ -3752,14 +3823,29 @@ msgid "Project"
 msgstr "Projet"
 
 # groups/group_form.html — Group type selection
-msgid "What type of group is this?"
-msgstr "Quel type de groupe est-ce?"
+msgid "What are you setting up?"
+msgstr "Que souhaitez-vous créer?"
 
-msgid "Attendance tracking and session notes."
-msgstr "Suivi de présence et notes de séance."
+msgid "A recurring group"
+msgstr "Un groupe récurrent"
 
-msgid "Milestones, outcomes, and deadlines."
-msgstr "Jalons, résultats et échéances."
+msgid "For regular meetings — like a support group, workshop series, or drop-in program. You'll track attendance and record what happens each session."
+msgstr "Pour des rencontres régulières — comme un groupe de soutien, une série d'ateliers ou un programme sans rendez-vous. Vous ferez le suivi de la présence et noterez ce qui se passe à chaque séance."
+
+msgid "A project"
+msgstr "Un projet"
+
+msgid "For goal-oriented work with a deadline — like a community event, fundraiser, or advocacy initiative. You'll track milestones and progress toward outcomes."
+msgstr "Pour un travail axé sur un objectif avec une échéance — comme un événement communautaire, une collecte de fonds ou une initiative de plaidoyer. Vous ferez le suivi des jalons et des progrès vers les résultats."
+
+msgid "Tracking a family or care team?"
+msgstr "Vous suivez une famille ou une équipe de soins?"
+
+msgid "instead — for people connected by relationships, not a shared activity."
+msgstr "plutôt — pour des personnes liées par des relations, pas par une activité commune."
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Member"
 msgstr "Membre"
