@@ -48,7 +48,7 @@
     </div>
 
     {% if target.client_goal %}
-    <blockquote class="goal-card-quote">
+    <blockquote class="goal-card-quote" aria-label="{% trans 'In their words' %}">
         "{{ target.client_goal|truncatewords:50 }}"
     </blockquote>
     {% endif %}
@@ -61,7 +61,7 @@
         {% with all_metrics=target.metrics.all %}
         {% for metric in all_metrics %}
             {% if forloop.counter <= 2 %}
-                <span class="badge badge-neutral">{{ metric.translated_name }}</span>
+                <span class="badge badge-neutral" title="{{ metric.translated_name }}">{{ metric.translated_name }}</span>
             {% endif %}
         {% empty %}
             <small class="secondary">{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No {{ metrics }} assigned{% endblocktrans %}</small>

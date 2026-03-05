@@ -2762,6 +2762,12 @@ p.notice.warning {
     align-items: center;
     gap: 0.25rem;
 }
+.goal-card-metrics .badge {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 .goal-card-more-metrics {
     font-size: 0.75rem;
 }
