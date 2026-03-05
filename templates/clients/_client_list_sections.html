@@ -6,7 +6,7 @@
 {# ── Section 1: Your caseload ── #}
 <section aria-labelledby="caseload-heading" class="client-list-section">
     <h2 id="caseload-heading" class="section-heading">
-        {% blocktrans with programs=staff_program_label count=caseload_count %}Your caseload — {{ programs }} ({{ count }}){% endblocktrans %}
+        {% blocktrans with programs=staff_program_label total=caseload_count %}Your caseload — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if caseload_data %}
     <figure class="client-table-wrap" data-total-clients="{{ caseload_count }}">
@@ -41,7 +41,7 @@
 {# ── Section 2: Programs you manage ── #}
 <section aria-labelledby="oversight-heading" class="client-list-section">
     <h2 id="oversight-heading" class="section-heading">
-        {% blocktrans with programs=pm_program_label count=oversight_count %}Programs you manage — {{ programs }} ({{ count }}){% endblocktrans %}
+        {% blocktrans with programs=pm_program_label total=oversight_count %}Programs you manage — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if oversight_page.object_list %}
     <figure class="client-table-wrap" data-total-clients="{{ oversight_count }}">

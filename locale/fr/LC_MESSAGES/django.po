@@ -19336,15 +19336,15 @@ msgstr "Programmes que vous gérez"
 
 #, python-format
 msgid ""
-"Your caseload — %(programs)s (%(count)s)"
+"Your caseload — %(programs)s (%(total)s)"
 msgstr ""
-"Votre charge de travail — %(programs)s (%(count)s)"
+"Votre charge de travail — %(programs)s (%(total)s)"
 
 #, python-format
 msgid ""
-"Programs you manage — %(programs)s (%(count)s)"
+"Programs you manage — %(programs)s (%(total)s)"
 msgstr ""
-"Programmes que vous gérez — %(programs)s (%(count)s)"
+"Programmes que vous gérez — %(programs)s (%(total)s)"
 
 #, python-format
 msgid "Staff in %(staff)s \u00b7 Manager for %(pm)s"
