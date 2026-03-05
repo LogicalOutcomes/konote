@@ -104,7 +104,7 @@ deploy_instance() {
                 local logs
                 logs=$(docker logs "$(docker compose ps -q web)" --tail=20 2>&1 || true)
 
-                if echo "$logs" | grep -qiE "UndefinedTable|ProgrammingError|relation.*does not exist|migration.*error"; then
+                if echo "$logs" | grep -qiE "UndefinedTable|ProgrammingError|relation.*does not exist|migration.*error|migrate_default.*Phase|RuntimeError.*migrat"; then
                     echo -e "${YELLOW}=== Dev instance: migration failure detected ===${NC}"
                     echo -e "${YELLOW}=== Resetting dev database (demo data only — safe to reset) ===${NC}"
                     reset_dev_database "$dir"
