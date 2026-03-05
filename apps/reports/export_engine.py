@@ -392,6 +392,7 @@ def _build_html_context(report_data, sections, metric_results, template, user):
         "suppression_threshold": getattr(
             template, "suppression_threshold", SMALL_CELL_THRESHOLD,
         ),
+        "is_draft_template": not getattr(template, "html_template_name", ""),
     }
 
     if sections:
