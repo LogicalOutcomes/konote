@@ -1568,6 +1568,10 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass
 
+        # Always ensure portal resources exist (idempotent via get_or_create).
+        if programs_by_name and created_by:
+            self._create_demo_portal_resources(programs_by_name, created_by)
+
         # Always ensure DV-safe flags are set (idempotent — just sets a boolean).
         self._set_dv_safe_flags()
 
@@ -4921,3 +4925,41 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"  PERM demo data: {', '.join(created_items)}."
             )
+
+    def _create_demo_portal_resources(self, programs_by_name, created_by):
+        """Seed program-level portal resources for the demo."""
+        from apps.portal.models import PortalResourceLink
+
+        # Default resources visible to participants in every demo program.
+        # Each tuple: (title, title_fr, url, url_fr, description, description_fr)
+        default_resources = [
+            (
+                "Career Planning Resources",
+                "Ressources de planification de carrière",
+                "https://www.jobbank.gc.ca/career-planning/school-work-transition",
+                "https://www.guichetemplois.gc.ca/planification-carriere/transition-etudes-travail",
+                "Government of Canada tools for career planning and work transition.",
+                "Outils du gouvernement du Canada pour la planification de carrière et la transition vers le travail.",
+            ),
+        ]
+
+        created_count = 0
+        for program in programs_by_name.values():
+            for title, title_fr, url, url_fr, desc, desc_fr in default_resources:
+                _, created = PortalResourceLink.objects.get_or_create(
+                    program=program,
+                    url=url,
+                    defaults={
+                        "title": title,
+                        "title_fr": title_fr,
+                        "url_fr": url_fr,
+                        "description": desc,
+                        "description_fr": desc_fr,
+                        "created_by": created_by,
+                    },
+                )
+                if created:
+                    created_count += 1
+
+        if created_count:
+            self.stdout.write(f"  Created {created_count} portal resource links.")

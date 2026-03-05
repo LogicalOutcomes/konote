@@ -411,11 +411,12 @@ class ProgramResourceForm(forms.ModelForm):
     class Meta:
         from apps.portal.models import PortalResourceLink
         model = PortalResourceLink
-        fields = ["title", "title_fr", "url", "description", "description_fr", "display_order"]
+        fields = ["title", "title_fr", "url", "url_fr", "description", "description_fr", "display_order"]
         widgets = {
             "title": forms.TextInput(attrs={"placeholder": _("e.g. Crisis Support Line")}),
             "title_fr": forms.TextInput(attrs={"placeholder": _("e.g. Ligne de soutien en situation de crise")}),
             "url": forms.URLInput(attrs={"placeholder": "https://"}),
+            "url_fr": forms.URLInput(attrs={"placeholder": _("https:// (leave blank if same as English)")}),
             "description": forms.Textarea(attrs={"rows": 2, "placeholder": _("Brief description (optional)")}),
             "description_fr": forms.Textarea(attrs={"rows": 2, "placeholder": _("Description en français (optionnel)")}),
             "display_order": forms.NumberInput(attrs={"min": 0, "style": "width: 5em"}),
@@ -423,7 +424,8 @@ class ProgramResourceForm(forms.ModelForm):
         labels = {
             "title": _("Title (English)"),
             "title_fr": _("Title (French)"),
-            "url": _("Website URL"),
+            "url": _("Website URL (English)"),
+            "url_fr": _("Website URL (French)"),
             "description": _("Description (English)"),
             "description_fr": _("Description (French)"),
             "display_order": _("Display order"),

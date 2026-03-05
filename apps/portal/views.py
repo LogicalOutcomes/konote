@@ -764,7 +764,7 @@ def resources_list(request):
             program_groups[pname] = []
         program_groups[pname].append({
             "title": r.get_title(lang),
-            "url": r.url,
+            "url": r.get_url(lang),
             "description": r.get_description(lang),
         })
 

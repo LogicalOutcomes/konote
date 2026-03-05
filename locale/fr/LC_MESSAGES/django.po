@@ -16938,6 +16938,15 @@ msgstr "URL"
 msgid "Website URL"
 msgstr "URL du site Web"
 
+msgid "Website URL (English)"
+msgstr "URL du site Web (anglais)"
+
+msgid "Website URL (French)"
+msgstr "URL du site Web (français)"
+
+msgid "https:// (leave blank if same as English)"
+msgstr "https:// (laisser vide si identique à l'anglais)"
+
 msgid "client resource link"
 msgstr "lien de ressource pour le participant"
 

@@ -41,7 +41,10 @@
                 {{ resource.title }}
                 {% if resource.title_fr %}<br><small>FR: {{ resource.title_fr }}</small>{% endif %}
             </td>
-            <td><a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|truncatechars:40 }}</a></td>
+            <td>
+                <a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|truncatechars:40 }}</a>
+                {% if resource.url_fr %}<br><small>FR: <a href="{{ resource.url_fr }}" target="_blank" rel="noopener noreferrer">{{ resource.url_fr|truncatechars:40 }}</a></small>{% endif %}
+            </td>
             <td>{{ resource.display_order }}</td>
             <td>
                 <a href="{% url 'programs:program_resource_edit' program_id=program.pk resource_id=resource.pk %}">{% trans "Edit" %}</a>
