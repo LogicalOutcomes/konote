@@ -714,6 +714,23 @@ output.form-output {
 .client-table:has(.bulk-col) td:nth-child(2) a { text-decoration: none; }
 .client-table:has(.bulk-col) td:nth-child(2) a:hover { text-decoration: underline; }
 
+/* ---- Client list section headings (mixed-role grouped view) ---- */
+.client-list-section {
+    margin-bottom: 2rem;
+}
+.client-list-section .section-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--kn-border-light, #e0e0e0);
+    color: var(--color, inherit);
+}
+.client-list-section:first-child .section-heading {
+    margin-top: 0;
+}
+
 /* ---- Organization header ---- */
 .org-header {
     display: flex;

@@ -1784,3 +1784,114 @@ class BulkOperationsTest(TestCase):
         resp = self.client.get("/participants/?q=Unique")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Unique")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class RoleBasedGroupingTest(TestCase):
+    """Tests for the mixed-role participant list grouping (caseload vs oversight)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.prog_kitchen = Program.objects.create(name="Community Kitchen", colour_hex="#10B981")
+        self.prog_housing = Program.objects.create(name="Housing Stability", colour_hex="#F59E0B")
+
+        # Morgan: staff in Kitchen, PM in Housing — dual role
+        self.morgan = User.objects.create_user(username="morgan", password="testpass123")
+        UserProgramRole.objects.create(user=self.morgan, program=self.prog_kitchen, role="staff")
+        UserProgramRole.objects.create(user=self.morgan, program=self.prog_housing, role="program_manager")
+
+        # Single-role staff user
+        self.single_staff = User.objects.create_user(username="single_staff", password="testpass123")
+        UserProgramRole.objects.create(user=self.single_staff, program=self.prog_kitchen, role="staff")
+
+        # Single-role PM user
+        self.single_pm = User.objects.create_user(username="single_pm", password="testpass123")
+        UserProgramRole.objects.create(user=self.single_pm, program=self.prog_housing, role="program_manager")
+
+    def _create_client(self, first, last, programs):
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        cf = ClientFile()
+        cf.first_name = first
+        cf.last_name = last
+        cf.status = "active"
+        cf.save()
+        for p in programs:
+            ClientProgramEnrolment.objects.create(client_file=cf, program=p)
+        return cf
+
+    def test_staff_only_user_sees_flat_list(self):
+        """Single-role staff user gets no section split."""
+        self._create_client("Alice", "A", [self.prog_kitchen])
+        self.client.login(username="single_staff", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Your caseload")
+        self.assertNotContains(resp, "Programs you manage")
+        self.assertContains(resp, "Alice")
+
+    def test_pm_only_user_sees_flat_list(self):
+        """Single-role PM user gets no section split."""
+        self._create_client("Bob", "B", [self.prog_housing])
+        self.client.login(username="single_pm", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Your caseload")
+        self.assertNotContains(resp, "Programs you manage")
+        self.assertContains(resp, "Bob")
+
+    def test_mixed_role_user_sees_two_sections(self):
+        """Dual-role user sees caseload and oversight sections."""
+        self._create_client("Caseload", "Client", [self.prog_kitchen])
+        self._create_client("Oversight", "Client", [self.prog_housing])
+        self.client.login(username="morgan", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Your caseload")
+        self.assertContains(resp, "Programs you manage")
+        self.assertContains(resp, "Caseload")
+        self.assertContains(resp, "Oversight")
+
+    def test_participant_in_both_programs_goes_to_caseload(self):
+        """A participant in both a staff and PM program appears in caseload only."""
+        self._create_client("Both", "Programs", [self.prog_kitchen, self.prog_housing])
+        self._create_client("Only", "Housing", [self.prog_housing])
+        self.client.login(username="morgan", password="testpass123")
+        resp = self.client.get("/participants/")
+        content = resp.content.decode()
+        # "Both Programs" should be in caseload section (before oversight heading)
+        caseload_pos = content.find("caseload-heading")
+        oversight_pos = content.find("oversight-heading")
+        both_pos = content.find("Both")
+        self.assertGreater(both_pos, caseload_pos)
+        self.assertLess(both_pos, oversight_pos)
+
+    def test_htmx_returns_sections_for_mixed_role(self):
+        """HTMX request returns sections template for mixed-role user."""
+        self._create_client("Test", "Client", [self.prog_kitchen])
+        self.client.login(username="morgan", password="testpass123")
+        resp = self.client.get("/participants/", HTTP_HX_REQUEST="true")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "caseload-heading")
+        self.assertContains(resp, "oversight-heading")
+
+    def test_htmx_returns_flat_table_for_single_role(self):
+        """HTMX request returns flat table for single-role user."""
+        self._create_client("Test", "Client", [self.prog_kitchen])
+        self.client.login(username="single_staff", password="testpass123")
+        resp = self.client.get("/participants/", HTTP_HX_REQUEST="true")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "caseload-heading")
+
+    def test_role_subtitle_shows_program_names(self):
+        """Mixed-role user sees role subtitle with program names."""
+        self._create_client("Test", "Client", [self.prog_kitchen])
+        self.client.login(username="morgan", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertContains(resp, "Community Kitchen")
+        self.assertContains(resp, "Housing Stability")
+        # Subtitle contains role labels
+        self.assertContains(resp, "Staff in")
+        self.assertContains(resp, "Manager for")
