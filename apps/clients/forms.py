@@ -417,7 +417,7 @@ class CustomFieldDefinitionForm(forms.ModelForm):
         fields = [
             "group", "name", "input_type", "placeholder", "is_required",
             "is_sensitive", "front_desk_access", "is_dv_sensitive",
-            "options_json", "sort_order", "status",
+            "show_on_create", "options_json", "sort_order", "status",
         ]
         widgets = {
             "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),

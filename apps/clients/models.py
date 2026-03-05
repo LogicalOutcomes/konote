@@ -766,6 +766,10 @@ class CustomFieldDefinition(models.Model):
             "for participants with a DV safety flag."
         ),
     )
+    show_on_create = models.BooleanField(
+        default=False,
+        help_text=_("Show this field on the new participant creation form."),
+    )
     # Determines which validation and normalisation rules apply (I18N-FIX2).
     # Auto-detected from field name on first save if not explicitly set.
     validation_type = models.CharField(

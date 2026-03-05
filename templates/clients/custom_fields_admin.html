@@ -32,6 +32,7 @@
                 <th scope="col">{% trans "Type" %}</th>
                 <th scope="col">{% trans "Required" %}</th>
                 <th scope="col">{% trans "Sensitive" %}</th>
+                <th scope="col">{% trans "On create" %}</th>
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -42,6 +43,7 @@
                 <td>{{ field.get_input_type_display }}</td>
                 <td>{% if field.is_required %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
                 <td>{% if field.is_sensitive %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                <td>{% if field.show_on_create %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
                 <td><a href="{% url 'clients:custom_field_def_edit' field_id=field.pk %}">{% trans "Edit" %}</a></td>
             </tr>
             {% endfor %}
