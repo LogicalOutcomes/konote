@@ -116,7 +116,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.admin, "metrics"))
 
     def test_admin_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.admin, "funder_report"))
+        self.assertTrue(can_create_export(self.admin, "standard_report"))
 
     def test_admin_can_export_any_program(self):
         self.assertTrue(can_create_export(self.admin, "metrics", program=self.program_a))
@@ -128,7 +128,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.pm_user, "metrics"))
 
     def test_pm_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.pm_user, "funder_report"))
+        self.assertTrue(can_create_export(self.pm_user, "standard_report"))
 
     def test_pm_can_export_own_program(self):
         self.assertTrue(can_create_export(self.pm_user, "metrics", program=self.program_a))
@@ -140,7 +140,7 @@ class CanCreateExportHelperTest(TestCase):
 
     def test_staff_cannot_create_any_export(self):
         self.assertFalse(can_create_export(self.staff_user, "metrics"))
-        self.assertFalse(can_create_export(self.staff_user, "funder_report"))
+        self.assertFalse(can_create_export(self.staff_user, "standard_report"))
 
     # ── Executive ────────────────────────────────────────────────
 
@@ -148,7 +148,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.exec_user, "metrics"))
 
     def test_executive_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.exec_user, "funder_report"))
+        self.assertTrue(can_create_export(self.exec_user, "standard_report"))
 
     def test_executive_can_export_own_program(self):
         self.assertTrue(can_create_export(self.exec_user, "metrics", program=self.program_a))
