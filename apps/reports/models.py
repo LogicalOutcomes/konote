@@ -524,6 +524,19 @@ class SecureExportLink(models.Model):
     )
     approved_at = models.DateTimeField(null=True, blank=True)
 
+    def clean(self):
+        valid_types = {choice[0] for choice in self.EXPORT_TYPE_CHOICES}
+        if self.export_type and self.export_type not in valid_types:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                {"export_type": f"Unknown export type '{self.export_type}'. "
+                 f"Valid choices: {', '.join(sorted(valid_types))}"}
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     def is_valid(self):
         """Check if link is still usable (no I/O — checks DB state only)."""
         if self.revoked:
