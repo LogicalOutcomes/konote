@@ -1417,17 +1417,17 @@ details.search-filters-panel[open] summary {
 /* ---- Login page ---- */
 .login-container {
     max-width: 420px;
-    margin-top: 10vh;
+    margin-top: 2rem;
 }
 .login-logo {
     display: block;
-    margin: 0 auto 1rem;
-    max-height: 120px;
+    margin: 0 auto 0.5rem;
+    max-height: 80px;
     width: auto;
 }
 .login-wordmark {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.25rem;
     color: var(--kn-primary);
     font-size: 1.75rem;
     font-weight: 700;
@@ -1437,8 +1437,8 @@ details.search-filters-panel[open] summary {
     text-align: center;
     color: var(--kn-text-muted);
     font-size: 0.9rem;
-    margin-top: -1rem;
-    margin-bottom: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
 }
 
 /* Bilingual tagline on first visit (no language cookie) */
@@ -1446,8 +1446,8 @@ details.search-filters-panel[open] summary {
     text-align: center;
     color: var(--kn-text-muted);
     font-size: 0.9rem;
-    margin-top: -1rem;
-    margin-bottom: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
     line-height: 1.6;
 }
 .login-tagline-bilingual span {
