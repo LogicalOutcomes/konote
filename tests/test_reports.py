@@ -2309,6 +2309,64 @@ class TemplatePeriodOptionsViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b"")
 
+    def test_include_all_metrics_shows_reassuring_text(self):
+        """Template with include_all_metrics=True and no explicit metrics shows all-outcomes message."""
+        from apps.reports.models import ReportTemplate, Partner
+        partner = Partner.objects.create(name="Board", partner_type="board")
+        partner.programs.add(self.program)
+        all_metrics_tmpl = ReportTemplate.objects.create(
+            name="Org-Wide Summary",
+            partner=partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            include_all_metrics=True,
+            is_active=True,
+        )
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": all_metrics_tmpl.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("all recorded outcomes", content)
+        self.assertNotIn("No specific metrics", content)
+
+    def test_no_metrics_shows_warning(self):
+        """Template with no metrics and include_all_metrics=False shows warning."""
+        from apps.reports.models import ReportTemplate, Partner
+        partner = Partner.objects.create(name="Misc Funder", partner_type="funder")
+        partner.programs.add(self.program)
+        empty_tmpl = ReportTemplate.objects.create(
+            name="Empty Template",
+            partner=partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            include_all_metrics=False,
+            is_active=True,
+        )
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": empty_tmpl.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("No specific metrics", content)
+        self.assertNotIn("all recorded outcomes", content)
+
+    def test_explicit_metrics_shows_list(self):
+        """Template with explicit ReportMetric objects shows 'This report includes:' list."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": self.template.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("Employment Outcome", content)
+        self.assertNotIn("all recorded outcomes", content)
+        self.assertNotIn("No specific metrics", content)
+
 
 # =============================================================================
 # Security Tests: Demo/Real Data Separation in Exports (EXP0d)

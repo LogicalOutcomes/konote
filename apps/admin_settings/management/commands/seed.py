@@ -664,11 +664,22 @@ class Command(BaseCommand):
             self.stdout.write("  Demo registration link: already exists.")
 
     def _seed_demo_reporting_template(self, programs):
-        """Create a demo-only report template with a sample funder profile."""
-        from apps.reports.models import DemographicBreakdown, Partner, ReportTemplate
+        """Create demo report templates: a funder template and an org-wide template."""
+        self._seed_ccf_funder_template(programs)
+        self._seed_org_wide_template(programs)
+
+    def _seed_ccf_funder_template(self, programs):
+        """Demo funder report: Canadian Community Foundation quarterly outcomes."""
+        from apps.plans.models import MetricDefinition
+        from apps.reports.models import (
+            DemographicBreakdown,
+            Partner,
+            ReportMetric,
+            ReportTemplate,
+        )
 
         partner_name = "Canadian Community Foundation"
-        partner, partner_created = Partner.objects.get_or_create(
+        partner, _created = Partner.objects.get_or_create(
             name=partner_name,
             defaults={
                 "partner_type": "funder",
@@ -683,11 +694,15 @@ class Command(BaseCommand):
             name=profile_name,
             defaults={
                 "partner": partner,
+                "period_type": "quarterly",
+                "period_alignment": "fiscal",
+                "fiscal_year_start_month": 4,
+                "output_format": "mixed",
                 "description": (
-                    "Matches the demographic breakdown required by the "
-                    "Canadian Community Foundation for quarterly outcome "
-                    "reports. Groups participants by standard age categories "
-                    "(Child, Youth, Young Adult, Adult, Senior)."
+                    "Quarterly outcomes report for the Canadian Community "
+                    "Foundation. Includes participant counts, program outcomes, "
+                    "and service statistics across all funded programs, with "
+                    "participants grouped by age."
                 ),
             },
         )
@@ -697,6 +712,27 @@ class Command(BaseCommand):
             profile.save(update_fields=["partner"])
 
         if created:
+            # Metrics — representative set for a community foundation
+            CCF_METRICS = [
+                ("Goal Progress", "average", "Goal progress (average)"),
+                ("Self-Efficacy", "average", "Self-efficacy (average)"),
+                ("Satisfaction", "average", "Satisfaction (average)"),
+                ("Housing Secured", "percentage", "Housing secured (% achieving)"),
+                ("Job Placement", "percentage", "Job placement (% achieving)"),
+            ]
+            for i, (name, agg, label) in enumerate(CCF_METRICS):
+                md = MetricDefinition.objects.filter(
+                    name=name, is_enabled=True
+                ).first()
+                if md:
+                    ReportMetric.objects.create(
+                        report_template=profile,
+                        metric_definition=md,
+                        aggregation=agg,
+                        display_label=label,
+                        sort_order=i * 10,
+                    )
+
             DemographicBreakdown.objects.create(
                 report_template=profile,
                 label="Age Group",
@@ -710,14 +746,104 @@ class Command(BaseCommand):
                 ],
                 sort_order=0,
             )
-
-        if created:
             self.stdout.write(
                 f"  Demo report template: '{profile_name}' created with partner '{partner_name}'."
             )
         else:
             self.stdout.write(
                 f"  Demo report template: '{profile_name}' already exists; partner synced."
+            )
+
+    def _seed_org_wide_template(self, programs):
+        """Org-wide report: all metrics, demographics from agency defaults."""
+        from apps.clients.models import CustomFieldDefinition
+        from apps.reports.models import (
+            DemographicBreakdown,
+            Partner,
+            ReportTemplate,
+        )
+        from apps.reports.demographics import get_demographic_field_choices
+
+        # Internal partner for org-wide reports
+        partner_name = "Organization — Internal"
+        partner, _created = Partner.objects.get_or_create(
+            name=partner_name,
+            defaults={
+                "partner_type": "board",
+                "contact_name": "",
+            },
+        )
+        partner.programs.set(programs)
+
+        template_name = "Organization — All Programs Quarterly Summary"
+        template, created = ReportTemplate.objects.get_or_create(
+            name=template_name,
+            defaults={
+                "partner": partner,
+                "period_type": "quarterly",
+                "period_alignment": "fiscal",
+                "fiscal_year_start_month": 4,
+                "output_format": "mixed",
+                "include_all_metrics": True,
+                "description": (
+                    "Comprehensive quarterly summary across all programs. "
+                    "Includes every outcome metric with recorded data, "
+                    "grouped by the agency's standard demographic fields. "
+                    "Suitable for board reports, annual reviews, and "
+                    "internal planning."
+                ),
+            },
+        )
+        if not template.partner:
+            template.partner = partner
+            template.save(update_fields=["partner"])
+
+        if created:
+            # Age breakdown with standard bins
+            DemographicBreakdown.objects.create(
+                report_template=template,
+                label="Age Group",
+                source_type="age",
+                bins_json=[
+                    {"min": 0, "max": 17, "label": "Youth (0-17)"},
+                    {"min": 18, "max": 24, "label": "Young Adult (18-24)"},
+                    {"min": 25, "max": 44, "label": "Adult (25-44)"},
+                    {"min": 45, "max": 64, "label": "Older Adult (45-64)"},
+                    {"min": 65, "max": 999, "label": "Senior (65+)"},
+                ],
+                sort_order=0,
+            )
+
+            # Demographic breakdowns from agency's configured fields
+            # Skip the first two choices: "" (No grouping) and "age_range"
+            choices = get_demographic_field_choices()
+            sort = 10
+            for value, label in choices:
+                if not value or value == "age_range":
+                    continue
+                # value is "custom_<pk>" — extract the field
+                if value.startswith("custom_"):
+                    try:
+                        field_pk = int(value.split("_", 1)[1])
+                        field = CustomFieldDefinition.objects.get(pk=field_pk)
+                        DemographicBreakdown.objects.create(
+                            report_template=template,
+                            label=field.name,
+                            source_type="custom_field",
+                            custom_field=field,
+                            keep_all_categories=True,
+                            sort_order=sort,
+                        )
+                        sort += 10
+                    except (ValueError, CustomFieldDefinition.DoesNotExist):
+                        pass
+
+            self.stdout.write(
+                f"  Org-wide report template: '{template_name}' created."
+            )
+        else:
+            self.stdout.write(
+                f"  Org-wide report template: '{template_name}' already exists."
             )
 
     def _update_demo_client_fields(self):
