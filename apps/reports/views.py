@@ -1451,23 +1451,18 @@ def funder_report_approve(request):
     try:
         if all_programs_mode and export_format == "html":
             from .pdf_utils import render_html_string
-            total_served = sum(
-                rd.get("total_individuals_served", 0)
-                for _, rd in data_or_sections
-                if isinstance(rd.get("total_individuals_served"), int)
-            )
-            total_new = sum(
-                rd.get("new_clients_this_period", 0)
-                for _, rd in data_or_sections
-                if isinstance(rd.get("new_clients_this_period"), int)
-            )
-            total_contacts = sum(
-                rd.get("total_contacts", 0) for _, rd in data_or_sections
-            )
-            programs_list = [
-                {"name": ap.name, "report_data": rd}
-                for ap, rd in data_or_sections
-            ]
+            total_served = 0
+            total_new = 0
+            total_contacts = 0
+            programs_list = []
+            for ap, rd in data_or_sections:
+                if isinstance(rd.get("total_individuals_served"), int):
+                    total_served += rd["total_individuals_served"]
+                if isinstance(rd.get("new_clients_this_period"), int):
+                    total_new += rd["new_clients_this_period"]
+                if isinstance(rd.get("total_contacts"), int):
+                    total_contacts += rd["total_contacts"]
+                programs_list.append({"name": ap.name, "report_data": rd})
             html_context = {
                 "organisation_name": str(program_display_name),
                 "fiscal_year_label": fiscal_year_label,
@@ -1486,7 +1481,7 @@ def funder_report_approve(request):
             )
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
         elif all_programs_mode:
-            # All-programs CSV (default for CSV and PDF fallback)
+            # All-programs CSV (covers CSV, PDF, and any other format)
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Agency notes header
