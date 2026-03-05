@@ -19294,3 +19294,29 @@ msgstr "À la création"
 msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
 
+#: apps/portal/templates/portal/progress.html — progress page redesign
+msgid "Holding steady"
+msgstr "Stable"
+
+msgid "Moving up"
+msgstr "En hausse"
+
+msgid "Moving down"
+msgstr "En baisse"
+
+msgid "Scale"
+msgstr "Échelle"
+
+msgid "data table"
+msgstr "tableau de données"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Score"
+msgstr "Score"
+
+#: apps/portal/templates/portal/message_to_worker.html
+msgid "To:"
+msgstr "À :"
+
