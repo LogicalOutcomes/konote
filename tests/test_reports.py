@@ -1883,6 +1883,41 @@ class FunderReportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
+    def test_funder_report_all_programs_html_export(self):
+        """All-programs mode with HTML format produces styled HTML, not CSV."""
+        self.client.login(username="admin", password="testpass123")
+        self._submit_funder_report_through_approval(
+            {
+                "program": "__all__",
+                "fiscal_year": "2025",
+                "format": "html",
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            },
+        )
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client.get(f"/reports/download/{link.id}/")
+        content = self._get_download_content(download_resp)
+        # Verify styled HTML output, not CSV
+        self.assertIn("stat-box", content)
+        self.assertIn("Organisation Summary", content)
+        self.assertNotIn("# All Programs", content)  # CSV header marker
+        self.assertIn(".html", download_resp["Content-Disposition"])
+
+    def test_funder_report_all_programs_pdf_rejected(self):
+        """All-programs mode with PDF format should be rejected by form validation."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/reports/funder-report/", {
+            "program": "__all__",
+            "fiscal_year": "2025",
+            "format": "pdf",
+            "recipient": "self",
+            "recipient_reason": "Test export",
+        })
+        # Should return the form with an error, not redirect to preview
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "PDF export is not available for All Programs")
+
     def test_legacy_funder_url_redirects(self):
         """QA-R8-UX11: /reports/funder/ should 301 redirect to /reports/funder-report/."""
         self.client.login(username="admin", password="testpass123")

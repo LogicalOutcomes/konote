@@ -19493,3 +19493,22 @@ msgstr "Tout sélectionner dans la charge de travail"
 msgid "Select all in managed programs"
 msgstr "Tout sélectionner dans les programmes gérés"
 
+#. blocktrans from reports/html_report.html and html_report_all_programs.html
+#, python-format
+msgid "%(achieved)s of %(measured)s"
+msgstr "%(achieved)s sur %(measured)s"
+
+#, python-format
+msgid "Data reflects client outcomes recorded during the %(period)s reporting period."
+msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(period)s."
+
+#, python-format
+msgid "Data reflects client outcomes recorded during the %(fy)s reporting period."
+msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(fy)s."
+
+#, python-format
+msgid "Includes data from %(count)s program(s)."
+msgstr "Comprend les données de %(count)s programme(s)."
+
+msgid "PDF export is not available for All Programs. Please select CSV or HTML."
+msgstr "L’exportation PDF n’est pas disponible pour Tous les programmes. Veuillez sélectionner CSV ou HTML."
