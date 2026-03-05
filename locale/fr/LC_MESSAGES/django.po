@@ -19254,5 +19254,3 @@ msgstr "Afficher toutes les suggestions"
 msgid "Showing suggestions from %(start)s to %(end)s."
 msgstr "Suggestions du %(start)s au %(end)s."
 
-msgid "Show all"
-msgstr "Tout afficher"

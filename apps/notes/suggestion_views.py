@@ -3,7 +3,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, DateTimeField
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -183,7 +183,8 @@ def theme_detail(request, pk):
         try:
             date_from = date.fromisoformat(raw_from)
             date_to = date.fromisoformat(raw_to)
-            is_filtered = True
+            if date_from <= date_to:
+                is_filtered = True
         except ValueError:
             pass
 
@@ -193,6 +194,7 @@ def theme_detail(request, pk):
             _effective_date=Coalesce(
                 "progress_note__backdate",
                 "progress_note__created_at",
+                output_field=DateTimeField(),
             ),
         )
         .order_by("-linked_at")
