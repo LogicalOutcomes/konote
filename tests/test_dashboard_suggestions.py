@@ -1,8 +1,11 @@
-"""Tests for suggestion counts and theme display on the executive dashboard."""
+"""Tests for suggestion counts, theme display, and date filtering."""
+from datetime import date, timedelta
+
 from cryptography.fernet import Fernet
 
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
+from django.utils import timezone
 
 import konote.encryption as enc_module
 from apps.clients.dashboard_views import _batch_suggestion_counts, _batch_top_themes
@@ -343,3 +346,123 @@ class ExecutiveDashboardSuggestionViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Suggestions")
         self.assertNotContains(response, "Suggestion Themes")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ThemeDetailDateFilteringTest(TestCase):
+    """Test date filtering on theme_detail view."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.program = Program.objects.create(name="Housing", status="active")
+        self.user = User.objects.create_user(username="pm", password="testpass123")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program,
+            role="program_manager", status="active",
+        )
+        self.theme = SuggestionTheme.objects.create(
+            program=self.program,
+            name="Evening hours",
+            priority="noted",
+            status="open",
+            created_by=self.user,
+        )
+
+        # Create notes at different dates
+        self.client_file = ClientFile.objects.create(record_id="DATE-001")
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="active",
+        )
+
+        today = timezone.now()
+        self.note_recent = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="progress",
+            suggestion_priority="noted",
+        )
+        # Force created_at to today
+        ProgressNote.objects.filter(pk=self.note_recent.pk).update(created_at=today)
+        self.note_recent.refresh_from_db()
+
+        self.note_old = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="progress",
+            suggestion_priority="important",
+        )
+        # Force created_at to 60 days ago
+        old_date = today - timedelta(days=60)
+        ProgressNote.objects.filter(pk=self.note_old.pk).update(created_at=old_date)
+        self.note_old.refresh_from_db()
+
+        # Link both notes to theme
+        SuggestionLink.objects.create(
+            theme=self.theme, progress_note=self.note_recent,
+            linked_by=self.user, auto_linked=False,
+        )
+        SuggestionLink.objects.create(
+            theme=self.theme, progress_note=self.note_old,
+            linked_by=self.user, auto_linked=False,
+        )
+
+        self.detail_url = f"/manage/suggestions/{self.theme.pk}/"
+
+    def test_no_filter_returns_all_linked(self):
+        """Without date params, all linked notes should appear."""
+        self.client.login(username="pm", password="testpass123")
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["linked_notes"]), 2)
+        self.assertFalse(response.context["is_filtered"])
+
+    def test_valid_date_range_filters_notes(self):
+        """A valid date range should filter linked notes."""
+        self.client.login(username="pm", password="testpass123")
+        today = date.today()
+        date_from = (today - timedelta(days=7)).isoformat()
+        date_to = today.isoformat()
+        response = self.client.get(
+            self.detail_url, {"date_from": date_from, "date_to": date_to},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_filtered"])
+        # Only the recent note should be in the filtered results
+        self.assertEqual(len(response.context["linked_notes"]), 1)
+
+    def test_invalid_date_returns_unfiltered(self):
+        """Malformed date strings should be ignored, returning all notes."""
+        self.client.login(username="pm", password="testpass123")
+        response = self.client.get(
+            self.detail_url, {"date_from": "not-a-date", "date_to": "also-bad"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["is_filtered"])
+        self.assertEqual(len(response.context["linked_notes"]), 2)
+
+    def test_partial_params_returns_unfiltered(self):
+        """Only date_from without date_to should return unfiltered."""
+        self.client.login(username="pm", password="testpass123")
+        response = self.client.get(
+            self.detail_url, {"date_from": date.today().isoformat()},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["is_filtered"])
+        self.assertEqual(len(response.context["linked_notes"]), 2)
+
+    def test_reversed_date_range_returns_unfiltered(self):
+        """date_from > date_to should be treated as invalid (not filtered)."""
+        self.client.login(username="pm", password="testpass123")
+        today = date.today()
+        response = self.client.get(
+            self.detail_url, {
+                "date_from": today.isoformat(),
+                "date_to": (today - timedelta(days=30)).isoformat(),
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["is_filtered"])
+        self.assertEqual(len(response.context["linked_notes"]), 2)
