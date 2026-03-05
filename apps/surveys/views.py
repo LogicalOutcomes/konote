@@ -557,11 +557,13 @@ def staff_data_entry(request, client_id, survey_id):
         is_active=True,
     ).prefetch_related("questions").select_related("condition_question").order_by("sort_order")
 
-    if request.method == "POST":
-        from apps.portal.survey_helpers import filter_visible_sections
+    from apps.portal.survey_helpers import filter_visible_sections
 
-        # Materialise queryset once to avoid duplicate DB hits
-        sections_list = list(sections)
+    # Materialise queryset once to avoid duplicate DB hits
+    sections_list = list(sections)
+    visible_sections = filter_visible_sections(sections_list, {}, is_identified=True)
+
+    if request.method == "POST":
 
         # 1. Collect all submitted answers
         all_answers = {}
@@ -601,7 +603,7 @@ def staff_data_entry(request, client_id, survey_id):
             return render(request, "surveys/staff_data_entry.html", {
                 "client": client,
                 "survey": survey,
-                "sections": sections,
+                "sections": visible_sections,
                 "posted": request.POST,
                 "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
             })
@@ -637,7 +639,7 @@ def staff_data_entry(request, client_id, survey_id):
     return render(request, "surveys/staff_data_entry.html", {
         "client": client,
         "survey": survey,
-        "sections": sections,
+        "sections": visible_sections,
         "posted": {},
         "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
     })
