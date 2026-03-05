@@ -255,30 +255,29 @@ def client_list(request):
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
     user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
 
-    # Compute program IDs where user can edit plans.
-    # Uses PERMISSIONS.keys() so any future roles are automatically included.
-    plan_edit_program_ids = set(
-        UserProgramRole.objects.filter(user=request.user, status="active")
-        .exclude(role__in=[
-            r for r in PERMISSIONS.keys()
-            if can_access(r, "plan.edit") == DENY
-        ])
-        .values_list("program_id", flat=True)
+    # Single query for user's program roles — used for both plan-edit check
+    # and role-based grouping.  Respects CONF9 active program context so the
+    # section split collapses when the user narrows to one program.
+    _role_filter = {"user": request.user, "status": "active"}
+    if active_ids:
+        _role_filter["program_id__in"] = active_ids
+    _user_roles = list(
+        UserProgramRole.objects.filter(**_role_filter)
+        .select_related("program")
     )
 
-    # Compute role-to-program mappings for grouped display.
-    # When a user has both staff and PM roles, we split the list into
-    # "Your caseload" (staff programs) and "Programs you manage" (PM programs).
-    _user_role_qs = UserProgramRole.objects.filter(
-        user=request.user, status="active"
-    ).select_related("program")
-    staff_programs = []
-    pm_programs = []
-    for upr in _user_role_qs:
-        if upr.role == "staff":
-            staff_programs.append(upr.program)
-        elif upr.role == "program_manager":
-            pm_programs.append(upr.program)
+    # Derive plan-edit programs from the role query (replaces separate query).
+    _plan_edit_deny_roles = {
+        r for r in PERMISSIONS.keys() if can_access(r, "plan.edit") == DENY
+    }
+    plan_edit_program_ids = {
+        upr.program_id for upr in _user_roles
+        if upr.role not in _plan_edit_deny_roles
+    }
+
+    # Role-to-program mappings for grouped display.
+    staff_programs = [upr.program for upr in _user_roles if upr.role == "staff"]
+    pm_programs = [upr.program for upr in _user_roles if upr.role == "program_manager"]
     staff_program_ids = {p.pk for p in staff_programs}
     has_mixed_roles = bool(staff_program_ids) and bool(pm_programs)
 
@@ -372,7 +371,23 @@ def client_list(request):
     can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
     show_bulk = can_bulk_status or can_bulk_transfer
 
-    # Build context — split into sections when user has mixed roles
+    # Base context shared by both single and split views
+    context = {
+        "has_mixed_roles": has_mixed_roles,
+        "accessible_programs": accessible_programs,
+        "status_filter": status_filter,
+        "program_filter": program_filter,
+        "editable_filter": editable_filter,
+        "has_plan_edit_programs": bool(plan_edit_program_ids),
+        "search_query": request.GET.get("q", ""),
+        "sort_by": sort_by,
+        "can_create": can_create,
+        "show_bulk": show_bulk,
+        "can_bulk_status": can_bulk_status,
+        "can_bulk_transfer": can_bulk_transfer,
+    }
+
+    # Build section-specific context
     if has_mixed_roles:
         # Split participants: caseload (staff programs) vs oversight (PM programs).
         # A participant in BOTH a staff and PM program goes to caseload only.
@@ -400,9 +415,7 @@ def client_list(request):
         pm_label = ", ".join(
             p.translated_name for p in sorted(pm_programs, key=lambda p: p.name)
         )
-
-        context = {
-            "has_mixed_roles": True,
+        context.update({
             "caseload_data": caseload_data,
             "caseload_count": len(caseload_data),
             "oversight_page": oversight_page,
@@ -413,39 +426,12 @@ def client_list(request):
                 "staff": staff_label, "pm": pm_label,
             },
             "page": None,
-            "accessible_programs": accessible_programs,
-            "status_filter": status_filter,
-            "program_filter": program_filter,
-            "editable_filter": editable_filter,
-            "has_plan_edit_programs": bool(plan_edit_program_ids),
-            "search_query": request.GET.get("q", ""),
-            "sort_by": sort_by,
-            "can_create": can_create,
-            "show_bulk": show_bulk,
-            "can_bulk_status": can_bulk_status,
-            "can_bulk_transfer": can_bulk_transfer,
-        }
+        })
     else:
         # Single-role user: keep existing flat list with pagination
         client_data.sort(key=_sort_fn, reverse=_sort_reverse)
         paginator = Paginator(client_data, 25)
-        page = paginator.get_page(request.GET.get("page"))
-
-        context = {
-            "has_mixed_roles": False,
-            "page": page,
-            "accessible_programs": accessible_programs,
-            "status_filter": status_filter,
-            "program_filter": program_filter,
-            "editable_filter": editable_filter,
-            "has_plan_edit_programs": bool(plan_edit_program_ids),
-            "search_query": request.GET.get("q", ""),
-            "sort_by": sort_by,
-            "can_create": can_create,
-            "show_bulk": show_bulk,
-            "can_bulk_status": can_bulk_status,
-            "can_bulk_transfer": can_bulk_transfer,
-        }
+        context["page"] = paginator.get_page(request.GET.get("page"))
 
     # HTMX request — return only the appropriate partial
     if request.headers.get("HX-Request"):
