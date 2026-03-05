@@ -170,6 +170,22 @@ deploy_instance() {
             fi
         fi
 
+        # Re-check for migration errors every 15s after the first check at 30s
+        # (the error may not appear until 40-60s when migrations take time)
+        if [ "$is_dev" = "true" ] && [ "$checked_migration" = "true" ] && [ $((elapsed % 15)) -eq 0 ]; then
+            local logs
+            logs=$(docker compose logs web --tail=40 2>&1 || true)
+
+            if echo "$logs" | grep -qiE "UndefinedTable|ProgrammingError|relation.*does not exist|migration.*error|migrate_default.*Phase|RuntimeError.*migrat"; then
+                echo -e "${YELLOW}=== Dev instance: migration failure detected (at ${elapsed}s) ===${NC}"
+                echo -e "${YELLOW}=== Resetting dev database (demo data only — safe to reset) ===${NC}"
+                log_event "DEPLOY RESET: ${name} — migration failure at ${elapsed}s, resetting database"
+                reset_dev_database "$dir"
+                healthy=true
+                break
+            fi
+        fi
+
         # For production crash-loops, fail fast
         if [ "$is_dev" != "true" ] && echo "$status" | grep -q "Restarting"; then
             echo -e "${RED}=== ${name}: Container is crash-looping ===${NC}"
