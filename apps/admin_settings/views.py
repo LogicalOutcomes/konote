@@ -462,8 +462,15 @@ def features(request):
             "is_enabled": current_flags.get(key, default_state),
         })
 
+    # AI processing info for admin awareness
+    from django.conf import settings as django_settings
+    ai_key_set = bool(getattr(django_settings, "OPENROUTER_API_KEY", ""))
+    ai_model = getattr(django_settings, "OPENROUTER_MODEL", "")
+
     return render(request, "admin_settings/features.html", {
         "feature_rows": feature_rows,
+        "ai_key_set": ai_key_set,
+        "ai_model": ai_model,
     })
 
 

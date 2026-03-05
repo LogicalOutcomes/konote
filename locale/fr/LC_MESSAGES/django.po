@@ -19601,3 +19601,20 @@ msgstr "Aucune suggestion trouvée pour ce programme."
 #: apps/notes/suggestion_views.py
 msgid "AI analysis could not be completed. Please try again."
 msgstr "L’analyse par IA n’a pu être complétée. Veuillez réessayer."
+
+#: templates/admin_settings/features.html
+msgid "AI Processing"
+msgstr "Traitement IA"
+
+#: templates/admin_settings/features.html
+msgid "AI requests are sent to <strong>OpenRouter</strong> (external API) using model: <code>%(model)s</code>."
+msgstr "Les demandes d’IA sont envoyées à <strong>OpenRouter</strong> (API externe) en utilisant le modèle : <code>%(model)s</code>."
+
+#: templates/admin_settings/features.html
+msgid "Data sent depends on which AI features are enabled below. Tools-only AI sends program metadata only (no personal information). Participant-data AI sends de-identified quotes."
+msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-dessous. L’IA outils uniquement envoie seulement les métadonnées du programme (aucune information personnelle). L’IA données des participants envoie des citations dé-identifiées."
+
+#: templates/admin_settings/features.html
+msgid "No AI API key is configured. AI features are unavailable even if enabled below."
+msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
+
