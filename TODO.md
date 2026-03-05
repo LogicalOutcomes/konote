@@ -37,14 +37,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
 
-### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
-
-Multiple agencies can deploy today on independent OVHcloud VPS instances (~$22/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
-
-Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
-
-- [x] Improve admin UI for self-service configuration — PR #252 — 2026-03-04 (ADMIN-UX1)
-
 ### Phase: Offline Field Collection (if requested by client)
 
 - [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
@@ -80,6 +72,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ### Session 13 — Report Fixes & Cleanup
 
+- [x] Server Sharing phase completed — multi-tenant infrastructure, admin UI self-service config — PR #220, #252 — 2026-03-04 (ADMIN-UX1)
 - [x] All-programs HTML export support — added template + view branch for HTML format — PR #337 — 2026-03-05 (RPT-HTML-ALLPROG1)
 - [x] Simplified all-programs aggregation — consolidated 4 iterations into single pass — PR #337 — 2026-03-05 (RPT-SIMPLIFY1)
 - [x] Extracted shared CSS partial + aggregation helper — ~240 lines deduped, isinstance guard fixed — 2026-03-05 (CHORE-RPT-CSS1, CHORE-RPT-FIX1)
