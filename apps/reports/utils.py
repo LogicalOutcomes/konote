@@ -240,3 +240,32 @@ def get_quarter_choices(num_quarters: int = 8) -> List[Tuple[str, str]]:
             fy -= 1
 
     return choices
+
+
+def aggregate_all_programs_totals(data_or_sections):
+    """Aggregate service metrics across all program reports.
+
+    Args:
+        data_or_sections: List of (program, report_data) tuples.
+
+    Returns:
+        dict with total_served, total_new_clients, total_contacts, and programs list.
+    """
+    total_served = 0
+    total_new = 0
+    total_contacts = 0
+    programs = []
+    for program, rd in data_or_sections:
+        if isinstance(rd.get("total_individuals_served"), int):
+            total_served += rd["total_individuals_served"]
+        if isinstance(rd.get("new_clients_this_period"), int):
+            total_new += rd["new_clients_this_period"]
+        if isinstance(rd.get("total_contacts"), int):
+            total_contacts += rd["total_contacts"]
+        programs.append({"name": program.name, "report_data": rd})
+    return {
+        "total_served": total_served,
+        "total_new_clients": total_new,
+        "total_contacts": total_contacts,
+        "programs": programs,
+    }
