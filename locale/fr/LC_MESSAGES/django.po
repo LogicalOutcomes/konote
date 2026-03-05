@@ -3833,6 +3833,11 @@ msgstr "Plus difficile en ce moment"
 msgid "Holding steady"
 msgstr "Se maintient"
 
+#: apps/portal/templates/portal/progress.html — trend indicator (pgettext)
+msgctxt "progress trend"
+msgid "Holding steady"
+msgstr "Stable"
+
 msgid "Something's shifting"
 msgstr "Quelque chose bouge"
 
@@ -19293,4 +19298,27 @@ msgstr "À la création"
 
 msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
+
+#: apps/portal/templates/portal/progress.html — progress page redesign
+msgid "Moving up"
+msgstr "En hausse"
+
+msgid "Moving down"
+msgstr "En baisse"
+
+msgid "Scale"
+msgstr "Échelle"
+
+msgid "data table"
+msgstr "tableau de données"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Score"
+msgstr "Score"
+
+#: apps/portal/templates/portal/message_to_worker.html
+msgid "To:"
+msgstr "À :"
 
