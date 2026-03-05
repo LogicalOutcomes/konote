@@ -6661,6 +6661,27 @@ msgstr "Taux de réussite global"
 msgid "Overall Summary"
 msgstr "Résumé général"
 
+msgid "Overall achievement rate"
+msgstr "Taux de réussite global"
+
+msgid "Contents"
+msgstr "Table des matières"
+
+msgid "Report sections"
+msgstr "Sections du rapport"
+
+msgid "Increased"
+msgstr "En hausse"
+
+msgid "Decreased"
+msgstr "En baisse"
+
+msgid "from"
+msgstr "par rapport à"
+
+msgid "previous period"
+msgstr "la période précédente"
+
 msgid "PLAN SECTIONS & TARGETS"
 msgstr "SECTIONS DU PLAN ET CIBLES"
 
