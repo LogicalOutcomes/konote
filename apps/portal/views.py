@@ -1549,7 +1549,10 @@ def message_create(request):
         .order_by("-created_at")[:10]
     )
 
-    # Get assigned worker name(s) from active service episodes
+    # Get assigned worker name(s) from active service episodes.
+    # The portal is client-scoped (not program-scoped), so we show workers
+    # from all active programmes — the participant already knows their own
+    # enrolments, and this lets them reach any worker supporting them.
     from apps.clients.models import ServiceEpisode
 
     worker_names = list(

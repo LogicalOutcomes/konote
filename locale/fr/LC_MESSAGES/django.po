@@ -3831,6 +3831,11 @@ msgid "Harder right now"
 msgstr "Plus difficile en ce moment"
 
 msgid "Holding steady"
+msgstr "Se maintient"
+
+#: apps/portal/templates/portal/progress.html — trend indicator (pgettext)
+msgctxt "progress trend"
+msgid "Holding steady"
 msgstr "Stable"
 
 msgid "Something's shifting"

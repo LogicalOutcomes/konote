@@ -50,7 +50,7 @@
     function getTrend(startVal, currentVal, minVal, maxVal) {
         var diff = currentVal - startVal;
         if (diff === 0) {
-            return { label: '{% trans "Holding steady" %}', cssClass: 'trend-steady' };
+            return { label: '{% trans "Holding steady" context "progress trend" %}', cssClass: 'trend-steady' };
         }
         var goingUp = diff > 0;
         // For inverted scales (max < min), flip the direction label
@@ -65,142 +65,92 @@
     }
 
     allData.forEach(function(chartInfo, index) {
-        // ---- Card container ----
-        var card = document.createElement('article');
-        card.className = 'portal-progress-card';
-        card.setAttribute('aria-labelledby', 'chart-heading-' + index);
+        var vals = chartInfo.values || [];
+        var headingId = 'chart-heading-' + index;
 
-        // ---- Header section ----
-        var header = document.createElement('header');
-        header.className = 'portal-progress-header';
-
-        // Goal name(s) as a small label above the metric name
+        // ---- Header ----
+        var headerChildren = [];
         if (chartInfo.goal_names && chartInfo.goal_names.length) {
-            var goalLabel = document.createElement('span');
-            goalLabel.className = 'portal-progress-goal';
-            goalLabel.textContent = chartInfo.goal_names.join(', ');
-            header.appendChild(goalLabel);
+            headerChildren.push(
+                el('span', { className: 'portal-progress-goal' }, chartInfo.goal_names.join(', '))
+            );
         }
-
-        // Metric name as the heading
-        var heading = document.createElement('h2');
-        heading.id = 'chart-heading-' + index;
-        heading.className = 'portal-progress-title';
-        heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
-        header.appendChild(heading);
-
-        // Description
+        headerChildren.push(
+            el('h2', { id: headingId, className: 'portal-progress-title' },
+               chartInfo.metric_name || ('Chart ' + (index + 1)))
+        );
         if (chartInfo.description) {
-            var desc = document.createElement('p');
-            desc.className = 'portal-progress-desc';
-            desc.textContent = chartInfo.description;
-            header.appendChild(desc);
+            headerChildren.push(el('p', { className: 'portal-progress-desc' }, chartInfo.description));
         }
-
-        card.appendChild(header);
 
         // ---- Score summary strip ----
-        var vals = chartInfo.values || [];
+        var summaryEl = null;
         if (vals.length > 0) {
-            var summary = document.createElement('div');
-            summary.className = 'portal-progress-summary';
-
-            // Current score — large and prominent
-            var currentBlock = document.createElement('div');
-            currentBlock.className = 'portal-progress-current';
-            var currentNum = document.createElement('span');
-            currentNum.className = 'portal-progress-big-num';
-            currentNum.textContent = chartInfo.current_value;
-            var currentLabel = document.createElement('span');
-            currentLabel.className = 'portal-progress-label';
-            currentLabel.textContent = chartInfo.current_label || '{% trans "Now at" %}';
-            currentBlock.appendChild(currentNum);
-            currentBlock.appendChild(currentLabel);
-            summary.appendChild(currentBlock);
-
-            // Started at
-            var startBlock = document.createElement('div');
-            startBlock.className = 'portal-progress-start';
-            var startNum = document.createElement('span');
-            startNum.className = 'portal-progress-big-num';
-            startNum.textContent = chartInfo.start_value;
-            var startLabel = document.createElement('span');
-            startLabel.className = 'portal-progress-label';
-            startLabel.textContent = chartInfo.start_label || '{% trans "Started at" %}';
-            startBlock.appendChild(startNum);
-            startBlock.appendChild(startLabel);
-            summary.appendChild(startBlock);
-
-            // Trend indicator
+            var summaryChildren = [
+                el('div', { className: 'portal-progress-current' }, [
+                    el('span', { className: 'portal-progress-big-num' }, String(chartInfo.current_value)),
+                    el('span', { className: 'portal-progress-label' }, chartInfo.current_label || '{% trans "Now at" %}'),
+                ]),
+                el('div', { className: 'portal-progress-start' }, [
+                    el('span', { className: 'portal-progress-big-num' }, String(chartInfo.start_value)),
+                    el('span', { className: 'portal-progress-label' }, chartInfo.start_label || '{% trans "Started at" %}'),
+                ]),
+            ];
             if (vals.length >= 2) {
                 var trend = getTrend(
                     chartInfo.start_value, chartInfo.current_value,
                     chartInfo.min_value, chartInfo.max_value
                 );
-                var trendBlock = document.createElement('div');
-                trendBlock.className = 'portal-progress-trend ' + trend.cssClass;
-                trendBlock.textContent = trend.label;
-                summary.appendChild(trendBlock);
+                summaryChildren.push(
+                    el('div', { className: 'portal-progress-trend ' + trend.cssClass }, trend.label)
+                );
             }
-
-            // Scale context
-            if (chartInfo.min_value !== null && chartInfo.max_value !== null &&
-                chartInfo.min_value !== undefined && chartInfo.max_value !== undefined) {
-                var scaleBlock = document.createElement('div');
-                scaleBlock.className = 'portal-progress-scale';
-                scaleBlock.textContent = '{% trans "Scale" %}: ' + chartInfo.min_value + '–' + chartInfo.max_value;
-                if (chartInfo.unit) {
-                    scaleBlock.textContent += ' (' + chartInfo.unit + ')';
-                }
-                summary.appendChild(scaleBlock);
+            if (chartInfo.min_value != null && chartInfo.max_value != null) {
+                var scaleText = '{% trans "Scale" %}: ' + chartInfo.min_value + '–' + chartInfo.max_value;
+                if (chartInfo.unit) scaleText += ' (' + chartInfo.unit + ')';
+                summaryChildren.push(el('div', { className: 'portal-progress-scale' }, scaleText));
             }
-
-            card.appendChild(summary);
+            summaryEl = el('div', { className: 'portal-progress-summary' }, summaryChildren);
         }
 
-        // ---- Chart ----
-        var chartWrap = document.createElement('div');
-        chartWrap.className = 'portal-progress-chart-wrap';
-
-        var canvas = document.createElement('canvas');
-        canvas.id = 'progress-chart-' + index;
-        canvas.setAttribute('aria-hidden', 'true');
-        chartWrap.appendChild(canvas);
-        card.appendChild(chartWrap);
+        // ---- Chart canvas ----
+        var canvas = el('canvas', { id: 'progress-chart-' + index, 'aria-hidden': 'true' });
+        var chartWrap = el('div', { className: 'portal-progress-chart-wrap' }, canvas);
 
         // ---- Accessible data table (visually hidden) ----
+        var tableEl = null;
         if (vals.length > 0) {
-            var table = document.createElement('table');
-            table.className = 'visually-hidden-focusable portal-progress-table';
-            table.setAttribute('aria-label', (chartInfo.metric_name || 'Progress') + ' — {% trans "data table" %}');
-
-            var thead = document.createElement('thead');
-            var headRow = document.createElement('tr');
-            var thDate = document.createElement('th');
-            thDate.textContent = '{% trans "Date" %}';
-            thDate.setAttribute('scope', 'col');
-            var thScore = document.createElement('th');
-            thScore.textContent = '{% trans "Score" %}';
-            thScore.setAttribute('scope', 'col');
-            headRow.appendChild(thDate);
-            headRow.appendChild(thScore);
-            thead.appendChild(headRow);
-            table.appendChild(thead);
-
-            var tbody = document.createElement('tbody');
+            var rows = [];
             for (var i = 0; i < vals.length; i++) {
-                var row = document.createElement('tr');
-                var tdDate = document.createElement('td');
-                tdDate.textContent = formatDate(chartInfo.labels[i]);
-                var tdVal = document.createElement('td');
-                tdVal.textContent = vals[i];
-                row.appendChild(tdDate);
-                row.appendChild(tdVal);
-                tbody.appendChild(row);
+                rows.push(el('tr', null, [
+                    el('td', null, formatDate(chartInfo.labels[i])),
+                    el('td', null, String(vals[i])),
+                ]));
             }
-            table.appendChild(tbody);
-            card.appendChild(table);
+            tableEl = el('table', {
+                className: 'visually-hidden-focusable portal-progress-table',
+                'aria-label': (chartInfo.metric_name || 'Progress') + ' — {% trans "data table" %}',
+            }, [
+                el('thead', null,
+                    el('tr', null, [
+                        el('th', { scope: 'col' }, '{% trans "Date" %}'),
+                        el('th', { scope: 'col' }, '{% trans "Score" %}'),
+                    ])
+                ),
+                el('tbody', null, rows),
+            ]);
         }
+
+        // ---- Assemble card ----
+        var cardChildren = [el('header', { className: 'portal-progress-header' }, headerChildren)];
+        if (summaryEl) cardChildren.push(summaryEl);
+        cardChildren.push(chartWrap);
+        if (tableEl) cardChildren.push(tableEl);
+
+        var card = el('article', {
+            className: 'portal-progress-card',
+            'aria-labelledby': headingId,
+        }, cardChildren);
 
         container.appendChild(card);
 
@@ -262,7 +212,7 @@
                         min: yMin,
                         max: yMax,
                         ticks: {
-                            stepSize: 1,
+                            stepSize: (yMax !== undefined && yMin !== undefined && (yMax - yMin) <= 10) ? 1 : undefined,
                             font: { size: 12 }
                         },
                         grid: {
