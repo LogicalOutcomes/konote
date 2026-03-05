@@ -634,6 +634,107 @@ class CustomFieldTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ShowOnCreateFieldTest(TestCase):
+    """Tests for custom fields with show_on_create=True on the New Participant form."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+        self.receptionist = User.objects.create_user(username="recep", password="testpass123", is_admin=False)
+        self.prog = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        self.group = CustomFieldGroup.objects.create(title="Identity", sort_order=10)
+        self.pronouns = CustomFieldDefinition.objects.create(
+            group=self.group, name="Pronouns", input_type="select_other",
+            is_required=False, show_on_create=True, front_desk_access="edit",
+            options_json=["He/him", "She/her", "They/them"],
+        )
+
+    def _base_post_data(self, **extra):
+        data = {
+            "first_name": "Test", "last_name": "User",
+            "preferred_name": "", "middle_name": "",
+            "birth_date": "", "record_id": "", "status": "active",
+            "preferred_language": "en", "programs": [self.prog.pk],
+        }
+        data.update(extra)
+        return data
+
+    def test_create_renders_show_on_create_field(self):
+        """GET create page includes custom fields marked show_on_create."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/participants/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Pronouns")
+        self.assertContains(resp, "He/him")
+
+    def test_create_saves_custom_field_value(self):
+        """POST with a custom field value saves a ClientDetailValue."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/participants/create/", self._base_post_data(
+            **{f"custom_{self.pronouns.pk}": "They/them"},
+        ))
+        self.assertEqual(resp.status_code, 302)
+        cf = ClientFile.objects.last()
+        cdv = ClientDetailValue.objects.get(client_file=cf, field_def=self.pronouns)
+        self.assertEqual(cdv.get_value(), "They/them")
+
+    def test_create_skips_empty_custom_field(self):
+        """Empty custom field values don't create ClientDetailValue records."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/participants/create/", self._base_post_data(
+            **{f"custom_{self.pronouns.pk}": ""},
+        ))
+        self.assertEqual(resp.status_code, 302)
+        cf = ClientFile.objects.last()
+        self.assertFalse(ClientDetailValue.objects.filter(client_file=cf).exists())
+
+    def test_create_receptionist_sees_edit_fields_only(self):
+        """Receptionist sees show_on_create fields with front_desk_access='edit' only."""
+        hidden_field = CustomFieldDefinition.objects.create(
+            group=self.group, name="Secret Field", input_type="text",
+            show_on_create=True, front_desk_access="none",
+        )
+        self.client.login(username="recep", password="testpass123")
+        resp = self.client.get("/participants/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Pronouns")
+        self.assertNotContains(resp, "Secret Field")
+
+    def test_create_does_not_show_non_flagged_fields(self):
+        """Fields with show_on_create=False don't appear on the create form."""
+        hidden = CustomFieldDefinition.objects.create(
+            group=self.group, name="Hidden Field", input_type="text",
+            show_on_create=False, front_desk_access="edit",
+        )
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/participants/create/")
+        self.assertNotContains(resp, "Hidden Field")
+
+    def test_create_sensitive_field_encrypted(self):
+        """Sensitive custom field values are stored encrypted."""
+        sensitive = CustomFieldDefinition.objects.create(
+            group=self.group, name="SIN", input_type="text",
+            is_required=False, is_sensitive=True,
+            show_on_create=True, front_desk_access="edit",
+        )
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/participants/create/", self._base_post_data(
+            **{f"custom_{sensitive.pk}": "123-456-789"},
+        ))
+        self.assertEqual(resp.status_code, 302)
+        cf = ClientFile.objects.last()
+        cdv = ClientDetailValue.objects.get(client_file=cf, field_def=sensitive)
+        self.assertEqual(cdv.get_value(), "123-456-789")
+        self.assertEqual(cdv.value, "")  # Plain text field empty
+        self.assertTrue(cdv._value_encrypted)  # Encrypted field populated
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class SelectOtherFieldTest(TestCase):
     """Tests for the select_other input type (dropdown with free-text Other option)."""
 
