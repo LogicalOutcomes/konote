@@ -11,21 +11,7 @@
     {% if caseload_data %}
     <figure class="client-table-wrap" data-total-clients="{{ caseload_count }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Your caseload' %}">
-        <thead>
-            <tr>
-                {% if show_bulk %}
-                <th scope="col" class="bulk-col">
-                    <label class="visually-hidden" for="bulk-select-caseload">{% trans "Select all" %}</label>
-                    <input type="checkbox" id="bulk-select-caseload" aria-label="{% trans 'Select all in caseload' %}">
-                </th>
-                {% endif %}
-                <th scope="col">{% trans "Name" %}</th>
-                <th scope="col">{% trans "Record ID" %}</th>
-                <th scope="col">{% trans "Status" %}</th>
-                <th scope="col">{{ term.program_plural|default:"Programs" }}</th>
-                <th scope="col">{% trans "Last Contact" %}</th>
-            </tr>
-        </thead>
+        {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-caseload" %}
         <tbody>
             {% for item in caseload_data %}
             {% include "clients/_client_row.html" %}
@@ -46,21 +32,7 @@
     {% if oversight_page.object_list %}
     <figure class="client-table-wrap" data-total-clients="{{ oversight_count }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Programs you manage' %}">
-        <thead>
-            <tr>
-                {% if show_bulk %}
-                <th scope="col" class="bulk-col">
-                    <label class="visually-hidden" for="bulk-select-oversight">{% trans "Select all" %}</label>
-                    <input type="checkbox" id="bulk-select-oversight" aria-label="{% trans 'Select all in managed programs' %}">
-                </th>
-                {% endif %}
-                <th scope="col">{% trans "Name" %}</th>
-                <th scope="col">{% trans "Record ID" %}</th>
-                <th scope="col">{% trans "Status" %}</th>
-                <th scope="col">{{ term.program_plural|default:"Programs" }}</th>
-                <th scope="col">{% trans "Last Contact" %}</th>
-            </tr>
-        </thead>
+        {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-oversight" %}
         <tbody>
             {% for item in oversight_page %}
             {% include "clients/_client_row.html" %}
