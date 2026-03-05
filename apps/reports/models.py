@@ -200,6 +200,15 @@ class ReportTemplate(models.Model):
             "De-Identification Guidelines."
         ),
     )
+    html_template_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Optional custom Django template path for HTML export "
+            "(e.g., 'reports/html_united_way.html'). "
+            "When blank, the default HTML report template is used."
+        ),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
