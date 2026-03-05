@@ -172,7 +172,7 @@ def _save_export_and_create_link(request, content, filename, export_type,
         request: The HTTP request (for user info).
         content: File content — str for CSV, bytes for PDF.
         filename: Display filename for downloads (e.g., "export_2026-02-05.csv").
-        export_type: One of "metrics", "funder_report".
+        export_type: One of "metrics", "standard_report".
         client_count: Number of clients in the export.
         includes_notes: Whether clinical note content is included.
         recipient: Who is receiving the data (from ExportRecipientMixin).
@@ -1222,10 +1222,10 @@ def funder_report_form(request):
     all_programs_mode = form.is_all_programs
 
     if all_programs_mode:
-        if not can_create_export(request.user, "funder_report"):
+        if not can_create_export(request.user, "standard_report"):
             return HttpResponseForbidden("You do not have permission to export data.")
     else:
-        if not can_create_export(request.user, "funder_report", program=program):
+        if not can_create_export(request.user, "standard_report", program=program):
             return HttpResponseForbidden("You do not have permission to export data for this program.")
 
     date_from = form.cleaned_data["date_from"]
@@ -1532,7 +1532,7 @@ def funder_report_approve(request):
         request=request,
         content=content,
         filename=filename,
-        export_type="funder_report",
+        export_type="standard_report",
         client_count=raw_client_count,
         includes_notes=False,
         recipient=recipient,
@@ -1563,7 +1563,7 @@ def funder_report_approve(request):
         user_id=request.user.pk,
         user_display=request.user.display_name,
         action="report_approved",
-        resource_type="funder_report",
+        resource_type="standard_report",
         ip_address=_get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={
@@ -1668,7 +1668,7 @@ def generate_report_form(request):
         from django.contrib import messages as msg
         msg.warning(
             request,
-            _("This report template covers multiple programs but currently "
+            _("This report covers multiple programs but currently "
               "only includes data from %(program)s. Multi-program reports "
               "are coming soon.")
             % {"program": template_programs[0].name},
@@ -1701,7 +1701,7 @@ def generate_report_form(request):
         request=request,
         content=content,
         filename=filename,
-        export_type="funder_report",
+        export_type="standard_report",
         client_count=client_count,
         includes_notes=False,
         recipient=recipient,

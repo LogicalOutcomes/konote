@@ -3949,8 +3949,8 @@ msgstr "Données du participant"
 msgid "Metric Report"
 msgstr "Rapport de mesures"
 
-msgid "Funder Report"
-msgstr "Rapport pour bailleur de fonds"
+msgid "Standard Report"
+msgstr "Rapport standard"
 
 msgid "%(name)s added."
 msgstr "%(name)s ajouté(e)."
@@ -5583,6 +5583,13 @@ msgid "Your PDF report is ready to download."
 msgstr "Votre rapport PDF est prêt à télécharger."
 
 msgid ""
+"Your HTML report is ready to download. You can open it in any web browser or"
+" share it directly."
+msgstr ""
+"Votre rapport HTML est prêt à télécharger. Vous pouvez l'ouvrir dans "
+"n'importe quel navigateur web ou le partager directement."
+
+msgid ""
 "Your CSV file is ready to download. You can open it in Excel or Google "
 "Sheets."
 msgstr ""
@@ -5591,6 +5598,9 @@ msgstr ""
 
 msgid "Download PDF Report"
 msgstr "Télécharger le rapport PDF"
+
+msgid "Download HTML Report"
+msgstr "Télécharger le rapport HTML"
 
 msgid "Download CSV File"
 msgstr "Télécharger le fichier CSV"
@@ -17803,6 +17813,9 @@ msgstr "Votre rapport CSV est prêt à télécharger."
 
 msgid "Your PDF report is ready for download."
 msgstr "Votre rapport PDF est prêt à télécharger."
+
+msgid "Your HTML report is ready for download."
+msgstr "Votre rapport HTML est prêt à télécharger."
 
 msgid ""
 "e.g., Q1 debt figures include a large legal settlement for one participant. "

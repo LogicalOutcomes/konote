@@ -239,7 +239,7 @@ def generate_outcome_report_pdf(
     if output_format == "html":
         from .pdf_utils import render_html
         html_filename = filename.replace(".pdf", ".html")
-        return render_html("reports/pdf_funder_report.html", context, html_filename)
+        return render_html("reports/html_outcome_report.html", context, html_filename)
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 
 
