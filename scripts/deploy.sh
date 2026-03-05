@@ -28,10 +28,12 @@ set -euo pipefail
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 PROD_DIR="/opt/konote"
 DEV_DIR="/opt/konote-dev"
+DEPLOY_LOG="/var/log/konote-deploy.log"
 
 # Parse arguments
 DEPLOY_PROD=false
@@ -49,6 +51,27 @@ case "${1:-}" in
 esac
 
 # ==============================================================================
+# log_event — Append timestamped event to deploy log
+# ==============================================================================
+log_event() {
+    local message="$1"
+    echo "$(date -u +"%Y-%m-%d %H:%M:%S UTC") $message" >> "$DEPLOY_LOG" 2>/dev/null || true
+}
+
+# ==============================================================================
+# validate_db_name — Ensure database name is safe (alphanumeric + underscore)
+# ==============================================================================
+validate_db_name() {
+    local name="$1"
+    local label="$2"
+    if [[ ! "$name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+        echo -e "${RED}ERROR: Invalid ${label} in .env: '${name}'${NC}"
+        echo -e "${RED}Database names must be alphanumeric with underscores only.${NC}"
+        return 1
+    fi
+}
+
+# ==============================================================================
 # deploy_instance — Deploy a single KoNote instance
 # ==============================================================================
 # Args: $1 = directory, $2 = instance name, $3 = "true" if dev instance
@@ -59,17 +82,44 @@ deploy_instance() {
 
     echo ""
     echo -e "${YELLOW}=== Deploying ${name} (${dir}) ===${NC}"
+    log_event "DEPLOY START: ${name} (${dir})"
 
     if [ ! -d "$dir" ]; then
         echo -e "${RED}ERROR: Directory ${dir} does not exist${NC}"
+        log_event "DEPLOY FAILED: ${name} — directory not found"
         return 1
     fi
 
     cd "$dir"
 
+    # --- Production backup reminder ---
+    if [ "$is_dev" != "true" ]; then
+        echo ""
+        echo -e "${YELLOW}  ⚠ PRODUCTION DEPLOY — have you backed up today?${NC}"
+        echo -e "  Run this first if not: ${CYAN}docker compose exec ops /usr/local/bin/ops-backup.sh${NC}"
+        echo ""
+    fi
+
+    # --- Record before-commit ---
+    local before_commit
+    before_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    echo -e "  Before: ${CYAN}${before_commit}${NC}"
+
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
     git pull origin develop
+
+    # --- Record after-commit ---
+    local after_commit
+    after_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    echo -e "  After:  ${CYAN}${after_commit}${NC}"
+
+    if [ "$before_commit" = "$after_commit" ]; then
+        echo -e "  ${GREEN}Already up to date.${NC}"
+    else
+        echo -e "  ${GREEN}Updated: ${before_commit} → ${after_commit}${NC}"
+    fi
+    log_event "DEPLOY PULL: ${name} ${before_commit} → ${after_commit}"
 
     # --- Rebuild web (and ops if Dockerfile.ops exists) ---
     echo "=== Rebuilding containers ==="
@@ -82,51 +132,60 @@ deploy_instance() {
     echo "=== Restarting ==="
     docker compose up -d
 
-    # --- Wait for health check ---
+    # --- Wait for health check (time-based migration failure detection) ---
     echo "=== Waiting for health check ==="
     local healthy=false
-    for i in $(seq 1 30); do
+    local checked_migration=false
+    local elapsed=0
+    local max_wait=120  # 2 minutes
+
+    while [ "$elapsed" -lt "$max_wait" ]; do
         local status
         status=$(docker compose ps web --format "{{.Status}}" 2>/dev/null || echo "unknown")
 
         if echo "$status" | grep -q "healthy)"; then
-            echo -e "${GREEN}=== ${name}: Deploy complete — web is healthy ===${NC}"
+            echo -e "${GREEN}=== ${name}: Deploy complete — web is healthy (${elapsed}s) ===${NC}"
+            log_event "DEPLOY OK: ${name} — healthy in ${elapsed}s (${after_commit})"
             healthy=true
             break
         fi
 
-        # Check for crash-loop (restart count > 0)
-        if echo "$status" | grep -q "Restarting"; then
-            echo -e "${YELLOW}=== ${name}: Container is restarting ===${NC}"
+        # Time-based migration failure check for dev instances:
+        # After 30s without healthy, check the logs regardless of container status.
+        # This avoids relying on catching the exact "Restarting" status string.
+        if [ "$is_dev" = "true" ] && [ "$elapsed" -ge 30 ] && [ "$checked_migration" = "false" ]; then
+            checked_migration=true
+            echo -e "${YELLOW}=== Dev instance: not healthy after 30s — checking for migration errors ===${NC}"
 
-            if [ "$is_dev" = "true" ]; then
-                echo -e "${YELLOW}=== Dev instance: checking if migration failure ===${NC}"
-                local logs
-                logs=$(docker logs "$(docker compose ps -q web)" --tail=20 2>&1 || true)
+            local logs
+            logs=$(docker compose logs web --tail=40 2>&1 || true)
 
-                if echo "$logs" | grep -qiE "UndefinedTable|ProgrammingError|relation.*does not exist|migration.*error|migrate_default.*Phase|RuntimeError.*migrat"; then
-                    echo -e "${YELLOW}=== Dev instance: migration failure detected ===${NC}"
-                    echo -e "${YELLOW}=== Resetting dev database (demo data only — safe to reset) ===${NC}"
-                    reset_dev_database "$dir"
-                    healthy=true
-                    break
-                fi
-            fi
-
-            # Not a dev instance or not a migration failure — show logs and fail
-            if [ "$is_dev" != "true" ]; then
-                echo -e "${RED}=== ${name}: Container is crash-looping ===${NC}"
-                docker compose logs web --tail=20
-                return 1
+            if echo "$logs" | grep -qiE "UndefinedTable|ProgrammingError|relation.*does not exist|migration.*error|migrate_default.*Phase|RuntimeError.*migrat"; then
+                echo -e "${YELLOW}=== Dev instance: migration failure detected ===${NC}"
+                echo -e "${YELLOW}=== Resetting dev database (demo data only — safe to reset) ===${NC}"
+                log_event "DEPLOY RESET: ${name} — migration failure, resetting database"
+                reset_dev_database "$dir"
+                healthy=true
+                break
             fi
         fi
 
-        sleep 2
+        # For production crash-loops, fail fast
+        if [ "$is_dev" != "true" ] && echo "$status" | grep -q "Restarting"; then
+            echo -e "${RED}=== ${name}: Container is crash-looping ===${NC}"
+            docker compose logs web --tail=20
+            log_event "DEPLOY FAILED: ${name} — crash-loop (${after_commit})"
+            return 1
+        fi
+
+        sleep 3
+        elapsed=$((elapsed + 3))
     done
 
     if [ "$healthy" != "true" ]; then
-        echo -e "${RED}=== WARNING: ${name} — web container not healthy after 60s ===${NC}"
+        echo -e "${RED}=== WARNING: ${name} — web container not healthy after ${max_wait}s ===${NC}"
         docker compose logs web --tail=20
+        log_event "DEPLOY FAILED: ${name} — timeout after ${max_wait}s (${after_commit})"
         return 1
     fi
 }
@@ -143,54 +202,67 @@ reset_dev_database() {
     echo "  Stopping web container..."
     docker compose stop web
 
-    # Read database config from .env
+    # Read database config from .env and validate
     local pg_user pg_db audit_user audit_db
     pg_user=$(grep '^POSTGRES_USER=' .env | cut -d= -f2)
     pg_db=$(grep '^POSTGRES_DB=' .env | cut -d= -f2)
     audit_user=$(grep '^AUDIT_POSTGRES_USER=' .env | cut -d= -f2)
     audit_db=$(grep '^AUDIT_POSTGRES_DB=' .env | cut -d= -f2)
 
+    validate_db_name "$pg_user" "POSTGRES_USER" || return 1
+    validate_db_name "$pg_db" "POSTGRES_DB" || return 1
+    validate_db_name "$audit_user" "AUDIT_POSTGRES_USER" || return 1
+    validate_db_name "$audit_db" "AUDIT_POSTGRES_DB" || return 1
+
+    # Use dropdb/createdb CLI tools instead of raw SQL interpolation
     echo "  Dropping and recreating main database (${pg_db})..."
-    docker compose exec -T db psql -U "$pg_user" -d postgres \
-        -c "DROP DATABASE IF EXISTS ${pg_db};" \
-        -c "CREATE DATABASE ${pg_db} OWNER ${pg_user};"
+    docker compose exec -T db dropdb -U "$pg_user" --if-exists "$pg_db"
+    docker compose exec -T db createdb -U "$pg_user" -O "$pg_user" "$pg_db"
 
     echo "  Dropping and recreating audit database (${audit_db})..."
-    docker compose exec -T audit_db psql -U "$audit_user" -d postgres \
-        -c "DROP DATABASE IF EXISTS ${audit_db};" \
-        -c "CREATE DATABASE ${audit_db} OWNER ${audit_user};"
+    docker compose exec -T audit_db dropdb -U "$audit_user" --if-exists "$audit_db"
+    docker compose exec -T audit_db createdb -U "$audit_user" -O "$audit_user" "$audit_db"
 
     echo "  Starting web container (will auto-migrate and seed)..."
     docker compose up -d web
 
     # Wait for the fresh startup to complete
     echo "  Waiting for fresh startup..."
-    for i in $(seq 1 60); do
+    local elapsed=0
+    local max_wait=180  # 3 minutes for fresh migration + seed
+
+    while [ "$elapsed" -lt "$max_wait" ]; do
         local status
         status=$(docker compose ps web --format "{{.Status}}" 2>/dev/null || echo "unknown")
 
         if echo "$status" | grep -q "healthy)"; then
-            echo -e "${GREEN}  Dev database reset complete — web is healthy${NC}"
+            echo -e "${GREEN}  Dev database reset complete — web is healthy (${elapsed}s)${NC}"
+            log_event "DEPLOY RESET OK: Dev — healthy in ${elapsed}s after DB reset"
             return 0
         fi
 
         if echo "$status" | grep -q "Restarting"; then
             echo -e "${RED}  Dev instance still failing after database reset${NC}"
             docker compose logs web --tail=20
+            log_event "DEPLOY RESET FAILED: Dev — still crash-looping after DB reset"
             return 1
         fi
 
         sleep 3
+        elapsed=$((elapsed + 3))
     done
 
-    echo -e "${RED}  Dev instance not healthy after database reset (timeout 180s)${NC}"
+    echo -e "${RED}  Dev instance not healthy after database reset (timeout ${max_wait}s)${NC}"
     docker compose logs web --tail=20
+    log_event "DEPLOY RESET FAILED: Dev — timeout after ${max_wait}s"
     return 1
 }
 
 # ==============================================================================
 # Main
 # ==============================================================================
+
+log_event "--- deploy.sh invoked with args: ${*:-<none>}"
 
 FAILED=0
 
