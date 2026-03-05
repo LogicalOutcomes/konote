@@ -266,6 +266,22 @@ def client_list(request):
         .values_list("program_id", flat=True)
     )
 
+    # Compute role-to-program mappings for grouped display.
+    # When a user has both staff and PM roles, we split the list into
+    # "Your caseload" (staff programs) and "Programs you manage" (PM programs).
+    _user_role_qs = UserProgramRole.objects.filter(
+        user=request.user, status="active"
+    ).select_related("program")
+    staff_programs = []
+    pm_programs = []
+    for upr in _user_role_qs:
+        if upr.role == "staff":
+            staff_programs.append(upr.program)
+        elif upr.role == "program_manager":
+            pm_programs.append(upr.program)
+    staff_program_ids = {p.pk for p in staff_programs}
+    has_mixed_roles = bool(staff_program_ids) and bool(pm_programs)
+
     # Get filter values from query params
     status_filter = request.GET.get("status", "")
     program_filter = request.GET.get("program", "")
@@ -337,19 +353,16 @@ def client_list(request):
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])
 
-    # Sort by name or last contact
+    # Sort helper — reused for both single and split lists
     if sort_by == "last_contact":
         from datetime import datetime as dt
         epoch = dt(2000, 1, 1, 0, 0)
         min_dt = timezone.make_aware(epoch) if timezone.is_aware(timezone.now()) else epoch
-        client_data.sort(
-            key=lambda c: c["last_contact"] or min_dt,
-            reverse=True,
-        )
+        _sort_fn = lambda c: c["last_contact"] or min_dt  # noqa: E731
+        _sort_reverse = True
     else:
-        client_data.sort(key=lambda c: c["name"].lower())
-    paginator = Paginator(client_data, 25)
-    page = paginator.get_page(request.GET.get("page"))
+        _sort_fn = lambda c: c["name"].lower()  # noqa: E731
+        _sort_reverse = False
 
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
@@ -359,23 +372,85 @@ def client_list(request):
     can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
     show_bulk = can_bulk_status or can_bulk_transfer
 
-    context = {
-        "page": page,
-        "accessible_programs": accessible_programs,
-        "status_filter": status_filter,
-        "program_filter": program_filter,
-        "editable_filter": editable_filter,
-        "has_plan_edit_programs": bool(plan_edit_program_ids),
-        "search_query": request.GET.get("q", ""),
-        "sort_by": sort_by,
-        "can_create": can_create,
-        "show_bulk": show_bulk,
-        "can_bulk_status": can_bulk_status,
-        "can_bulk_transfer": can_bulk_transfer,
-    }
+    # Build context — split into sections when user has mixed roles
+    if has_mixed_roles:
+        # Split participants: caseload (staff programs) vs oversight (PM programs).
+        # A participant in BOTH a staff and PM program goes to caseload only.
+        caseload_data = []
+        oversight_data = []
+        for item in client_data:
+            enrolled_ids = {p.pk for p in item["programs"]}
+            if enrolled_ids & staff_program_ids:
+                caseload_data.append(item)
+            else:
+                oversight_data.append(item)
 
-    # HTMX request — return only the table partial
+        # Sort each section independently
+        caseload_data.sort(key=_sort_fn, reverse=_sort_reverse)
+        oversight_data.sort(key=_sort_fn, reverse=_sort_reverse)
+
+        # Caseload: show all (typically small). Oversight: paginate at 25.
+        oversight_paginator = Paginator(oversight_data, 25)
+        oversight_page = oversight_paginator.get_page(request.GET.get("page"))
+
+        # Role subtitle: "Staff in X · Manager for Y"
+        staff_label = ", ".join(
+            p.translated_name for p in sorted(staff_programs, key=lambda p: p.name)
+        )
+        pm_label = ", ".join(
+            p.translated_name for p in sorted(pm_programs, key=lambda p: p.name)
+        )
+
+        context = {
+            "has_mixed_roles": True,
+            "caseload_data": caseload_data,
+            "caseload_count": len(caseload_data),
+            "oversight_page": oversight_page,
+            "oversight_count": len(oversight_data),
+            "staff_program_label": staff_label,
+            "pm_program_label": pm_label,
+            "role_subtitle": _("Staff in %(staff)s \u00b7 Manager for %(pm)s") % {
+                "staff": staff_label, "pm": pm_label,
+            },
+            "page": None,
+            "accessible_programs": accessible_programs,
+            "status_filter": status_filter,
+            "program_filter": program_filter,
+            "editable_filter": editable_filter,
+            "has_plan_edit_programs": bool(plan_edit_program_ids),
+            "search_query": request.GET.get("q", ""),
+            "sort_by": sort_by,
+            "can_create": can_create,
+            "show_bulk": show_bulk,
+            "can_bulk_status": can_bulk_status,
+            "can_bulk_transfer": can_bulk_transfer,
+        }
+    else:
+        # Single-role user: keep existing flat list with pagination
+        client_data.sort(key=_sort_fn, reverse=_sort_reverse)
+        paginator = Paginator(client_data, 25)
+        page = paginator.get_page(request.GET.get("page"))
+
+        context = {
+            "has_mixed_roles": False,
+            "page": page,
+            "accessible_programs": accessible_programs,
+            "status_filter": status_filter,
+            "program_filter": program_filter,
+            "editable_filter": editable_filter,
+            "has_plan_edit_programs": bool(plan_edit_program_ids),
+            "search_query": request.GET.get("q", ""),
+            "sort_by": sort_by,
+            "can_create": can_create,
+            "show_bulk": show_bulk,
+            "can_bulk_status": can_bulk_status,
+            "can_bulk_transfer": can_bulk_transfer,
+        }
+
+    # HTMX request — return only the appropriate partial
     if request.headers.get("HX-Request"):
+        if has_mixed_roles:
+            return render(request, "clients/_client_list_sections.html", context)
         return render(request, "clients/_client_list_table.html", context)
 
     return render(request, "clients/list.html", context)
