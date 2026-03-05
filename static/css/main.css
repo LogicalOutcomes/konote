@@ -947,6 +947,25 @@ output.form-output {
     padding-left: var(--kn-space-sm);
     margin-left: calc(-1 * var(--kn-space-sm));
 }
+.priority-hint {
+    font-size: 0.75rem;
+    color: var(--kn-text-muted);
+    margin: 0 0 var(--kn-space-xs) 0;
+    font-style: italic;
+}
+.hide-today-btn {
+    all: unset;
+    font-size: 0.75rem;
+    color: var(--kn-text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
+.hide-today-btn:hover,
+.hide-today-btn:focus-visible {
+    color: var(--kn-link-colour);
+}
 .empty-message {
     color: var(--kn-text-muted);
     font-size: 0.875rem;
