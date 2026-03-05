@@ -62,8 +62,7 @@ Scope is clear, just needs time. A session can pick these up without special app
 
 - [ ] Graduated privacy threshold (N=5 self-hosted, N=15 external) + focused theme analysis — managers type a question, AI searches suggestions for relevant patterns. Includes DRR updates. See [tasks/focused-theme-analysis.md](tasks/focused-theme-analysis.md) — GK approved (AI-FOCUSED-THEME1)
 - [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
-- [ ] Extract shared CSS from html_report.html and html_report_all_programs.html into `_report_styles.html` partial — ~240 duplicate lines (CHORE-RPT-CSS1)
-- [ ] Add isinstance guard to preview path total_contacts sum + add smoke test for all-programs HTML export (CHORE-RPT-FIX1)
+- [ ] Add smoke test for all-programs HTML export path (CHORE-RPT-TEST1)
 
 ## Parking Lot: Needs Review
 
@@ -83,6 +82,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 - [x] All-programs HTML export support — added template + view branch for HTML format — PR #337 — 2026-03-05 (RPT-HTML-ALLPROG1)
 - [x] Simplified all-programs aggregation — consolidated 4 iterations into single pass — PR #337 — 2026-03-05 (RPT-SIMPLIFY1)
+- [x] Extracted shared CSS partial + aggregation helper — ~240 lines deduped, isinstance guard fixed — 2026-03-05 (CHORE-RPT-CSS1, CHORE-RPT-FIX1)
 - [x] Marked DOC-RP4, SCALE-ROLLUP1, OPS-MANAGED1, QA-R7-EXEC-COMPLIANCE1 as done — PR #336 — 2026-03-05
 
 ### Session 12 — TODO Cleanup

@@ -1355,27 +1355,20 @@ def funder_report_preview(request):
     # Build preview summary for the template
     if all_programs_mode:
         # Summarise across programs
-        total_served = sum(
-            rd.get("total_individuals_served", 0)
-            for _, rd in data_or_sections
-            if isinstance(rd.get("total_individuals_served"), int)
-        )
-        total_contacts = sum(
-            rd.get("total_contacts", 0) for _, rd in data_or_sections
-        )
-        program_summaries = [
-            {
-                "name": ap.name,
-                "individuals_served": rd.get("total_individuals_served", 0),
-                "total_contacts": rd.get("total_contacts", 0),
-            }
-            for ap, rd in data_or_sections
-        ]
+        from .utils import aggregate_all_programs_totals
+        totals = aggregate_all_programs_totals(data_or_sections)
         preview_context = {
             "is_all_programs": True,
-            "total_served": total_served,
-            "total_contacts": total_contacts,
-            "program_summaries": program_summaries,
+            "total_served": totals["total_served"],
+            "total_contacts": totals["total_contacts"],
+            "program_summaries": [
+                {
+                    "name": prog["name"],
+                    "individuals_served": prog["report_data"].get("total_individuals_served", 0),
+                    "total_contacts": prog["report_data"].get("total_contacts", 0),
+                }
+                for prog in totals["programs"]
+            ],
             "program_count": len(data_or_sections),
         }
     else:
@@ -1451,18 +1444,8 @@ def funder_report_approve(request):
     try:
         if all_programs_mode and export_format == "html":
             from .pdf_utils import render_html_string
-            total_served = 0
-            total_new = 0
-            total_contacts = 0
-            programs_list = []
-            for ap, rd in data_or_sections:
-                if isinstance(rd.get("total_individuals_served"), int):
-                    total_served += rd["total_individuals_served"]
-                if isinstance(rd.get("new_clients_this_period"), int):
-                    total_new += rd["new_clients_this_period"]
-                if isinstance(rd.get("total_contacts"), int):
-                    total_contacts += rd["total_contacts"]
-                programs_list.append({"name": ap.name, "report_data": rd})
+            from .utils import aggregate_all_programs_totals
+            totals = aggregate_all_programs_totals(data_or_sections)
             html_context = {
                 "organisation_name": str(program_display_name),
                 "fiscal_year_label": fiscal_year_label,
@@ -1471,10 +1454,7 @@ def funder_report_approve(request):
                 "generated_at": timezone.now().strftime("%Y-%m-%d"),
                 "generated_by": request.user.display_name,
                 "agency_notes": agency_notes,
-                "total_served": total_served,
-                "total_new_clients": total_new,
-                "total_contacts": total_contacts,
-                "programs": programs_list,
+                **totals,
             }
             content = render_html_string(
                 "reports/html_report_all_programs.html", html_context,
