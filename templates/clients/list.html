@@ -7,7 +7,11 @@
 <div class="page-header page-header--with-action">
     <div>
         <h1>{{ term.client_plural|default:"Participants" }}</h1>
+        {% if role_subtitle %}
+        <p>{{ role_subtitle }}</p>
+        {% else %}
         <p>{% blocktrans with client=term.client|default:"participant" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
+        {% endif %}
     </div>
     {% if can_create %}
     <a href="{% url 'clients:client_create' %}" role="button" class="page-header__action">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a>
@@ -66,7 +70,7 @@
             </select>
         </div>
         {% endif %}
-        {% if has_plan_edit_programs %}
+        {% if has_plan_edit_programs and not has_mixed_roles %}
         <div class="filter-field">
             <label class="filter-checkbox">
                 <input type="checkbox"
@@ -92,7 +96,11 @@
 
 <!-- Client list container (updated via HTMX) -->
 <div id="client-list-container" aria-live="polite">
+    {% if has_mixed_roles %}
+    {% include "clients/_client_list_sections.html" %}
+    {% else %}
     {% include "clients/_client_list_table.html" %}
+    {% endif %}
 </div>
 
 {% if show_bulk %}
