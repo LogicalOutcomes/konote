@@ -19200,7 +19200,9 @@ msgstr "Détail par item pour %(name)s"
 #: templates/reports/_insights_instruments.html
 #, python-format
 msgid "%(count)s item(s) not shown due to insufficient responses for privacy."
-msgstr "%(count)s item(s) non affiché(s) en raison d'un nombre insuffisant de réponses pour la confidentialité."
+msgstr ""
+"%(count)s item(s) non affiché(s) en raison d'un nombre insuffisant de "
+"réponses pour la confidentialité."
 
 msgid "Client Experience"
 msgstr "Expérience client"
@@ -19288,3 +19290,102 @@ msgstr "À la création"
 msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
 
+msgid "Age Distribution"
+msgstr ""
+
+msgid "Age data table"
+msgstr ""
+
+msgid "Age group distribution bar chart"
+msgstr ""
+
+msgid "Agency"
+msgstr ""
+
+msgid "Agency Service Statistics"
+msgstr ""
+
+msgid "Agency View"
+msgstr ""
+
+msgid "Born in Canada"
+msgstr ""
+
+msgid "Born in Canada data table"
+msgstr ""
+
+msgid "Born in Canada distribution chart"
+msgstr ""
+
+msgid "Consortium Dashboard"
+msgstr ""
+
+msgid "Data Sharing Notice"
+msgstr ""
+
+msgid "Data sharing notice"
+msgstr ""
+
+msgid ""
+"Demographics are shown only in network totals to protect participant "
+"privacy."
+msgstr ""
+
+msgid "Gender Identity"
+msgstr ""
+
+msgid "Gender data table"
+msgstr ""
+
+msgid "Gender identity distribution chart"
+msgstr ""
+
+msgid ""
+"If your agency is not a consortium member, no data will be shared beyond "
+"this export file."
+msgstr ""
+
+msgid "Network View"
+msgstr ""
+
+msgid ""
+"No rollup data available yet. Published reports from partner agencies will "
+"appear here once aggregated."
+msgstr ""
+
+msgid "Partner Agencies"
+msgstr ""
+
+msgid "Per-Agency Service Statistics"
+msgstr ""
+
+msgid "Per-agency service statistics table"
+msgstr ""
+
+msgid "Racial Identity"
+msgstr ""
+
+msgid "Racial identity data table"
+msgstr ""
+
+msgid "Racial identity distribution chart"
+msgstr ""
+
+msgid "Returning"
+msgstr ""
+
+msgid ""
+"This dashboard shows de-identified aggregate data published by partner "
+"agencies. Individual participant records are never shared. Data suppression "
+"is applied to protect small groups."
+msgstr ""
+
+msgid "Total Participants"
+msgstr ""
+
+msgid ""
+"When you approve this report, de-identified aggregate data will be shared "
+"with your consortium network. Individual participant records are never "
+"shared. Cell suppression is applied to protect small groups (counts below 5 "
+"are suppressed; counts below 10 for sensitive demographic fields)."
+msgstr ""
