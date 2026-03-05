@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 from apps.programs.access import get_user_program_ids
 from apps.programs.models import Program, UserProgramRole
 
-from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from .decorators import admin_required, requires_permission
 from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
@@ -27,7 +27,7 @@ from .models import User
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
 # PMs with user.manage: PROGRAM can manage staff in their own program
 # but cannot create PM/executive accounts or elevate front desk to staff.
-_PM_BLOCKED_ROLE_ASSIGNMENTS = {ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE}
+_PM_BLOCKED_ROLE_ASSIGNMENTS = MANAGEMENT_ROLES
 
 
 def _get_pm_program_ids(user):

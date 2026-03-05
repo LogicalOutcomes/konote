@@ -146,7 +146,7 @@ class Command(BaseCommand):
             )
 
             # Print summary counts
-            for role in sorted(ALL_PROGRAM_ROLES, key=ROLE_RANK.get):
+            for role in sorted(ALL_PROGRAM_ROLES, key=lambda r: ROLE_RANK.get(r, 0)):
                 role_perms = PERMISSIONS[role]
                 counts = {}
                 for v in role_perms.values():

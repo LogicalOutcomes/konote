@@ -161,7 +161,7 @@ PERMISSION_URL_MAP = {
     "circle.edit": {"url": "/circles/{circle_id}/edit/"},
 }
 
-ALL_ROLES = sorted(ALL_PROGRAM_ROLES, key=ROLE_RANK.get)
+ALL_ROLES = sorted(ALL_PROGRAM_ROLES, key=lambda r: ROLE_RANK.get(r, 0))
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
