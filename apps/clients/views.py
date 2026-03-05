@@ -253,11 +253,10 @@ def client_list(request):
 
     clients = _get_accessible_clients(request.user, active_program_ids=search_active_ids)
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
-    user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
-
-    # Single query for user's program roles — used for both plan-edit check
-    # and role-based grouping.  Respects CONF9 active program context so the
-    # section split collapses when the user narrows to one program.
+    # Single query for user's program roles — used for plan-edit check,
+    # role-based grouping, and user_program_ids.  Respects CONF9 active
+    # program context so the section split collapses when the user narrows
+    # to one program.
     _role_filter = {"user": request.user, "status": "active"}
     if active_ids:
         _role_filter["program_id__in"] = active_ids
@@ -265,6 +264,7 @@ def client_list(request):
         UserProgramRole.objects.filter(**_role_filter)
         .select_related("program")
     )
+    user_program_ids = {upr.program_id for upr in _user_roles}
 
     # Derive plan-edit programs from the role query (replaces separate query).
     _plan_edit_deny_roles = {
@@ -394,8 +394,7 @@ def client_list(request):
         caseload_data = []
         oversight_data = []
         for item in client_data:
-            enrolled_ids = {p.pk for p in item["programs"]}
-            if enrolled_ids & staff_program_ids:
+            if any(p.pk in staff_program_ids for p in item["programs"]):
                 caseload_data.append(item)
             else:
                 oversight_data.append(item)
