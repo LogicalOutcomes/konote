@@ -416,9 +416,7 @@ def client_list(request):
         )
         context.update({
             "caseload_data": caseload_data,
-            "caseload_count": len(caseload_data),
             "oversight_page": oversight_page,
-            "oversight_count": len(oversight_data),
             "staff_program_label": staff_label,
             "pm_program_label": pm_label,
             "role_subtitle": _("Staff in %(staff)s \u00b7 Manager for %(pm)s") % {

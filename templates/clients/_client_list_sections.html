@@ -6,10 +6,10 @@
 {# ── Section 1: Your caseload ── #}
 <section aria-labelledby="caseload-heading" class="client-list-section">
     <h2 id="caseload-heading" class="section-heading">
-        {% blocktrans with programs=staff_program_label total=caseload_count %}Your caseload — {{ programs }} ({{ total }}){% endblocktrans %}
+        {% blocktrans with programs=staff_program_label total=caseload_data|length %}Your caseload — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if caseload_data %}
-    <figure class="client-table-wrap" data-total-clients="{{ caseload_count }}">
+    <figure class="client-table-wrap" data-total-clients="{{ caseload_data|length }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Your caseload' %}">
         {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-caseload" %}
         <tbody>
@@ -27,10 +27,10 @@
 {# ── Section 2: Programs you manage ── #}
 <section aria-labelledby="oversight-heading" class="client-list-section">
     <h2 id="oversight-heading" class="section-heading">
-        {% blocktrans with programs=pm_program_label total=oversight_count %}Programs you manage — {{ programs }} ({{ total }}){% endblocktrans %}
+        {% blocktrans with programs=pm_program_label total=oversight_page.paginator.count %}Programs you manage — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if oversight_page.object_list %}
-    <figure class="client-table-wrap" data-total-clients="{{ oversight_count }}">
+    <figure class="client-table-wrap" data-total-clients="{{ oversight_page.paginator.count }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Programs you manage' %}">
         {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-oversight" %}
         <tbody>
