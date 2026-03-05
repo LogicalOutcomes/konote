@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
@@ -1134,7 +1134,7 @@ def client_detail(request, client_id):
         client_file=client, status="pending",
     ).exists()
 
-    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     # Circles sidebar (only when feature toggle is on and user is not front desk)
     client_circles = []
@@ -1483,7 +1483,7 @@ def client_consent_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
     return render(request, "clients/_consent_display.html", {
         "client": client,
         "is_pm_or_admin": is_pm_or_admin,
@@ -1525,7 +1525,7 @@ def client_consent_save(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         form = ConsentRecordForm(request.POST)
@@ -1615,7 +1615,7 @@ def client_consent_withdraw_form(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if not client.consent_given_at:
         messages.info(request, _("No active consent to withdraw."))
@@ -1647,7 +1647,7 @@ def client_consent_withdraw(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if request.method != "POST":
         return redirect("clients:client_detail", client_id=client.pk)

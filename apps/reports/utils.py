@@ -6,7 +6,7 @@ from typing import List, Tuple
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
-from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER
 
 
 def is_aggregate_only_user(user):
@@ -82,7 +82,7 @@ def can_create_export(user, export_type, program=None):
 
     if export_type in ("metrics", "standard_report", "session_report"):
         qs = UserProgramRole.objects.filter(
-            user=user, role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE], status="active"
+            user=user, role__in=list(MANAGEMENT_ROLES), status="active"
         )
         if program:
             return qs.filter(program=program).exists()
@@ -107,7 +107,7 @@ def get_manageable_programs(user):
         return Program.objects.filter(status="active")
 
     managed_ids = UserProgramRole.objects.filter(
-        user=user, role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE], status="active"
+        user=user, role__in=list(MANAGEMENT_ROLES), status="active"
     ).values_list("program_id", flat=True)
     return Program.objects.filter(pk__in=managed_ids, status="active")
 

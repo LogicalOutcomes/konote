@@ -115,7 +115,7 @@ class UserProgramRole(models.Model):
         unique_together = ["user", "program"]
 
     # Roles that grant access to individual client records
-    CLIENT_ACCESS_ROLES = CLIENT_ACCESS_ROLES
+    CLIENT_ACCESS_ROLES = CLIENT_ACCESS_ROLES  # alias for apps.auth_app.constants.CLIENT_ACCESS_ROLES
 
     def __str__(self):
         return f"{self.user} → {self.program} ({self.role})"

@@ -24,7 +24,7 @@ from apps.programs.access import (
 )
 from django_ratelimit.decorators import ratelimit
 
-from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import admin_required, requires_permission, requires_permission_global
 from apps.auth_app.permissions import ALLOW, DENY, can_access
 from apps.programs.models import Program, UserProgramRole
@@ -289,7 +289,7 @@ def _send_sre_notification(event, request):
     if event.author_program_id:
         roles_qs = UserProgramRole.objects.filter(
             program_id=event.author_program_id,
-            role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE],
+            role__in=list(MANAGEMENT_ROLES),
             status="active",
         ).select_related("user")
         for role_obj in roles_qs:
