@@ -32,6 +32,7 @@ from apps.notes.models import (
     ProgressNote,
     ProgressNoteTarget,
     ProgressNoteTemplateMetric,
+    SuggestionLink,
     SuggestionTheme,
 )
 from apps.plans.models import (
@@ -1070,6 +1071,31 @@ class DemoDataEngine:
                         "created_by": creator,
                     },
                 )
+
+                # Link 2-4 demo suggestions to each theme
+                if created:
+                    available_notes = (
+                        ProgressNote.objects.filter(
+                            author_program=prog,
+                            is_demo=True,
+                        )
+                        .exclude(suggestion_priority="")
+                        .exclude(
+                            pk__in=SuggestionLink.objects.filter(
+                                theme__program=prog
+                            ).values_list("progress_note_id", flat=True)
+                        )
+                        .order_by("?")[:random.randint(2, 4)]
+                    )
+                    for note in available_notes:
+                        SuggestionLink.objects.get_or_create(
+                            theme=theme,
+                            progress_note=note,
+                            defaults={
+                                "auto_linked": False,
+                                "linked_by": creator,
+                            },
+                        )
 
     # ----- Main orchestrator -----
 

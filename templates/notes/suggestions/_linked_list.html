@@ -38,5 +38,11 @@
 </article>
 {% endfor %}
 {% else %}
+{% if is_filtered %}
+<p class="muted">{% trans "No suggestions linked to this theme in this period." %}
+    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{% trans "Show all suggestions" %}</a>
+</p>
+{% else %}
 <p class="muted">{% trans "No suggestions linked to this theme yet." %}{% if can_manage %} {% trans "Click \"Link More\" to find suggestions to add." %}{% endif %}</p>
+{% endif %}
 {% endif %}

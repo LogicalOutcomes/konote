@@ -37,6 +37,13 @@
 <p>{{ theme.description }}</p>
 {% endif %}
 
+{% if is_filtered %}
+<p class="muted" style="font-size:0.9rem;">
+    {% blocktrans with start=date_from|date:"M j, Y" end=date_to|date:"M j, Y" %}Showing suggestions from {{ start }} to {{ end }}.{% endblocktrans %}
+    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{% trans "Show all" %}</a>
+</p>
+{% endif %}
+
 {% if theme.status == "addressed" and theme.addressed_note %}
 <article class="theme-resolution">
     <strong>{% trans "Resolution:" %}</strong>

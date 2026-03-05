@@ -19243,3 +19243,16 @@ msgstr ""
 "séance. Les catégories vont de Ne participe pas à Pleinement investi, avec "
 "une option Pas de rencontre individuelle lorsqu'il n'y a pas eu "
 "d'interaction directe. C'est l'observation de l'intervenant, pas une note."
+
+msgid "No suggestions linked to this theme in this period."
+msgstr "Aucune suggestion liée à ce thème pour cette période."
+
+msgid "Show all suggestions"
+msgstr "Afficher toutes les suggestions"
+
+#, python-format
+msgid "Showing suggestions from %(start)s to %(end)s."
+msgstr "Suggestions du %(start)s au %(end)s."
+
+msgid "Show all"
+msgstr "Tout afficher"
