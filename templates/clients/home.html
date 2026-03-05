@@ -177,6 +177,7 @@
 {% endif %}
 
 <!-- Quick links — moved up for faster access (UX-TASKDASH1) -->
+{% if not is_executive %}
 {% if features.programs or user.is_admin %}
 <nav class="quick-links" aria-label="{% trans 'Quick links' %}">
     <span class="quick-links-label">{% trans "Quick links:" %}</span>
@@ -189,6 +190,7 @@
     {% endif %}
 </nav>
 {% endif %}
+{% endif %}{# not is_executive #}
 
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">
