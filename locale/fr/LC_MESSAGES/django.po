@@ -19512,3 +19512,79 @@ msgstr "Comprend les données de %(count)s programme(s)."
 
 msgid "PDF export is not available for All Programs. Please select CSV or HTML."
 msgstr "L’exportation PDF n’est pas disponible pour Tous les programmes. Veuillez sélectionner CSV ou HTML."
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Suggestion content is not shown for programs with fewer than 15 participants to protect privacy. Suggestion count and priority are shown below."
+msgstr "Le contenu des suggestions n’est pas affiché pour les programmes de moins de 15 participants afin de protéger la vie privée. Le nombre et la priorité des suggestions sont indiqués ci-dessous."
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Content not shown for small programs"
+msgstr "Contenu non affiché pour les petits programmes"
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Remove suggestion"
+msgstr "Retirer la suggestion"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Ask a Question"
+msgstr "Poser une question"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Search suggestions for a specific topic"
+msgstr "Rechercher des suggestions sur un sujet précis"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "e.g., Are there any themes about scheduling or opening hours?"
+msgstr "p. ex., Y a-t-il des thèmes liés aux horaires ou aux heures d’ouverture?"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Analyse"
+msgstr "Analyser"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Analysing..."
+msgstr "Analyse en cours..."
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Analysis Results"
+msgstr "Résultats de l’analyse"
+
+#, python-format
+msgid "%(relevant)s of %(total)s suggestions relate to this topic"
+msgstr "%(relevant)s des %(total)s suggestions concernent ce sujet"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Sub-themes"
+msgstr "Sous-thèmes"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Suggested theme:"
+msgstr "Thème suggéré :"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Create Theme from This"
+msgstr "Créer un thème à partir de ceci"
+
+#: apps/notes/suggestion_views.py
+msgid "AI participant data features are not enabled."
+msgstr "Les fonctionnalités IA pour les données des participants ne sont pas activées."
+
+#: apps/notes/suggestion_views.py
+msgid "Please enter a question (max 500 characters)."
+msgstr "Veuillez saisir une question (max. 500 caractères)."
+
+#, python-format
+msgid "This program has %(count)d participants. A minimum of 5 is required for AI analysis."
+msgstr "Ce programme compte %(count)d participants. Un minimum de 5 est requis pour l’analyse par IA."
+
+#: apps/notes/suggestion_views.py
+msgid "Rate limit reached (10 per hour). Please try again later."
+msgstr "Limite atteinte (10 par heure). Veuillez réessayer plus tard."
+
+#: apps/notes/suggestion_views.py
+msgid "No suggestions found for this program."
+msgstr "Aucune suggestion trouvée pour ce programme."
+
+#: apps/notes/suggestion_views.py
+msgid "AI analysis could not be completed. Please try again."
+msgstr "L’analyse par IA n’a pu être complétée. Veuillez réessayer."
