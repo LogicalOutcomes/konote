@@ -233,6 +233,20 @@ The toggle design already supports this — `ai_assist_participant_data` can swi
 6. Update templates referencing `features.ai_assist` to `features.ai_assist_tools_only`
 7. Data migration: if an agency had `ai_assist = True`, set both new toggles to True to preserve their current behaviour
 
+## Graduated Minimum Sample Size (Added 2026-03-05, AI-FOCUSED-THEME1)
+
+The minimum sample size for AI theme processing is now graduated:
+
+| Participant Count | What Happens |
+|---|---|
+| < 5 | No AI theme processing at all |
+| 5–14 | AI theme processing (self-hosted only); verbatim quotes suppressed in theme detail |
+| 15+ | Full display — AI processing + verbatim quotes shown |
+
+The N=5 threshold **only applies when `INSIGHTS_API_BASE` is configured** (self-hosted LLM). Agencies using OpenRouter retain the N=15 threshold. See the [self-hosted LLM DRR](self-hosted-llm-infrastructure.md) for infrastructure details.
+
+**Focused analysis** (top-down question-based search) follows the same graduated model and always returns synthesised content, never verbatim quotes, regardless of program size.
+
 ## GK Review Items
 
 - [ ] Participant-facing transparency wording (portal statement)
