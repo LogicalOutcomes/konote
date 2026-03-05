@@ -77,7 +77,7 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Nothing here — all scoped tasks are in Active Work or Coming Up._
+- [ ] Graduated privacy threshold (N=5 self-hosted, N=15 external) + focused theme analysis — managers type a question, AI searches suggestions for relevant patterns. Includes DRR updates. See [tasks/focused-theme-analysis.md](tasks/focused-theme-analysis.md) — GK approved (AI-FOCUSED-THEME1)
 
 ## Parking Lot: Needs Review
 
