@@ -1,0 +1,657 @@
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% blocktrans with name=report_data.program_name %}Program Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}</title>
+    <style>
+        {% block styles %}
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1a202c;
+            margin: 0;
+            padding: 2rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #ffffff;
+        }
+        @media print {
+            body { padding: 0; max-width: none; }
+            .no-print { display: none; }
+        }
+        .report-header-bar {
+            background-color: #3176aa;
+            color: #ffffff;
+            padding: 0.4rem 0.8rem;
+            margin-top: 1.5rem;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 4px 4px 0 0;
+        }
+        .pdf-header {
+            border-bottom: 3px solid #3176aa;
+            padding-bottom: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .pdf-header h1 {
+            font-size: 1.5rem;
+            margin: 0 0 0.25rem 0;
+            color: #3176aa;
+        }
+        .pdf-header .subtitle {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        .pdf-header .meta-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.1rem 0.8rem;
+            font-size: 0.85rem;
+            color: #718096;
+        }
+        .pdf-header .meta-grid dt {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .pdf-header .meta-grid dd { margin: 0; }
+        .pdf-header .draft-notice {
+            margin-top: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background-color: #fef3c7;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        h2 {
+            font-size: 1.3rem;
+            color: #3176aa;
+            border-bottom: 2px solid #3176aa;
+            padding-bottom: 0.3rem;
+            margin-top: 1.5rem;
+        }
+        h3 {
+            font-size: 1.1rem;
+            color: #1a202c;
+            margin-top: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.8rem 0;
+            font-size: 0.9rem;
+        }
+        thead th {
+            background-color: #3176aa;
+            color: #ffffff;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        tbody td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tbody tr:nth-child(even) { background-color: #f7f8fa; }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+        }
+        .stat-box {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #3176aa;
+        }
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 0.2rem;
+        }
+        .outcome-card {
+            border: 2px solid #3176aa;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        .outcome-card h4 {
+            margin: 0 0 0.3rem 0;
+            color: #3176aa;
+        }
+        .outcome-card .rate {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3176aa;
+        }
+        .outcome-card .details {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-top: 0.3rem;
+        }
+        .demo-row {
+            display: grid;
+            grid-template-columns: 1fr 80px 80px;
+            padding: 6px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .demo-row.header {
+            background-color: #f7f8fa;
+            font-weight: 600;
+        }
+        .demo-bar {
+            background-color: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .demo-bar-fill {
+            background-color: #3176aa;
+            height: 100%;
+            border-radius: 4px;
+        }
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.8rem 0;
+        }
+        .metrics-table th, .metrics-table td {
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            text-align: right;
+        }
+        .metrics-table th:first-child, .metrics-table td:first-child {
+            text-align: left;
+        }
+        .metrics-table thead th {
+            background-color: #f7f8fa;
+            font-weight: 600;
+        }
+        .narrative-section {
+            border-left: 4px solid #3176aa;
+            padding: 0.8rem 1rem;
+            margin: 0.8rem 0;
+            background-color: #f7f8fa;
+        }
+        .narrative-section .placeholder {
+            font-style: italic;
+            color: #718096;
+        }
+        .chart-section { margin: 0.8rem 0; }
+        .chart-container {
+            margin: 0.6rem 0;
+            text-align: center;
+        }
+        .chart-image {
+            max-width: 100%;
+            height: auto;
+        }
+        .chart-caption {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-top: 0.2rem;
+            font-style: italic;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin: 0.8rem 0;
+        }
+        .summary-card {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3176aa;
+        }
+        .summary-card .label {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+        .footer-note {
+            font-size: 0.85rem;
+            color: #718096;
+            font-style: italic;
+            margin-top: 2rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .generated-by {
+            font-size: 0.8rem;
+            color: #a0aec0;
+            margin-top: 1rem;
+            text-align: right;
+        }
+        {% endblock %}
+    </style>
+</head>
+<body>
+{% block content %}
+<!-- Report Header -->
+<div class="pdf-header">
+    <h1>{% trans "Program Outcome Report" %}</h1>
+    <div class="subtitle">{{ report_data.program_name }}</div>
+    <dl class="meta-grid">
+        <dt>{% trans "Organisation" %}</dt>
+        <dd>{{ report_data.organisation_name }}</dd>
+        <dt>{% trans "Program" %}</dt>
+        <dd>{{ report_data.program_name }}</dd>
+        {% if report_data.program_description %}
+        <dt>{% trans "Description" %}</dt>
+        <dd>{{ report_data.program_description }}</dd>
+        {% endif %}
+        <dt>{% trans "Period" %}</dt>
+        <dd>{{ report_data.reporting_period }}</dd>
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{% blocktrans with date=report_data.generated_at|date:"Y-m-d" author=generated_by %}{{ date }} by {{ author }}{% endblocktrans %}</dd>
+    </dl>
+    <div class="draft-notice">
+        <strong>{% trans "Draft Template:" %}</strong> {% trans "Verify this format matches the specific reporting requirements before submission." %}
+    </div>
+</div>
+
+{% if sections %}
+{# Section-driven layout: render in ReportSection.sort_order #}
+{% for section in sections %}
+{% if section.section_type == "service_stats" %}
+<div class="report-header-bar">{{ section.title }}</div>
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_individuals_served|default:"0" }}</div>
+        <div class="label">{% trans "Total Individuals Served" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.new_clients_this_period|default:"0" }}</div>
+        <div class="label">{% trans "New Participants This Period" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_contacts|default:"0" }}</div>
+        <div class="label">{% trans "Total Service Contacts" %}</div>
+    </div>
+</div>
+
+{% elif section.section_type == "metrics_table" %}
+<div class="report-header-bar">{{ section.title }}</div>
+{% if metric_results %}
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Metric" %}</th>
+            {% for mr in metric_results %}
+            {% if forloop.first %}
+            {% for group_label, group_data in mr.values.items %}
+            <th scope="col">{{ group_label }}</th>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for mr in metric_results %}
+        <tr>
+            <td>{{ mr.label }}</td>
+            {% for group_label, group_data in mr.values.items %}
+            <td>
+                {% if group_data.n > 0 and group_data.n < suppression_threshold %}
+                &lt; {{ suppression_threshold }}
+                {% elif mr.aggregation == "threshold_percentage" or mr.aggregation == "percentage" %}
+                {{ group_data.value }}%
+                {% else %}
+                {{ group_data.value }}
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{% if report_data.primary_outcome %}
+<div class="outcome-card">
+    <h4>{{ report_data.primary_outcome.name }}</h4>
+    <div class="rate">{{ report_data.primary_outcome.achievement_rate }}%</div>
+    <div class="details">
+        <strong>{% trans "Target:" %}</strong> {{ report_data.primary_outcome.target_value }}<br>
+        <strong>{% trans "Clients Measured:" %}</strong> {{ report_data.primary_outcome.clients_measured }}
+    </div>
+</div>
+{% endif %}
+{% if report_data.secondary_outcomes %}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Indicator Name" %}</th>
+            <th scope="col">{% trans "Target" %}</th>
+            <th scope="col">{% trans "Measured" %}</th>
+            <th scope="col">{% trans "Achieved" %}</th>
+            <th scope="col">{% trans "Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for outcome in report_data.secondary_outcomes %}
+        <tr>
+            <td>{{ outcome.name }}</td>
+            <td>{{ outcome.target_value }}</td>
+            <td>{{ outcome.clients_measured }}</td>
+            <td>{{ outcome.clients_achieved }}</td>
+            <td>{{ outcome.achievement_rate }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+{% elif section.section_type == "demographic_summary" %}
+<div class="report-header-bar">{{ section.title }}</div>
+<div style="margin: 0.8rem 0;">
+    <div class="demo-row header">
+        <div>{% trans "Age Group" %}</div>
+        <div style="text-align: right;">{% trans "Count" %}</div>
+        <div style="text-align: right;">{% trans "Percentage" %}</div>
+    </div>
+    {% for age_group, count in report_data.age_demographics.items %}
+    <div class="demo-row">
+        <div>
+            {{ age_group }}
+            {% if report_data.age_demographics_total > 0 %}
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: {% widthratio count report_data.age_demographics_total 100 %}%;"></div>
+            </div>
+            {% endif %}
+        </div>
+        <div style="text-align: right;">{{ count }}</div>
+        <div style="text-align: right;">
+            {% if report_data.age_demographics_total > 0 %}
+            {% widthratio count report_data.age_demographics_total 100 %}%
+            {% else %}
+            {% trans "N/A" %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    <div class="demo-row header">
+        <div>{% trans "Total" %}</div>
+        <div style="text-align: right;">{{ report_data.age_demographics_total }}</div>
+        <div style="text-align: right;">100%</div>
+    </div>
+</div>
+
+{% elif section.section_type == "narrative" %}
+<div class="report-header-bar">{{ section.title }}</div>
+<div class="narrative-section">
+    {% if section.instructions %}
+    <p>{{ section.instructions }}</p>
+    {% endif %}
+    <p class="placeholder">{% trans "[To be added during review]" %}</p>
+</div>
+
+{% elif section.section_type == "chart" %}
+<div class="report-header-bar">{{ section.title }}</div>
+{% if chart_images %}
+<div class="chart-section">
+    {% for chart in chart_images %}
+    <div class="chart-container">
+        <img src="{{ chart.chart_data_uri }}" alt="{% blocktrans with label=chart.label %}Bar chart showing {{ label }} across demographic groups{% endblocktrans %}" class="chart-image">
+        <p class="chart-caption">{{ chart.label }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="narrative-section">
+    <p class="placeholder">{% trans "No chart data available for this report." %}</p>
+</div>
+{% endif %}
+
+{% elif section.section_type == "standards_alignment" %}
+<div class="report-header-bar">{{ section.title }}</div>
+{% if report_data.cids_alignment %}
+<p style="font-size: 0.85rem; color: #718096; margin-bottom: 0.8rem;">
+    {% blocktrans with version=report_data.cids_alignment.cids_version %}Aligned with Common Impact Data Standard (CIDS) v{{ version }}.{% endblocktrans %}
+</p>
+{% if report_data.cids_alignment.program_cids.sector_code %}
+<p><strong>{% trans "Sector:" %}</strong> {{ report_data.cids_alignment.program_cids.sector_code }}</p>
+{% endif %}
+{% if report_data.cids_alignment.program_cids.funder_code %}
+<p><strong>{% trans "Funder Program Code:" %}</strong> {{ report_data.cids_alignment.program_cids.funder_code }}</p>
+{% endif %}
+{% if report_data.cids_alignment.metrics %}
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Indicator" %}</th>
+            <th scope="col">{% trans "IRIS+ Code" %}</th>
+            <th scope="col">{% trans "SDG Goals" %}</th>
+            <th scope="col">{% trans "CIDS Theme" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in report_data.cids_alignment.metrics %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.iris_code|default:"—" }}</td>
+            <td>{% for g in m.sdg_goals %}{{ g }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>{{ m.theme|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p style="font-size: 0.85rem; color: #718096;">
+    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped to CIDS standards.{% endblocktrans %}
+</p>
+{% endif %}
+{% if report_data.cids_alignment.sdg_summary %}
+<h4 style="margin-top: 0.8rem;">{% trans "SDG Alignment" %}</h4>
+<ul>
+    {% for goal, count in report_data.cids_alignment.sdg_summary.items %}
+    <li>{% blocktrans with goal=goal count=count %}SDG {{ goal }}: {{ count }} indicator(s){% endblocktrans %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% else %}
+<div class="narrative-section">
+    <p class="placeholder">{% trans "No CIDS standards alignment data available. Import code lists and tag metrics to populate this section." %}</p>
+</div>
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+{# Overall summary after all sections #}
+{% if report_data.achievement_summary.total_clients > 0 %}
+<div class="report-header-bar">{% trans "Overall Summary" %}</div>
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.overall_rate }}%</div>
+        <div class="label">{% trans "Overall Achievement Rate" %}</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.clients_met_any_target }} / {{ report_data.achievement_summary.total_clients }}</div>
+        <div class="label">{% trans "Participants Met at Least One Target" %}</div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+{# Legacy layout: no ReportSection records #}
+
+<div class="report-header-bar">{% trans "Service Statistics" %}</div>
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_individuals_served|default:"0" }}</div>
+        <div class="label">{% trans "Total Individuals Served" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.new_clients_this_period|default:"0" }}</div>
+        <div class="label">{% trans "New Participants This Period" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_contacts|default:"0" }}</div>
+        <div class="label">{% trans "Total Service Contacts" %}</div>
+    </div>
+</div>
+
+<div class="report-header-bar">{% trans "Age Demographics" %}</div>
+<div style="margin: 0.8rem 0;">
+    <div class="demo-row header">
+        <div>{% trans "Age Group" %}</div>
+        <div style="text-align: right;">{% trans "Count" %}</div>
+        <div style="text-align: right;">{% trans "Percentage" %}</div>
+    </div>
+    {% for age_group, count in report_data.age_demographics.items %}
+    <div class="demo-row">
+        <div>
+            {{ age_group }}
+            {% if report_data.age_demographics_total > 0 %}
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: {% widthratio count report_data.age_demographics_total 100 %}%;"></div>
+            </div>
+            {% endif %}
+        </div>
+        <div style="text-align: right;">{{ count }}</div>
+        <div style="text-align: right;">
+            {% if report_data.age_demographics_total > 0 %}
+            {% widthratio count report_data.age_demographics_total 100 %}%
+            {% else %}
+            {% trans "N/A" %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    <div class="demo-row header">
+        <div>{% trans "Total" %}</div>
+        <div style="text-align: right;">{{ report_data.age_demographics_total }}</div>
+        <div style="text-align: right;">100%</div>
+    </div>
+</div>
+
+<h2>{% trans "Outcome Indicators" %}</h2>
+
+{% if report_data.primary_outcome %}
+<h3>{% trans "Primary Outcome" %}</h3>
+<div class="outcome-card">
+    <h4>{{ report_data.primary_outcome.name }}</h4>
+    <div class="rate">{{ report_data.primary_outcome.achievement_rate }}%</div>
+    <div class="details">
+        <strong>{% trans "Target:" %}</strong> {{ report_data.primary_outcome.target_value }}<br>
+        <strong>{% trans "Clients Measured:" %}</strong> {{ report_data.primary_outcome.clients_measured }}<br>
+        <strong>{% trans "Clients Achieving Target:" %}</strong> {% blocktrans with achieved=report_data.primary_outcome.clients_achieved measured=report_data.primary_outcome.clients_measured %}{{ achieved }} of {{ measured }}{% endblocktrans %}
+    </div>
+</div>
+{% endif %}
+
+{% if report_data.secondary_outcomes %}
+<h3>{% trans "Secondary Outcomes" %}</h3>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Indicator Name" %}</th>
+            <th scope="col">{% trans "Target" %}</th>
+            <th scope="col">{% trans "Measured" %}</th>
+            <th scope="col">{% trans "Achieved" %}</th>
+            <th scope="col">{% trans "Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for outcome in report_data.secondary_outcomes %}
+        <tr>
+            <td>{{ outcome.name }}</td>
+            <td>{{ outcome.target_value }}</td>
+            <td>{{ outcome.clients_measured }}</td>
+            <td>{{ outcome.clients_achieved }}</td>
+            <td>{{ outcome.achievement_rate }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if not report_data.primary_outcome and not report_data.secondary_outcomes %}
+<p><em>{% trans "No outcome indicators with targets defined for this program." %}</em></p>
+{% endif %}
+
+{% if report_data.achievement_summary.total_clients > 0 %}
+<div class="report-header-bar">{% trans "Overall Summary" %}</div>
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.overall_rate }}%</div>
+        <div class="label">{% trans "Overall Achievement Rate" %}</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.clients_met_any_target }} / {{ report_data.achievement_summary.total_clients }}</div>
+        <div class="label">{% trans "Participants Met at Least One Target" %}</div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+{# CIDS Standards Alignment appendix (legacy layout) #}
+{% if report_data.cids_alignment and report_data.cids_alignment.mapped_count > 0 %}
+<div class="report-header-bar">{% trans "Standards Alignment" %}</div>
+<p style="font-size: 0.85rem; color: #718096; margin-bottom: 0.8rem;">
+    {% blocktrans with version=report_data.cids_alignment.cids_version %}Aligned with Common Impact Data Standard (CIDS) v{{ version }}.{% endblocktrans %}
+</p>
+{% if report_data.cids_alignment.program_cids.sector_code %}
+<p><strong>{% trans "Sector:" %}</strong> {{ report_data.cids_alignment.program_cids.sector_code }}</p>
+{% endif %}
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Indicator" %}</th>
+            <th scope="col">{% trans "IRIS+ Code" %}</th>
+            <th scope="col">{% trans "SDG Goals" %}</th>
+            <th scope="col">{% trans "CIDS Theme" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for m in report_data.cids_alignment.metrics %}
+        {% if m.iris_code or m.sdg_goals or m.theme %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.iris_code|default:"—" }}</td>
+            <td>{% for g in m.sdg_goals %}{{ g }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+            <td>{{ m.theme|default:"—" }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+<p style="font-size: 0.85rem; color: #718096;">
+    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped to CIDS standards.{% endblocktrans %}
+</p>
+{% if report_data.cids_alignment.sdg_summary %}
+<h4 style="margin-top: 0.8rem;">{% trans "SDG Alignment" %}</h4>
+<ul>
+    {% for goal, count in report_data.cids_alignment.sdg_summary.items %}
+    <li>{% blocktrans with goal=goal count=count %}SDG {{ goal }}: {{ count }} indicator(s){% endblocktrans %}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+
+<div class="footer-note">
+    <strong>{% trans "Draft Template:" %}</strong> {% trans "This report was generated using KoNote's Program Outcome Report Template." %}
+    {% trans "Verify this format matches the specific reporting requirements before submission." %}
+    {% blocktrans with period=report_data.reporting_period %}Data reflects client outcomes recorded during the {{ period }} reporting period.{% endblocktrans %}
+</div>
+
+<div class="generated-by">
+    {% trans "Generated by KoNote" %}
+</div>
+{% endblock %}
+</body>
+</html>
