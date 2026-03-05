@@ -577,7 +577,7 @@ def staff_data_entry(request, client_id, survey_id):
                     all_answers[question.pk] = raw_value
 
         # 2. Determine which sections are visible based on answers
-        visible_sections = filter_visible_sections(sections_list, all_answers)
+        visible_sections = filter_visible_sections(sections_list, all_answers, is_identified=True)
         visible_section_pks = {s.pk for s in visible_sections}
 
         # 3. Validate required fields only in visible sections

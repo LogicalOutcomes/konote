@@ -63,7 +63,8 @@ class SurveySectionForm(forms.ModelForm):
         model = SurveySection
         fields = [
             "title", "title_fr", "instructions", "instructions_fr",
-            "sort_order", "page_break", "scoring_method", "max_score",
+            "sort_order", "page_break", "skip_for_identified",
+            "scoring_method", "max_score",
             "condition_question", "condition_value",
         ]
         widgets = {
@@ -77,12 +78,18 @@ class SurveySectionForm(forms.ModelForm):
             "instructions_fr": _("Instructions (French)"),
             "sort_order": _("Display order"),
             "page_break": _("Start new page"),
+            "skip_for_identified": _("Skip for identified participants"),
             "scoring_method": _("Scoring method"),
             "max_score": _("Maximum score"),
             "condition_question": _("Show only when"),
             "condition_value": _("is answered"),
         }
         help_texts = {
+            "skip_for_identified": _(
+                "Check this for demographics sections. When the survey is "
+                "assigned to a participant or entered by staff, this section "
+                "will be hidden — that data is already on file."
+            ),
             "condition_question": _("Leave blank to always show this section."),
             "condition_value": _("The answer value that makes this section visible."),
         }

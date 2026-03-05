@@ -1687,7 +1687,7 @@ def portal_survey_fill(request, assignment_id):
         .order_by("sort_order")
     )
     partial_answers = get_partial_answers_dict(assignment)
-    visible_sections = filter_visible_sections(all_sections, partial_answers)
+    visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
     pages = group_sections_into_pages(visible_sections)
     is_multi_page = len(pages) > 1
 
@@ -1729,7 +1729,7 @@ def portal_survey_fill(request, assignment_id):
                 })
             # Refresh partial answers and page structure after save
             partial_answers = get_partial_answers_dict(assignment)
-            visible_sections = filter_visible_sections(all_sections, partial_answers)
+            visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
             pages = group_sections_into_pages(visible_sections)
             next_page = min(page_num + 1, len(pages))
             return redirect(f"{request.path}?page={next_page}")
@@ -1759,7 +1759,7 @@ def portal_survey_fill(request, assignment_id):
 
         # Refresh and validate ALL required questions across all pages
         partial_answers = get_partial_answers_dict(assignment)
-        visible_sections = filter_visible_sections(all_sections, partial_answers)
+        visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
         all_errors = []
         for section in visible_sections:
             for question in section.questions.all().order_by("sort_order"):
@@ -1981,7 +1981,7 @@ def portal_survey_review(request, assignment_id):
         .prefetch_related("questions")
         .order_by("sort_order")
     )
-    visible_sections = filter_visible_sections(all_sections, answers_dict)
+    visible_sections = filter_visible_sections(all_sections, answers_dict, is_identified=True)
 
     # Calculate scores if configured
     scores = []
@@ -2034,7 +2034,7 @@ def portal_survey_thank_you(request, assignment_id):
                 .prefetch_related("questions")
                 .order_by("sort_order")
             )
-            visible = filter_visible_sections(all_sections, answers_dict)
+            visible = filter_visible_sections(all_sections, answers_dict, is_identified=True)
             scores = calculate_section_scores(visible, answers_dict)
 
     return render(request, "portal/survey_thank_you.html", {
