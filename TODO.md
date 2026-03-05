@@ -78,6 +78,7 @@ _All documentation tasks completed — see Recently Done._
 Scope is clear, just needs time. A session can pick these up without special approval.
 
 - [ ] Graduated privacy threshold (N=5 self-hosted, N=15 external) + focused theme analysis — managers type a question, AI searches suggestions for relevant patterns. Includes DRR updates. See [tasks/focused-theme-analysis.md](tasks/focused-theme-analysis.md) — GK approved (AI-FOCUSED-THEME1)
+- [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
 
 ## Parking Lot: Needs Review
 
