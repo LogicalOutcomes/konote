@@ -1449,7 +1449,44 @@ def funder_report_approve(request):
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
     try:
-        if all_programs_mode:
+        if all_programs_mode and export_format == "html":
+            from .pdf_utils import render_html_string
+            total_served = sum(
+                rd.get("total_individuals_served", 0)
+                for _, rd in data_or_sections
+                if isinstance(rd.get("total_individuals_served"), int)
+            )
+            total_new = sum(
+                rd.get("new_clients_this_period", 0)
+                for _, rd in data_or_sections
+                if isinstance(rd.get("new_clients_this_period"), int)
+            )
+            total_contacts = sum(
+                rd.get("total_contacts", 0) for _, rd in data_or_sections
+            )
+            programs_list = [
+                {"name": ap.name, "report_data": rd}
+                for ap, rd in data_or_sections
+            ]
+            html_context = {
+                "organisation_name": str(program_display_name),
+                "fiscal_year_label": fiscal_year_label,
+                "date_from": date_from,
+                "date_to": date_to,
+                "generated_at": timezone.now().strftime("%Y-%m-%d"),
+                "generated_by": request.user.display_name,
+                "agency_notes": agency_notes,
+                "total_served": total_served,
+                "total_new_clients": total_new,
+                "total_contacts": total_contacts,
+                "programs": programs_list,
+            }
+            content = render_html_string(
+                "reports/html_report_all_programs.html", html_context,
+            )
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
+        elif all_programs_mode:
+            # All-programs CSV (default for CSV and PDF fallback)
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Agency notes header
