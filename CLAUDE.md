@@ -28,23 +28,46 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 **Branch model:** `main` is the production branch (deploy-ready). `develop` is the integration branch (all feature work merges here). `staging` is the testing branch — PB merges `develop` → `staging`, tests there, then merges into `main` for releases.
 
-**Pull develop before doing anything.** At the very start of every session — before reading task files, before making decisions, before creating a branch — run `git pull origin develop`. Worktrees and local copies go stale when other sessions merge PRs. If you skip this step, you will make decisions based on missing files and outdated plans.
+**Never commit to `main` directly** — PRs to `main` are handled by PB after staging review.
 
-**Branch before working.** `main` requires a PR. `develop` doesn't technically require PRs, but we use them for traceability — always create a PR rather than pushing directly.
+### Session Start (do this first, every time)
 
-1. **At the start of every task**, run `git pull origin develop`, then check the current branch with `git branch --show-current`
-2. If on `main` or `develop`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
-3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
-4. Commit frequently on the feature branch
-5. When work is done, push, create a PR to merge into `develop`, and **merge it immediately** (no approval needed). Use `gh pr merge --merge` — never squash.
+1. `git pull origin develop`
+2. `git worktree prune` — remove stale worktree references
+3. `git status` — if there are uncommitted changes you didn't make, **STOP and tell the user**. Do not stash, discard, or commit someone else's work.
+4. Check the current branch: `git branch --show-current`. If not on `develop`, switch to it before creating a new branch.
 
-**Never commit to `main` directly** — PRs to `main` are handled by PB after staging review. Prefer PRs for `develop` too (for traceability), but a direct push isn't a rules violation.
+### Working on a Task
 
-### Concurrent Session Safety
+1. Create a feature branch off `develop`: `git checkout -b feat/short-description` or `fix/` or `chore/`
+2. **Commit after every edit.** Never leave uncommitted changes across tool calls.
+3. When done: push, create PR to `develop`, merge immediately (`gh pr merge --merge` — never squash).
+4. **After merging**, in the same step:
+   - Delete the local branch: `git branch -d <branch-name>`
+   - Pull develop: `git checkout develop && git pull origin develop`
+   - If in a worktree, also pull develop in the main repo: `git -C /c/Users/gilli/GitHub/konote pull origin develop`
 
-Global CLAUDE.md rules apply. Additional KoNote-specific rule:
+### Concurrent Session Safety (Worktrees)
 
-- **After merging a PR from a worktree session**, pull develop into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory. The user works from the worktree and needs to see changes there immediately.
+Multiple sessions share one repo. Worktrees give each session an isolated directory so they don't overwrite each other's files.
+
+**When to use worktrees:** When the user has another Claude Code session open on the same repo. If only one session is running, a regular branch off `develop` is simpler.
+
+**Worktree cleanup is mandatory.** Sessions that create worktrees must clean them up before finishing:
+1. Merge the PR (or confirm with user that unmerged work should be abandoned)
+2. Remove the worktree: `git worktree remove <path>`
+3. Delete the local worktree branch: `git branch -D worktree/session-*`
+4. Pull develop in the main repo directory
+
+**After merging a PR from a worktree session**, pull develop into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory.
+
+### Session End Checklist
+
+Before finishing any session, verify:
+1. `git status` — **no uncommitted changes**. If there are changes, commit them or ask the user what to do.
+2. `git worktree list` — only the main repo and any active session worktrees should appear. Remove stale ones.
+3. Main repo is on `develop` (not stranded on a feature branch).
+4. All merged feature branches are deleted locally.
 
 ## Terminal Command Rules
 
