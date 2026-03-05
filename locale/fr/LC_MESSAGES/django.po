@@ -3831,7 +3831,7 @@ msgid "Harder right now"
 msgstr "Plus difficile en ce moment"
 
 msgid "Holding steady"
-msgstr "Se maintient"
+msgstr "Stable"
 
 msgid "Something's shifting"
 msgstr "Quelque chose bouge"
@@ -19295,9 +19295,6 @@ msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
 
 #: apps/portal/templates/portal/progress.html — progress page redesign
-msgid "Holding steady"
-msgstr "Stable"
-
 msgid "Moving up"
 msgstr "En hausse"
 

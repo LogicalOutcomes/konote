@@ -31,31 +31,33 @@
     }
 
     /**
-     * Format ISO date string as readable short date.
-     * e.g. "2026-01-15" → "Jan 15"
+     * Format ISO date string as readable short date, locale-aware.
+     * e.g. "2026-01-15" → "Jan 15" (EN) or "15 janv." (FR)
      */
+    var dateFmt = new Intl.DateTimeFormat(
+        document.documentElement.lang || 'en',
+        { month: 'short', day: 'numeric' }
+    );
     function formatDate(iso) {
         var parts = iso.split('-');
-        var d = new Date(parts[0], parts[1] - 1, parts[2]);
-        var months = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-        ];
-        return months[d.getMonth()] + ' ' + d.getDate();
+        return dateFmt.format(new Date(parts[0], parts[1] - 1, parts[2]));
     }
 
     /**
      * Determine trend direction and return { label, cssClass }.
+     * Handles inverted scales where max < min (e.g. pain scale 10→1).
      */
     function getTrend(startVal, currentVal, minVal, maxVal) {
         var diff = currentVal - startVal;
         if (diff === 0) {
             return { label: '{% trans "Holding steady" %}', cssClass: 'trend-steady' };
         }
-        // For most metrics, higher is better. If max < min (inverted scale),
-        // flip the interpretation.
-        var improving = diff > 0;
-        if (improving) {
+        var goingUp = diff > 0;
+        // For inverted scales (max < min), flip the direction label
+        if (minVal != null && maxVal != null && maxVal < minVal) {
+            goingUp = !goingUp;
+        }
+        if (goingUp) {
             return { label: '{% trans "Moving up" %}', cssClass: 'trend-up' };
         } else {
             return { label: '{% trans "Moving down" %}', cssClass: 'trend-down' };
@@ -189,7 +191,7 @@
             for (var i = 0; i < vals.length; i++) {
                 var row = document.createElement('tr');
                 var tdDate = document.createElement('td');
-                tdDate.textContent = chartInfo.labels[i];
+                tdDate.textContent = formatDate(chartInfo.labels[i]);
                 var tdVal = document.createElement('td');
                 tdVal.textContent = vals[i];
                 row.appendChild(tdDate);

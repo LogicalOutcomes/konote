@@ -372,7 +372,7 @@ a.portal-card article {
     display: block;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #3176aa;
+    color: var(--pico-primary, #3176aa);
     text-transform: uppercase;
     letter-spacing: 0.03em;
     margin-bottom: 0.2rem;
@@ -433,7 +433,7 @@ a.portal-card article {
 }
 .trend-down {
     background: #fef3ec;
-    color: #8b5e3c;
+    color: #6d4422;  /* darkened from #8b5e3c for WCAG AA (≥4.5:1) */
 }
 .trend-steady {
     background: #eef0f2;
