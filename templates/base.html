@@ -96,7 +96,7 @@
                 {% else %}
                 <img src="{% static 'img/konote-logo-text.svg' %}" alt="" class="nav-logo" height="28">
                 {% endif %}
-                <strong>{{ site.product_name|default:"KoNote" }}</strong>
+                {% trans "Home" %}
             </a></li>
         </ul>
         <ul>
@@ -115,7 +115,7 @@
                 {% else %}
                 <img src="{% static 'img/konote-logo-text.svg' %}" alt="" class="nav-logo" height="28">
                 {% endif %}
-                <strong>{{ site.product_name|default:"KoNote" }}</strong>
+                {% trans "Home" %}
             </a></li>
             <li>
                 <!-- Mobile menu toggle -->
