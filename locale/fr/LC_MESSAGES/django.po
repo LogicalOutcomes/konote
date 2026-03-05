@@ -14559,6 +14559,18 @@ msgstr "%(count)d objectif(s) mis à jour"
 msgid "Dismiss for today"
 msgstr "Masquer pour aujourd'hui"
 
+msgid "Hide"
+msgstr "Masquer"
+
+msgid "Hide until tomorrow"
+msgstr "Masquer jusqu'à demain"
+
+msgid "Hiding an alert removes it from your view until tomorrow. It does not resolve the alert."
+msgstr "Masquer une alerte la retire de votre affichage jusqu'à demain. Cela ne résout pas l'alerte."
+
+msgid "Hiding an item removes it from your view until tomorrow. It does not resolve it."
+msgstr "Masquer un élément le retire de votre affichage jusqu'à demain. Cela ne le résout pas."
+
 msgid "Heads up:"
 msgstr "Attention :"
 
