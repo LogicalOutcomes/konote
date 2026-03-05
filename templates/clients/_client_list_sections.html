@@ -6,10 +6,10 @@
 {# ── Section 1: Your caseload ── #}
 <section aria-labelledby="caseload-heading" class="client-list-section">
     <h2 id="caseload-heading" class="section-heading">
-        {% blocktrans with programs=staff_program_label total=caseload_count %}Your caseload — {{ programs }} ({{ total }}){% endblocktrans %}
+        {% blocktrans with programs=staff_program_label total=caseload_data|length %}Your caseload — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if caseload_data %}
-    <figure class="client-table-wrap" data-total-clients="{{ caseload_count }}">
+    <figure class="client-table-wrap" data-total-clients="{{ caseload_data|length }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Your caseload' %}">
         {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-caseload" %}
         <tbody>
@@ -27,10 +27,10 @@
 {# ── Section 2: Programs you manage ── #}
 <section aria-labelledby="oversight-heading" class="client-list-section">
     <h2 id="oversight-heading" class="section-heading">
-        {% blocktrans with programs=pm_program_label total=oversight_count %}Programs you manage — {{ programs }} ({{ total }}){% endblocktrans %}
+        {% blocktrans with programs=pm_program_label total=oversight_page.paginator.count %}Programs you manage — {{ programs }} ({{ total }}){% endblocktrans %}
     </h2>
     {% if oversight_page.object_list %}
-    <figure class="client-table-wrap" data-total-clients="{{ oversight_count }}">
+    <figure class="client-table-wrap" data-total-clients="{{ oversight_page.paginator.count }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Programs you manage' %}">
         {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-oversight" %}
         <tbody>
@@ -41,25 +41,7 @@
     </table>
     </figure>
 
-    {% if oversight_page.has_other_pages %}
-    <nav class="pagination" aria-label="{% trans 'Pagination' %}">
-        {% if oversight_page.has_previous %}
-        <a href="?page={{ oversight_page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-           hx-get="{% url 'clients:client_list' %}?page={{ oversight_page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-           hx-target="#client-list-container"
-           hx-indicator="#loading-bar"
-           hx-push-url="true">{% trans "Previous" %}</a>
-        {% endif %}
-        {% blocktrans with current=oversight_page.number total=oversight_page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
-        {% if oversight_page.has_next %}
-        <a href="?page={{ oversight_page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-           hx-get="{% url 'clients:client_list' %}?page={{ oversight_page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-           hx-target="#client-list-container"
-           hx-indicator="#loading-bar"
-           hx-push-url="true">{% trans "Next" %}</a>
-        {% endif %}
-    </nav>
-    {% endif %}
+    {% include "clients/_client_pagination.html" with page=oversight_page %}
 
     {% else %}
     <p class="empty-message"><em>{% trans "No participants in managed programs match the current filters." %}</em></p>
