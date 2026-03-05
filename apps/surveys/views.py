@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.auth_app.decorators import admin_required, requires_permission
+from apps.portal.survey_helpers import filter_visible_sections
 from apps.programs.access import get_client_or_403
 
 from .engine import is_surveys_enabled
@@ -556,8 +557,6 @@ def staff_data_entry(request, client_id, survey_id):
     sections = survey.sections.filter(
         is_active=True,
     ).prefetch_related("questions").select_related("condition_question").order_by("sort_order")
-
-    from apps.portal.survey_helpers import filter_visible_sections
 
     # Materialise queryset once to avoid duplicate DB hits
     sections_list = list(sections)

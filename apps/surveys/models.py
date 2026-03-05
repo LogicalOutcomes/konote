@@ -117,7 +117,9 @@ class SurveySection(models.Model):
             "Hide this section when the survey is filled by or for "
             "an identified participant (portal or staff-entered). "
             "Use for demographics sections — that data is already "
-            "in the participant record."
+            "in the participant record. Note: toggling this only "
+            "affects future responses — existing responses are not "
+            "retroactively changed."
         ),
     )
 
