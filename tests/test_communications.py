@@ -18,6 +18,7 @@ from apps.communications.forms import CommunicationLogForm, QuickLogForm
 from apps.communications.models import Communication
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_RECEPTIONIST, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -139,7 +140,7 @@ class QuickLogViewTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -188,7 +189,7 @@ class CommunicationLogViewTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -230,7 +231,7 @@ class LogCommunicationServiceTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -316,7 +317,7 @@ class CommunicationPermissionTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.receptionist, program=self.program,
-            role="receptionist", status="active",
+            role=ROLE_RECEPTIONIST, status="active",
         )
         # Staff — should be ALLOWED communication.log
         self.staff = User.objects.create_user(
@@ -325,7 +326,7 @@ class CommunicationPermissionTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -388,7 +389,7 @@ class ComposeEmailViewTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -530,7 +531,7 @@ class ComposeEmailViewTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=receptionist, program=self.program,
-            role="receptionist", status="active",
+            role=ROLE_RECEPTIONIST, status="active",
         )
         self.client.login(username="test_receptionist", password="testpass123")
         url = f"/communications/participant/{self.client_file.pk}/compose-email/"
@@ -637,7 +638,7 @@ class LeaveMessageViewTest(TestCase):
             username="test_staff_lm", password="testpass123", display_name="Test Staff",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -688,7 +689,7 @@ class MyMessagesViewTest(TestCase):
             username="test_staff_mm", password="testpass123", display_name="Test Staff",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.sender = User.objects.create_user(
             username="test_sender", password="testpass123", display_name="Sender",

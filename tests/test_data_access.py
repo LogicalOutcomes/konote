@@ -8,6 +8,7 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment, DataAccessRequest
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -32,7 +33,7 @@ class DataAccessAuthorizationTest(TestCase):
             username="staffuser", password="testpass123", display_name="Staff"
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog_a, role="staff"
+            user=self.staff, program=self.prog_a, role=ROLE_STAFF
         )
 
         # Client enrolled in Program B only (not accessible to staff)
@@ -111,7 +112,7 @@ class DataAccessCompletePostOnlyTest(TestCase):
             username="staffuser", password="testpass123", display_name="Staff"
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog, role="staff"
+            user=self.staff, program=self.prog, role=ROLE_STAFF
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"

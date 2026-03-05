@@ -24,6 +24,7 @@ from apps.clients.validators import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -275,7 +276,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
         )
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program, role="program_manager"
+            user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         self.group = CustomFieldGroup.objects.create(title="Contact Information")
         self.postal_field = CustomFieldDefinition.objects.create(

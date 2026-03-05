@@ -12,6 +12,7 @@ from apps.notes.models import (
     THEME_PRIORITY_RANK, ProgressNote, SuggestionLink, SuggestionTheme,
     deduplicate_themes, recalculate_theme_priority,
 )
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
@@ -34,21 +35,21 @@ class SuggestionThemePermissionTests(TestCase):
         self.pm = User.objects.create_user(username="pm", password="pass")
         UserProgramRole.objects.create(
             user=self.pm, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Staff user
         self.staff = User.objects.create_user(username="staff", password="pass")
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Receptionist user
         self.recep = User.objects.create_user(username="recep", password="pass")
         UserProgramRole.objects.create(
             user=self.recep, program=self.program,
-            role="receptionist", status="active",
+            role=ROLE_RECEPTIONIST, status="active",
         )
 
         # Admin user
@@ -57,7 +58,7 @@ class SuggestionThemePermissionTests(TestCase):
         self.admin.save()
         UserProgramRole.objects.create(
             user=self.admin, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Create a theme for testing
@@ -119,7 +120,7 @@ class SuggestionThemePermissionTests(TestCase):
         other_pm = User.objects.create_user(username="other_pm", password="pass")
         UserProgramRole.objects.create(
             user=other_pm, program=other_program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.test_client.login(username="other_pm", password="pass")
         response = self.test_client.get(
@@ -158,7 +159,7 @@ class SuggestionThemeLinkingTests(TestCase):
         self.pm = User.objects.create_user(username="pm", password="pass")
         UserProgramRole.objects.create(
             user=self.pm, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.test_client = TestClient()
         self.test_client.login(username="pm", password="pass")
@@ -246,7 +247,7 @@ class SuggestionThemeLinkingTests(TestCase):
     def test_staff_cannot_link(self):
         staff = User.objects.create_user(username="staff", password="pass")
         UserProgramRole.objects.create(
-            user=staff, program=self.program, role="staff", status="active",
+            user=staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         staff_client = TestClient()
         staff_client.login(username="staff", password="pass")
@@ -273,7 +274,7 @@ class SuggestionThemeStatusTests(TestCase):
         self.pm = User.objects.create_user(username="pm", password="pass")
         UserProgramRole.objects.create(
             user=self.pm, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.test_client = TestClient()
         self.test_client.login(username="pm", password="pass")

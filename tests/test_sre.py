@@ -27,6 +27,7 @@ from apps.events.forms import EventForm
 from apps.events.models import Event, EventType, SRECategory
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -206,7 +207,7 @@ class SREFlaggingViewTest(TestCase):
             username="sre_staff", password="testpass123", display_name="Staff SRE",
         )
         UserProgramRole.objects.create(
-            user=cls.staff, program=cls.program, role="staff",
+            user=cls.staff, program=cls.program, role=ROLE_STAFF,
         )
         cls.client_file = ClientFile.objects.create(is_demo=False, status="active")
         ClientProgramEnrolment.objects.create(
@@ -289,13 +290,13 @@ class SREUnflagViewTest(TestCase):
             username="sre_pm", password="testpass123", display_name="PM SRE",
         )
         UserProgramRole.objects.create(
-            user=cls.pm, program=cls.program, role="program_manager",
+            user=cls.pm, program=cls.program, role=ROLE_PROGRAM_MANAGER,
         )
         cls.staff = User.objects.create_user(
             username="sre_staff2", password="testpass123", display_name="Staff SRE 2",
         )
         UserProgramRole.objects.create(
-            user=cls.staff, program=cls.program, role="staff",
+            user=cls.staff, program=cls.program, role=ROLE_STAFF,
         )
 
         cls.client_file = ClientFile.objects.create(is_demo=False, status="active")
@@ -372,19 +373,19 @@ class SREReportViewTest(TestCase):
             username="report_exec", password="testpass123", display_name="Exec Report",
         )
         UserProgramRole.objects.create(
-            user=cls.executive, program=cls.program, role="executive",
+            user=cls.executive, program=cls.program, role=ROLE_EXECUTIVE,
         )
         cls.staff = User.objects.create_user(
             username="report_staff", password="testpass123", display_name="Staff Report",
         )
         UserProgramRole.objects.create(
-            user=cls.staff, program=cls.program, role="staff",
+            user=cls.staff, program=cls.program, role=ROLE_STAFF,
         )
         cls.pm = User.objects.create_user(
             username="report_pm", password="testpass123", display_name="PM Report",
         )
         UserProgramRole.objects.create(
-            user=cls.pm, program=cls.program, role="program_manager",
+            user=cls.pm, program=cls.program, role=ROLE_PROGRAM_MANAGER,
         )
 
     def setUp(self):

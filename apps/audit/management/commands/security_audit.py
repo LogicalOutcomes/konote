@@ -22,6 +22,8 @@ from django.core.management.base import BaseCommand
 from django.db import connections
 from django.utils import timezone
 
+from apps.auth_app.constants import ALL_PROGRAM_ROLES
+
 
 class CheckResult:
     """Result of a single security check."""
@@ -344,7 +346,7 @@ class Command(BaseCommand):
         """RBAC003: All roles are valid values."""
         from apps.programs.models import UserProgramRole
 
-        valid_roles = {"receptionist", "staff", "program_manager", "executive"}
+        valid_roles = ALL_PROGRAM_ROLES
         invalid = UserProgramRole.objects.exclude(role__in=valid_roles)
 
         if invalid.exists():

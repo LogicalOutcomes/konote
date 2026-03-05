@@ -23,6 +23,7 @@ from apps.programs.context import (
 from apps.programs.models import Program, UserProgramRole
 
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -63,28 +64,28 @@ class ProgramContextHelpersTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.single_standard_user, program=self.employment, role="staff",
+            user=self.single_standard_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.multi_standard_user, program=self.employment, role="staff",
+            user=self.multi_standard_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.multi_standard_user, program=self.housing, role="staff",
+            user=self.multi_standard_user, program=self.housing, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.single_confidential_user, program=self.counselling, role="staff",
+            user=self.single_confidential_user, program=self.counselling, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.employment, role="staff",
+            user=self.mixed_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.counselling, role="staff",
+            user=self.mixed_user, program=self.counselling, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.multi_conf_user, program=self.counselling, role="staff",
+            user=self.multi_conf_user, program=self.counselling, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.multi_conf_user, program=self.dv_support, role="program_manager",
+            user=self.multi_conf_user, program=self.dv_support, role=ROLE_PROGRAM_MANAGER,
         )
 
     def tearDown(self):
@@ -163,7 +164,7 @@ class ProgramContextHelpersTest(TestCase):
     def test_all_standard_option(self):
         # Give mixed user a second standard program
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.housing, role="staff",
+            user=self.mixed_user, program=self.housing, role=ROLE_STAFF,
         )
         session = {SESSION_KEY: "all_standard"}
         ids = get_active_program_ids(self.mixed_user, session)
@@ -197,7 +198,7 @@ class ProgramContextHelpersTest(TestCase):
 
     def test_switcher_options_all_standard_appears_with_2_plus(self):
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.housing, role="staff",
+            user=self.mixed_user, program=self.housing, role=ROLE_STAFF,
         )
         options = get_switcher_options(self.mixed_user)
         values = [o["value"] for o in options]
@@ -233,16 +234,16 @@ class ProgramSwitcherViewTest(TestCase):
         self.housing = Program.objects.create(name="Housing", colour_hex="#3B82F6")
 
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.employment, role="staff",
+            user=self.mixed_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.counselling, role="staff",
+            user=self.mixed_user, program=self.counselling, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.standard_user, program=self.employment, role="staff",
+            user=self.standard_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.standard_user, program=self.housing, role="staff",
+            user=self.standard_user, program=self.housing, role=ROLE_STAFF,
         )
 
     def tearDown(self):
@@ -313,13 +314,13 @@ class ForcedSelectionRedirectTest(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.employment, role="staff",
+            user=self.mixed_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.counselling, role="staff",
+            user=self.mixed_user, program=self.counselling, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.standard_user, program=self.employment, role="staff",
+            user=self.standard_user, program=self.employment, role=ROLE_STAFF,
         )
 
     def tearDown(self):
@@ -399,10 +400,10 @@ class ClientFilteringByActiveProgram(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.employment, role="staff",
+            user=self.mixed_user, program=self.employment, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.mixed_user, program=self.counselling, role="staff",
+            user=self.mixed_user, program=self.counselling, role=ROLE_STAFF,
         )
 
         # Client in standard program
@@ -482,10 +483,10 @@ class RoleRemovedClearsSessionTest(TestCase):
         )
 
         self.std_role = UserProgramRole.objects.create(
-            user=self.user, program=self.employment, role="staff",
+            user=self.user, program=self.employment, role=ROLE_STAFF,
         )
         self.conf_role = UserProgramRole.objects.create(
-            user=self.user, program=self.counselling, role="staff",
+            user=self.user, program=self.counselling, role=ROLE_STAFF,
         )
 
     def tearDown(self):

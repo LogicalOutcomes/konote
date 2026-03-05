@@ -34,6 +34,7 @@ from apps.plans.models import PlanSection, PlanTarget
 from apps.programs.models import Program, UserProgramRole
 
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -54,7 +55,7 @@ class MergeCandidatesTest(TestCase):
             name="Counselling", colour_hex="#EF4444", is_confidential=True,
         )
         UserProgramRole.objects.create(
-            user=self.admin, program=self.prog_a, role="program_manager",
+            user=self.admin, program=self.prog_a, role=ROLE_PROGRAM_MANAGER,
         )
 
     def _make_client(self, first_name, last_name, phone="", birth_date="", program=None):
@@ -208,7 +209,7 @@ class MergeExecutionTest(TestCase):
         )
         self.prog = Program.objects.create(name="Employment", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.admin, program=self.prog, role="program_manager",
+            user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Create two clients
@@ -440,10 +441,10 @@ class MergeViewsTest(TestCase):
         )
         self.prog = Program.objects.create(name="Employment", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.admin, program=self.prog, role="program_manager",
+            user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog, role="staff",
+            user=self.staff, program=self.prog, role=ROLE_STAFF,
         )
 
     def test_candidates_list_requires_admin(self):

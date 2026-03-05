@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import path
 from django.utils import timezone
 
-from apps.auth_app.constants import ROLE_RANK
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_RECEPTIONIST
 from apps.auth_app.decorators import _get_user_highest_role, _get_user_highest_role_any
 
 
@@ -45,12 +45,12 @@ def home(request):
     # --- Check user role to determine if clinical data should be shown ---
     # BUG-12: Get user's highest role across all programs
     user_role = _get_user_highest_role(request.user)
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
 
     # DASH-ROLES1: Detect PM and executive using the inclusive helper
     highest_role_any = _get_user_highest_role_any(request.user)
-    is_executive = highest_role_any == "executive"
-    is_pm = highest_role_any == "program_manager" and not is_executive
+    is_executive = highest_role_any == ROLE_EXECUTIVE
+    is_pm = highest_role_any == ROLE_PROGRAM_MANAGER and not is_executive
 
     # CONF9: Use active program context from middleware if available
     active_ids = getattr(request, "active_program_ids", None)

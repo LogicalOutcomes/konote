@@ -10,6 +10,7 @@ Three tiers of erasure:
 """
 import logging
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -209,7 +210,7 @@ def is_deadlocked(erasure_request):
     for program_id in remaining_program_ids:
         other_pms = UserProgramRole.objects.filter(
             program_id=program_id,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
             status="active",
         ).exclude(user=requester)
         if other_pms.exists():

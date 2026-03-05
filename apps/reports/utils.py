@@ -6,6 +6,8 @@ from typing import List, Tuple
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
+
 
 def is_aggregate_only_user(user):
     """Check if this user should only receive aggregate (non-individual) export data.
@@ -30,7 +32,7 @@ def is_aggregate_only_user(user):
     from apps.programs.models import UserProgramRole
 
     has_pm_role = UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active"
+        user=user, role=ROLE_PROGRAM_MANAGER, status="active"
     ).exists()
     return not has_pm_role
 
@@ -52,7 +54,7 @@ def can_download_pii_export(user):
     from apps.programs.models import UserProgramRole
 
     return UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active"
+        user=user, role=ROLE_PROGRAM_MANAGER, status="active"
     ).exists()
 
 
@@ -80,7 +82,7 @@ def can_create_export(user, export_type, program=None):
 
     if export_type in ("metrics", "funder_report", "session_report"):
         qs = UserProgramRole.objects.filter(
-            user=user, role__in=["program_manager", "executive"], status="active"
+            user=user, role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE], status="active"
         )
         if program:
             return qs.filter(program=program).exists()
@@ -105,7 +107,7 @@ def get_manageable_programs(user):
         return Program.objects.filter(status="active")
 
     managed_ids = UserProgramRole.objects.filter(
-        user=user, role__in=["program_manager", "executive"], status="active"
+        user=user, role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE], status="active"
     ).values_list("program_id", flat=True)
     return Program.objects.filter(pk__in=managed_ids, status="active")
 

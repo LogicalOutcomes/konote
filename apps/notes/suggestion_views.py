@@ -14,6 +14,8 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
+
 from apps.admin_settings.models import FeatureToggle
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
@@ -35,7 +37,7 @@ def _get_pm_program_ids(user):
     """Return set of program IDs where user is an active program manager."""
     return set(
         UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active",
+            user=user, role=ROLE_PROGRAM_MANAGER, status="active",
         ).values_list("program_id", flat=True)
     )
 

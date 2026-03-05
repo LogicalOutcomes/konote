@@ -7,6 +7,12 @@ import konote.encryption as enc_module
 
 from .checker import Severity, UxChecker
 from .conftest import get_report
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -100,37 +106,37 @@ class UxWalkthroughBase(TestCase):
         UserProgramRole.objects.create(
             user=cls.receptionist_user,
             program=cls.program_a,
-            role="receptionist",
+            role=ROLE_RECEPTIONIST,
         )
         UserProgramRole.objects.create(
             user=cls.staff_user,
             program=cls.program_a,
-            role="staff",
+            role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
             user=cls.manager_user,
             program=cls.program_a,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
             user=cls.executive_user,
             program=cls.program_a,
-            role="executive",
+            role=ROLE_EXECUTIVE,
         )
         UserProgramRole.objects.create(
             user=cls.executive_user,
             program=cls.program_b,
-            role="executive",
+            role=ROLE_EXECUTIVE,
         )
         UserProgramRole.objects.create(
             user=cls.admin_pm_user,
             program=cls.program_a,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
             user=cls.admin_pm_user,
             program=cls.program_b,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
 
         # --- Clients ---

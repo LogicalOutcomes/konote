@@ -1,5 +1,6 @@
 """Tests for cross-program permission leakage — users must not access data
 from programs they aren't assigned to by manipulating URL IDs.
+from apps.auth_app.constants import ROLE_STAFF
 
 Covers group views (membership_remove, milestone_create/edit, outcome_create)
 and plans views (target_history).
@@ -42,7 +43,7 @@ class CrossProgramSecurityTest(TestCase):
             username="casey", password="testpass123", display_name="Casey Worker",
         )
         UserProgramRole.objects.create(
-            user=cls.staff, program=cls.program_a, role="staff",
+            user=cls.staff, program=cls.program_a, role=ROLE_STAFF,
         )
 
         # Group in Program A (accessible)
@@ -159,10 +160,10 @@ class CrossProgramConsentTest(TestCase):
             username="multi", password="testpass123", display_name="Multi Worker",
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_a, role="staff",
+            user=cls.multi_staff, program=cls.program_a, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_b, role="staff",
+            user=cls.multi_staff, program=cls.program_b, role=ROLE_STAFF,
         )
 
         # Client enrolled in both programs
@@ -270,7 +271,7 @@ class CrossProgramConsentTest(TestCase):
             username="single", password="testpass123", display_name="Single Worker",
         )
         UserProgramRole.objects.create(
-            user=single_staff, program=self.program_a, role="staff",
+            user=single_staff, program=self.program_a, role=ROLE_STAFF,
         )
         self._set_agency_sharing(False)
         self.shared_client.cross_program_sharing = "default"
@@ -388,7 +389,7 @@ class CrossProgramConsentTest(TestCase):
         )
         program_c = Program.objects.create(name="Program C", status="active")
         UserProgramRole.objects.create(
-            user=no_shared, program=program_c, role="staff",
+            user=no_shared, program=program_c, role=ROLE_STAFF,
         )
 
         notes_qs = ProgressNote.objects.filter(client_file=self.shared_client)
@@ -462,7 +463,7 @@ class SearchConsentTest(TestCase):
             username="searcher", password="testpass123", display_name="Search Worker",
         )
         UserProgramRole.objects.create(
-            user=cls.staff_a, program=cls.program_a, role="staff",
+            user=cls.staff_a, program=cls.program_a, role=ROLE_STAFF,
         )
 
         # Multi-program staff — access to both programs
@@ -470,10 +471,10 @@ class SearchConsentTest(TestCase):
             username="multisearch", password="testpass123", display_name="Multi Search",
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_a, role="staff",
+            user=cls.multi_staff, program=cls.program_a, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_b, role="staff",
+            user=cls.multi_staff, program=cls.program_b, role=ROLE_STAFF,
         )
 
         # Client enrolled in both programs
@@ -590,10 +591,10 @@ class QualitativeSummaryConsentTest(TestCase):
             username="qualuser", password="testpass123", display_name="Qual Worker",
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_a, role="staff",
+            user=cls.multi_staff, program=cls.program_a, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=cls.multi_staff, program=cls.program_b, role="staff",
+            user=cls.multi_staff, program=cls.program_b, role=ROLE_STAFF,
         )
 
         # Client enrolled in both programs

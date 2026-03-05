@@ -20,6 +20,12 @@ from .llm_evaluator import evaluate_step, format_persona_for_prompt
 from .objective_scorer import compute_objective_scores, count_user_actions
 from .score_models import ScenarioResult, StepEvaluation
 from .state_capture import capture_step_state, capture_to_evaluation_context
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +207,7 @@ class ScenarioRunner(BrowserTestBase):
                 preferred_language="en",
             )
             UserProgramRole.objects.create(
-                user=staff_new, program=self.program_a, role="staff",
+                user=staff_new, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS2: Jean-Luc (French-speaking staff)
@@ -212,7 +218,7 @@ class ScenarioRunner(BrowserTestBase):
                 preferred_language="fr",
             )
             UserProgramRole.objects.create(
-                user=staff_fr, program=self.program_a, role="staff",
+                user=staff_fr, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS3: Amara (accessibility / keyboard-only staff)
@@ -224,7 +230,7 @@ class ScenarioRunner(BrowserTestBase):
                                           # stale cookie from setting lang="fr"
             )
             UserProgramRole.objects.create(
-                user=staff_a11y, program=self.program_a, role="staff",
+                user=staff_a11y, program=self.program_a, role=ROLE_STAFF,
             )
 
         # R2: Omar (tech-savvy part-time receptionist)
@@ -235,7 +241,7 @@ class ScenarioRunner(BrowserTestBase):
                 preferred_language="en",
             )
             UserProgramRole.objects.create(
-                user=frontdesk2, program=self.program_b, role="receptionist",
+                user=frontdesk2, program=self.program_b, role=ROLE_RECEPTIONIST,
             )
 
         # DS1c: Casey with ADHD (cognitive accessibility profile)
@@ -246,7 +252,7 @@ class ScenarioRunner(BrowserTestBase):
                 preferred_language="en",
             )
             UserProgramRole.objects.create(
-                user=staff_adhd, program=self.program_a, role="staff",
+                user=staff_adhd, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS4: Riley Chen (voice navigation / Dragon user)
@@ -257,7 +263,7 @@ class ScenarioRunner(BrowserTestBase):
                 preferred_language="en",
             )
             UserProgramRole.objects.create(
-                user=staff_voice, program=self.program_a, role="staff",
+                user=staff_voice, program=self.program_a, role=ROLE_STAFF,
             )
 
         # PM1: Morgan Tremblay (program manager, cross-program)
@@ -272,7 +278,7 @@ class ScenarioRunner(BrowserTestBase):
             )
             UserProgramRole.objects.create(
                 user=manager_user, program=self.program_a,
-                role="program_manager",
+                role=ROLE_PROGRAM_MANAGER,
             )
         # BUG-24: Ensure explicit language even if base class created this user
         if not manager_user.preferred_language:
@@ -283,7 +289,7 @@ class ScenarioRunner(BrowserTestBase):
         ).exists():
             UserProgramRole.objects.create(
                 user=manager_user, program=self.program_b,
-                role="program_manager",
+                role=ROLE_PROGRAM_MANAGER,
             )
 
         # PM2-FR: Sophie Tremblay (French-speaking program manager)
@@ -295,11 +301,11 @@ class ScenarioRunner(BrowserTestBase):
             )
             UserProgramRole.objects.create(
                 user=manager_fr, program=self.program_a,
-                role="program_manager",
+                role=ROLE_PROGRAM_MANAGER,
             )
             UserProgramRole.objects.create(
                 user=manager_fr, program=self.program_b,
-                role="program_manager",
+                role=ROLE_PROGRAM_MANAGER,
             )
 
         # E2: Kwame Asante (second executive)
@@ -312,10 +318,10 @@ class ScenarioRunner(BrowserTestBase):
             executive2.is_admin = True
             executive2.save()
             UserProgramRole.objects.create(
-                user=executive2, program=self.program_a, role="executive",
+                user=executive2, program=self.program_a, role=ROLE_EXECUTIVE,
             )
             UserProgramRole.objects.create(
-                user=executive2, program=self.program_b, role="executive",
+                user=executive2, program=self.program_b, role=ROLE_EXECUTIVE,
             )
 
         # R2-FR: Amélie Tremblay (French-speaking receptionist)
@@ -327,7 +333,7 @@ class ScenarioRunner(BrowserTestBase):
             )
             UserProgramRole.objects.create(
                 user=frontdesk_fr, program=self.program_a,
-                role="receptionist",
+                role=ROLE_RECEPTIONIST,
             )
 
         # Extra clients needed by specific scenarios.
@@ -953,7 +959,7 @@ class ScenarioRunner(BrowserTestBase):
         # 5. Verify data is accessible (client list or executive dashboard)
         persona_role = (persona_data.get("test_user", {}).get("role", "")
                         or persona_data.get("role", "")).lower()
-        if persona_role == "executive":
+        if persona_role == ROLE_EXECUTIVE:
             # Executives see aggregate stats, not individual client rows
             self.page.goto(self.live_url("/participants/executive/"))
             self._wait_for_idle()

@@ -26,6 +26,12 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import SecureExportLink
 from apps.reports.utils import can_create_export, can_download_pii_export, get_manageable_programs, is_aggregate_only_user
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -93,15 +99,15 @@ class CanCreateExportHelperTest(TestCase):
 
         # PM manages program A only
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         # Staff in program A
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         # Executive in program A
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     # ── Admin ────────────────────────────────────────────────────
@@ -173,7 +179,7 @@ class GetManageableProgramsTest(TestCase):
         self.archived = Program.objects.create(name="Archived", status="archived")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def test_admin_sees_all_active_programs(self):
@@ -221,16 +227,16 @@ class MetricsExportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
     def test_admin_can_access_metrics_export(self):
@@ -288,13 +294,13 @@ class FunderReportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     def test_admin_can_access_funder_report(self):
@@ -349,10 +355,10 @@ class DownloadExportPermissionTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.pm_user2, program=self.program_a, role="program_manager"
+            user=self.pm_user2, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def tearDown(self):
@@ -410,7 +416,7 @@ class DownloadExportPermissionTest(TestCase):
             username="exec_dl", password="testpass123", is_admin=False, display_name="Exec"
         )
         UserProgramRole.objects.create(
-            user=exec_user, program=self.program_a, role="executive"
+            user=exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         settings.SECURE_EXPORT_DIR = self.export_dir
         link = _create_link(exec_user, self.export_dir, contains_pii=True)
@@ -460,7 +466,7 @@ class ManageRevokePermissionTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def tearDown(self):
@@ -511,13 +517,13 @@ class ExportAccessContextTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     def _get_context(self, username):
@@ -571,17 +577,17 @@ class IsAggregateOnlyUserTest(TestCase):
         self.program_b = Program.objects.create(name="Program B")
 
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         # Dual user: executive in program A, PM in program B
         UserProgramRole.objects.create(
-            user=self.dual_user, program=self.program_a, role="executive"
+            user=self.dual_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.dual_user, program=self.program_b, role="program_manager"
+            user=self.dual_user, program=self.program_b, role=ROLE_PROGRAM_MANAGER
         )
 
     def test_admin_without_pm_role_is_aggregate_only(self):
@@ -605,7 +611,7 @@ class IsAggregateOnlyUserTest(TestCase):
             username="admin_pm", password="testpass123", is_admin=True, display_name="AdminPM"
         )
         UserProgramRole.objects.create(
-            user=admin_pm, program=self.program_a, role="program_manager"
+            user=admin_pm, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         self.assertFalse(is_aggregate_only_user(admin_pm))
 
@@ -661,10 +667,10 @@ class ExecutiveAggregateExportTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager"
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program, role="executive"
+            user=self.exec_user, program=self.program, role=ROLE_EXECUTIVE
         )
 
         # Client
@@ -863,22 +869,22 @@ class IndividualClientExportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
         # Admin needs a program role to pass ProgramAccessMiddleware
         # (admins without program roles are blocked from client URLs)
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program_a, role="program_manager"
+            user=self.admin, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create a client for the export endpoint
@@ -962,16 +968,16 @@ class ClientProgressPdfPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program_a, role="program_manager"
+            user=self.admin, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
         self.client_file = ClientFile.objects.create()
@@ -1042,16 +1048,16 @@ class ClientAnalysisPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
         self.client_file = ClientFile.objects.create()

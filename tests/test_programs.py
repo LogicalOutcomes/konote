@@ -5,6 +5,7 @@ from cryptography.fernet import Fernet
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -34,7 +35,7 @@ class ProgramViewsTest(TestCase):
         """Non-admin users see all programs in the list (access controlled at detail level)."""
         prog1 = Program.objects.create(name="Assigned Program")
         prog2 = Program.objects.create(name="Other Program")
-        UserProgramRole.objects.create(user=self.staff, program=prog1, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=prog1, role=ROLE_STAFF, status="active")
         # staff is NOT assigned to prog2
 
         self.client.login(username="staff", password="testpass123")
@@ -91,7 +92,7 @@ class ProgramViewsTest(TestCase):
         prog = Program.objects.create(name="Housing")
         resp = self.client.post(f"/programs/{prog.pk}/roles/add/", {
             "user": self.staff.pk,
-            "role": "staff",
+            "role": ROLE_STAFF,
         })
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(UserProgramRole.objects.filter(user=self.staff, program=prog, status="active").exists())
@@ -99,7 +100,7 @@ class ProgramViewsTest(TestCase):
     def test_admin_can_remove_role(self):
         self.client.login(username="admin", password="testpass123")
         prog = Program.objects.create(name="Housing")
-        role = UserProgramRole.objects.create(user=self.staff, program=prog, role="staff")
+        role = UserProgramRole.objects.create(user=self.staff, program=prog, role=ROLE_STAFF)
         resp = self.client.post(f"/programs/{prog.pk}/roles/{role.pk}/remove/")
         self.assertEqual(resp.status_code, 200)
         role.refresh_from_db()
@@ -108,7 +109,7 @@ class ProgramViewsTest(TestCase):
     def test_nonadmin_can_view_assigned_program_detail(self):
         """Non-admin users can view detail of programs they're assigned to."""
         prog = Program.objects.create(name="Assigned Program")
-        UserProgramRole.objects.create(user=self.staff, program=prog, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=prog, role=ROLE_STAFF, status="active")
         self.client.login(username="staff", password="testpass123")
         resp = self.client.get(f"/programs/{prog.pk}/")
         self.assertEqual(resp.status_code, 200)
@@ -127,7 +128,7 @@ class ProgramViewsTest(TestCase):
         """Non-admin users see all programs in the list (not just their assigned ones)."""
         prog1 = Program.objects.create(name="Assigned Program")
         prog2 = Program.objects.create(name="Other Program")
-        UserProgramRole.objects.create(user=self.staff, program=prog1, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=prog1, role=ROLE_STAFF, status="active")
         # staff is NOT assigned to prog2
         self.client.login(username="staff", password="testpass123")
         resp = self.client.get("/programs/")
@@ -142,7 +143,7 @@ class ProgramViewsTest(TestCase):
         manager = User.objects.create_user(username="manager", password="testpass123", is_admin=False)
         manager.display_name = "Jane Manager"
         manager.save()
-        UserProgramRole.objects.create(user=manager, program=prog, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=manager, program=prog, role=ROLE_PROGRAM_MANAGER, status="active")
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/programs/")
         self.assertEqual(resp.status_code, 200)

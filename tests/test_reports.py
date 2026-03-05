@@ -51,6 +51,12 @@ from apps.reports.utils import (
 from apps.reports.forms import MetricExportForm
 from apps.reports.models import ReportMetric, SecureExportLink
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 
 def create_test_partner(name="Test Partner", partner_type="funder", **kwargs):
@@ -2149,7 +2155,7 @@ class TemplateExportFormTest(TestCase):
         # Staff user with access to only Youth Services
         staff = User.objects.create_user(username="pm", password="testpass123")
         UserProgramRole.objects.create(
-            user=staff, program=self.program, role="program_manager", status="active",
+            user=staff, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active",
         )
         form = TemplateExportForm(user=staff)
         qs = form.fields["report_template"].queryset
@@ -2291,19 +2297,19 @@ class GenerateReportCustomExportContextTest(TestCase):
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_program_manager_gets_can_custom_export(self):
-        self._make_user("pm", role="program_manager")
+        self._make_user("pm", role=ROLE_PROGRAM_MANAGER)
         self.client_http.login(username="pm", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_executive_gets_can_custom_export(self):
-        self._make_user("exec", role="executive")
+        self._make_user("exec", role=ROLE_EXECUTIVE)
         self.client_http.login(username="exec", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_staff_does_not_get_can_custom_export(self):
-        self._make_user("staff", role="staff")
+        self._make_user("staff", role=ROLE_STAFF)
         self.client_http.login(username="staff", password="testpass123")
         # Staff with report.funder_report=DENY gets 403, so they
         # cannot even reach the page — verify that.
@@ -2499,10 +2505,10 @@ class DemoRealExportSeparationTests(TestCase):
 
         # Give admin users PM roles so they get individual (not aggregate) export data
         UserProgramRole.objects.create(
-            user=self.demo_admin, program=self.program, role="program_manager"
+            user=self.demo_admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.real_admin, program=self.program, role="program_manager"
+            user=self.real_admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create DEMO client
@@ -2758,7 +2764,7 @@ class ExportWarningDialogTests(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         # Admin needs PM role to see PII warning (non-aggregate mode)
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program, role="program_manager"
+            user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
@@ -2915,7 +2921,7 @@ class IndividualClientExportViewTests(TestCase):
             username="staff", password="testpass123", display_name="Staff User"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create receptionist user
@@ -2923,7 +2929,7 @@ class IndividualClientExportViewTests(TestCase):
             username="receptionist", password="testpass123", display_name="Receptionist"
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program, role="receptionist"
+            user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST
         )
 
         # Create a client enrolled in the program
@@ -3115,7 +3121,7 @@ class IndividualClientExportViewTests(TestCase):
             is_demo=True,
         )
         UserProgramRole.objects.create(
-            user=demo_user, program=self.program, role="staff",
+            user=demo_user, program=self.program, role=ROLE_STAFF,
         )
         self.client.login(username="demo", password="testpass123")
         resp = self.client.get(self.export_url)
@@ -3270,7 +3276,7 @@ class CsvInjectionIntegrationTests(TestCase):
             username="csvtest", password="testpass123", display_name="CSV Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create client with a malicious-looking first name
@@ -3332,7 +3338,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
             username="fntest", password="testpass123", display_name="Filename Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create client with special characters in record_id

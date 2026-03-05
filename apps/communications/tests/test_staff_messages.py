@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 
 from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.programs.models import Program, UserProgramRole
 from apps.communications.models import StaffMessage
 
@@ -45,15 +46,15 @@ class StaffMessagePermissionTests(TestCase):
 
         # Receptionist
         self.receptionist = User.objects.create_user(username="recep", password="pass", display_name="Front Desk")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist", status="active")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST, status="active")
 
         # Staff
         self.staff = User.objects.create_user(username="staff", password="pass", display_name="Case Worker")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF, status="active")
 
         # PM
         self.pm = User.objects.create_user(username="pm", password="pass", display_name="Program Manager")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active")
 
         self.test_client = TestClient()
 

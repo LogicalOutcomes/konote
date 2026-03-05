@@ -23,6 +23,8 @@ from .context import (
 from apps.groups.models import Group
 
 from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm, SwitchProgramForm
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST
+
 from .models import Program, UserProgramRole
 
 logger = logging.getLogger(__name__)
@@ -45,7 +47,7 @@ def program_list(request):
     for program in programs:
         # Get program manager (if any)
         manager_role = UserProgramRole.objects.filter(
-            program=program, role="program_manager", status="active"
+            program=program, role=ROLE_PROGRAM_MANAGER, status="active"
         ).select_related("user").first()
         manager_name = manager_role.user.display_name if manager_role else None
         manager_email = manager_role.user.email if manager_role else None
@@ -135,7 +137,7 @@ def program_detail(request, program_id):
     user_program_role = UserProgramRole.objects.filter(
         user=request.user, program=program, status="active"
     ).values_list("role", flat=True).first()
-    is_receptionist = user_program_role == "receptionist"
+    is_receptionist = user_program_role == ROLE_RECEPTIONIST
 
     # Program health summary for non-front-desk roles (matches Insights RBAC)
     program_summary = None
@@ -174,7 +176,7 @@ def program_detail(request, program_id):
         group_count = groups.count()
 
     # Program Manager name for Front Desk groups summary
-    pm_role = roles.filter(role="program_manager", status="active").first()
+    pm_role = roles.filter(role=ROLE_PROGRAM_MANAGER, status="active").first()
     program_manager_name = pm_role.user.display_name if pm_role else None
 
     return render(request, "programs/detail.html", {

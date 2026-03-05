@@ -3,6 +3,12 @@ from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from cryptography.fernet import Fernet
 
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import (
@@ -29,12 +35,12 @@ class ClientViewsTest(TestCase):
         self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role=ROLE_RECEPTIONIST)
         # Give admin access to both programs so they can see all clients
-        UserProgramRole.objects.create(user=self.admin, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
 
     def _create_client(self, first="Jane", last="Doe", programs=None):
         cf = ClientFile()
@@ -219,7 +225,7 @@ class ClientViewsTest(TestCase):
     def test_staff_can_transfer_client(self):
         """Staff have client.transfer PROGRAM — can add a program."""
         # Give staff access to both programs
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
@@ -235,7 +241,7 @@ class ClientViewsTest(TestCase):
 
     def test_staff_transfer_removes_program(self):
         """Staff can unenrol a client from a program via transfer."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         cf = self._create_client("Jane", "Doe", [self.prog_a, self.prog_b])
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
@@ -257,7 +263,7 @@ class ClientViewsTest(TestCase):
     def test_transfer_creates_audit_log(self):
         """Transfer creates an audit log entry with program change details."""
         from apps.audit.models import AuditLog
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
         self.client.post(f"/participants/{cf.pk}/transfer/", {
@@ -293,7 +299,7 @@ class ClientViewsTest(TestCase):
 
     def test_edit_no_longer_changes_programs(self):
         """Edit form POST does not affect program enrolments (use transfer instead)."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
         # POST to edit — programs field is no longer on the edit form
@@ -316,7 +322,7 @@ class ClientViewsTest(TestCase):
 
     def test_pm_can_transfer_client(self):
         """PMs have client.transfer PROGRAM — can transfer clients."""
-        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
@@ -421,7 +427,7 @@ class ClientViewsTest(TestCase):
 
     def test_filter_by_program(self):
         """Filter clients by program enrolment."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         alice = self._create_client("Alice", "Alpha", [self.prog_a])
         bob = self._create_client("Bob", "Beta", [self.prog_b])
 
@@ -441,7 +447,7 @@ class ClientViewsTest(TestCase):
 
     def test_filter_combined_status_and_program(self):
         """Filter clients by both status and program."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         alice_active = self._create_client("Alice", "Active", [self.prog_a])
         alice_discharged = self._create_client("Alice", "Discharged", [self.prog_a])
         alice_discharged.status = "discharged"
@@ -493,7 +499,7 @@ class ClientViewsTest(TestCase):
 
     def test_search_filter_by_program(self):
         """Filter search results by program."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         alice = self._create_client("Alice", "Test", [self.prog_a])
         bob = self._create_client("Bob", "Test", [self.prog_b])
 
@@ -549,7 +555,7 @@ class ClientViewsTest(TestCase):
 
     def test_search_combined_filters(self):
         """Multiple filters should work together."""
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role=ROLE_STAFF)
         alice_active = self._create_client("Alice", "Active", [self.prog_a])
         alice_discharged = self._create_client("Alice", "Discharged", [self.prog_a])
         alice_discharged.status = "discharged"
@@ -576,7 +582,7 @@ class CustomFieldTest(TestCase):
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         # Admin needs a program role to access client data
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
     def test_custom_field_admin_requires_admin(self):
         staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
@@ -645,8 +651,8 @@ class ShowOnCreateFieldTest(TestCase):
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         self.receptionist = User.objects.create_user(username="recep", password="testpass123", is_admin=False)
         self.prog = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role=ROLE_RECEPTIONIST)
         self.group = CustomFieldGroup.objects.create(title="Identity", sort_order=10)
         self.pronouns = CustomFieldDefinition.objects.create(
             group=self.group, name="Pronouns", input_type="select_other",
@@ -745,7 +751,7 @@ class SelectOtherFieldTest(TestCase):
         self.client = Client()
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER)
         self.group = CustomFieldGroup.objects.create(title="Contact Information")
         self.pronouns_field = CustomFieldDefinition.objects.create(
             group=self.group, name="Pronouns", input_type="select_other",
@@ -836,7 +842,7 @@ class SelectOtherFieldTest(TestCase):
     def test_front_desk_can_view_but_not_edit(self):
         """Front desk staff (receptionist) can see pronouns but not edit them."""
         receptionist = User.objects.create_user(username="frontdesk", password="testpass123")
-        UserProgramRole.objects.create(user=receptionist, program=self.program, role="receptionist")
+        UserProgramRole.objects.create(user=receptionist, program=self.program, role=ROLE_RECEPTIONIST)
         # Save a value first
         cdv = ClientDetailValue.objects.create(client_file=self.cf, field_def=self.pronouns_field)
         cdv.set_value("They/them")
@@ -862,7 +868,7 @@ class MultiSelectFieldTest(TestCase):
         self.client = Client()
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER)
         self.group = CustomFieldGroup.objects.create(title="Demographics")
         self.racial_field = CustomFieldDefinition.objects.create(
             group=self.group, name="Racial Identity", input_type="multi_select",
@@ -955,8 +961,8 @@ class ConsentRecordingTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
         self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
 
         self.cf = ClientFile()
         self.cf.first_name = "Jane"
@@ -1027,9 +1033,9 @@ class ConsentWithdrawalTest(TestCase):
         self.pm = User.objects.create_user(username="pm", password="testpass123", is_admin=False)
         self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
 
         self.cf = ClientFile()
         self.cf.first_name = "Jane"
@@ -1198,7 +1204,7 @@ class ExecutiveDashboardExportTest(TestCase):
             username="exec", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.executive, program=self.prog, role="executive",
+            user=self.executive, program=self.prog, role=ROLE_EXECUTIVE,
         )
 
         # PM user
@@ -1206,7 +1212,7 @@ class ExecutiveDashboardExportTest(TestCase):
             username="pm", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.pm, program=self.prog, role="program_manager",
+            user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Frontline staff (should be blocked)
@@ -1214,7 +1220,7 @@ class ExecutiveDashboardExportTest(TestCase):
             username="staff", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog, role="staff",
+            user=self.staff, program=self.prog, role=ROLE_STAFF,
         )
 
         # Admin user
@@ -1222,7 +1228,7 @@ class ExecutiveDashboardExportTest(TestCase):
             username="admin", password="pass", is_admin=True,
         )
         UserProgramRole.objects.create(
-            user=self.admin, program=self.prog, role="program_manager",
+            user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Create some clients
@@ -1315,7 +1321,7 @@ class ExecutiveDashboardPdfExportTest(TestCase):
             username="exec", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.executive, program=self.prog, role="executive",
+            user=self.executive, program=self.prog, role=ROLE_EXECUTIVE,
         )
 
         # PM user
@@ -1323,7 +1329,7 @@ class ExecutiveDashboardPdfExportTest(TestCase):
             username="pm", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.pm, program=self.prog, role="program_manager",
+            user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Frontline staff (should be blocked)
@@ -1331,7 +1337,7 @@ class ExecutiveDashboardPdfExportTest(TestCase):
             username="staff", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog, role="staff",
+            user=self.staff, program=self.prog, role=ROLE_STAFF,
         )
 
         # Admin user
@@ -1339,7 +1345,7 @@ class ExecutiveDashboardPdfExportTest(TestCase):
             username="admin", password="pass", is_admin=True,
         )
         UserProgramRole.objects.create(
-            user=self.admin, program=self.prog, role="program_manager",
+            user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Create some clients
@@ -1522,7 +1528,7 @@ class FormDataPreservationTest(TestCase):
             username="admin", password="testpass123", is_admin=True,
         )
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
     def test_form_data_preserved_on_validation_error(self):
         """When a required field is missing, entered data should be in the response."""
@@ -1561,9 +1567,9 @@ class BulkOperationsTest(TestCase):
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
         self.prog_c = Program.objects.create(name="Program C", colour_hex="#EF4444")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role="receptionist")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role=ROLE_RECEPTIONIST)
 
     def _create_client(self, first="Jane", last="Doe", programs=None, status="active"):
         cf = ClientFile()
@@ -1772,9 +1778,9 @@ class BulkOperationsTest(TestCase):
         user_b = User.objects.create_user(
             username="staff_b", password="testpass123", is_admin=False
         )
-        UserProgramRole.objects.create(user=user_b, program=self.prog_b, role="staff")
+        UserProgramRole.objects.create(user=user_b, program=self.prog_b, role=ROLE_STAFF)
         # Also give user_b access to Program A (different role)
-        UserProgramRole.objects.create(user=user_b, program=self.prog_a, role="staff")
+        UserProgramRole.objects.create(user=user_b, program=self.prog_a, role=ROLE_STAFF)
 
         # Create a client enrolled in Program A only
         self._create_client("Unique", "Testname", [self.prog_a])
@@ -1800,16 +1806,16 @@ class RoleBasedGroupingTest(TestCase):
 
         # Morgan: staff in Kitchen, PM in Housing — dual role
         self.morgan = User.objects.create_user(username="morgan", password="testpass123")
-        UserProgramRole.objects.create(user=self.morgan, program=self.prog_kitchen, role="staff")
-        UserProgramRole.objects.create(user=self.morgan, program=self.prog_housing, role="program_manager")
+        UserProgramRole.objects.create(user=self.morgan, program=self.prog_kitchen, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.morgan, program=self.prog_housing, role=ROLE_PROGRAM_MANAGER)
 
         # Single-role staff user
         self.single_staff = User.objects.create_user(username="single_staff", password="testpass123")
-        UserProgramRole.objects.create(user=self.single_staff, program=self.prog_kitchen, role="staff")
+        UserProgramRole.objects.create(user=self.single_staff, program=self.prog_kitchen, role=ROLE_STAFF)
 
         # Single-role PM user
         self.single_pm = User.objects.create_user(username="single_pm", password="testpass123")
-        UserProgramRole.objects.create(user=self.single_pm, program=self.prog_housing, role="program_manager")
+        UserProgramRole.objects.create(user=self.single_pm, program=self.prog_housing, role=ROLE_PROGRAM_MANAGER)
 
     def _create_client(self, first, last, programs):
         from apps.clients.models import ClientFile, ClientProgramEnrolment

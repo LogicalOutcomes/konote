@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 
 from django.db.models import Count
 
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_client_or_403
 from apps.programs.models import UserProgramRole
@@ -177,7 +178,7 @@ def program_insights(request):
         UserProgramRole.objects.filter(user=request.user, status="active")
         .values_list("role", flat=True)
     )
-    is_executive_only = user_roles and user_roles <= {"executive"}
+    is_executive_only = user_roles and user_roles <= {ROLE_EXECUTIVE}
 
     form = InsightsFilterForm(request.GET or None, user=request.user)
 
@@ -345,7 +346,7 @@ def program_insights(request):
             "total_theme_count": total_theme_count,
             "can_manage_themes": UserProgramRole.objects.filter(
                 user=request.user, program=program,
-                role="program_manager", status="active",
+                role=ROLE_PROGRAM_MANAGER, status="active",
             ).exists() or request.user.is_superuser,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,

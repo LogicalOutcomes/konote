@@ -15,6 +15,7 @@ from apps.admin_settings.models import InstanceSetting
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -307,7 +308,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
 
         program = Program.objects.create(name="Test Prog")
         UserProgramRole.objects.create(
-            user=self.admin, program=program, role="program_manager", status="active"
+            user=self.admin, program=program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         client_file = ClientFile.objects.create(
             record_id="REC-2024-042", status="active"
@@ -338,7 +339,7 @@ class DocumentStorageAdminIntegrationTests(TestCase):
 
         program = Program.objects.create(name="Test Prog")
         UserProgramRole.objects.create(
-            user=self.admin, program=program, role="program_manager", status="active"
+            user=self.admin, program=program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         client_file = ClientFile.objects.create(
             record_id="REC-2024-042", status="active"

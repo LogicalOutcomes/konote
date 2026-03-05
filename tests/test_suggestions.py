@@ -15,6 +15,7 @@ from apps.reports.insights import (
     MIN_PARTICIPANTS_FOR_THEME_PROCESSING,
 )
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -100,7 +101,7 @@ class FocusedAnalysisViewTest(TestCase):
         self.program = Program.objects.create(name="Housing")
         UserProgramRole.objects.create(
             user=self.user, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Enable feature toggles
@@ -168,7 +169,7 @@ class FocusedAnalysisViewTest(TestCase):
         small_program = Program.objects.create(name="Small")
         UserProgramRole.objects.create(
             user=self.user, program=small_program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         _create_participants(small_program, 3)
 

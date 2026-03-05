@@ -6,6 +6,7 @@ from django.test import TestCase, override_settings
 
 import konote.encryption as enc_module
 from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.auth_app.constants import ROLE_STAFF
 from apps.notes.models import (
     ProgressNote, SuggestionLink, SuggestionTheme, recalculate_theme_priority,
 )
@@ -48,7 +49,7 @@ class Tier1AutoLinkTests(TestCase):
         self.user = User.objects.create_user(username="staff", password="pass")
         UserProgramRole.objects.create(
             user=self.user, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Create a theme with keywords
@@ -142,7 +143,7 @@ class Tier1PrivacyGateTests(TestCase):
         self.user = User.objects.create_user(username="staff", password="pass")
         UserProgramRole.objects.create(
             user=self.user, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self.theme = SuggestionTheme.objects.create(
             program=self.program,

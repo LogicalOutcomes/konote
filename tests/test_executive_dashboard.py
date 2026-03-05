@@ -16,6 +16,7 @@ from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTar
 from apps.programs.models import Program, UserProgramRole
 from apps.registration.models import RegistrationLink, RegistrationSubmission
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -34,10 +35,10 @@ class ExecutiveDashboardViewTest(TestCase):
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.prog_a, role="executive"
+            user=self.exec_user, program=self.prog_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.prog_b, role="executive"
+            user=self.exec_user, program=self.prog_b, role=ROLE_EXECUTIVE
         )
 
     def _create_client(self, status="active", programs=None):
@@ -319,7 +320,7 @@ class ProgramLearningCardTest(TestCase):
             name="Youth Employment", colour_hex="#10B981", status="active",
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="executive",
+            user=self.user, program=self.program, role=ROLE_EXECUTIVE,
         )
         self.date_from = date.today() - timedelta(days=90)
         self.date_to = date.today()
@@ -722,7 +723,7 @@ class ExecutiveDashboardMetricInsightsTest(TestCase):
         )
         self.prog = Program.objects.create(name="Insights Program", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.prog, role="executive"
+            user=self.exec_user, program=self.prog, role=ROLE_EXECUTIVE
         )
 
     def _create_client(self, status="active"):
