@@ -1,0 +1,47 @@
+{% load i18n %}
+{# Instrument Battery Aggregates — shows grouped results for multi-item instruments #}
+
+<h3>{% trans "Instrument Batteries" %}</h3>
+<p class="chart-description muted">{% trans "Aggregated results for multi-item instruments. Top-two-box shows the percentage of responses in the positive range (3 or 4 on a 4-point scale)." %}</p>
+
+{% for inst_name, inst in instrument_aggregates.items %}
+<div class="insights-metric-section">
+    <h4>{{ inst.name }} <small class="muted">({% blocktrans with count=inst.total_responses %}{{ count }} responses{% endblocktrans %})</small></h4>
+
+    {# Aggregate top-two-box bar #}
+    <div class="insights-distribution-bar" aria-hidden="true">
+        <div class="insights-bar-segment band-high" style="width: {{ inst.aggregate_top_two_box_pct }}%;">
+            <span style="font-size: 0.75em; padding-left: 0.3em;">{{ inst.aggregate_top_two_box_pct }}%</span>
+        </div>
+        <div class="insights-bar-segment band-low" style="width: calc(100% - {{ inst.aggregate_top_two_box_pct }}%);">
+        </div>
+    </div>
+    <p><strong>{{ inst.aggregate_top_two_box_pct }}%</strong> {% trans "positive (top-two-box)" %}</p>
+
+    {# Per-item breakdown #}
+    <details class="chart-data-table">
+        <summary>{% blocktrans with name=inst.name %}View item breakdown for {{ name }}{% endblocktrans %}</summary>
+        <table role="table" aria-label="{% blocktrans with name=inst.name %}Item breakdown for {{ name }}{% endblocktrans %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Item" %}</th>
+                    <th scope="col">{% trans "Top-two-box %" %}</th>
+                    <th scope="col">{% trans "Responses" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inst.items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.top_two_box_pct }}%</td>
+                    <td>{{ item.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% if inst.suppressed_count %}
+    <p><small class="muted">{% blocktrans with count=inst.suppressed_count %}{{ count }} item(s) not shown due to insufficient responses for privacy.{% endblocktrans %}</small></p>
+    {% endif %}
+</div>
+{% endfor %}

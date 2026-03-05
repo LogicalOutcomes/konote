@@ -22,8 +22,7 @@ Chores to run periodically. This file keeps the full run instructions; TODO.md k
 | Agency Permissions Interview | Before every new agency deployment | Complete interview, get ED sign-off on Configuration Summary. See `tasks/agency-permissions-interview.md` (ONBOARD-RECUR) |
 | UX walkthrough | After UI changes | Run `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` (UX-WALK1) |
 | French translation review | After adding strings | Have a French speaker spot-check. Run `python manage.py check_translations` (I18N-REV1) |
-| Redeploy to Railway | After merging to main | Push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1) |
-| Redeploy to FullHost | After merging to main | Push to `main`, trigger redeploy. See `docs/deploy-fullhost.md` (OPS-FH1) |
+| Redeploy to OVHcloud VPS | After merging to main | SSH in and run `docker compose pull && docker compose up -d`. See `docs/deploying-konote.md` (OPS-DEPLOY1) |
 | Code review | Periodically | Open Claude Code and run a full review prompt. See `tasks/code-review-process.md` (REV1) |
 
 ## UX Walkthrough (UX-WALK1)

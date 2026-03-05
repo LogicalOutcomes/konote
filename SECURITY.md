@@ -54,7 +54,7 @@ All personally identifiable information (PII) is encrypted at rest using **Ferne
 
 ## Automatic Startup Security Check
 
-KoNote automatically runs security checks every time the application starts. This protects every deployment — Azure, Railway, Docker on a local network — without requiring the deployer to remember to run commands.
+KoNote automatically runs security checks every time the application starts. This protects every deployment — OVHcloud VPS, Azure, Docker on a local network — without requiring the deployer to remember to run commands.
 
 ### KONOTE_MODE Environment Variable
 

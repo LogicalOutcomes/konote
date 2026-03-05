@@ -343,7 +343,7 @@ You need to create a DNS **A record** that points your domain to the VPS IP addr
 
 1. Log in to your domain registrar or DNS provider
 2. Go to **DNS settings** for your domain
-3. **Delete any existing CNAME records** for the same subdomain (e.g., if `konote` has a CNAME pointing to Railway or another host, delete it first). CNAME records take priority over A records and will block the new one.
+3. **Delete any existing CNAME records** for the same subdomain (e.g., if `konote` has a CNAME pointing to a previous hosting platform, delete it first). CNAME records take priority over A records and will block the new one.
 4. Add a new record:
    - **Type:** A
    - **Name:** `konote` (or whatever subdomain you want, e.g., `konote` for `konote.yourdomain.ca`)
@@ -351,7 +351,7 @@ You need to create a DNS **A record** that points your domain to the VPS IP addr
    - **TTL:** 300 (5 minutes) or Auto
 5. If using Cloudflare: set the **proxy status to DNS only** (grey cloud, not orange). Caddy handles HTTPS directly -- Cloudflare's proxy would interfere with Let's Encrypt certificate issuance.
 
-> **Important:** If you previously hosted on Railway, Heroku, or another platform, you likely have old CNAME records. These **must be deleted** before adding A records. DNS rules give CNAME priority -- if both exist, the CNAME wins and your A record will be ignored.
+> **Important:** If you previously hosted on another platform (Heroku, etc.), you likely have old CNAME records. These **must be deleted** before adding A records. DNS rules give CNAME priority -- if both exist, the CNAME wins and your A record will be ignored.
 
 ### Verify DNS is working
 

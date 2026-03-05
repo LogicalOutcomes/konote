@@ -1,5 +1,6 @@
 """Phase 3: Plan editing views — sections, targets, metrics, revisions."""
 import csv
+import datetime
 import io
 from collections import OrderedDict
 
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -64,6 +66,12 @@ def _get_program_from_target(request, target_id, **kwargs):
     """Extract program via target → client."""
     target = get_object_or_404(PlanTarget, pk=target_id)
     return _get_program_from_client(request, target.client_file_id)
+
+
+def _get_program_from_ptm(request, ptm_id, **kwargs):
+    """Extract program via plan-target-metric → target → client."""
+    ptm = get_object_or_404(PlanTargetMetric, pk=ptm_id)
+    return _get_program_from_client(request, ptm.plan_target.client_file_id)
 
 
 def _can_edit_plan(user, client_file):
@@ -283,6 +291,12 @@ def target_create(request, section_id):
     if not _can_edit_plan(request.user, section.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = section.client_file
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
+
     if request.method == "POST":
         form = PlanTargetForm(request.POST)
         if form.is_valid():
@@ -324,6 +338,12 @@ def target_edit(request, target_id):
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = target.client_file
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
 
     if request.method == "POST":
         form = PlanTargetForm(request.POST)
@@ -367,6 +387,12 @@ def target_status(request, target_id):
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    client = target.client_file
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("plans:plan_view", client_id=client.pk)
 
     if request.GET.get("cancel"):
         return render(request, "plans/_target.html", {
@@ -857,7 +883,7 @@ def metric_export(request):
 
     writer = csv.writer(response)
     writer.writerow(sanitise_csv_row(["id", "name", "name_fr", "definition", "definition_fr",
-                     "category", "min_value", "max_value", "unit", "unit_fr",
+                     "category", "metric_type", "min_value", "max_value", "unit", "unit_fr",
                      "portal_description", "portal_description_fr",
                      "is_enabled", "status"]))
 
@@ -869,6 +895,7 @@ def metric_export(request):
             m.definition,
             m.definition_fr,
             m.category,
+            m.metric_type,
             m.min_value if m.min_value is not None else "",
             m.max_value if m.max_value is not None else "",
             m.unit,
@@ -925,6 +952,35 @@ def metric_create(request):
                 if len(pm_program_ids) == 1:
                     metric.owning_program_id = next(iter(pm_program_ids))
             metric.save()
+
+            # Auto-generate rationale entry for new custom metrics
+            from konote.ai import default_metric_rationale, generate_metric_rationale
+
+            scale_range = ""
+            if metric.min_value is not None and metric.max_value is not None:
+                scale_range = f"{metric.min_value}–{metric.max_value}"
+
+            result = generate_metric_rationale(
+                name=metric.name,
+                definition=metric.definition or "",
+                category=metric.get_category_display(),
+                metric_type=metric.get_metric_type_display(),
+                scale_range=scale_range,
+            )
+            if result is None:
+                result = default_metric_rationale(
+                    name=metric.name,
+                    category=metric.get_category_display(),
+                    metric_type=metric.get_metric_type_display(),
+                    date_str=datetime.date.today().isoformat(),
+                )
+            metric.append_rationale(
+                note=result["note"],
+                note_fr=result.get("note_fr", ""),
+                author="System",
+            )
+            metric.save(update_fields=["rationale_log"])
+
             messages.success(request, _("Metric created."))
             return redirect("metrics:metric_library")
     else:
@@ -959,6 +1015,94 @@ def metric_edit(request, metric_id):
         "editing": True,
         "metric": metric,
     })
+
+
+# ---------------------------------------------------------------------------
+# Metric rationale log (HTMX endpoints)
+# ---------------------------------------------------------------------------
+
+
+@require_POST
+@login_required
+@requires_permission("metric.manage", allow_admin=True)
+def metric_rationale_add(request, metric_id):
+    """HTMX POST: append a rationale note to a metric."""
+    metric = get_object_or_404(MetricDefinition, pk=metric_id)
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied."))
+
+    note = request.POST.get("note", "").strip()
+    if note:
+        author = getattr(request.user, "display_name", str(request.user))
+        metric.append_rationale(note=note, author=author)
+        metric.save(update_fields=["rationale_log"])
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=author,
+            action="update",
+            resource_type="MetricDefinition",
+            resource_id=str(metric.pk),
+            ip_address=request.META.get("REMOTE_ADDR", ""),
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={"detail": f"Added rationale note to '{metric.name}'"},
+        )
+
+    return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
+
+
+@require_POST
+@login_required
+@requires_permission("metric.manage", allow_admin=True)
+def metric_rationale_generate(request, metric_id):
+    """HTMX POST: auto-generate a rationale entry using AI (with template fallback)."""
+    metric = get_object_or_404(MetricDefinition, pk=metric_id)
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied."))
+
+    from konote.ai import default_metric_rationale, generate_metric_rationale
+
+    scale_range = ""
+    if metric.min_value is not None and metric.max_value is not None:
+        scale_range = f"{metric.min_value}–{metric.max_value}"
+
+    result = generate_metric_rationale(
+        name=metric.name,
+        definition=metric.definition or "",
+        category=metric.get_category_display(),
+        metric_type=metric.get_metric_type_display(),
+        scale_range=scale_range,
+    )
+    if result is None:
+        result = default_metric_rationale(
+            name=metric.name,
+            category=metric.get_category_display(),
+            metric_type=metric.get_metric_type_display(),
+            date_str=datetime.date.today().isoformat(),
+        )
+
+    source = "AI" if result.get("note_fr") else "template"
+    metric.append_rationale(
+        note=result["note"],
+        note_fr=result.get("note_fr", ""),
+        author="AI",
+    )
+    metric.save(update_fields=["rationale_log"])
+
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="update",
+        resource_type="MetricDefinition",
+        resource_id=str(metric.pk),
+        ip_address=request.META.get("REMOTE_ADDR", ""),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={"detail": f"Auto-generated rationale ({source}) for '{metric.name}'"},
+    )
+
+    return render(request, "plans/includes/metric_rationale.html", {"metric": metric})
 
 
 # ---------------------------------------------------------------------------
@@ -1021,6 +1165,8 @@ def _parse_metric_csv(csv_file):
         has_id_column = "id" in headers
         has_enabled_column = "is_enabled" in headers
         has_status_column = "status" in headers
+        has_metric_type_column = "metric_type" in headers
+        valid_metric_types = dict(MetricDefinition.METRIC_TYPE_CHOICES)
 
         # Pre-fetch existing metric ids for validation
         existing_ids = set()
@@ -1092,6 +1238,20 @@ def _parse_metric_csv(csv_file):
             if parsed_min is not None and parsed_max is not None and parsed_min > parsed_max:
                 row_errors.append(f"min_value ({parsed_min}) cannot be greater than max_value ({parsed_max})")
 
+            # metric_type (optional — defaults to 'scale' for new)
+            metric_type = "scale"
+            if has_metric_type_column:
+                raw_mt = row.get("metric_type", "").lower()
+                if raw_mt in valid_metric_types:
+                    metric_type = raw_mt
+                elif raw_mt:
+                    row_errors.append(f"metric_type '{row.get('metric_type', '')}' must be one of: {', '.join(valid_metric_types.keys())}")
+
+            # For open_text metrics, min/max are not required
+            if metric_type == "open_text":
+                parsed_min = None
+                parsed_max = None
+
             # is_enabled (optional — defaults to True for new, unchanged for updates)
             is_enabled = True
             if has_enabled_column:
@@ -1123,6 +1283,7 @@ def _parse_metric_csv(csv_file):
                     "definition": definition,
                     "definition_fr": definition_fr,
                     "category": category,
+                    "metric_type": metric_type,
                     "min_value": parsed_min,
                     "max_value": parsed_max,
                     "unit": unit,
@@ -1172,6 +1333,7 @@ def metric_import(request):
                     "definition": row_data["definition"],
                     "definition_fr": row_data.get("definition_fr", ""),
                     "category": row_data["category"],
+                    "metric_type": row_data.get("metric_type", "scale"),
                     "min_value": row_data["min_value"],
                     "max_value": row_data["max_value"],
                     "unit": row_data["unit"],
@@ -1239,3 +1401,35 @@ def metric_import(request):
         "update_count": update_count,
         "new_count": new_count,
     })
+
+
+# ---------------------------------------------------------------------------
+# 90-day metric relevance review (METRIC-REVIEW1)
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("plan.edit", _get_program_from_ptm)
+def confirm_metric_review(request, ptm_id):
+    """HTMX endpoint: confirm a metric is still relevant (90-day review)."""
+    ptm = get_object_or_404(PlanTargetMetric, pk=ptm_id)
+    if request.method == "POST":
+        ptm.last_reviewed_date = datetime.date.today()
+        ptm.save(update_fields=["last_reviewed_date"])
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=getattr(request.user, "display_name", str(request.user)),
+            action="confirm_metric_review",
+            resource_type="plan_target_metric",
+            resource_id=ptm.pk,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "metric_def_id": ptm.metric_def_id,
+                "metric_name": ptm.metric_def.name,
+            },
+        )
+        return HttpResponse(
+            '<small class="secondary">\u2713 ' + str(_("Confirmed — still relevant")) + "</small>",
+            content_type="text/html",
+        )
+    return HttpResponse(status=405)

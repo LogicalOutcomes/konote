@@ -14,10 +14,10 @@ The system has no closed feedback loop. SafeLocaleMiddleware prevents crashes (g
 
 ### P0 — Immediate (I18N-R1, I18N-R2)
 
-**I18N-R1: Add `*.mo` to railway.json watchPatterns**
-- Currently only `*.po` triggers a deploy
-- If someone commits only the .po, Railway deploys with a stale .mo
-- One-line fix in railway.json
+**I18N-R1: Ensure `*.mo` files are included in Docker image builds**
+- Currently only `*.po` may be tracked for deploy triggers
+- If someone commits only the .po, a deploy could use a stale .mo
+- Verify Docker build copies both .po and .mo into the image
 
 **I18N-R2: Fix SafeLocaleMiddleware canary string**
 - Currently tests `gettext("Sign In")` — but "Sign In" → "Connexion" exists in Django's own French catalog

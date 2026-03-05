@@ -1,4 +1,5 @@
 """Client CRUD views."""
+import json
 import unicodedata
 from datetime import date
 
@@ -17,9 +18,9 @@ from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
+from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, ConsentWithdrawalForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, ConsentEvent, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -478,6 +479,12 @@ def client_edit(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     if request.method == "POST":
         form = ClientFileForm(request.POST)
         if form.is_valid():
@@ -879,6 +886,11 @@ def client_contact_edit(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
 
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     # Use field access map from decorator if available (PER_FIELD),
     # otherwise default to phone + email editable (staff/admin).
     field_access_map = getattr(request, "field_access_map", {"phone": "edit", "email": "edit"})
@@ -1093,6 +1105,39 @@ def client_detail(request, client_id):
     return render(request, "clients/detail.html", context)
 
 
+@login_required
+def assessment_due_banner(request, client_id):
+    """HTMX partial: show assessments due for this client.
+
+    No @requires_permission needed — get_client_or_403 already enforces
+    program-scoped access. This view returns read-only assessment-due status
+    (no PII beyond what client_detail already shows).
+    """
+    from apps.programs.access import get_client_or_403, get_user_program_ids
+    from apps.plans.assessment import get_assessments_due
+
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return render(request, "clients/includes/assessment_due_banner.html", {})
+
+    user_program_ids = get_user_program_ids(request.user)
+    assessments_due = get_assessments_due(client, program_ids=user_program_ids)
+
+    # Add days_since for display purposes
+    from django.utils import timezone as _tz
+    now = _tz.now()
+    for item in assessments_due:
+        if item["last_date"]:
+            item["days_since"] = (now - item["last_date"]).days
+        else:
+            item["days_since"] = None
+
+    return render(request, "clients/includes/assessment_due_banner.html", {
+        "client": client,
+        "assessments_due": assessments_due,
+    })
+
+
 def _get_custom_fields_context(client, user_role, hide_empty=False):
     """Build custom fields context for display/edit templates.
 
@@ -1145,8 +1190,26 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
             is_other_value = False
             if field_def.input_type == "select_other" and value and field_def.options_json:
                 is_other_value = value not in field_def.options_json
+            # For multi_select fields, parse JSON array for template use
+            selected_values = []
+            other_text = ""
+            display_value = value
+            if field_def.input_type in ("multi_select", "multi_select_other") and value:
+                try:
+                    selected_values = json.loads(value)
+                    display_value = ", ".join(selected_values)
+                except (json.JSONDecodeError, TypeError):
+                    display_value = value
+                # For multi_select_other, detect custom "Other" entries
+                if field_def.input_type == "multi_select_other" and field_def.options_json:
+                    known = set(field_def.options_json)
+                    custom_vals = [v for v in selected_values if v not in known]
+                    other_text = custom_vals[0] if custom_vals else ""
             field_values.append({
                 "field_def": field_def, "value": value,
+                "display_value": display_value,
+                "selected_values": selected_values,
+                "other_text": other_text,
                 "is_editable": is_editable, "is_other_value": is_other_value,
             })
         # Only include groups that have visible fields
@@ -1198,6 +1261,12 @@ def client_save_custom_fields(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Block edits when consent has been withdrawn (QA-R7-PRIVACY2)
+    if client.is_consent_withdrawn:
+        messages.error(request, _("This record is read-only because consent has been withdrawn."))
+        return redirect("clients:client_detail", client_id=client.pk)
+
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
 
@@ -1235,6 +1304,15 @@ def client_save_custom_fields(request, client_id):
                 # For select_other: if "Other" was chosen, use the free-text value
                 if field_def.input_type == "select_other" and raw_value == "__other__":
                     raw_value = form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+                # For multi_select: serialize list to JSON array
+                elif field_def.input_type == "multi_select":
+                    raw_value = json.dumps(raw_value) if raw_value else ""
+                elif field_def.input_type == "multi_select_other":
+                    selected = raw_value if isinstance(raw_value, list) else []
+                    other_text = form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+                    if other_text:
+                        selected = list(selected) + [other_text]
+                    raw_value = json.dumps(selected) if selected else ""
                 # Validate and normalise based on field's validation_type (I18N-FIX2)
                 if field_def.validation_type == "postal_code" and raw_value:
                     try:
@@ -1279,10 +1357,10 @@ def client_consent_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
     return render(request, "clients/_consent_display.html", {
         "client": client,
-        "is_receptionist": is_receptionist,
+        "is_pm_or_admin": is_pm_or_admin,
     })
 
 
@@ -1316,10 +1394,12 @@ def client_consent_save(request, client_id):
     """
     from django.utils import timezone
 
+    from apps.audit.models import AuditLog
+
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         form = ConsentRecordForm(request.POST)
@@ -1335,9 +1415,11 @@ def client_consent_save(request, client_id):
                 if request.headers.get("HX-Request"):
                     return render(request, "clients/_consent_display.html", {
                         "client": client,
-                        "is_receptionist": is_receptionist,
+                        "is_pm_or_admin": is_pm_or_admin,
                     })
                 return redirect("clients:client_detail", client_id=client.pk)
+
+            is_regrant = client.retention_expires is not None
 
             # Combine date with current time for the timestamp
             consent_date = form.cleaned_data["consent_date"]
@@ -1345,7 +1427,41 @@ def client_consent_save(request, client_id):
                 timezone.datetime.combine(consent_date, timezone.datetime.min.time())
             )
             client.consent_type = form.cleaned_data["consent_type"]
-            client.save(update_fields=["consent_given_at", "consent_type"])
+
+            # Clear retention expiry on re-grant (consent withdrawal clock resets)
+            update_fields = ["consent_given_at", "consent_type"]
+            if client.retention_expires is not None:
+                client.retention_expires = None
+                update_fields.append("retention_expires")
+
+            client.save(update_fields=update_fields)
+
+            # Record consent event for audit trail (QA-R7-PRIVACY2)
+            ConsentEvent.objects.create(
+                client_file=client,
+                event_type="granted",
+                event_date=consent_date,
+                recorded_by=request.user,
+                recorded_by_display=str(request.user),
+                consent_type=form.cleaned_data["consent_type"],
+            )
+
+            # Audit log for consent grant/re-grant
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=str(request.user),
+                ip_address=request.META.get("REMOTE_ADDR"),
+                action="create" if not is_regrant else "update",
+                resource_type="consent",
+                resource_id=client.pk,
+                new_values={
+                    "consent_given_at": client.consent_given_at.isoformat(),
+                    "consent_type": client.consent_type,
+                    "is_regrant": is_regrant,
+                },
+            )
+
             messages.success(request, _("Consent recorded."))
         else:
             messages.error(request, _("Please correct the errors."))
@@ -1360,9 +1476,138 @@ def client_consent_save(request, client_id):
     if request.headers.get("HX-Request"):
         return render(request, "clients/_consent_display.html", {
             "client": client,
-            "is_receptionist": is_receptionist,
+            "is_pm_or_admin": is_pm_or_admin,
         })
 
+    return redirect("clients:client_detail", client_id=client.pk)
+
+
+@login_required
+@requires_permission("consent.manage")
+def client_consent_withdraw_form(request, client_id):
+    """HTMX: Return consent withdrawal form partial."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    user_role = getattr(request, "user_program_role", None)
+    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+
+    if not client.consent_given_at:
+        messages.info(request, _("No active consent to withdraw."))
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_display.html", {
+                "client": client,
+                "is_pm_or_admin": is_pm_or_admin,
+            })
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    form = ConsentWithdrawalForm(initial={
+        "withdrawal_date": timezone.now().date(),
+    })
+    return render(request, "clients/_consent_withdraw.html", {
+        "client": client,
+        "form": form,
+    })
+
+
+@login_required
+@requires_permission("consent.manage")
+def client_consent_withdraw(request, client_id):
+    """Process consent withdrawal for a client (PIPEDA compliance)."""
+    from datetime import timedelta
+
+    from apps.admin_settings.models import InstanceSetting
+    from apps.audit.models import AuditLog
+
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    user_role = getattr(request, "user_program_role", None)
+    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+
+    if request.method != "POST":
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    if not client.consent_given_at:
+        messages.error(request, _("No active consent to withdraw."))
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_display.html", {
+                "client": client,
+                "is_pm_or_admin": is_pm_or_admin,
+            })
+        return redirect("clients:client_detail", client_id=client.pk)
+
+    form = ConsentWithdrawalForm(request.POST)
+    if form.is_valid():
+        withdrawal_date = form.cleaned_data["withdrawal_date"]
+
+        # Snapshot old values for audit
+        old_consent_at = client.consent_given_at
+        old_consent_type = client.consent_type
+
+        # 1. Record the consent event
+        ConsentEvent.objects.create(
+            client_file=client,
+            event_type="withdrawn",
+            event_date=withdrawal_date,
+            recorded_by=request.user,
+            recorded_by_display=str(request.user),
+            consent_type=old_consent_type,
+            withdrawal_reason=form.cleaned_data["withdrawal_reason"],
+            request_received_via=form.cleaned_data["request_received_via"],
+            notes=form.cleaned_data.get("notes", ""),
+        )
+
+        # 2. Clear consent on the client record
+        client.consent_given_at = None
+        client.consent_type = ""
+
+        # 3. Set retention expiry (PHIPA default: 10 years)
+        retention_days = int(
+            InstanceSetting.get("consent_withdrawal_retention_days", "3650")
+        )
+        client.retention_expires = withdrawal_date + timedelta(days=retention_days)
+
+        client.save(update_fields=[
+            "consent_given_at", "consent_type", "retention_expires",
+        ])
+
+        # 4. Audit log
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=str(request.user),
+            ip_address=request.META.get("REMOTE_ADDR"),
+            action="update",
+            resource_type="consent",
+            resource_id=client.pk,
+            old_values={
+                "consent_given_at": old_consent_at.isoformat(),
+                "consent_type": old_consent_type,
+            },
+            new_values={
+                "consent_given_at": None,
+                "consent_type": "",
+                "withdrawal_reason": form.cleaned_data["withdrawal_reason"],
+                "request_received_via": form.cleaned_data["request_received_via"],
+                "retention_expires": client.retention_expires.isoformat(),
+            },
+        )
+
+        messages.success(
+            request,
+            _("Consent has been withdrawn. This record is now read-only."),
+        )
+    else:
+        if request.headers.get("HX-Request"):
+            return render(request, "clients/_consent_withdraw.html", {
+                "client": client,
+                "form": form,
+            })
+
+    if request.headers.get("HX-Request"):
+        return render(request, "clients/_consent_display.html", {
+            "client": client,
+            "is_pm_or_admin": is_pm_or_admin,
+        })
     return redirect("clients:client_detail", client_id=client.pk)
 
 

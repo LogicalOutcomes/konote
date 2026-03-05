@@ -2,8 +2,8 @@
 
 Handles GET /health/ before TenantMainMiddleware attempts domain lookup.
 TenantMainMiddleware requires a resolvable tenant domain — internal health
-checks from Railway / Docker or load-balancers arrive on an IP or an
-unregistered host, causing a 404/500 before the app is reachable.
+checks from Docker or load-balancers arrive on an IP or an unregistered
+host, causing a 404/500 before the app is reachable.
 
 This middleware intercepts /health/ first and returns a minimal 200 response
 so the orchestrator knows the container is alive.

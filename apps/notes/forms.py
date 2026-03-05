@@ -207,8 +207,18 @@ class FullNoteForm(forms.Form):
         label=_("Priority"),
     )
 
-    def __init__(self, *args, circle_choices=None, **kwargs):
+    def __init__(self, *args, circle_choices=None, alliance_anchors=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if alliance_anchors:
+            # Override alliance_rating choices with rotated anchors
+            self.fields["alliance_rating"] = forms.TypedChoiceField(
+                choices=[("", "")] + [(k, v) for k, v in alliance_anchors.items()],
+                required=False,
+                coerce=int,
+                empty_value=None,
+                label=_("Working relationship check-in"),
+                widget=forms.RadioSelect,
+            )
         if circle_choices:
             self.fields["circle"] = forms.ChoiceField(
                 choices=[("", _("— None —"))] + list(circle_choices),
@@ -248,9 +258,10 @@ class MetricValueForm(forms.Form):
     """A single metric value input."""
 
     metric_def_id = forms.IntegerField(widget=forms.HiddenInput())
-    value = forms.CharField(required=False, max_length=100)
+    value = forms.CharField(required=False, max_length=2000)
     is_scale = False
     is_achievement = False
+    is_open_text = False
     auto_calc_value = None
 
     def __init__(self, *args, metric_def=None, target_name="", **kwargs):
@@ -282,8 +293,18 @@ class MetricValueForm(forms.Form):
                 help_parts.append(range_str)
             self.fields["value"].help_text = " | ".join(help_parts)
 
+            # Open-text metrics: render as textarea, no numeric validation
+            if metric_def.metric_type == "open_text":
+                self.fields["value"].widget = forms.Textarea(attrs={
+                    "rows": 3,
+                    "maxlength": 2000,
+                    "aria-label": metric_def.translated_name,
+                })
+                self.fields["value"].help_text = metric_def.translated_definition or ""
+                self.is_open_text = True
+
             # Achievement metrics: render as radio pills with option labels
-            if metric_def.metric_type == "achievement" and metric_def.achievement_options:
+            elif metric_def.metric_type == "achievement" and metric_def.achievement_options:
                 choices = [("", "---------")] + [
                     (opt, opt) for opt in metric_def.achievement_options
                 ]
@@ -358,6 +379,9 @@ class MetricValueForm(forms.Form):
         if not val:
             return ""
         if hasattr(self, "metric_def"):
+            # Open-text metrics: accept any non-empty string
+            if self.metric_def.metric_type == "open_text":
+                return val
             # Achievement metrics: validate option is in the allowed list
             if self.metric_def.metric_type == "achievement":
                 valid_options = self.metric_def.achievement_options or []
@@ -382,7 +406,7 @@ class MetricValueForm(forms.Form):
     def clean(self):
         cleaned = super().clean()
         val = cleaned.get("value", "").strip()
-        if not val or not hasattr(self, "metric_def") or self.metric_def.metric_type == "achievement":
+        if not val or not hasattr(self, "metric_def") or self.metric_def.metric_type in ("achievement", "open_text"):
             return cleaned
         try:
             numeric = float(val)
@@ -437,6 +461,29 @@ class NoteTemplateSectionForm(forms.ModelForm):
     class Meta:
         model = ProgressNoteTemplateSection
         fields = ["name", "name_fr", "section_type", "sort_order"]
+
+
+class AssessmentNoteForm(forms.Form):
+    """Simplified form for recording a standardized assessment.
+
+    No narrative fields, no engagement rating, no alliance prompt —
+    just the instrument score and optional clinical observation.
+    """
+
+    clinical_observation = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("Optional clinical observations about this assessment..."),
+        }),
+        required=False,
+        label=_("Clinical observation"),
+    )
+    session_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
+        label=_("Assessment date"),
+        help_text=_("Change if this assessment was done on a different day."),
+    )
 
 
 class NoteCancelForm(forms.Form):

@@ -1,8 +1,19 @@
 # P0 Deliverable: Managed Service Model
 
+<!-- COST_VERSION
+date: 2026-03-04
+role: Managed service model (derives from hosting-cost-comparison.md)
+llm_vps: VPS-4, $40 CAD/mo
+ovh_single_1_agency: $74 CAD/mo
+ovh_multi_10_agencies: $15 CAD/mo/agency
+ops_hours_1_agency: 4-5 hr/mo
+upstream: tasks/hosting-cost-comparison.md
+downstream: konote-prosper-canada/deliverables/costing-model.md
+-->
+
 **Requirement ID:** MA5 (managed hosting and support), related to MA3/MA4
 **Deliverable type:** Costed plan
-**Date:** 2026-03-02
+**Date:** 2026-03-04 (updated with self-healing support cost impact)
 **Source documents:** tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md, tasks/deployment-protocol.md, tasks/saas-service-agreement.md, tasks/design-rationale/data-access-residency-policy.md
 
 ---
@@ -85,11 +96,11 @@ Both paths are fully supported. The choice depends on the agency's requirements 
 
 | Scale | OVHcloud (single-tenant) | OVHcloud (multi-tenant) | Azure (single-tenant) | Azure (multi-tenant) |
 |-------|-------------------------|------------------------|-----------------------|---------------------|
-| 1 agency | $45 | $53* | $112 | $374* |
-| 5 agencies | $35 | $16 | $102 | $80 |
-| 10 agencies | $35 | $12 | $102 | $46 |
+| 1 agency | $74 | $82* | $141 | $403* |
+| 5 agencies | $40 | $22 | $107 | $86 |
+| 10 agencies | $36 | $15 | $103 | $47 |
 
-*Multi-tenant with 1 agency costs more due to the larger shared VM. Cost advantage starts at 3+ agencies.*
+*All scenarios include $40/mo shared LLM VPS (VPS-4). Multi-tenant with 1 agency costs more due to the larger shared VM. Cost advantage starts at 3+ agencies.*
 
 ### What's Included in Infrastructure Cost
 
@@ -97,20 +108,24 @@ Both paths are fully supported. The choice depends on the agency's requirements 
 - Database hosting (self-managed or Azure managed)
 - Encryption key management (Azure Key Vault: ~$2/mo)
 - AI API costs (translation + metrics generation: ~$7/agency/mo)
-- Self-hosted LLM for suggestion theme tagging (shared OVHcloud VPS: ~$1–2/agency/mo)
+- Self-hosted LLM for suggestion theme tagging + outcome insights (shared OVHcloud VPS-4: ~$4/agency/mo at 10 agencies)
 - Backup storage
 - External monitoring (UptimeRobot free tier)
 
 ### What's Not Included (Operational Costs)
 
+The 4-layer self-healing automation handles ~99% of operational incidents automatically (container restarts, VPS reboots, backups, disk monitoring, health reports). Human support is needed only for: software updates (~1–2×/month), escalation alerts that self-healing couldn't resolve (~1×/month), agency support requests, and periodic security reviews. See [hosting cost comparison — tech support estimates](hosting-cost-comparison.md#technical-support-cost-estimates) for detailed hour breakdowns.
+
 | Item | Estimate | When needed |
 |------|----------|-------------|
-| KoNote team time (setup, maintenance, support) | Internal cost | Always |
-| Freelance sysadmin retainer | ~$100 CAD/mo | 3–5 agencies (recommended) |
-| Canadian MSP | ~$300–500 CAD/mo | 5–10+ agencies |
+| KoNote team time (~4–5 hr/mo for 1 agency; ~2 hr/mo per agency at scale) | Internal cost | Always |
+| Freelance sysadmin on-call retainer | ~$75–150 CAD/mo | 3–5 agencies (recommended) |
+| Canadian MSP | ~$300–500 CAD/mo | 10+ agencies or when 24/7 SLA required |
 | SaaS agreement legal review | One-time ~$2,000–5,000 | Before first managed agency |
 | SSL certificates | $0 (Let's Encrypt via Caddy) | Always |
 | Domain registration | ~$15–20/year per agency | If LogicalOutcomes provides subdomain |
+
+**Impact of self-healing on support costs:** Without automation, managing even one OVHcloud VPS would require ~10–15 hours/month of sysadmin time (manual monitoring, backup management, incident response). With the 4-layer stack, this drops to ~4–5 hours/month — most of which is reviewing automated reports and applying software updates. At 5 agencies, the per-agency support burden is ~2 hours/month.
 
 ---
 
@@ -193,12 +208,12 @@ A SaaS service agreement is required before the first managed agency (see tasks/
 
 ## Scaling Plan
 
-| Stage | Agencies | Infrastructure | Support | Monthly Infrastructure Cost |
-|-------|----------|---------------|---------|---------------------------|
-| Launch | 1–2 | OVHcloud single-tenant VPS per agency | KoNote team + runbook | $45–90 |
-| Early growth | 3–5 | OVHcloud single-tenant (or start multi-tenant) | Add freelance sysadmin retainer | $105–175 (ST) or $81 (MT) |
-| Scale | 5–10 | Multi-tenant on larger VPS | Transition to Canadian MSP | $81–116 (MT) |
-| Enterprise | 10+ | Multi-tenant, dedicated VPS per large agency | MSP + dedicated support | Custom pricing |
+| Stage | Agencies | Infrastructure | Support | Monthly Infra Cost | Monthly Support Cost | All-In/Agency |
+|-------|----------|---------------|---------|-------------------|---------------------|---------------|
+| Launch | 1–2 | OVHcloud single-tenant VPS per agency | KoNote team + runbook | $74–148 | $0 (internal) | ~$74 |
+| Early growth | 3–5 | OVHcloud single-tenant (or start multi-tenant) | KoNote team + freelance on-call | $160–202 (ST) or $110 (MT) | ~$75–150 | ~$55–72 |
+| Scale | 5–10 | Multi-tenant on larger VPS | Freelance sysadmin retainer | $110–145 (MT) | ~$100–200 | ~$30–42 |
+| Enterprise | 10+ | Multi-tenant, dedicated VPS per large agency | Canadian MSP | Custom | ~$300–500 | Custom |
 
 ---
 
@@ -206,6 +221,6 @@ A SaaS service agreement is required before the first managed agency (see tasks/
 
 - **MA5 (managed service):** Complete service model with hosting, support, backup, monitoring, and offboarding
 - **Two paths:** Azure and OVHcloud are both fully supported with documented deployment procedures
-- **Credible cost model:** Per-agency costs from $12–112/month depending on scale and platform
+- **Credible cost model:** Per-agency costs from $15–141/month depending on scale and platform
 - **Clear scaling path:** From 1 agency (single-tenant, KoNote team support) to 10+ (multi-tenant, MSP support)
 - **Privacy and sovereignty:** Both paths meet Canadian data residency requirements; OVHcloud offers additional protection from US CLOUD Act

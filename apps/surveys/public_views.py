@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import get_language, gettext as _
 
 from apps.audit.models import AuditLog
 from apps.portal.survey_helpers import (
@@ -26,6 +26,23 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_consent_text(survey):
+    """Return the appropriate consent text based on current language.
+
+    Uses French text when the language is French and French text is
+    available; otherwise falls back to the English consent text.
+    """
+    lang = get_language() or "en"
+    if lang.startswith("fr") and survey.consent_text_fr:
+        return survey.consent_text_fr
+    return survey.consent_text
+
+
+def _consent_session_key(link_pk):
+    """Return the session key used to track consent for a survey link."""
+    return f"consent_given_{link_pk}"
 
 
 @ratelimit(key="ip", rate="30/h", method="POST", block=True)
@@ -68,6 +85,26 @@ def public_survey_form(request, token):
         return render(request, "surveys/public_already_responded.html", {
             "survey": survey,
         })
+
+    # ----- Consent gate -----
+    consent_key = _consent_session_key(link.pk)
+    if survey.consent_text:
+        if request.method == "POST" and "consent_agree" in request.POST:
+            # Respondent is agreeing to consent — store in session and redirect
+            request.session[consent_key] = timezone.now().isoformat()
+            return redirect("public_survey_form", token=token)
+
+        if not request.session.get(consent_key):
+            # Consent not yet given — show consent page
+            consent_text = _get_consent_text(survey)
+            lang = get_language() or "en"
+            consent_lang = "fr" if lang.startswith("fr") and survey.consent_text_fr else "en"
+            return render(request, "surveys/public_consent.html", {
+                "survey": survey,
+                "consent_text": consent_text,
+                "consent_lang": consent_lang,
+                "link": link,
+            })
 
     sections = survey.sections.filter(
         is_active=True,
@@ -137,6 +174,17 @@ def public_survey_form(request, token):
         if link.collect_name:
             respondent_name = request.POST.get("respondent_name", "").strip()
 
+        # Determine consent timestamp if consent was required
+        consent_given_at_val = None
+        if survey.consent_text:
+            consent_iso = request.session.get(_consent_session_key(link.pk))
+            if consent_iso:
+                try:
+                    from django.utils.dateparse import parse_datetime
+                    consent_given_at_val = parse_datetime(consent_iso)
+                except (ValueError, TypeError):
+                    consent_given_at_val = timezone.now()
+
         with transaction.atomic():
             response = SurveyResponse.objects.create(
                 survey=survey,
@@ -144,6 +192,7 @@ def public_survey_form(request, token):
                 client_file=None,
                 respondent_name_display=respondent_name,
                 token=link.token,
+                consent_given_at=consent_given_at_val,
             )
             for question, raw_value in answers_data:
                 answer = SurveyAnswer(

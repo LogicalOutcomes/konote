@@ -119,6 +119,21 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"  Domain '{domain}' registered.")
         )
+
+        # Register 'localhost' as a secondary domain so Docker health checks
+        # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
+        if domain != "localhost" and not AgencyDomain.objects.filter(
+            domain="localhost"
+        ).exists():
+            AgencyDomain.objects.create(
+                domain="localhost",
+                tenant=agency,
+                is_primary=False,
+            )
+            self.stdout.write(
+                "  Secondary domain 'localhost' registered (for health checks)."
+            )
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Setup complete. Site is accessible at https://{domain}/"

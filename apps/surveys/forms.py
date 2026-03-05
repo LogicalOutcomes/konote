@@ -12,17 +12,22 @@ class SurveyForm(forms.ModelForm):
         model = Survey
         fields = [
             "name", "name_fr", "description", "description_fr",
+            "consent_text", "consent_text_fr",
             "is_anonymous", "show_scores_to_participant", "portal_visible",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
             "description_fr": forms.Textarea(attrs={"rows": 3}),
+            "consent_text": forms.Textarea(attrs={"rows": 4}),
+            "consent_text_fr": forms.Textarea(attrs={"rows": 4}),
         }
         labels = {
             "name": _("Survey name"),
             "name_fr": _("Survey name (French)"),
             "description": _("Description"),
             "description_fr": _("Description (French)"),
+            "consent_text": _("Consent text (shown before the survey begins)"),
+            "consent_text_fr": _("Consent text — French"),
             "is_anonymous": _("Anonymous survey"),
             "show_scores_to_participant": _("Show scores to participant"),
             "portal_visible": _("Visible in participant portal"),
@@ -36,6 +41,17 @@ class SurveyForm(forms.ModelForm):
             ),
             "portal_visible": _(
                 "Uncheck to hide this survey from the participant portal."
+            ),
+            "consent_text": _(
+                "If provided, respondents must agree to this text before "
+                "they can see the survey questions. Leave blank to skip "
+                "the consent step. Good consent text explains: what data "
+                "is collected, how it will be used, and whether responses "
+                "are anonymous."
+            ),
+            "consent_text_fr": _(
+                "French version of the consent text. If left blank, the "
+                "English text will be used for French respondents."
             ),
         }
 

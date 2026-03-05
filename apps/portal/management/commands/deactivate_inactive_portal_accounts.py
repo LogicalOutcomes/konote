@@ -5,7 +5,7 @@ Usage:
     python manage.py deactivate_inactive_portal_accounts --dry-run
     python manage.py deactivate_inactive_portal_accounts --days 60
 
-Intended to run as a scheduled task (cron, Railway cron).
+Intended to run as a scheduled task (cron, ops sidecar).
 """
 import logging
 from datetime import timedelta

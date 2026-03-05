@@ -24,6 +24,13 @@ class ConsortiumMembership(models.Model):
     )
     joined_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    is_consortium_lead = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Consortium leads see aggregated data across all partner agencies. "
+            "Regular members see only their own published data."
+        ),
+    )
 
     class Meta:
         app_label = "consortia"

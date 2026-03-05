@@ -73,6 +73,7 @@ class AuditLog(models.Model):
         "circles": _("Circle"),
         "audit_log": _("Audit log"),
         "export": _("Export"),
+        "consent": _("Consent"),
         "erasure": _("Erasure request"),
         "registration": _("Registration"),
         "settings": _("Settings"),

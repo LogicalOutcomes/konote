@@ -11,4 +11,6 @@ urlpatterns = [
     path("import/", views.metric_import, name="metric_import"),
     path("<int:metric_id>/edit/", views.metric_edit, name="metric_edit"),
     path("<int:metric_id>/toggle/", views.metric_toggle, name="metric_toggle"),
+    path("<int:metric_id>/rationale/add/", views.metric_rationale_add, name="metric_rationale_add"),
+    path("<int:metric_id>/rationale/generate/", views.metric_rationale_generate, name="metric_rationale_generate"),
 ]

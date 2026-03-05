@@ -1,0 +1,69 @@
+{% load i18n %}
+{# Partial: Consent withdrawal form (PIPEDA compliance) #}
+<div class="consent-header">
+    <h2 id="consent-heading">{% trans "Withdraw Privacy Consent" %}</h2>
+    <button type="button"
+            class="outline secondary"
+            hx-get="{% url 'clients:client_consent_display' client_id=client.pk %}"
+            hx-target="#consent-section"
+            hx-swap="innerHTML"
+            aria-label="{% trans 'Cancel' %}">
+        {% trans "Cancel" %}
+    </button>
+</div>
+
+<div class="notice warning" role="alert" style="margin-bottom: var(--kn-space-md);">
+    <strong>{% trans "This action will:" %}</strong>
+    <ul style="margin: var(--kn-space-xs) 0 0; padding-left: 1.5em;">
+        <li>{% trans "Make this record read-only — no new notes or edits" %}</li>
+        <li>{% trans "Set a data retention period per your agency's policy" %}</li>
+        <li>{% trans "Record the withdrawal in the audit trail" %}</li>
+    </ul>
+</div>
+
+<form method="post"
+      action="{% url 'clients:client_consent_withdraw' client_id=client.pk %}"
+      hx-post="{% url 'clients:client_consent_withdraw' client_id=client.pk %}"
+      hx-target="#consent-section"
+      hx-swap="innerHTML"
+      hx-on::load="requestAnimationFrame(() => this.querySelector('select, input:not([type=hidden]), textarea')?.focus())">
+    {% csrf_token %}
+
+    <fieldset>
+        <label for="{{ form.withdrawal_date.id_for_label }}">{{ form.withdrawal_date.label }}</label>
+        {{ form.withdrawal_date }}
+        {% if form.withdrawal_date.errors %}
+        <small class="error" role="alert">{{ form.withdrawal_date.errors.0 }}</small>
+        {% endif %}
+
+        <label for="{{ form.withdrawal_reason.id_for_label }}">{{ form.withdrawal_reason.label }}</label>
+        {{ form.withdrawal_reason }}
+        {% if form.withdrawal_reason.errors %}
+        <small class="error" role="alert">{{ form.withdrawal_reason.errors.0 }}</small>
+        {% endif %}
+
+        <label for="{{ form.request_received_via.id_for_label }}">{{ form.request_received_via.label }}</label>
+        {{ form.request_received_via }}
+        {% if form.request_received_via.errors %}
+        <small class="error" role="alert">{{ form.request_received_via.errors.0 }}</small>
+        {% endif %}
+
+        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}
+        <small class="error" role="alert">{{ form.notes.errors.0 }}</small>
+        {% endif %}
+
+        <label>
+            {{ form.confirm }}
+            {{ form.confirm.label }}
+        </label>
+        {% if form.confirm.errors %}
+        <small class="error" role="alert">{{ form.confirm.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    <div class="button-row">
+        <button type="submit" class="contrast">{% trans "Withdraw Consent" %}</button>
+    </div>
+</form>

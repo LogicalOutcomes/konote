@@ -5,7 +5,7 @@ Usage:
     python manage.py check_report_deadlines              # Process deadlines
     python manage.py check_report_deadlines --dry-run     # Preview without changes
 
-Intended to run as a daily scheduled task (cron, Railway cron, etc.).
+Intended to run as a daily scheduled task (cron, ops sidecar, etc.).
 Stateless and idempotent — safe to run multiple times per day.
 """
 import logging

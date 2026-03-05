@@ -3,12 +3,15 @@
 Covers the post_save signal on PlanTarget that auto-updates achievement_status
 when a goal's lifecycle status changes.
 """
+import datetime
+
 from cryptography.fernet import Fernet
 from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
+from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 
 import konote.encryption as enc_module
+from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import (
     MetricDefinition,
@@ -16,7 +19,7 @@ from apps.plans.models import (
     PlanTarget,
     PlanTargetMetric,
 )
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -553,4 +556,663 @@ class Tier2DataMigrationTest(TestCase):
             self.assertGreaterEqual(
                 t2["very_unlikely_max"], t1["warn_max"],
             )
+
+
+# ── 90-day metric relevance review (METRIC-REVIEW1) ──────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestMetricReview(TestCase):
+    """Tests for METRIC-REVIEW1: 90-day metric relevance check."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.program = Program.objects.create(name="Review Program")
+        self.user = User.objects.create_user(
+            username="revtest", password="testpass123", is_admin=True,
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active",
+        )
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Review Metric",
+            definition="Test metric for review",
+            metric_type="scale",
+            min_value=1,
+            max_value=10,
+        )
+
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Test Section",
+            program=self.program,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        self.target.name = "Test Target"
+        self.target.save()
+
+        self.ptm = PlanTargetMetric.objects.create(
+            plan_target=self.target,
+            metric_def=self.metric,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_new_metric_no_review_banner(self):
+        """Metric assigned today (< 90 days) should not show review banner."""
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        # Find the metric form for our PTM
+        mf = forms[0]["metric_forms"][0]
+        self.assertFalse(mf.review_due)
+
+    def test_old_metric_shows_review_banner(self):
+        """Metric assigned 91+ days ago should show review banner."""
+        self.ptm.assigned_date = datetime.date.today() - datetime.timedelta(days=91)
+        self.ptm.save(update_fields=["assigned_date"])
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        mf = forms[0]["metric_forms"][0]
+        self.assertTrue(mf.review_due)
+
+    def test_reviewed_metric_no_banner(self):
+        """Metric reviewed 10 days ago should not show banner even if assigned 91+ days ago."""
+        self.ptm.assigned_date = datetime.date.today() - datetime.timedelta(days=100)
+        self.ptm.last_reviewed_date = datetime.date.today() - datetime.timedelta(days=10)
+        self.ptm.save(update_fields=["assigned_date", "last_reviewed_date"])
+
+        from apps.notes.views import _build_target_forms
+        forms = _build_target_forms(self.client_file)
+        mf = forms[0]["metric_forms"][0]
+        self.assertFalse(mf.review_due)
+
+    def test_confirm_review_endpoint(self):
+        """POST to confirm-review updates last_reviewed_date."""
+        http_client = Client()
+        http_client.login(username="revtest", password="testpass123")
+        from django.urls import reverse
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        response = http_client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.ptm.refresh_from_db()
+        self.assertEqual(self.ptm.last_reviewed_date, datetime.date.today())
+
+    def test_confirm_review_creates_audit_log(self):
+        """Confirming metric review creates an audit trail entry."""
+        from apps.audit.models import AuditLog
+        http_client = Client()
+        http_client.login(username="revtest", password="testpass123")
+        from django.urls import reverse
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        http_client.post(url)
+        log = AuditLog.objects.using("audit").filter(
+            action="confirm_metric_review",
+            resource_type="plan_target_metric",
+            resource_id=self.ptm.pk,
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.user_id, self.user.pk)
+
+    def test_confirm_review_requires_csrf(self):
+        """POST without CSRF token is rejected (Django middleware enforces)."""
+        from django.test import Client as DjangoClient
+        from django.urls import reverse
+        http_client = DjangoClient(enforce_csrf_checks=True)
+        http_client.login(username="revtest", password="testpass123")
+        url = reverse("plans:confirm_metric_review", kwargs={"ptm_id": self.ptm.pk})
+        response = http_client.post(url)
+        self.assertEqual(response.status_code, 403)
+
+
+# ---------------------------------------------------------------------------
+# Rationale log, severity bands, and assessment-due detection
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricRationaleLogTest(TestCase):
+    """Tests for the MetricDefinition rationale_log append-only changelog."""
+
+    def setUp(self):
+        self.metric = MetricDefinition.objects.create(
+            name="Test Metric",
+            definition="A test metric",
+            category="wellbeing",
+            metric_type="scale",
+        )
+
+    def test_append_rationale_creates_entry(self):
+        self.metric.append_rationale(note="Initial setup", author="System")
+        self.metric.save()
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "Initial setup")
+        self.assertEqual(self.metric.rationale_log[0]["author"], "System")
+
+    def test_append_rationale_preserves_history(self):
+        self.metric.append_rationale(note="First note", author="System")
+        self.metric.append_rationale(note="Second note", author="Admin")
+        self.metric.save()
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 2)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "First note")
+        self.assertEqual(self.metric.rationale_log[1]["note"], "Second note")
+
+    def test_current_rationale_returns_most_recent(self):
+        self.metric.append_rationale(note="Old", author="System")
+        self.metric.append_rationale(note="Current", author="Admin")
+        self.assertEqual(self.metric.current_rationale, "Current")
+
+    def test_current_rationale_empty_when_no_log(self):
+        self.assertEqual(self.metric.current_rationale, "")
+
+    def test_append_rationale_includes_date(self):
+        self.metric.append_rationale(note="Test")
+        entry = self.metric.rationale_log[0]
+        self.assertIn("date", entry)
+        self.assertEqual(entry["date"], datetime.date.today().isoformat())
+
+    def test_append_rationale_with_french(self):
+        self.metric.append_rationale(note="English", note_fr="Français", author="System")
+        entry = self.metric.rationale_log[0]
+        self.assertEqual(entry["note_fr"], "Français")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricSeverityBandTest(TestCase):
+    """Tests for MetricDefinition.get_severity_band() display-only lookup."""
+
+    def setUp(self):
+        self.metric = MetricDefinition.objects.create(
+            name="PHQ-9 Test",
+            category="wellbeing",
+            metric_type="scale",
+            scoring_bands=[
+                {"label": "Minimal", "min": 0, "max": 4},
+                {"label": "Mild", "min": 5, "max": 9},
+                {"label": "Moderate", "min": 10, "max": 14},
+                {"label": "Moderately Severe", "min": 15, "max": 19},
+                {"label": "Severe", "min": 20, "max": 27},
+            ],
+        )
+
+    def test_exact_lower_bound(self):
+        self.assertEqual(self.metric.get_severity_band(0), "Minimal")
+
+    def test_exact_upper_bound(self):
+        self.assertEqual(self.metric.get_severity_band(4), "Minimal")
+
+    def test_mid_range(self):
+        self.assertEqual(self.metric.get_severity_band(12), "Moderate")
+
+    def test_severe_band(self):
+        self.assertEqual(self.metric.get_severity_band(22), "Severe")
+
+    def test_out_of_range_returns_none(self):
+        self.assertIsNone(self.metric.get_severity_band(30))
+
+    def test_no_scoring_bands_returns_none(self):
+        m = MetricDefinition.objects.create(
+            name="No Bands", category="wellbeing", metric_type="scale",
+        )
+        self.assertIsNone(m.get_severity_band(5))
+
+    def test_invalid_score_returns_none(self):
+        self.assertIsNone(self.metric.get_severity_band("not a number"))
+
+    def test_float_score(self):
+        self.assertEqual(self.metric.get_severity_band(7.5), "Mild")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AssessmentDueDetectionTest(TestCase):
+    """Tests for get_assessments_due() assessment scheduling logic."""
+
+    def setUp(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        self.user = User.objects.create_user(
+            username="assesstest", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.client_file = ClientFile.objects.create(
+            _first_name_encrypted=b"", _last_name_encrypted=b"",
+            record_id="ASSESS-001", status="active",
+        )
+
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Health",
+            program=self.program,
+        )
+        self.target = PlanTarget.objects.create(
+            client_file=self.client_file,
+            plan_section=section,
+            status="default",
+        )
+        self.target.name = "Reduce depression"
+        self.target.save()
+
+        self.phq9 = MetricDefinition.objects.create(
+            name="PHQ-9",
+            category="wellbeing",
+            metric_type="scale",
+            is_standardized_instrument=True,
+            assessment_at_intake=True,
+            assessment_interval_days=90,
+        )
+        PlanTargetMetric.objects.create(
+            plan_target=self.target,
+            metric_def=self.phq9,
+        )
+
+    def test_intake_due_when_no_values(self):
+        from apps.plans.assessment import get_assessments_due
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["reason"], "intake")
+        self.assertIsNone(results[0]["last_date"])
+
+    def test_no_assessments_due_for_non_standardized(self):
+        from apps.plans.assessment import get_assessments_due
+
+        self.phq9.is_standardized_instrument = False
+        self.phq9.save()
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 0)
+
+    def test_periodic_due_when_overdue(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.assessment import get_assessments_due
+
+        # Record a value 100 days ago (overdue for 90-day interval)
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            note_type="full",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=self.target,
+        )
+        mv = MetricValue.objects.create(
+            progress_note_target=pnt,
+            metric_def=self.phq9,
+            value=12,
+        )
+        # Backdate the created_at
+        from django.utils import timezone as tz
+        old_date = tz.now() - datetime.timedelta(days=100)
+        MetricValue.objects.filter(pk=mv.pk).update(created_at=old_date)
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["reason"], "periodic")
+        self.assertGreater(results[0]["days_overdue"], 0)
+
+    def test_not_due_when_recently_administered(self):
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.assessment import get_assessments_due
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            note_type="assessment",
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt,
+            metric_def=self.phq9,
+            value=8,
+        )
+
+        results = get_assessments_due(self.client_file)
+        self.assertEqual(len(results), 0)
+
+
+# ---------------------------------------------------------------------------
+# HTTP-level view tests for rationale and assessment endpoints
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricRationaleViewTest(TestCase):
+    """HTTP-level tests for rationale add/generate HTMX endpoints."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="rationale_admin", password="testpass123", is_admin=True,
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Rationale Test Metric",
+            definition="A test metric",
+            category="wellbeing",
+            metric_type="scale",
+        )
+        self.http_client = self.client
+        self.http_client.login(username="rationale_admin", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_rationale_add_requires_post(self):
+        """GET to rationale/add/ should return 405."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_rationale_add_appends_entry(self):
+        """POST with note text appends to rationale_log."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.post(url, {"note": "Test rationale note"})
+        self.assertEqual(response.status_code, 200)
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["note"], "Test rationale note")
+
+    def test_rationale_add_creates_audit_log(self):
+        """Rationale add should create an audit log entry."""
+        from django.urls import reverse
+        from apps.audit.models import AuditLog
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(url, {"note": "Audited note"})
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="MetricDefinition",
+            resource_id=str(self.metric.pk),
+            action="update",
+        ).last()
+        self.assertIsNotNone(log)
+        self.assertIn("rationale", log.metadata.get("detail", ""))
+
+    def test_rationale_add_ignores_empty_note(self):
+        """POST with empty note should not append."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(url, {"note": "  "})
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 0)
+
+    def test_rationale_generate_requires_post(self):
+        """GET to rationale/generate/ should return 405."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_generate", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_rationale_generate_creates_entry(self):
+        """POST to generate uses template fallback (no AI in test) and appends entry."""
+        from django.urls import reverse
+        url = reverse("metrics:metric_rationale_generate", kwargs={"metric_id": self.metric.pk})
+        response = self.http_client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.metric.refresh_from_db()
+        self.assertEqual(len(self.metric.rationale_log), 1)
+        self.assertEqual(self.metric.rationale_log[0]["author"], "AI")
+        self.assertIn("initial configuration", self.metric.rationale_log[0]["note"])
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AssessmentDueBannerViewTest(TestCase):
+    """HTTP-level test for assessment-due banner HTMX partial."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="banner_user", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Banner Program", status="active")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Banner"
+        self.client_file.last_name = "Test"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        self.http_client = self.client
+        self.http_client.login(username="banner_user", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_banner_renders_empty_when_no_instruments(self):
+        """Banner partial returns 200 with no content when no standardized instruments assigned."""
+        from django.urls import reverse
+        url = reverse("clients:assessment_due_banner", kwargs={"client_id": self.client_file.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Assessment due")
+
+    def test_banner_shows_intake_due(self):
+        """Banner shows assessment-due when PHQ-9 assigned with assessment_at_intake."""
+        from django.urls import reverse
+        phq9 = MetricDefinition.objects.create(
+            name="PHQ-9", category="wellbeing", metric_type="scale",
+            is_standardized_instrument=True, assessment_at_intake=True,
+        )
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Health", program=self.program,
+        )
+        target = PlanTarget(plan_section=section, client_file=self.client_file)
+        target.name = "Mental health"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=phq9)
+
+        url = reverse("clients:assessment_due_banner", kwargs={"client_id": self.client_file.pk})
+        response = self.http_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Assessment due")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricCSVImportTest(TestCase):
+    """Tests for the CSV metric import parser (_parse_metric_csv)."""
+
+    def _make_csv(self, content):
+        """Create an in-memory CSV file from string content."""
+        import io
+        return io.BytesIO(content.encode("utf-8"))
+
+    def test_parse_csv_with_metric_type_column(self):
+        """CSV with metric_type column parses scale, achievement, and open_text."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type,min_value,max_value,unit\n"
+            "Test Scale,A scale metric,general,scale,1,10,score\n"
+            "Test Open,An open text metric,client_experience,open_text,,,\n"
+            "Test Achievement,An achievement,employment,achievement,,,\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]["metric_type"], "scale")
+        self.assertEqual(rows[0]["min_value"], 1.0)
+        self.assertEqual(rows[0]["max_value"], 10.0)
+        self.assertEqual(rows[1]["metric_type"], "open_text")
+        self.assertIsNone(rows[1]["min_value"])
+        self.assertIsNone(rows[1]["max_value"])
+        self.assertEqual(rows[2]["metric_type"], "achievement")
+
+    def test_parse_csv_invalid_metric_type(self):
+        """CSV with invalid metric_type produces a row error."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type\n"
+            "Bad Metric,Something,general,bogus\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(len(rows), 0)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("metric_type", errors[0])
+
+    def test_parse_csv_defaults_to_scale(self):
+        """CSV without metric_type column defaults to scale."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,min_value,max_value\n"
+            "Simple Metric,A metric,general,1,5\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(rows[0]["metric_type"], "scale")
+
+    def test_parse_csv_client_experience_category(self):
+        """CSV with client_experience category is valid."""
+        from apps.plans.views import _parse_metric_csv
+
+        csv_content = (
+            "name,definition,category,metric_type\n"
+            "How was our service?,Feedback question,client_experience,open_text\n"
+        )
+        rows, errors = _parse_metric_csv(self._make_csv(csv_content))
+        self.assertEqual(errors, [])
+        self.assertEqual(rows[0]["category"], "client_experience")
+
+
+# ================================================================== #
+# Instrument Grouping Tests                                          #
+# ================================================================== #
+
+
+class InstrumentNameFieldTest(TestCase):
+    """Tests for the instrument_name field on MetricDefinition."""
+
+    databases = {"default", "audit"}
+
+    def test_instrument_name_saves_and_retrieves(self):
+        """instrument_name can be saved and retrieved correctly."""
+        metric = MetricDefinition.objects.create(
+            name="Test Inclusivity Item",
+            definition="Test definition",
+            category="client_experience",
+            instrument_name="LogicalOutcomes Inclusivity Battery",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.instrument_name, "LogicalOutcomes Inclusivity Battery")
+
+    def test_instrument_name_defaults_to_empty(self):
+        """instrument_name defaults to empty string."""
+        metric = MetricDefinition.objects.create(
+            name="Standalone Metric",
+            definition="No instrument",
+            category="general",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.instrument_name, "")
+
+    def test_metrics_grouped_by_instrument_name(self):
+        """Metrics with the same instrument_name can be queried together."""
+        battery_name = "LogicalOutcomes Inclusivity Battery"
+        MetricDefinition.objects.create(
+            name="Item 1", definition="First item",
+            category="client_experience", instrument_name=battery_name,
+        )
+        MetricDefinition.objects.create(
+            name="Item 2", definition="Second item",
+            category="client_experience", instrument_name=battery_name,
+        )
+        MetricDefinition.objects.create(
+            name="Unrelated", definition="Not in a battery",
+            category="general",
+        )
+
+        grouped = MetricDefinition.objects.filter(instrument_name=battery_name)
+        self.assertEqual(grouped.count(), 2)
+
+    def test_instrument_name_in_seed_data(self):
+        """Verify seed JSON has instrument_name on the expected metrics."""
+        import json
+        from pathlib import Path
+
+        seed_file = Path(__file__).resolve().parent.parent / "seeds" / "metric_library.json"
+        with open(seed_file, "r", encoding="utf-8") as f:
+            metrics = json.load(f)
+
+        # Check PHQ-9 has instrument_name
+        phq9 = next(m for m in metrics if m["name"] == "PHQ-9 (Depression)")
+        self.assertEqual(phq9["instrument_name"], "PHQ-9")
+
+        # Check GAD-7
+        gad7 = next(m for m in metrics if m["name"] == "GAD-7 (Anxiety)")
+        self.assertEqual(gad7["instrument_name"], "GAD-7")
+
+        # Check K10
+        k10 = next(m for m in metrics if m["name"] == "K10 (Psychological Distress)")
+        self.assertEqual(k10["instrument_name"], "K10")
+
+        # Check all 5 inclusivity items
+        inclusivity_names = [
+            "Everyone is made to feel welcome",
+            "Everyone is valued equally",
+            "I am treated with respect",
+            "People help each other",
+            "I get help when I need it",
+        ]
+        for name in inclusivity_names:
+            item = next(m for m in metrics if m["name"] == name)
+            self.assertEqual(
+                item["instrument_name"],
+                "LogicalOutcomes Inclusivity Battery",
+                f"{name} should have instrument_name set",
+            )
+
+    def test_metrics_without_instrument_name_not_in_filter(self):
+        """Metrics without instrument_name are not returned by instrument filter."""
+        MetricDefinition.objects.create(
+            name="PHQ-9 Test", definition="Test",
+            category="mental_health", instrument_name="PHQ-9",
+        )
+        MetricDefinition.objects.create(
+            name="Standalone", definition="Test",
+            category="general", instrument_name="",
+        )
+
+        with_instrument = MetricDefinition.objects.filter(instrument_name__gt="")
+        self.assertEqual(with_instrument.count(), 1)
+        self.assertEqual(with_instrument.first().name, "PHQ-9 Test")
 

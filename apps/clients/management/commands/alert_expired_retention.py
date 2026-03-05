@@ -5,7 +5,7 @@ Usage:
     python manage.py alert_expired_retention            # Send email to admins
     python manage.py alert_expired_retention --dry-run   # Preview without sending
 
-Intended to run as a daily scheduled task (cron, Railway cron, etc.).
+Intended to run as a daily scheduled task (cron, ops sidecar, etc.).
 Only alerts for clients whose retention has expired AND who have NOT
 already been through the erasure process.
 """

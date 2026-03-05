@@ -242,7 +242,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Reporting redesigned with funder-specific profiles, fiscal year support, and aggregated demographics
-- Documentation expanded with deployment guides for Azure, Railway, Elest.io, and FullHost
+- Documentation expanded with deployment guides (now consolidated into OVHcloud deployment guide)
 
 ---
 

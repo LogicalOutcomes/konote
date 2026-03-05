@@ -1,10 +1,10 @@
 # Design Rationale: OVHcloud Deployment Architecture
 
-*Last updated: 2026-02-26*
+*Last updated: 2026-03-04*
 
 ## Context
 
-KoNote handles PHIPA-protected health data for Ontario nonprofits. The current Railway hosting (US-incorporated, US data centres) does not meet data sovereignty requirements for production agency deployments. This document records the architectural decisions for hosting KoNote on OVHcloud Beauharnois, QC — including the full deployment stack, automated self-healing, backup strategy, and encryption key management.
+KoNote handles PHIPA-protected health data for Ontario nonprofits. OVHcloud Beauharnois (QC) is the recommended production hosting — a French-incorporated company not subject to the US CLOUD Act. This document records the architectural decisions for the full deployment stack, automated self-healing, backup strategy, and encryption key management.
 
 **Related documents:**
 - [Hosting cost comparison](../hosting-cost-comparison.md) — Azure vs OVHcloud pricing at 1, 5, and 10 agency scales
@@ -16,25 +16,24 @@ KoNote handles PHIPA-protected health data for Ontario nonprofits. The current R
 
 ### Why OVHcloud
 
-| Factor | OVHcloud | Azure | Railway |
-|--------|----------|-------|---------|
-| Parent company | OVH Groupe SA (French) | Microsoft (US) | Railway (US) |
-| US CLOUD Act | **Not subject** | Subject | Subject |
-| Data centre | Beauharnois, QC | Toronto (Canada Central) | US only |
-| Canadian LE jurisdiction | Yes (Sept 2025 Ontario ruling) | Yes | N/A |
-| Cost (10 agencies, multi-tenant) | ~$116 CAD/mo total | ~$456 CAD/mo total | Not viable |
+| Factor | OVHcloud | Azure |
+|--------|----------|-------|
+| Parent company | OVH Groupe SA (French) | Microsoft (US) |
+| US CLOUD Act | **Not subject** | Subject |
+| Data centre | Beauharnois, QC | Toronto (Canada Central) |
+| Canadian LE jurisdiction | Yes (Sept 2025 Ontario ruling) | Yes |
+| Cost (10 agencies, multi-tenant) | ~$116 CAD/mo total | ~$456 CAD/mo total |
 
 **Key rationale:** The US CLOUD Act applies to US-incorporated companies regardless of where their data centres are located. OVHcloud's parent (OVH Groupe SA) is French-incorporated and not subject to US government data requests for Canadian operations. Canadian law enforcement jurisdiction over Canadian data at OVHcloud is expected and acceptable for KoNote's threat model.
 
 **Exception for populations with Canadian LE concerns:** Agencies serving undocumented newcomers or populations with specific concerns about Canadian law enforcement should evaluate whether the Sept 2025 Ontario court ruling (RCMP compelling OVH Canada to produce data) affects their risk profile.
 
-### What Azure Key Vault Adds
+### Encryption Key Management
 
-Even in the OVHcloud scenario, Azure Key Vault is used for encryption key management (see [Encryption Key Management](#encryption-key-management) below). This introduces a limited Azure dependency:
+KoNote's `FIELD_ENCRYPTION_KEY` must be stored in a managed key service — not just in `.env`. Two options are supported (see [Encryption Key Management](#encryption-key-management) below):
 
-- Only the `FIELD_ENCRYPTION_KEY` is stored in Azure — not participant data
-- The key alone is useless without access to the encrypted database on OVHcloud
-- If zero Azure dependency is required, alternatives exist (see below)
+- **OVHcloud KMS** (recommended) — Same provider as hosting, no cross-provider dependency, full data sovereignty
+- **Azure Key Vault** — Mature service, strong audit logging. Introduces a limited Azure dependency (key only, not participant data)
 
 ---
 
@@ -69,7 +68,7 @@ Even in the OVHcloud scenario, Azure Key Vault is used for encryption key manage
 └─────────────────────────────────────────────────────────┘
 
 External:
-  ├── Azure Key Vault (encryption key storage)
+  ├── OVHcloud KMS or Azure Key Vault (encryption key storage)
   ├── OpenRouter API (translation + metrics/targets AI)
   ├── UptimeRobot (external uptime monitoring)
   └── Let's Encrypt (TLS via Caddy auto-HTTPS)
@@ -77,7 +76,7 @@ External:
 
 ### Container Stack
 
-The `docker-compose.yml` runs unmodified on any Docker host (OVHcloud, Azure, FullHost). Four application containers plus two operational containers:
+The `docker-compose.yml` runs unmodified on any Docker host (OVHcloud, Azure, or any VPS). Four application containers plus two operational containers:
 
 | Container | Image | Purpose |
 |-----------|-------|---------|
@@ -109,7 +108,7 @@ The production `docker-compose.yml` needs two additions for OVHcloud deployment:
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
-**2. HEALTHCHECK on the web container** — the web container currently relies on Railway's external health check (`/auth/login/`). For OVHcloud, add an internal Docker HEALTHCHECK:
+**2. HEALTHCHECK on the web container** — add an internal Docker HEALTHCHECK so autoheal can detect and restart unhealthy containers:
 
 ```yaml
   web:
@@ -131,7 +130,7 @@ The `db` and `audit_db` containers already have `pg_isready` health checks.
 | 1 agency (app + DB) | VPS-2 | 4 vCores, 16 GB RAM, 100 GB NVMe | ~$22 |
 | 5 agencies (multi-tenant) | VPS-3 | 8 vCores, 24 GB RAM, 200 GB NVMe | ~$30 |
 | 10 agencies (multi-tenant) | VPS-3 or VPS-4 | 8 vCores, 24–32 GB RAM, 200 GB NVMe | ~$30–44 |
-| LLM (shared, all agencies) | VPS-1 | 4 vCores, 8 GB RAM, 75 GB NVMe | ~$11 |
+| LLM (shared, all agencies) | VPS-4 | 12 vCores, 48 GB RAM, 300 GB NVMe | ~$40 |
 
 ---
 
@@ -232,7 +231,7 @@ The ops container connects directly to `db:5432` and `audit_db:5432` over the Do
 | Audit PostgreSQL (audit log) | `pg_dump` via cron | Nightly (2 AM ET) | 90 days (compliance) |
 | Docker volumes (pgdata) | Implicit in pg_dump | — | — |
 | `.env` file | Manual backup | On change | Stored in password manager |
-| `FIELD_ENCRYPTION_KEY` | Azure Key Vault | Always available | Key Vault versioning |
+| `FIELD_ENCRYPTION_KEY` | OVHcloud KMS or Azure Key Vault | Always available | KMS versioning |
 
 ### Off-Site Backup Storage
 
@@ -257,6 +256,32 @@ On-VPS backups protect against application failures but not hardware failures. O
 
 ### Architecture
 
+The `FIELD_ENCRYPTION_KEY` is stored in a managed key service and read at container startup. Two options:
+
+#### Option A: OVHcloud KMS (Recommended)
+
+```
+┌──────────────────────┐         ┌──────────────────────┐
+│  OVHcloud VPS        │         │  OVHcloud KMS         │
+│                      │         │  (Beauharnois, QC)    │
+│  Django app reads    │◄────────│  FIELD_ENCRYPTION_KEY  │
+│  key at startup      │  HTTPS  │  stored as CMK        │
+│  via REST/KMIP API   │         │                      │
+│                      │         │  Access: certificate- │
+│  Key cached in       │         │  based authentication │
+│  process memory      │         │                      │
+└──────────────────────┘         └──────────────────────┘
+```
+
+OVHcloud KMS supports Customer Managed Keys (CMK) via REST API or KMIP API. The key stays within the same provider and jurisdiction as the database — full data sovereignty with no cross-provider dependency.
+
+- KMS is accessible via REST API with certificate-based authentication
+- Key lifecycle management (create, rotate, revoke) through OVHcloud Control Panel or API
+- OVHcloud is pursuing ISO 27001 and FIPS 140-3 certification for KMS
+- Cost: included with OVHcloud account (pay-per-key pricing)
+
+#### Option B: Azure Key Vault
+
 ```
 ┌──────────────────────┐         ┌──────────────────────┐
 │  OVHcloud VPS        │         │  Azure Key Vault      │
@@ -270,37 +295,37 @@ On-VPS backups protect against application failures but not hardware failures. O
 └──────────────────────┘         └──────────────────────┘
 ```
 
-### How It Works
+Azure Key Vault is a mature service with strong audit logging and versioning. It introduces a limited Azure dependency — only the encryption key is stored there, not participant data. The key alone is useless without access to the encrypted database on OVHcloud.
 
-1. **At container startup**, Django reads `FIELD_ENCRYPTION_KEY` from Azure Key Vault using the Azure Identity SDK
+### How It Works (Both Options)
+
+1. **At container startup**, Django reads `FIELD_ENCRYPTION_KEY` from the key management service (OVHcloud KMS or Azure Key Vault)
 2. The key is cached in process memory for the lifetime of the Gunicorn workers
-3. All Fernet encrypt/decrypt operations use the in-memory key — no per-operation Key Vault calls
-4. Key Vault operations: ~2 per day (startup + any worker recycle) = negligible cost (~$1–5 CAD/mo)
-
-### Access Control
-
-- **Azure AD service principal** with `Key Vault Secrets User` role (read-only)
-- Service principal credentials (`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`) stored in `.env` on the VPS
-- Key Vault access policy: deny all except the service principal
-- Key Vault audit logging enabled (who accessed what, when)
+3. All Fernet encrypt/decrypt operations use the in-memory key — no per-operation KMS calls
+4. KMS operations: ~2 per day (startup + any worker recycle) = negligible cost
 
 ### Key Custody
 
-- **Primary:** Azure Key Vault (always available, versioned, audited)
+- **Primary:** Managed key service (OVHcloud KMS or Azure Key Vault) — always available, versioned
 - **Emergency backup:** Printed key stored in sealed envelope, held by two designated officers (executive director + board member). Neither person alone can access the key.
 - **Key rotation:** Supported by Fernet (decrypt with old key, re-encrypt with new key). Schedule: annually or on personnel change.
 
-### Alternative to Azure Key Vault
+### Comparison
 
-If zero Azure dependency is required:
+| Factor | OVHcloud KMS | Azure Key Vault |
+|--------|-------------|-----------------|
+| Data sovereignty | Full (same provider/jurisdiction) | Limited Azure dependency (US CLOUD Act applies to key, not data) |
+| Audit logging | Via OVHcloud API | Built-in, mature |
+| Maturity | Newer service (launched 2025) | Established, widely used |
+| Authentication | Certificate-based | Azure AD service principal |
+| Cost | Included with OVHcloud account | ~$1–5 CAD/month |
+| Cross-provider dependency | None | Yes (Azure account required) |
 
-| Alternative | Pros | Cons |
-|-------------|------|------|
-| HashiCorp Vault (self-hosted on OVHcloud) | No Azure dependency, full sovereignty | Operational overhead, another service to maintain |
-| Manual key custody (`.env` file + sealed envelope) | Simple, no external dependency | No audit trail, no programmatic rotation |
-| OVHcloud KMS (if available in BHS) | Same provider, no cross-provider dependency | Limited availability, less mature than Azure KV |
+**Current recommendation:** OVHcloud KMS for full data sovereignty. Azure Key Vault remains a valid alternative for organisations already using Azure AD or needing its mature audit logging.
 
-**Current recommendation:** Azure Key Vault. The CLOUD Act exposure is limited to the encryption key only, and the operational benefits (audit logging, versioning, access policies) outweigh the theoretical risk.
+### Anti-pattern: Key in `.env` Only
+
+Do not store `FIELD_ENCRYPTION_KEY` only in the `.env` file. This creates a single point of failure with no audit trail, no programmatic rotation, and no access control beyond SSH. Always use a managed key service plus a sealed envelope emergency backup.
 
 ---
 
@@ -310,7 +335,7 @@ If zero Azure dependency is required:
 
 | Option | When to Use | Cost (CAD/mo) |
 |--------|-------------|---------------|
-| Ollama on separate VPS-1 | Default — isolates LLM from app | ~$11 (shared) |
+| Ollama on separate VPS-4 | Default — isolates LLM from app | ~$40 (shared) |
 | Ollama on same VPS | 1–3 agencies, cost-sensitive | $0 additional |
 
 ### Batch Processing
@@ -340,7 +365,7 @@ Each agency gets its own VPS with its own Docker Compose stack. Simple but expen
 Agency A: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency B: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
 Agency C: VPS-2 ($22) → Docker Compose (web + db + audit_db + caddy)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 ### Multi-Tenant (Future — requires MT-CORE1)
@@ -350,12 +375,12 @@ All agencies share one VPS with schema-per-tenant isolation via django-tenants. 
 ```
 Shared:   VPS-3 ($30) → Docker Compose (web + db + audit_db + caddy)
                          └── Schema per tenant (agency_a, agency_b, agency_c)
-Shared:   VPS-1 ($11) → Ollama (suggestion theme tagging)
+Shared:   VPS-4 ($40) → Ollama (suggestion theme tagging + outcome insights)
 ```
 
 **Prerequisites:**
 - MT-CORE1: Integrate django-tenants for schema-per-tenant
-- MT-ENCRYPT1: Per-tenant encryption keys (each agency's FIELD_ENCRYPTION_KEY in Key Vault)
+- MT-ENCRYPT1: Per-tenant encryption keys (each agency's FIELD_ENCRYPTION_KEY in KMS)
 - Caddy wildcard or multi-domain config for tenant routing
 
 ---
@@ -367,18 +392,17 @@ For the first OVHcloud deployment (single agency):
 1. **Provision VPS-2** on OVHcloud Canada (Beauharnois)
 2. **Install Docker + Docker Compose** on the VPS
 3. **Generate credentials:** `SECRET_KEY`, database passwords (via `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"`)
-4. **Create Azure Key Vault** in Canada Central, store `FIELD_ENCRYPTION_KEY`
-5. **Create Azure AD service principal** with read-only Key Vault access
-6. **Configure `.env`** with all environment variables (see `.env.example`)
-7. **Set `DOMAIN`** in `.env` for Caddy auto-HTTPS
-8. **Configure DNS** — point agency domain to VPS IP
-9. **Create backup directory:** `sudo mkdir -p /opt/konote/backups`
-10. **Deploy:** `docker compose up -d` — this starts all services including the ops sidecar (automated backups, monitoring, health reports)
-11. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE), ops container running
-12. **Configure UptimeRobot** — monitor HTTPS endpoint for external uptime monitoring
-13. **Optional:** Set `OPS_HEALTH_REPORT_TO`, `HEALTHCHECK_PING_URL`, `ALERT_WEBHOOK_URL` in `.env` for enhanced monitoring
-14. **Test backup/restore** — run `docker compose exec ops /usr/local/bin/ops-backup.sh`, verify files in `./backups/`
-15. **Document:** VPS IP, domain, Key Vault name, service principal, backup location
+4. **Store `FIELD_ENCRYPTION_KEY`** in OVHcloud KMS (or Azure Key Vault if using Azure)
+5. **Configure `.env`** with all environment variables (see `.env.example`)
+6. **Set `DOMAIN`** in `.env` for Caddy auto-HTTPS
+7. **Configure DNS** — point agency domain to VPS IP
+8. **Create backup directory:** `sudo mkdir -p /opt/konote/backups`
+9. **Deploy:** `docker compose up -d` — this starts all services including the ops sidecar (automated backups, monitoring, health reports)
+10. **Verify:** Health check passes, login works, demo data loads (if DEMO_MODE), ops container running
+11. **Configure UptimeRobot** — monitor HTTPS endpoint for external uptime monitoring
+12. **Optional:** Set `OPS_HEALTH_REPORT_TO`, `HEALTHCHECK_PING_URL`, `ALERT_WEBHOOK_URL` in `.env` for enhanced monitoring
+13. **Test backup/restore** — run `docker compose exec ops /usr/local/bin/ops-backup.sh`, verify files in `./backups/`
+14. **Document:** VPS IP, domain, KMS configuration, backup location
 
 ---
 
@@ -389,7 +413,7 @@ For the first OVHcloud deployment (single agency):
 | OVHcloud Beauharnois outage | Low | High (downtime) | UptimeRobot alerts, backup restore to new VPS |
 | VPS hardware failure | Low | High (data loss if no off-site backup) | Nightly off-site backups, test monthly restore |
 | OVHcloud discontinues BHS region | Very low | Medium | Architecture is provider-agnostic — migrate Docker Compose to any VPS |
-| Azure Key Vault outage | Very low | Medium (can't restart) | Emergency key in sealed envelope, restart with env var fallback |
+| KMS outage (OVHcloud or Azure) | Very low | Medium (can't restart) | Emergency key in sealed envelope, restart with env var fallback |
 | Disk full | Medium | High (DB crash) | Preventive cron, disk alerts, log rotation |
 | Unpatched vulnerability | Medium | High | Automated `apt upgrade` via `unattended-upgrades`, Docker image updates |
 | LLM batch failure | Low | Low (suggestions queue) | Retry next night, alert on failure, no data loss |
@@ -460,11 +484,16 @@ A designated KoNote team member (e.g., PB) trained on the deployment runbook, re
 
 ### Recommended Progression
 
-| Stage | Second-Level Support | Estimated Cost |
-|-------|---------------------|----------------|
-| Launch (1–2 agencies) | KoNote team + runbook | $0 |
-| Early growth (3–5 agencies) | Add freelance sysadmin retainer | ~$100 CAD/mo |
-| Scale (5–10+ agencies) | Transition to Canadian MSP | ~$300–500 CAD/mo |
+With the 4-layer self-healing stack handling ~99% of incidents automatically, the second-level support role is primarily on-call for the rare cases that self-healing can't resolve (hardware failure, data corruption, security incidents). This dramatically reduces the retainer needed compared to a manually-managed VPS.
+
+| Stage | Second-Level Support | Estimated Cost | Est. Hours/Mo |
+|-------|---------------------|----------------|---------------|
+| Launch (1–2 agencies) | KoNote team + runbook | $0 | ~4–5 |
+| Early growth (3–5 agencies) | KoNote team + freelance sysadmin on-call | ~$75–150 CAD/mo | ~8–12 total |
+| Scale (5–10 agencies) | Freelance sysadmin retainer | ~$100–200 CAD/mo | ~10–15 total |
+| Enterprise (10+ agencies) | Canadian MSP | ~$300–500 CAD/mo | ~10–15 total (MT) |
+
+**Note:** The MSP threshold has moved from 5 agencies to 10+ because self-healing eliminates the routine monitoring and restart tasks that previously justified an MSP. A freelance sysadmin on retainer is sufficient through 10 agencies. See the [automation roadmap](#automation-roadmap-reducing-tech-support-further) for reducing hours further.
 
 ---
 
@@ -528,13 +557,130 @@ These are implementation items to harden demo mode. Items 1-3 should be verified
 - **Do not let demo admin modify production configuration.** View-only access for demo admin users.
 - **Do not commingle demo data in reports.** Every query that produces output for real users must exclude `is_demo=True` records.
 
+## Automation Roadmap: Reducing Tech Support Further
+
+The 4-layer self-healing stack already reduces manual support from ~10–15 hours/month to ~4–5 hours/month per agency. This section identifies further automations to push that number toward ~1–2 hours/month — the goal being that a single person can manage 10+ agency instances with minimal ongoing effort.
+
+### Current support hours breakdown (per agency, per month)
+
+| Task | Current hours | Target | How to reduce |
+|------|--------------|--------|---------------|
+| Review health report emails | 1.0 | 0.25 | Consolidated dashboard + anomaly-only alerts |
+| Apply software updates | 1.0 | 0.1 | GitOps auto-update pipeline |
+| Investigate escalation alerts | 0.5 | 0.25 | Better runbook scripts + auto-remediation |
+| Agency support requests | 1.0–2.0 | 0.5 | Self-service admin portal |
+| Quarterly security review | 0.25 | 0.1 | Automated CVE scanning |
+| Capacity review | 0.125 | 0 | Automated capacity alerts |
+| **Total** | **~4–5** | **~1–2** | |
+
+### Phase 1: Quick wins (add to ops sidecar — ~1 week of work)
+
+These can be added as new cron entries in the existing ops sidecar container.
+
+**1. Automated Django security advisory check**
+- Weekly cron: `docker compose exec web pip-audit --json` — runs inside the web container where Python packages are installed (not in the ops sidecar, which is Alpine-based and doesn't have the app's dependencies)
+- Email alert only if vulnerabilities found (no alert = no action needed)
+- Requires adding `pip-audit` to the web container's `requirements.txt`
+- Eliminates manual CVE review (~0.25 hr/quarter saved)
+
+**2. Automated capacity alerts with upgrade recommendations**
+- Enhance existing `ops-disk-check.sh` to also check CPU and RAM trends
+- When 7-day average exceeds 70%: email with "Consider upgrading to VPS-X"
+- Eliminates manual capacity review (~0.5 hr/quarter saved)
+
+**3. Automated database maintenance**
+- PostgreSQL's built-in autovacuum handles routine `VACUUM` automatically — the manual weekly cron is a safety net, not the primary mechanism
+- Weekly cron: `VACUUM ANALYZE` on both databases (catches anything autovacuum missed, e.g., after bulk imports)
+- Monthly cron: `REINDEX DATABASE` during maintenance window (Sunday 3 AM) — autovacuum does not handle reindexing, so this is the primary mechanism for index maintenance
+- Prevents gradual performance degradation that would generate support tickets
+
+**4. Consolidated health dashboard email (multi-agency)**
+- When managing 3+ instances: single daily digest email summarising health of all instances
+- Replace per-instance health reports with one consolidated view
+- At 5 agencies, saves ~0.5 hr/mo of email review
+
+### Phase 2: Auto-update pipeline (~2 weeks of work)
+
+This is the single highest-impact automation — it eliminates the most frequent manual task.
+
+**Option A: Watchtower (simple, for single-tenant)**
+- [Watchtower](https://containrrr.dev/watchtower/) watches for new Docker images and auto-restarts containers
+- KoNote publishes images to a private registry (GitHub Container Registry or OVHcloud Container Registry)
+- Watchtower polls the registry on a schedule (e.g., weekly)
+- On new image: pull → stop → restart → verify health check passes
+- Cost: $0 (open source). Complexity: low.
+- **Limitation:** Watchtower does not natively roll back to a previous image on health check failure — it will keep restarting the new image. Rollback requires either a custom wrapper script that tags the current image before pulling, or switching to Option B.
+- **Risk:** Untested updates could break production. Mitigate with: staging instance that auto-updates first, production updates delayed 48 hours. The staging-first pattern also catches migration failures before they reach production.
+
+**Option B: Webhook-triggered deploy (for multi-tenant or controlled rollout)**
+- GitHub Actions builds and pushes Docker image on `develop` merge
+- Webhook notifies each VPS to pull and restart
+- Deploy script: `git pull && docker compose up -d --build && docker compose exec web python manage.py migrate --nolimit && docker compose exec web python manage.py check --deploy`
+- Health check verification after deploy; roll back on failure
+- Cost: $0 (GitHub Actions free tier). Complexity: medium.
+- **Advantage over Watchtower:** Can control rollout order (staging → production), run migrations, run deploy checks.
+
+**Recommendation:** Start with Option A (Watchtower) for simplicity. Move to Option B when managing 5+ agencies or when migration-heavy releases become common.
+
+### Phase 3: Self-service admin portal (deferred — high value, high effort)
+
+Many agency support requests are configuration changes that an agency admin could do themselves if the interface supported it. Currently, some admin operations require SSH or Django management commands.
+
+**Self-serviceable operations (already in admin UI):**
+- User account management (invite, deactivate, change role)
+- Terminology customisation
+- Feature toggles
+- Program configuration
+- Metric library management
+
+**Not yet self-serviceable (still require LogicalOutcomes):**
+- Custom field creation/modification (admin UI exists but needs review)
+- Report template creation
+- Azure AD SSO configuration changes
+- Encryption key rotation
+- Database operations
+
+**Impact:** Each self-service operation that moves from "email LogicalOutcomes" to "agency admin does it themselves" removes ~15 minutes of support time per request. At 5 agencies generating ~2 requests/month each, this saves ~2.5 hr/mo.
+
+**Recommendation:** Audit the current admin UI for completeness. Most of this is already built. Focus on documentation and training so agencies know they can self-serve.
+
+### Phase 4: Monitoring consolidation (~1 week of work)
+
+When managing 5+ instances, individual UptimeRobot monitors and health report emails become noisy. Consolidate monitoring into a single view.
+
+**Option A: UptimeRobot status page (free)**
+- UptimeRobot provides free [status pages](https://uptimerobot.com/status-pages/) showing uptime for all monitored endpoints
+- Agencies can check status themselves instead of emailing support
+- URL: e.g., `status.konote.ca`
+
+**Option B: Uptime Kuma (self-hosted, free)**
+- [Uptime Kuma](https://github.com/louislam/uptime-kuma) is an open-source monitoring dashboard
+- Run on the LLM VPS (lightweight — minimal resource impact)
+- Consolidates all instance health into one dashboard
+- Supports notifications to Slack, email, Teams, etc.
+- More customisable than UptimeRobot (can add custom health endpoints)
+
+**Recommendation:** Start with UptimeRobot status page (free, no setup). Move to Uptime Kuma when managing 5+ agencies for the consolidated dashboard.
+
+### Summary: Projected Support Hours After Full Automation
+
+| Scale | Current (hr/mo) | After Phase 1 (hr/mo) | After Phase 2 (hr/mo) | After all phases (hr/mo) |
+|-------|----------------|----------------------|----------------------|-------------------------|
+| 1 agency | 4–5 | 3–4 | 2–3 | 1–2 |
+| 5 agencies | 8–12 | 6–8 | 4–6 | 2–4 |
+| 10 agencies (MT) | 10–15 | 7–10 | 5–7 | 3–5 |
+
+At full automation, one person can manage 10 multi-tenant agency instances in ~3–5 hours/month — roughly one hour per week.
+
+---
+
 ## Anti-Patterns
 
 **Do not:**
 - Store database backups on Azure Blob Storage or AWS S3 (reintroduces CLOUD Act exposure)
 - Run PostgreSQL without Docker volumes (data loss on container recreation)
 - Skip the autoheal container (silent failures with no recovery)
-- Store `FIELD_ENCRYPTION_KEY` only in `.env` (single point of failure — use Key Vault)
+- Store `FIELD_ENCRYPTION_KEY` only in `.env` (single point of failure — use OVHcloud KMS or Azure Key Vault)
 - Run Ollama on the same VPS as a high-traffic multi-tenant deployment (resource contention)
 - Send agency identifiers to the LLM endpoint (unnecessary data exposure)
 - Use OVHcloud's built-in VPS backup feature as the only backup (no granular restore, no off-site copy)

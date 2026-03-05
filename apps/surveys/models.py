@@ -40,6 +40,18 @@ class Survey(models.Model):
         default=True,
         help_text=_("Whether this survey appears in the participant portal."),
     )
+    consent_text = models.TextField(
+        blank=True, default="",
+        help_text=_(
+            "Consent text shown before the survey begins. "
+            "The respondent must agree before proceeding. "
+            "Leave blank to skip the consent step."
+        ),
+    )
+    consent_text_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French consent text (displayed when language is French)."),
+    )
     expires_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -313,6 +325,14 @@ class SurveyResponse(models.Model):
     respondent_name_display = models.CharField(
         max_length=255, blank=True, default="",
         help_text=_("Optional name for link responses. Not encrypted (non-PII)."),
+    )
+    consent_given_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When the respondent agreed to the consent text, if applicable."),
+    )
+    consent_withdrawn_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When the respondent withdrew consent, if applicable."),
     )
     submitted_at = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=64, blank=True, default="", unique=False)

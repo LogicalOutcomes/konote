@@ -194,6 +194,13 @@
     {% endif %}
 </article>
 
+{# Consortium data sharing notice — expert panel item #1 #}
+<article aria-label="{% trans 'Data Sharing Notice' %}" style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem;">
+    <h2>{% trans "Data Sharing Notice" %}</h2>
+    <p>{% trans "When you approve this report, de-identified aggregate data will be shared with your consortium network. Individual participant records are never shared. Cell suppression is applied to protect small groups (counts below 5 are suppressed; counts below 10 for sensitive demographic fields)." %}</p>
+    <p><small>{% trans "If your agency is not a consortium member, no data will be shared beyond this export file." %}</small></p>
+</article>
+
 {# Approval form #}
 <article aria-label="{% trans 'Approve Report' %}">
     <h2>{% trans "Approve and Export" %}</h2>

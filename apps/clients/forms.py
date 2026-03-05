@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program
 
-from .models import ClientFile, CustomFieldDefinition, CustomFieldGroup
+from .models import ClientFile, ConsentEvent, CustomFieldDefinition, CustomFieldGroup
 from .validators import normalize_phone_number, validate_phone_number
 
 
@@ -33,6 +33,51 @@ class ConsentRecordForm(forms.Form):
         label=_("Notes (optional)"),
         widget=forms.Textarea(attrs={"rows": 2, "placeholder": _("Any additional details about how consent was obtained...")}),
     )
+
+
+class ConsentWithdrawalForm(forms.Form):
+    """Form to record consent withdrawal (PIPEDA/PHIPA compliance)."""
+
+    REQUEST_RECEIVED_VIA_CHOICES = [
+        ("written", _("Written request")),
+        ("verbal", _("Verbal request")),
+        ("representative", _("Representative / substitute decision-maker")),
+    ]
+
+    withdrawal_date = forms.DateField(
+        label=_("Date of withdrawal"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    withdrawal_reason = forms.ChoiceField(
+        choices=ConsentEvent.WITHDRAWAL_REASON_CHOICES[1:],  # skip blank
+        label=_("Reason for withdrawal"),
+        required=True,
+    )
+    request_received_via = forms.ChoiceField(
+        choices=REQUEST_RECEIVED_VIA_CHOICES,
+        label=_("Request received via"),
+        required=True,
+        initial="written",
+    )
+    notes = forms.CharField(
+        required=False,
+        label=_("Notes (optional)"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Additional context about the withdrawal..."),
+        }),
+    )
+    confirm = forms.BooleanField(
+        label=_("I confirm this participant has requested consent withdrawal"),
+        required=True,
+    )
+
+    def clean_withdrawal_date(self):
+        """Reject future dates — withdrawal must have already occurred."""
+        dt = self.cleaned_data["withdrawal_date"]
+        if dt > timezone.now().date():
+            raise forms.ValidationError(_("Withdrawal date cannot be in the future."))
+        return dt
 
 
 class ClientContactForm(forms.Form):
@@ -330,6 +375,27 @@ class CustomFieldValuesForm(forms.Form):
                         label=field_def.name,
                     )
                     # Additional text field for "Other" free-text entry
+                    self.fields[f"{field_key}_other"] = forms.CharField(
+                        required=False,
+                        label=_("Other (please specify)"),
+                        widget=forms.TextInput(attrs={"placeholder": field_def.placeholder or ""}),
+                    )
+                elif field_def.input_type == "multi_select" and field_def.options_json:
+                    choices = [(opt, opt) for opt in field_def.options_json]
+                    self.fields[field_key] = forms.MultipleChoiceField(
+                        choices=choices,
+                        required=field_def.is_required,
+                        label=field_def.name,
+                        widget=forms.CheckboxSelectMultiple,
+                    )
+                elif field_def.input_type == "multi_select_other" and field_def.options_json:
+                    choices = [(opt, opt) for opt in field_def.options_json]
+                    self.fields[field_key] = forms.MultipleChoiceField(
+                        choices=choices,
+                        required=False,  # "Other" text may fulfil the requirement
+                        label=field_def.name,
+                        widget=forms.CheckboxSelectMultiple,
+                    )
                     self.fields[f"{field_key}_other"] = forms.CharField(
                         required=False,
                         label=_("Other (please specify)"),
