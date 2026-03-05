@@ -810,8 +810,8 @@ msgstr "Tout sélectionner"
 msgid "Deselect all"
 msgstr "Tout désélectionner"
 
-msgid "Generate Report"
-msgstr "Générer le rapport"
+msgid "Standard Report"
+msgstr "Rapport standard"
 
 msgid "Additional Options"
 msgstr "Options supplémentaires"
@@ -14636,14 +14636,17 @@ msgstr "Ajouter un objectif"
 msgid "Attendance Rate"
 msgstr "Taux de présence"
 
-msgid "Create a custom export"
-msgstr "Créer une exportation personnalisée"
+msgid "Build your own report"
+msgstr "Créer votre propre rapport"
 
-msgid "Custom Export"
-msgstr "Exportation personnalisée"
+msgid "Generate"
+msgstr "Générer"
 
-msgid "Go to Custom Export"
-msgstr "Aller à l’exportation personnalisée"
+msgid "Build a Report"
+msgstr "Créer un rapport"
+
+msgid "Go to Build a Report"
+msgstr "Aller à Créer un rapport"
 
 msgid "Listen"
 msgstr "Écouter"
@@ -14756,13 +14759,13 @@ msgstr ""
 " pour en créer un."
 
 msgid ""
-"In the meantime, you can create a one-off report using <strong>Custom "
-"Export</strong>, where you choose the program, metrics, and date range "
+"In the meantime, you can create a one-off report using <strong>Build a "
+"Report</strong>, where you choose the program, metrics, and date range "
 "yourself."
 msgstr ""
-"En attendant, vous pouvez créer un rapport ponctuel avec "
-"l'<strong>exportation personnalisée</strong>, où vous choisissez vous-même "
-"le programme, les indicateurs et la période."
+"En attendant, vous pouvez créer un rapport ponctuel avec <strong>Créer un "
+"rapport</strong>, où vous choisissez vous-même le programme, les indicateurs "
+"et la période."
 
 msgid ""
 "All forms. For programs doing both group sessions and individual visits."
@@ -15681,11 +15684,11 @@ msgstr "Heures de contact moyennes par participant"
 msgid "Average Sessions per Participant"
 msgstr "Séances moyennes par participant"
 
-msgid "Back to Custom Export"
-msgstr "Retour à l’exportation personnalisée"
+msgid "Back to Build a Report"
+msgstr "Retour à Créer un rapport"
 
-msgid "Back to Generate Report"
-msgstr "Retour à la génération de rapport"
+msgid "Back to Standard Report"
+msgstr "Retour au rapport standard"
 
 msgid "Breakdowns by session type and modality"
 msgstr "Répartition par type de séance et modalité"
@@ -17885,8 +17888,8 @@ msgstr "Signalements d'anomalies"
 msgid "Bulk record access"
 msgstr "Accès massif aux dossiers"
 
-msgid "Compliance Summary"
-msgstr "Résumé de conformité"
+msgid "Privacy & Access Audit"
+msgstr "Audit de confidentialité et d'accès"
 
 msgid "Conservative (< 10)"
 msgstr "Prudent (< 10)"
@@ -19275,4 +19278,13 @@ msgstr "Afficher toutes les suggestions"
 #, python-format
 msgid "Showing suggestions from %(start)s to %(end)s."
 msgstr "Suggestions du %(start)s au %(end)s."
+
+msgid "Show this field on the new participant creation form."
+msgstr "Afficher ce champ sur le formulaire de création de nouveau participant."
+
+msgid "On create"
+msgstr "À la création"
+
+msgid "Show on create form"
+msgstr "Afficher au formulaire de création"
 
