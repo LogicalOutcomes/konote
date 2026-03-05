@@ -111,6 +111,15 @@ class SurveySection(models.Model):
     )
     condition_value = models.CharField(max_length=255, blank=True, default="")
     is_active = models.BooleanField(default=True)
+    skip_for_identified = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Hide this section when the survey is filled by or for "
+            "an identified participant (portal or staff-entered). "
+            "Use for demographics sections — that data is already "
+            "in the participant record."
+        ),
+    )
 
     class Meta:
         app_label = "surveys"
