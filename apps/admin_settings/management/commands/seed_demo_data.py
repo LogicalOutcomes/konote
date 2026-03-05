@@ -4240,6 +4240,11 @@ class Command(BaseCommand):
         - Completed responses with answers for results views
         - One trigger rule (enrolment-based)
         - One shareable link
+
+        Portal survey states per participant:
+        - DEMO-001 (Jordan): satisfaction=completed, feedback=completed
+        - DEMO-004 (Sam): satisfaction=completed (staff-entered)
+        - DEMO-010 (Amara): satisfaction=completed, feedback=in_progress (partial answers)
         """
         from apps.portal.models import ParticipantUser
 
@@ -4517,7 +4522,7 @@ class Command(BaseCommand):
                 participant_user=participant,
                 client_file=client,
                 defaults={
-                    "status": "completed" if record_id == "DEMO-001" else "pending",
+                    "status": "completed" if record_id in ("DEMO-001", "DEMO-010") else "pending",
                     "assigned_by": assigned_by,
                     "due_date": (now + timedelta(days=14)).date(),
                 },
@@ -4568,6 +4573,45 @@ class Command(BaseCommand):
                     started_at=now - timedelta(days=3, hours=1),
                 )
 
+            # Create a completed response for DEMO-010 (Amara) on satisfaction survey
+            if record_id == "DEMO-010" and a_created:
+                response = SurveyResponse.objects.create(
+                    survey=satisfaction,
+                    assignment=assign_sat,
+                    client_file=client,
+                    channel="portal",
+                )
+                # Backdate — Amara completed hers 10 days ago
+                SurveyResponse.objects.filter(pk=response.pk).update(
+                    submitted_at=now - timedelta(days=10),
+                )
+                questions = SurveyQuestion.objects.filter(
+                    section__survey=satisfaction,
+                ).order_by("section__sort_order", "sort_order")
+                # Amara's answers: mostly positive but flagged goals not fully addressed
+                amara_answers = [
+                    ("5", 5),   # satisfaction rating — very satisfied
+                    ("4", 4),   # communication rating — good
+                    ("somewhat", None),  # goals addressed — somewhat
+                    ("yes", None),  # recommend — yes
+                ]
+                for q, (val, numeric) in zip(questions, amara_answers):
+                    answer = SurveyAnswer(
+                        response=response,
+                        question=q,
+                        numeric_value=numeric,
+                    )
+                    answer.value = val
+                    answer.save()
+                responses_created += 1
+
+                # Mark assignment as completed
+                SurveyAssignment.objects.filter(pk=assign_sat.pk).update(
+                    status="completed",
+                    completed_at=now - timedelta(days=10),
+                    started_at=now - timedelta(days=10, hours=1),
+                )
+
             # Assign programme feedback survey to DEMO-001 and DEMO-010
             if record_id in ("DEMO-001", "DEMO-010"):
                 assign_fb, fb_created = SurveyAssignment.objects.get_or_create(
@@ -4575,7 +4619,7 @@ class Command(BaseCommand):
                     participant_user=participant,
                     client_file=client,
                     defaults={
-                        "status": "completed" if record_id == "DEMO-001" else "pending",
+                        "status": "completed" if record_id == "DEMO-001" else "in_progress",
                         "assigned_by": assigned_by,
                         "due_date": (now + timedelta(days=21)).date(),
                     },
@@ -4651,6 +4695,45 @@ class Command(BaseCommand):
                         completed_at=submit_time,
                         started_at=submit_time - timedelta(minutes=10),
                     )
+
+                # Create partial answers for DEMO-010 (Amara) — in-progress feedback survey
+                if record_id == "DEMO-010" and fb_created:
+                    from apps.surveys.models import PartialAnswer
+
+                    fb_questions = list(SurveyQuestion.objects.filter(
+                        section__survey=feedback,
+                    ).order_by("section__sort_order", "sort_order"))
+
+                    # Amara started the survey 2 days ago, answered section 1 but
+                    # hasn't reached the Suggestions page yet
+                    SurveyAssignment.objects.filter(pk=assign_fb.pk).update(
+                        started_at=now - timedelta(days=2),
+                    )
+
+                    if len(fb_questions) >= 3:
+                        # Q1: attendance — biweekly
+                        pa1 = PartialAnswer(
+                            assignment=assign_fb,
+                            question=fb_questions[0],
+                        )
+                        pa1.value = "biweekly"
+                        pa1.save()
+
+                        # Q2: helpfulness — 4/5
+                        pa2 = PartialAnswer(
+                            assignment=assign_fb,
+                            question=fb_questions[1],
+                        )
+                        pa2.value = "4"
+                        pa2.save()
+
+                        # Q3: useful aspects — one_on_one and resources
+                        pa3 = PartialAnswer(
+                            assignment=assign_fb,
+                            question=fb_questions[2],
+                        )
+                        pa3.value = "one_on_one,resources"
+                        pa3.save()
 
         # --- Staff-entered response for DEMO-004 (Sam) on satisfaction ---
         sam_client = ClientFile.objects.filter(record_id="DEMO-004").first()
