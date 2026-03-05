@@ -203,10 +203,10 @@
             <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
         </header>
+        <p class="priority-hint">{% trans "Hiding an item removes it from your view until tomorrow. It does not resolve it." %}</p>
         {% if active_alerts %}
         <div class="priority-section">
             <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
-            <p class="priority-hint">{% trans "Hiding an alert removes it from your view until tomorrow. It does not resolve the alert." %}</p>
             <ul class="card-list">
                 {% for alert in active_alerts %}
                 <li class="priority-item priority-alert dismissable-item" data-dismiss-key="alert-{{ alert.pk }}">
