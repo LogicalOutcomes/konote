@@ -226,7 +226,7 @@ def generate_outcome_report_pdf(
         "date_to": str(date_to),
         "total_clients": len(unique_clients),
         "total_data_points": len(rows),
-        "format": "pdf",
+        "format": output_format,
     }
     if grouping_type != "none":
         audit_metadata["grouped_by"] = grouping_label
