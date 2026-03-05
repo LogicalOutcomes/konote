@@ -10,10 +10,11 @@ Three tiers of erasure:
 """
 import logging
 
-from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 logger = logging.getLogger(__name__)
 
