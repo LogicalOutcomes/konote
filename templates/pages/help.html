@@ -701,14 +701,33 @@
 }
 
 .help-nav ul {
-    columns: 2;
-    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-@media (max-width: 600px) {
-    .help-nav ul {
-        columns: 1;
-    }
+.help-nav li {
+    margin: 0;
+}
+
+.help-nav a {
+    display: block;
+    padding: 0.4rem 0.9rem;
+    background: var(--pico-primary-background, #3176aa);
+    color: var(--pico-primary-inverse, #fff);
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+}
+
+.help-nav a:hover,
+.help-nav a:focus {
+    opacity: 0.85;
 }
 
 .help-page section {
