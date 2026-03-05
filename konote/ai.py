@@ -78,6 +78,64 @@ def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages
 # ── Public functions ────────────────────────────────────────────────
 
 
+def generate_metric_rationale(name, definition, category, metric_type, scale_range):
+    """Generate a rationale for a metric using AI.
+
+    Returns {"note": "...", "note_fr": "..."} or None on failure.
+    """
+    system = (
+        "You help Canadian nonprofit administrators document why they use specific "
+        "outcome metrics. Given a metric name, definition, category, and type, write "
+        "a 1-2 sentence rationale explaining why an organisation would track this metric. "
+        "If the name matches a known standardized instrument (PHQ-9, GAD-7, K10, OARS, "
+        "AUDIT, etc.), include the original citation. Otherwise, describe what it measures "
+        "and suggest what evidence or funder requirement might support its use.\n\n"
+        'Return a JSON object: {"note": "English rationale", "note_fr": "French rationale"}.\n'
+        "Return ONLY the JSON object, no other text."
+    )
+    user_msg = (
+        f"Metric: {name}\n"
+        f"Definition: {definition}\n"
+        f"Category: {category}\n"
+        f"Type: {metric_type}\n"
+        f"Scale: {scale_range or 'not specified'}"
+    )
+    result = _call_openrouter(system, user_msg, max_tokens=512)
+    if result is None:
+        return None
+    try:
+        parsed = json.loads(result)
+        if isinstance(parsed, dict) and "note" in parsed:
+            return parsed
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse metric rationale: %s", result[:200])
+    return None
+
+
+def default_metric_rationale(name, category, metric_type, date_str):
+    """Template-based rationale fallback when AI is unavailable."""
+    category_labels = {
+        "mental_health": "mental health",
+        "housing": "housing",
+        "employment": "employment",
+        "substance_use": "substance use",
+        "youth": "youth",
+        "general": "general",
+        "custom": "custom",
+    }
+    cat = category_labels.get(category, category)
+    type_label = "scale" if metric_type == "scale" else "achievement"
+    note = (
+        f"Added on {date_str} during initial configuration. "
+        f"{cat.title()}-category {type_label} metric."
+    )
+    note_fr = (
+        f"Ajouté le {date_str} lors de la configuration initiale. "
+        f"Mesure de type {type_label} dans la catégorie {cat}."
+    )
+    return {"note": note, "note_fr": note_fr}
+
+
 def suggest_metrics(target_description, metric_catalogue):
     """
     Given a plan target description and the full metric catalogue,

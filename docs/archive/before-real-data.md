@@ -31,9 +31,9 @@ Complete these items before entering any real client information:
 - [ ] I have tested restoring from a backup at least once
 - [ ] Backups are stored in a different location than the database
 
-**For Docker users:** See [Backup and Restore Guide](backup-restore.md)
+**For Docker users:** See [Deployment Guide](../deploying-konote.md)
 
-**For hosted deployments:** Your provider (Railway, Azure, Elestio) likely handles backups automatically. Verify this in their dashboard.
+**For hosted deployments:** KoNote now uses OVHcloud VPS with Docker Compose. See `docs/deploying-konote.md` for current backup procedures.
 
 ---
 
@@ -121,5 +121,5 @@ Once you've completed this checklist:
 ## Need Help?
 
 - **Lost your encryption key?** If you haven't entered real data yet, generate a new one. If you have, contact a developer immediately.
-- **Backup questions?** See [Backup and Restore Guide](backup-restore.md)
+- **Backup questions?** See [Deployment Guide](../deploying-konote.md)
 - **Security concerns?** See [SECURITY.md](../SECURITY.md) for reporting vulnerabilities

@@ -18,6 +18,7 @@ Agencies can customize, archive, or add fields after seeding.
 Run with: python manage.py seed_intake_fields
 """
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 
@@ -196,6 +197,10 @@ INTAKE_FIELD_GROUPS = [
     # Demographics (for equity reporting) — FRONT DESK: NONE
     # Stage 3: As trust builds (optional, staff explains equity purpose)
     # All fields optional with "Prefer not to answer"
+    #
+    # Aligned with LogicalOutcomes recommended survey measures (2025-12-01),
+    # Ontario Anti-Racism Directorate standards, CIHI race/Indigenous guidance,
+    # City of Toronto Data for Equity Strategy, and UBC Equity & Inclusion.
     # -------------------------------------------------------------------------
     (
         "Demographics",
@@ -204,51 +209,63 @@ INTAKE_FIELD_GROUPS = [
             ("Gender Identity", "select_other", False, False, "none", "", [
                 "Woman",
                 "Man",
-                "Non-binary",
-                "Two-Spirit",
-                "Gender diverse",
-                "Prefer to self-describe",
-                "Prefer not to answer",
+                "Non-binary and/or gender-diverse",
+                "Prefer not to say",
             ]),
-            ("Indigenous Identity", "select", False, False, "none", "", [
-                "First Nations",
-                "Métis",
-                "Inuit",
-                "Non-Indigenous",
-                "Prefer not to answer",
+            ("Transgender Experience", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Unsure or questioning",
+                "Prefer not to say",
             ]),
-            ("Racial/Ethnic Background", "select", False, False, "none", "", [
+            ("2SLGBTQIA+ Identity", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Unsure or questioning",
+                "Prefer not to say",
+            ]),
+            ("Born in Canada", "select", False, False, "none", "", [
+                "Yes",
+                "No",
+                "Prefer not to say",
+            ]),
+            ("Time in Canada", "select", False, False, "none", "", [
+                "0-5 years",
+                "6-10 years",
+                "More than 10 years",
+                "Don't know",
+                "Prefer not to say",
+            ]),
+            ("Indigenous Identity", "multi_select", False, False, "none", "", [
+                "Yes, First Nations",
+                "Yes, Inuk/Inuit",
+                "Yes, Métis",
+                "No",
+                "Unsure",
+                "Prefer not to say",
+            ]),
+            ("Racial Identity", "multi_select_other", False, False, "none", "", [
                 "Black",
                 "East Asian",
+                "Indigenous (First Nations, Inuk/Inuit, Métis)",
+                "Latin American",
                 "South Asian",
                 "Southeast Asian",
-                "Middle Eastern/North African",
-                "Latin American",
+                "Middle Eastern",
                 "White",
-                "Mixed/Multiple backgrounds",
-                "Prefer to self-describe",
-                "Prefer not to answer",
+                "Don't know",
+                "Prefer not to say",
             ]),
-            ("Immigration/Citizenship Status", "select", False, False, "none", "", [
-                "Canadian citizen (born in Canada)",
-                "Canadian citizen (naturalized)",
-                "Permanent resident",
-                "Refugee/Protected person",
-                "Temporary resident (work/study permit)",
-                "No status",
-                "Prefer not to answer",
-            ]),
-            ("Primary Language Spoken at Home", "text", False, False, "none", "", []),
-            ("Disability Status", "select", False, False, "none", "", [
-                "Yes - physical",
-                "Yes - sensory (vision, hearing)",
-                "Yes - cognitive/developmental",
-                "Yes - learning disability",
-                "Yes - mental health condition",
-                "Yes - chronic illness/pain",
-                "Yes - multiple",
+            ("Disability", "select", False, False, "none", "", [
+                "Yes",
                 "No",
-                "Prefer not to answer",
+                "Unsure",
+                "Prefer not to say",
+            ]),
+            ("Caregiver Status", "multi_select", False, False, "none", "", [
+                "Yes, I have a child or children under 18 years of age",
+                "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging",
+                "No",
             ]),
         ],
     ),
@@ -503,198 +520,284 @@ class Command(BaseCommand):
                 if was_field_created:
                     fields_created += 1
 
-        # Fix stale data from earlier seeds
+        # Fix stale data from earlier seeds (atomic so partial runs don't
+        # leave fields in an inconsistent state if the seed is interrupted)
         fixups = 0
+        with transaction.atomic():
 
-        # Preferred Name: remove "client" language
-        fixups += CustomFieldDefinition.objects.filter(
-            group__title="Contact Information",
-            name="Preferred Name",
-            placeholder="Name the client prefers to be called",
-        ).update(placeholder="What name do you prefer to be called?")
-
-        # Mailing Address: remove "postal code" (has its own field)
-        fixups += CustomFieldDefinition.objects.filter(
-            group__title="Contact Information",
-            name="Mailing Address",
-            placeholder="Street address, city, postal code",
-        ).update(placeholder="Street address, city")
-
-        # Remove "Prefer not to answer" from operational fields (not demographics)
-        # These are service delivery fields where staff need an actual answer.
-        operational_fields = [
-            ("Contact Information", "Preferred Language of Service"),
-            ("Contact Information", "Preferred Contact Method"),
-            ("Contact Information", "Best Time to Contact"),
-            ("Accessibility & Accommodation", "Preferred Communication Format"),
-        ]
-        for group_title, field_name in operational_fields:
-            for field in CustomFieldDefinition.objects.filter(
-                group__title=group_title, name=field_name,
-            ):
-                opts = field.options_json if isinstance(field.options_json, list) else []
-                if "Prefer not to answer" in opts:
-                    opts.remove("Prefer not to answer")
-                    field.options_json = opts
-                    field.save(update_fields=["options_json"])
-                    fixups += 1
-
-        # Inclusive language updates (2026-02-07 review)
-        # These update option lists for fields that already exist with old values.
-        OPTION_FIXUPS = [
-            # Housing: person-first language
-            ("Baseline Status", "Housing Situation",
-             "Homeless/No fixed address", "Experiencing homelessness/No fixed address"),
-            # Employment: less defining
-            ("Baseline Status", "Employment Status",
-             "Unable to work", "Not currently able to work"),
-            # Disability: clearer label
-            ("Demographics", "Disability Status",
-             "Yes - mental health", "Yes - mental health condition"),
-            # Racial/ethnic: include North Africa
-            ("Demographics", "Racial/Ethnic Background",
-             "Middle Eastern", "Middle Eastern/North African"),
-            # Income: split old top bracket
-            ("Baseline Status", "Household Income Range",
-             "$80,000 or more", "$80,000 - $99,999"),
-        ]
-        for group_title, field_name, old_val, new_val in OPTION_FIXUPS:
-            for field in CustomFieldDefinition.objects.filter(
-                group__title=group_title, name=field_name,
-            ):
-                opts = field.options_json if isinstance(field.options_json, list) else []
-                if old_val in opts:
-                    opts[opts.index(old_val)] = new_val
-                    field.options_json = opts
-                    field.save(update_fields=["options_json"])
-                    fixups += 1
-
-        # Income: add $100,000+ bracket if missing (after splitting $80k+)
-        for field in CustomFieldDefinition.objects.filter(
-            group__title="Baseline Status", name="Household Income Range",
-        ):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "$100,000 or more" not in opts:
-                # Insert before "Don't know" if present, otherwise append
-                insert_pos = opts.index("Don't know") if "Don't know" in opts else len(opts)
-                opts.insert(insert_pos, "$100,000 or more")
-                field.options_json = opts
-                field.save(update_fields=["options_json"])
-                fixups += 1
-
-        # Disability: add new categories if missing
-        for field in CustomFieldDefinition.objects.filter(
-            group__title="Demographics", name="Disability Status",
-        ):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            new_opts = ["Yes - learning disability", "Yes - chronic illness/pain"]
-            for opt in new_opts:
-                if opt not in opts:
-                    # Insert before "Yes - multiple"
-                    insert_pos = opts.index("Yes - multiple") if "Yes - multiple" in opts else len(opts)
-                    opts.insert(insert_pos, opt)
-                    fixups += 1
-            field.options_json = opts
-            field.save(update_fields=["options_json"])
-
-        # Education: add trades/apprenticeship if missing
-        for field in CustomFieldDefinition.objects.filter(
-            group__title="Baseline Status", name="Highest Education Completed",
-        ):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "Apprenticeship/Trades certificate" not in opts:
-                insert_pos = opts.index("College diploma/certificate") if "College diploma/certificate" in opts else len(opts)
-                opts.insert(insert_pos, "Apprenticeship/Trades certificate")
-                field.options_json = opts
-                field.save(update_fields=["options_json"])
-                fixups += 1
-
-        # Parent/Guardian: add inclusive options if missing
-        for field in CustomFieldDefinition.objects.filter(
-            group__title="Parent/Guardian Information", name="Relationship to Participant",
-        ):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "Parent" not in opts:
-                opts.insert(0, "Parent")
-                fixups += 1
-            if "Kinship caregiver" not in opts:
-                insert_pos = opts.index("Legal guardian") if "Legal guardian" in opts else len(opts)
-                opts.insert(insert_pos, "Kinship caregiver")
-                fixups += 1
-            field.options_json = opts
-            field.save(update_fields=["options_json"])
-
-        # Gender Identity: change field type to select_other so self-describe has a text box
-        fixups += CustomFieldDefinition.objects.filter(
-            group__title="Demographics",
-            name="Gender Identity",
-            input_type="select",
-        ).update(input_type="select_other")
-
-        # Emergency Contact Relationship: ensure select_other (not select) so "Other"
-        # shows a text field for specifying the relationship
-        fixups += CustomFieldDefinition.objects.filter(
-            group__title="Emergency Contact",
-            name="Emergency Contact Relationship",
-            input_type="select",
-        ).update(input_type="select_other")
-
-        # Preferred Communication Format: ensure select_other (not select) so "Other"
-        # shows a text field for specifying the format (e.g. Braille)
-        fixups += CustomFieldDefinition.objects.filter(
-            group__title="Accessibility & Accommodation",
-            name="Preferred Communication Format",
-            input_type="select",
-        ).update(input_type="select_other")
-
-        # Emergency Contact Relationship: rename "Other family member" to avoid
-        # confusion with the system "Other" free-text option
-        for field in CustomFieldDefinition.objects.filter(
-            group__title="Emergency Contact",
-            name="Emergency Contact Relationship",
-        ):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "Other family member" in opts:
-                opts[opts.index("Other family member")] = "Another family member"
-                field.options_json = opts
-                field.save(update_fields=["options_json"])
-                fixups += 1
-
-        # select_other fields: remove "Other" from options_json if present —
-        # the template already adds an "Other" option with __other__ value,
-        # so having it in the list too creates a duplicate in the dropdown.
-        for field in CustomFieldDefinition.objects.filter(input_type="select_other"):
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "Other" in opts:
-                opts.remove("Other")
-                field.options_json = opts
-                field.save(update_fields=["options_json"])
-                fixups += 1
-
-        # Contact Information: fix sort_order so fields are grouped logically
-        # Identity → Contact details → Communication preferences → Address
-        CONTACT_SORT_ORDER = {
-            "Preferred Name": 0,
-            "Pronouns": 10,
-            "Primary Phone": 20,
-            "Secondary Phone": 30,
-            "Email": 40,
-            "Secondary Email": 50,
-            "Preferred Contact Method": 60,
-            "Best Time to Contact": 70,
-            "Preferred Language of Service": 80,
-            "Mailing Address": 90,
-            "Postal Code": 100,
-            "Province or Territory": 110,
-        }
-        for field_name, sort_val in CONTACT_SORT_ORDER.items():
+            # Preferred Name: remove "client" language
             fixups += CustomFieldDefinition.objects.filter(
                 group__title="Contact Information",
-                name=field_name,
-            ).exclude(sort_order=sort_val).update(sort_order=sort_val)
+                name="Preferred Name",
+                placeholder="Name the client prefers to be called",
+            ).update(placeholder="What name do you prefer to be called?")
 
-        if fixups:
-            self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")
+            # Mailing Address: remove "postal code" (has its own field)
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Contact Information",
+                name="Mailing Address",
+                placeholder="Street address, city, postal code",
+            ).update(placeholder="Street address, city")
+
+            # Remove "Prefer not to answer" from operational fields (not demographics)
+            # These are service delivery fields where staff need an actual answer.
+            operational_fields = [
+                ("Contact Information", "Preferred Language of Service"),
+                ("Contact Information", "Preferred Contact Method"),
+                ("Contact Information", "Best Time to Contact"),
+                ("Accessibility & Accommodation", "Preferred Communication Format"),
+            ]
+            for group_title, field_name in operational_fields:
+                for field in CustomFieldDefinition.objects.filter(
+                    group__title=group_title, name=field_name,
+                ):
+                    opts = field.options_json if isinstance(field.options_json, list) else []
+                    if "Prefer not to answer" in opts:
+                        opts.remove("Prefer not to answer")
+                        field.options_json = opts
+                        field.save(update_fields=["options_json"])
+                        fixups += 1
+
+            # Inclusive language updates (2026-02-07 review)
+            # These update option lists for fields that already exist with old values.
+            OPTION_FIXUPS = [
+                # Housing: person-first language
+                ("Baseline Status", "Housing Situation",
+                 "Homeless/No fixed address", "Experiencing homelessness/No fixed address"),
+                # Employment: less defining
+                ("Baseline Status", "Employment Status",
+                 "Unable to work", "Not currently able to work"),
+                # Disability: clearer label
+                ("Demographics", "Disability Status",
+                 "Yes - mental health", "Yes - mental health condition"),
+                # Racial/ethnic: include North Africa
+                ("Demographics", "Racial/Ethnic Background",
+                 "Middle Eastern", "Middle Eastern/North African"),
+                # Income: split old top bracket
+                ("Baseline Status", "Household Income Range",
+                 "$80,000 or more", "$80,000 - $99,999"),
+            ]
+            for group_title, field_name, old_val, new_val in OPTION_FIXUPS:
+                for field in CustomFieldDefinition.objects.filter(
+                    group__title=group_title, name=field_name,
+                ):
+                    opts = field.options_json if isinstance(field.options_json, list) else []
+                    if old_val in opts:
+                        opts[opts.index(old_val)] = new_val
+                        field.options_json = opts
+                        field.save(update_fields=["options_json"])
+                        fixups += 1
+
+            # Income: add $100,000+ bracket if missing (after splitting $80k+)
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Baseline Status", name="Household Income Range",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "$100,000 or more" not in opts:
+                    # Insert before "Don't know" if present, otherwise append
+                    insert_pos = opts.index("Don't know") if "Don't know" in opts else len(opts)
+                    opts.insert(insert_pos, "$100,000 or more")
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+            # Disability: add new categories if missing
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Demographics", name="Disability Status",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                new_opts = ["Yes - learning disability", "Yes - chronic illness/pain"]
+                for opt in new_opts:
+                    if opt not in opts:
+                        # Insert before "Yes - multiple"
+                        insert_pos = opts.index("Yes - multiple") if "Yes - multiple" in opts else len(opts)
+                        opts.insert(insert_pos, opt)
+                        fixups += 1
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+
+            # Education: add trades/apprenticeship if missing
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Baseline Status", name="Highest Education Completed",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "Apprenticeship/Trades certificate" not in opts:
+                    insert_pos = opts.index("College diploma/certificate") if "College diploma/certificate" in opts else len(opts)
+                    opts.insert(insert_pos, "Apprenticeship/Trades certificate")
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+            # Parent/Guardian: add inclusive options if missing
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Parent/Guardian Information", name="Relationship to Participant",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "Parent" not in opts:
+                    opts.insert(0, "Parent")
+                    fixups += 1
+                if "Kinship caregiver" not in opts:
+                    insert_pos = opts.index("Legal guardian") if "Legal guardian" in opts else len(opts)
+                    opts.insert(insert_pos, "Kinship caregiver")
+                    fixups += 1
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+
+            # Gender Identity: change field type to select_other so self-describe has a text box
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Demographics",
+                name="Gender Identity",
+                input_type="select",
+            ).update(input_type="select_other")
+
+            # Emergency Contact Relationship: ensure select_other (not select) so "Other"
+            # shows a text field for specifying the relationship
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Emergency Contact",
+                name="Emergency Contact Relationship",
+                input_type="select",
+            ).update(input_type="select_other")
+
+            # Preferred Communication Format: ensure select_other (not select) so "Other"
+            # shows a text field for specifying the format (e.g. Braille)
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Accessibility & Accommodation",
+                name="Preferred Communication Format",
+                input_type="select",
+            ).update(input_type="select_other")
+
+            # Emergency Contact Relationship: rename "Other family member" to avoid
+            # confusion with the system "Other" free-text option
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Emergency Contact",
+                name="Emergency Contact Relationship",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "Other family member" in opts:
+                    opts[opts.index("Other family member")] = "Another family member"
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+            # select_other fields: remove "Other" from options_json if present —
+            # the template already adds an "Other" option with __other__ value,
+            # so having it in the list too creates a duplicate in the dropdown.
+            for field in CustomFieldDefinition.objects.filter(input_type="select_other"):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "Other" in opts:
+                    opts.remove("Other")
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+            # Contact Information: fix sort_order so fields are grouped logically
+            # Identity → Contact details → Communication preferences → Address
+            CONTACT_SORT_ORDER = {
+                "Preferred Name": 0,
+                "Pronouns": 10,
+                "Primary Phone": 20,
+                "Secondary Phone": 30,
+                "Email": 40,
+                "Secondary Email": 50,
+                "Preferred Contact Method": 60,
+                "Best Time to Contact": 70,
+                "Preferred Language of Service": 80,
+                "Mailing Address": 90,
+                "Postal Code": 100,
+                "Province or Territory": 110,
+            }
+            for field_name, sort_val in CONTACT_SORT_ORDER.items():
+                fixups += CustomFieldDefinition.objects.filter(
+                    group__title="Contact Information",
+                    name=field_name,
+                ).exclude(sort_order=sort_val).update(sort_order=sort_val)
+
+            # ── Demographics: LogicalOutcomes alignment (2026-03-04) ──
+            # Update Gender Identity options to match LogicalOutcomes standard
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Demographics", name="Gender Identity",
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                # Consolidate Non-binary/Two-Spirit/Gender diverse into one option
+                lo_opts = [
+                    "Woman", "Man", "Non-binary and/or gender-diverse", "Prefer not to say",
+                ]
+                if opts != lo_opts:
+                    field.options_json = lo_opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+            # Update Indigenous Identity: single-select → multi_select, distinctions-based
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Demographics",
+                name="Indigenous Identity",
+                input_type="select",
+            ).update(
+                input_type="multi_select",
+                options_json=[
+                    "Yes, First Nations", "Yes, Inuk/Inuit", "Yes, Métis",
+                    "No", "Unsure", "Prefer not to say",
+                ],
+            )
+
+            # Rename "Racial/Ethnic Background" → "Racial Identity" and switch to multi_select_other
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Demographics", name="Racial/Ethnic Background",
+            ):
+                field.name = "Racial Identity"
+                field.input_type = "multi_select_other"
+                field.options_json = [
+                    "Black", "East Asian",
+                    "Indigenous (First Nations, Inuk/Inuit, Métis)",
+                    "Latin American", "South Asian", "Southeast Asian",
+                    "Middle Eastern", "White", "Don't know", "Prefer not to say",
+                ]
+                field.save()
+                fixups += 1
+
+            # Archive old Immigration/Citizenship Status (replaced by Born in Canada + Time in Canada)
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Demographics",
+                name="Immigration/Citizenship Status",
+                status="active",
+            ).update(status="archived")
+
+            # Archive old Primary Language Spoken at Home (covered by Contact > Preferred Language)
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Demographics",
+                name="Primary Language Spoken at Home",
+                status="active",
+            ).update(status="archived")
+
+            # Simplify Disability Status options to match LogicalOutcomes standard
+            for field in CustomFieldDefinition.objects.filter(
+                group__title="Demographics", name="Disability Status",
+            ):
+                field.name = "Disability"
+                field.options_json = ["Yes", "No", "Unsure", "Prefer not to say"]
+                field.save()
+                fixups += 1
+
+            # Demographics sort order (LogicalOutcomes question sequence)
+            DEMO_SORT_ORDER = {
+                "Gender Identity": 0,
+                "Transgender Experience": 10,
+                "2SLGBTQIA+ Identity": 20,
+                "Born in Canada": 30,
+                "Time in Canada": 40,
+                "Indigenous Identity": 50,
+                "Racial Identity": 60,
+                "Disability": 70,
+                "Caregiver Status": 80,
+            }
+            for field_name, sort_val in DEMO_SORT_ORDER.items():
+                fixups += CustomFieldDefinition.objects.filter(
+                    group__title="Demographics",
+                    name=field_name,
+                ).exclude(sort_order=sort_val).update(sort_order=sort_val)
+
+            if fixups:
+                self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")
 
         self.stdout.write(
             self.style.SUCCESS(

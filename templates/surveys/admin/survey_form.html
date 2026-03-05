@@ -15,11 +15,27 @@
     <fieldset>
         <legend>{% trans "Survey Details" %}</legend>
         {% for field in form %}
-        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</label>
-        {{ field }}
-        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-        {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+            {% if field.name != "consent_text" and field.name != "consent_text_fr" %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</label>
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+            {% endif %}
         {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Consent" %}</legend>
+        <p><small>{% trans "If provided, respondents must agree to this text before they can see the survey questions. Leave blank to skip the consent step." %}</small></p>
+        <label for="{{ form.consent_text.id_for_label }}">{{ form.consent_text.label }}</label>
+        {{ form.consent_text }}
+        {% if form.consent_text.help_text %}<small>{{ form.consent_text.help_text }}</small>{% endif %}
+        {% if form.consent_text.errors %}<small class="error" role="alert">{{ form.consent_text.errors.0 }}</small>{% endif %}
+
+        <label for="{{ form.consent_text_fr.id_for_label }}">{{ form.consent_text_fr.label }}</label>
+        {{ form.consent_text_fr }}
+        {% if form.consent_text_fr.help_text %}<small>{{ form.consent_text_fr.help_text }}</small>{% endif %}
+        {% if form.consent_text_fr.errors %}<small class="error" role="alert">{{ form.consent_text_fr.errors.0 }}</small>{% endif %}
     </fieldset>
 
     <fieldset>

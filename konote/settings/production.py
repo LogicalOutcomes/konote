@@ -2,11 +2,9 @@
 Production settings — secure defaults for all deployment platforms.
 
 Supported platforms (auto-detected):
-- Railway: Sets RAILWAY_ENVIRONMENT, provides PORT
+- OVHcloud VPS / Docker Compose (recommended): Set DATABASE_URL and other required vars
 - Azure App Service: Sets WEBSITE_SITE_NAME, provides PORT
 - Azure Container Apps: Sets CONTAINER_APP_NAME
-- Elestio: Sets ELESTIO_VM_NAME
-- Docker/self-hosted: Set DATABASE_URL and other required vars
 
 Required environment variables for all platforms:
 - DATABASE_URL: PostgreSQL connection string
@@ -94,10 +92,6 @@ ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 # Auto-detect platform and add appropriate domains
 # ─────────────────────────────────────────────────────────────────────
 
-# Railway
-if os.environ.get("RAILWAY_ENVIRONMENT"):
-    ALLOWED_HOSTS.extend([".railway.app", ".up.railway.app", ".railway.internal"])
-
 # Azure App Service
 if os.environ.get("WEBSITE_SITE_NAME"):
     site_name = os.environ.get("WEBSITE_SITE_NAME")
@@ -110,15 +104,7 @@ if os.environ.get("WEBSITE_SITE_NAME"):
 if os.environ.get("CONTAINER_APP_NAME"):
     ALLOWED_HOSTS.append(".azurecontainerapps.io")
 
-# Elestio
-if os.environ.get("ELESTIO_VM_NAME"):
-    # Elestio provides CNAME or custom domain via env vars
-    elestio_domain = os.environ.get("ELESTIO_DOMAIN", "")
-    if elestio_domain:
-        ALLOWED_HOSTS.append(elestio_domain)
-    ALLOWED_HOSTS.append(".elest.io")
-
-# Docker/self-hosted — allow localhost and local network for testing
+# Docker/self-hosted (OVHcloud VPS, etc.) — allow localhost and local network for testing
 # In production, clients should set ALLOWED_HOSTS explicitly
 if not ALLOWED_HOSTS:
     # Fallback: allow common local development hosts
@@ -127,9 +113,9 @@ if not ALLOWED_HOSTS:
 # Remove duplicates while preserving order
 ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
 
-# HTTPS — Railway handles TLS at the edge, so we don't redirect internally.
+# HTTPS — Caddy (or Azure) handles TLS at the edge, so we don't redirect internally.
 # SECURE_PROXY_SSL_HEADER tells Django to trust the proxy's forwarded header.
-SECURE_SSL_REDIRECT = False  # Railway edge handles HTTPS redirect
+SECURE_SSL_REDIRECT = False  # Caddy/reverse proxy handles HTTPS redirect
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -149,21 +135,12 @@ _explicit = _split_csv_env("CSRF_TRUSTED_ORIGINS")
 _trusted_origins.extend([_normalize_origin_entry(o) for o in _explicit])
 _trusted_origins = [o for o in _trusted_origins if o]
 
-if os.environ.get("RAILWAY_ENVIRONMENT"):
-    _trusted_origins.append("https://*.railway.app")
-    _trusted_origins.append("https://*.up.railway.app")
-
 if os.environ.get("WEBSITE_SITE_NAME"):
     site_name = os.environ.get("WEBSITE_SITE_NAME")
     _trusted_origins.append(f"https://{site_name}.azurewebsites.net")
 
 if os.environ.get("CONTAINER_APP_NAME"):
     _trusted_origins.append("https://*.azurecontainerapps.io")
-
-if os.environ.get("ELESTIO_VM_NAME"):
-    elestio_domain = os.environ.get("ELESTIO_DOMAIN", "")
-    if elestio_domain:
-        _trusted_origins.append(f"https://{elestio_domain}")
 
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_trusted_origins))
 

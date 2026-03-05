@@ -34,7 +34,7 @@ Add meeting scheduling, communication logging, outbound email/SMS reminders, iCa
 |---------|-------------------|----------------|
 | **Twilio** | Create account, buy Canadian phone number, complete A2P 10DLC campaign registration, set up auto-recharge on org credit card, forward account alerts to org's shared inbox (e.g. `info@orgname.ca`) | A2P registration is mandatory for business SMS in Canada. Must be completed at setup — Twilio will suspend sending if deferred. |
 | **Email SMTP** | Configure SMTP for the org's existing email provider — see 0A1 below | Use the org's existing Google Workspace or Microsoft 365. No new email provider account needed. |
-| **Railway** | Set up cron job for `send_reminders`, verify it runs | Document how to check cron status |
+| **OVHcloud VPS** | Set up cron job for `send_reminders` (system crontab or Docker healthcheck), verify it runs | Document how to check cron status |
 
 ### 0A1. Email SMTP configuration (Google Workspace or Microsoft 365)
 
@@ -83,7 +83,7 @@ Most small nonprofits use one of these two. Configure whichever the org has:
 **File:** `docs/operations-runbook.md` (also print a copy for the office)
 
 Contents:
-1. **Account inventory** — Twilio login, Google app password location, Railway dashboard URL. Who holds each credential.
+1. **Account inventory** — Twilio login, Google app password location, OVHcloud VPS SSH access. Who holds each credential.
 2. **What each cron job does** — plain language. "Every morning at 6 AM, the system checks for meetings happening in the next 36 hours and sends text/email reminders to clients who have consented."
 3. **What to do when...** troubleshooting for the 5 most likely failures:
    - "Text reminders stopped working" → Check Twilio balance / check for compliance email in shared inbox
@@ -910,7 +910,7 @@ class Command(BaseCommand):
 
 ### 5B. Scheduling
 
-Railway cron job: `python manage.py send_reminders` — runs every 6 hours (catches up if a run is missed thanks to the 36-hour window).
+System crontab on OVHcloud VPS: `docker exec konote-web python manage.py send_reminders` — runs every 6 hours (catches up if a run is missed thanks to the 36-hour window).
 
 No Celery, no Django-Q, no Redis. A management command on a cron schedule.
 

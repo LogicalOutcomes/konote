@@ -1,0 +1,92 @@
+{% load i18n %}
+{% load registration_tags %}
+{# Partial: renders the input widget for a single custom field in public registration forms.
+   Expected context: field_def, field_key, form_field, form (the bound form). #}
+{% if field_def.input_type == "textarea" %}
+<textarea name="{{ field_key }}"
+          id="id_{{ field_key }}"
+          rows="3"
+          {% if field_def.is_required %}required{% endif %}
+          {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>{{ form_field.value|default:'' }}</textarea>
+
+{% elif field_def.input_type == "select" %}
+<select name="{{ field_key }}"
+        id="id_{{ field_key }}"
+        {% if field_def.is_required %}required{% endif %}>
+    <option value="">-- {% trans "Select" %} --</option>
+    {% for option in field_def.options_json %}
+    <option value="{{ option }}" {% if form_field.value == option %}selected{% endif %}>{{ option }}</option>
+    {% endfor %}
+</select>
+
+{% elif field_def.input_type == "date" %}
+<input type="date"
+       name="{{ field_key }}"
+       id="id_{{ field_key }}"
+       value="{{ form_field.value|default:'' }}"
+       {% if field_def.is_required %}required{% endif %}>
+
+{% elif field_def.input_type == "number" %}
+<input type="number"
+       name="{{ field_key }}"
+       id="id_{{ field_key }}"
+       value="{{ form_field.value|default:'' }}"
+       {% if field_def.is_required %}required{% endif %}
+       {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>
+
+{% elif field_def.input_type == "checkbox" %}
+<label>
+    <input type="checkbox"
+           name="{{ field_key }}"
+           id="id_{{ field_key }}"
+           {% if form_field.value %}checked{% endif %}>
+    {{ field_def.name }}
+</label>
+
+{% elif field_def.input_type == "multi_select" %}
+<fieldset role="group" aria-labelledby="id_{{ field_key }}_label">
+    {% for option in field_def.options_json %}
+    <label>
+        <input type="checkbox"
+               name="{{ field_key }}"
+               value="{{ option }}"
+               {% if option in form_field.value %}checked{% endif %}>
+        {{ option }}
+    </label>
+    {% endfor %}
+</fieldset>
+
+{% elif field_def.input_type == "multi_select_other" %}
+{% with other_key=field_key|add:"_other" %}
+{% with other_field=form|get_field:other_key %}
+<fieldset role="group" aria-labelledby="id_{{ field_key }}_label">
+    {% for option in field_def.options_json %}
+    <label>
+        <input type="checkbox"
+               name="{{ field_key }}"
+               value="{{ option }}"
+               {% if option in form_field.value %}checked{% endif %}>
+        {{ option }}
+    </label>
+    {% endfor %}
+</fieldset>
+<div style="margin-top: 0.5rem;">
+    <label for="id_{{ field_key }}_other">{% trans "Other (please specify)" %}</label>
+    <input type="text"
+           name="{{ field_key }}_other"
+           id="id_{{ field_key }}_other"
+           value="{% if other_field %}{{ other_field.value|default:'' }}{% endif %}"
+           placeholder="{% trans 'Please specify…' %}">
+</div>
+{% endwith %}
+{% endwith %}
+
+{% else %}
+<!-- Default text input -->
+<input type="text"
+       name="{{ field_key }}"
+       id="id_{{ field_key }}"
+       value="{{ form_field.value|default:'' }}"
+       {% if field_def.is_required %}required{% endif %}
+       {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>
+{% endif %}

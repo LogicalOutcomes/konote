@@ -82,7 +82,7 @@ All data transmitted between your browser and our servers is encrypted using:
 - **Certificate:** Minimum 2048-bit RSA or ECDSA certificates
 - **HSTS:** HTTP Strict Transport Security enabled
 
-> **Hosting Note:** TLS configuration depends on your hosting platform (Azure, Railway, Elest.io, or self-hosted). Ensure your platform is configured to enforce HTTPS and disable older TLS versions.
+> **Hosting Note:** TLS configuration depends on your hosting platform (Azure, OVHcloud VPS, or self-hosted). Ensure your platform is configured to enforce HTTPS and disable older TLS versions.
 
 ### 3.3 Password Security
 
@@ -176,7 +176,7 @@ Audit logs are reviewed **[FREQUENCY - e.g., monthly]** for:
 
 ### 6.1 Hosting Platform
 
-**Platform:** [YOUR HOSTING PLATFORM - e.g., Azure, Railway, Elest.io, self-hosted]
+**Platform:** [YOUR HOSTING PLATFORM - e.g., Azure, OVHcloud VPS, self-hosted]
 **Data Centre Location:** [COUNTRY/REGION]
 **Provider Certifications:** [e.g., SOC 2 Type II, ISO 27001, if applicable]
 

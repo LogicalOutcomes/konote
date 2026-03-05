@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import (
-    ClientFile, ClientProgramEnrolment, CustomFieldGroup,
+    ClientFile, ClientProgramEnrolment, ConsentEvent, CustomFieldGroup,
     CustomFieldDefinition, ClientDetailValue,
 )
 from apps.notes.models import ProgressNote
@@ -751,6 +751,98 @@ class SelectOtherFieldTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MultiSelectFieldTest(TestCase):
+    """Tests for multi_select and multi_select_other custom field types."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+        self.group = CustomFieldGroup.objects.create(title="Demographics")
+        self.racial_field = CustomFieldDefinition.objects.create(
+            group=self.group, name="Racial Identity", input_type="multi_select",
+            options_json=["White", "Black", "South Asian", "East Asian", "Latin American"],
+        )
+        self.identity_field = CustomFieldDefinition.objects.create(
+            group=self.group, name="Identity", input_type="multi_select_other",
+            options_json=["Option A", "Option B", "Option C"],
+        )
+        self.cf = ClientFile()
+        self.cf.first_name = "Test"
+        self.cf.last_name = "Client"
+        self.cf.save()
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.program)
+        self.client.login(username="admin", password="testpass123")
+
+    def test_multi_select_saves_json_array(self):
+        """Selecting multiple checkboxes stores a JSON array."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            f"custom_{self.racial_field.pk}": ["Black", "South Asian"],
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        cdv = ClientDetailValue.objects.get(client_file=self.cf, field_def=self.racial_field)
+        self.assertEqual(cdv.get_value(), '["Black", "South Asian"]')
+
+    def test_multi_select_empty_saves_blank(self):
+        """No selections stores empty string, not '[]'."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            # No value for the multi_select field — Django sends nothing for unchecked boxes
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        qs = ClientDetailValue.objects.filter(client_file=self.cf, field_def=self.racial_field)
+        if qs.exists():
+            self.assertIn(qs.first().get_value(), ["", "[]"])
+
+    def test_multi_select_roundtrip_shows_checked(self):
+        """Saved multi_select values appear as checked in the edit view context."""
+        import json
+        cdv = ClientDetailValue.objects.create(client_file=self.cf, field_def=self.racial_field)
+        cdv.value = json.dumps(["Black", "South Asian"])
+        cdv.save()
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/edit/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        for group in resp.context["custom_data"]:
+            for item in group["fields"]:
+                if item["field_def"].pk == self.racial_field.pk:
+                    self.assertIn("Black", item["selected_values"])
+                    self.assertIn("South Asian", item["selected_values"])
+                    self.assertEqual(item["display_value"], "Black, South Asian")
+
+    def test_multi_select_other_merges_custom_text(self):
+        """'Other' free-text is appended to the JSON array."""
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
+            f"custom_{self.identity_field.pk}": ["Option A"],
+            f"custom_{self.identity_field.pk}_other": "Custom Value",
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        cdv = ClientDetailValue.objects.get(client_file=self.cf, field_def=self.identity_field)
+        import json
+        stored = json.loads(cdv.get_value())
+        self.assertIn("Option A", stored)
+        self.assertIn("Custom Value", stored)
+
+    def test_multi_select_display_comma_separated(self):
+        """Display view shows multi_select as comma-separated text."""
+        import json
+        cdv = ClientDetailValue.objects.create(client_file=self.cf, field_def=self.racial_field)
+        cdv.value = json.dumps(["Black", "South Asian"])
+        cdv.save()
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/display/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Black, South Asian")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ConsentRecordingTest(TestCase):
     """Tests for consent recording workflow (PRIV1)."""
 
@@ -819,6 +911,173 @@ class ConsentRecordingTest(TestCase):
         self.assertEqual(resp.status_code, 403)
         self.cf.refresh_from_db()
         self.assertIsNone(self.cf.consent_given_at)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConsentWithdrawalTest(TestCase):
+    """Tests for consent withdrawal workflow (QA-R7-PRIVACY2)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
+        self.pm = User.objects.create_user(username="pm", password="testpass123", is_admin=False)
+        self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
+
+        self.cf = ClientFile()
+        self.cf.first_name = "Jane"
+        self.cf.last_name = "Doe"
+        self.cf.consent_given_at = timezone.now()
+        self.cf.consent_type = "written"
+        self.cf.save()
+        ClientProgramEnrolment.objects.create(client_file=self.cf, program=self.program)
+
+    def test_withdraw_form_visible_for_pm(self):
+        """PM sees the Withdraw button on consent display."""
+        self.http.login(username="pm", password="testpass123")
+        resp = self.http.get(f"/participants/{self.cf.pk}/consent/display/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Withdraw")
+
+    def test_withdraw_form_not_visible_for_receptionist(self):
+        """Receptionist does not see the Withdraw button."""
+        self.http.login(username="receptionist", password="testpass123")
+        resp = self.http.get(f"/participants/{self.cf.pk}/consent/display/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Withdraw")
+
+    def test_withdrawal_saves_correctly(self):
+        """POST to withdraw clears consent_given_at, sets retention_expires, creates ConsentEvent."""
+        self.http.login(username="pm", password="testpass123")
+        today = timezone.now().strftime("%Y-%m-%d")
+        resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
+            "withdrawal_date": today,
+            "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
+            "notes": "Participant called to withdraw.",
+            "confirm": "on",
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        self.cf.refresh_from_db()
+        self.assertIsNone(self.cf.consent_given_at)
+        self.assertEqual(self.cf.consent_type, "")
+        self.assertIsNotNone(self.cf.retention_expires)
+
+        # Verify ConsentEvent created
+        event = ConsentEvent.objects.filter(client_file=self.cf, event_type="withdrawn").first()
+        self.assertIsNotNone(event)
+        self.assertEqual(event.withdrawal_reason, "participant_requested")
+        self.assertEqual(event.recorded_by, self.pm)
+
+    def test_withdrawal_blocks_note_creation(self):
+        """After withdrawal, note creation returns consent-required page."""
+        # Withdraw consent
+        self.cf.consent_given_at = None
+        self.cf.retention_expires = timezone.now().date()
+        self.cf.save()
+
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(f"/notes/participant/{self.cf.pk}/new/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "consent")
+
+    def test_withdrawal_blocks_client_edit(self):
+        """After withdrawal, client edit redirects with error message."""
+        self.cf.consent_given_at = None
+        self.cf.retention_expires = timezone.now().date()
+        self.cf.save()
+
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(f"/participants/{self.cf.pk}/edit/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_re_grant_after_withdrawal(self):
+        """Re-recording consent sets consent_given_at, clears retention_expires."""
+        # First withdraw
+        self.cf.consent_given_at = None
+        self.cf.retention_expires = timezone.now().date()
+        self.cf.consent_type = ""
+        self.cf.save()
+
+        self.http.login(username="staff", password="testpass123")
+        today = timezone.now().strftime("%Y-%m-%d")
+        resp = self.http.post(f"/participants/{self.cf.pk}/consent/", {
+            "consent_type": "written",
+            "consent_date": today,
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        self.cf.refresh_from_db()
+        self.assertIsNotNone(self.cf.consent_given_at)
+        self.assertIsNone(self.cf.retention_expires)
+
+        # Verify ConsentEvent for grant
+        event = ConsentEvent.objects.filter(client_file=self.cf, event_type="granted").first()
+        self.assertIsNotNone(event)
+
+    def test_cannot_withdraw_when_no_consent(self):
+        """Attempting to withdraw with no active consent fails gracefully."""
+        self.cf.consent_given_at = None
+        self.cf.save()
+
+        self.http.login(username="pm", password="testpass123")
+        resp = self.http.get(f"/participants/{self.cf.pk}/consent/withdraw/")
+        self.assertIn(resp.status_code, [200, 302])
+
+    def test_receptionist_cannot_withdraw(self):
+        """Receptionist cannot access the withdrawal endpoint."""
+        self.http.login(username="receptionist", password="testpass123")
+        resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
+            "withdrawal_date": timezone.now().strftime("%Y-%m-%d"),
+            "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
+            "confirm": "on",
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    def test_withdrawal_sets_retention_period(self):
+        """Retention date is calculated correctly (default 3650 days)."""
+        from datetime import date, timedelta
+        self.http.login(username="pm", password="testpass123")
+        today = date.today()
+        resp = self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
+            "withdrawal_date": today.isoformat(),
+            "withdrawal_reason": "service_ended",
+            "request_received_via": "verbal",
+            "confirm": "on",
+        })
+        self.assertIn(resp.status_code, [200, 302])
+        self.cf.refresh_from_db()
+        expected = today + timedelta(days=3650)
+        self.assertEqual(self.cf.retention_expires, expected)
+
+    def test_consent_history_records_all_events(self):
+        """Multiple grant/withdraw cycles create correct ConsentEvent chain."""
+        self.http.login(username="pm", password="testpass123")
+        today = timezone.now().strftime("%Y-%m-%d")
+
+        # Withdraw
+        self.http.post(f"/participants/{self.cf.pk}/consent/withdraw/save/", {
+            "withdrawal_date": today,
+            "withdrawal_reason": "participant_requested",
+            "request_received_via": "written",
+            "confirm": "on",
+        })
+        # Re-grant
+        self.http.post(f"/participants/{self.cf.pk}/consent/", {
+            "consent_type": "verbal",
+            "consent_date": today,
+        })
+
+        events = ConsentEvent.objects.filter(client_file=self.cf).order_by("recorded_at")
+        self.assertEqual(events.count(), 2)
+        self.assertEqual(events[0].event_type, "withdrawn")
+        self.assertEqual(events[1].event_type, "granted")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

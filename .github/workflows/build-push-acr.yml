@@ -1,28 +1,45 @@
-# Build the Docker image and push it to Azure Container Registry on every merge to main.
+# Build the Docker image, push it to Azure Container Registry, and deploy
+# to the matching Container App.
+#
+# Branches:
+#   main    → image tagged :YYYY-MM-DD.<sha> + :latest  → deploys to konote-web (production)
+#   staging → image tagged :YYYY-MM-DD.<sha> + :staging → deploys to konote-staging
 #
 # Required GitHub secrets:
-#   ACR_LOGIN_SERVER   — e.g. myregistry.azurecr.io
-#   ACR_USERNAME       — ACR admin username (or service-principal App ID)
-#   ACR_PASSWORD       — ACR admin password (or service-principal secret)
-#
-# The image is tagged with both:
-#   - the short Git SHA  (e.g. myregistry.azurecr.io/konote:abc1234)
-#   - "latest"           (e.g. myregistry.azurecr.io/konote:latest)
+#   ACR_LOGIN_SERVER    — e.g. konoteregistry.azurecr.io
+#   ACR_USERNAME        — ACR admin username
+#   ACR_PASSWORD        — ACR admin password
+#   AZURE_CREDENTIALS   — Service principal JSON (Contributor on KoNote-prod resource group)
+#                         See docs/deploying-konote.md → "Deploy to Azure" for setup steps.
 
-name: Build & Push to ACR
+name: Build, Push & Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
 
 jobs:
-  build-push:
-    name: Build and push image
+  build-push-deploy:
+    name: Build, push, and deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-8)
+          DATE=$(date -u +%Y-%m-%d)
+          echo "versioned=${DATE}.${SHORT_SHA}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "floating=latest" >> $GITHUB_OUTPUT
+            echo "app_name=konote-web" >> $GITHUB_OUTPUT
+          else
+            echo "floating=staging" >> $GITHUB_OUTPUT
+            echo "app_name=konote-staging" >> $GITHUB_OUTPUT
+          fi
 
       - name: Log in to Azure Container Registry
         uses: docker/login-action@v3
@@ -40,7 +57,19 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ github.sha }}
-            ${{ secrets.ACR_LOGIN_SERVER }}/konote:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.floating }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --name ${{ steps.tags.outputs.app_name }} \
+            --resource-group KoNote-prod \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }}

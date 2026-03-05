@@ -316,6 +316,18 @@
 {% endif %}
 
 {# ══════════════════════════════════════════════════════════════════ #}
+{# ── Section 2b: Instrument Battery Aggregates ──────────────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% if instrument_aggregates %}
+<details id="section-instruments" {% if expand_distributions %}open{% endif %} class="insights-section">
+    <summary>
+        <strong>{% trans "Instrument Batteries" %}</strong>
+    </summary>
+    {% include "reports/_insights_instruments.html" %}
+</details>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════════════════ #}
 {# ── Section 3: Program Outcomes (Layer 2 — achievement rates) ──── #}
 {# ══════════════════════════════════════════════════════════════════ #}
 {% if achievement_rates %}

@@ -2,7 +2,8 @@
 Custom field values for demo clients (DEMO-001 through DEMO-015).
 
 Shared between seed_demo_data and update_demo_client_fields so that
-the data stays in sync. Field names must match those in seed_intake_fields.py.
+the data stays in sync. Field names must match those in seed_intake_fields.py
+or Prosper Canada custom-fields.json (for RF Social Identity fields).
 """
 
 CLIENT_CUSTOM_FIELDS = {
@@ -21,6 +22,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(416) 555-0124",
         "Referral Source": "Community agency",
         "Referring Agency Name": "Downtown Community Health Centre",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Latin American"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-002": {
         "Preferred Name": "Taylor",
@@ -34,6 +48,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Referral Source": "Shelter/Housing provider",
         "Referring Agency Name": "Covenant House",
         "Accommodation Needs": "Prefers written appointment reminders",
+        # Demographics
+        "Gender Identity": "Non-binary and/or gender-diverse",
+        "Transgender Experience": "Yes",
+        "2SLGBTQIA+ Identity": "Yes",
+        "Born in Canada": "Prefer not to say",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["East Asian"]',
+        "Disability": "Yes",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Mandarin",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-003": {
         "Preferred Name": "Avery",
@@ -46,6 +73,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Relationship": "Sibling",
         "Emergency Contact Phone": "(905) 555-0346",
         "Referral Source": "Self-referral",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Black"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed full-time",
+        "Household Income Bracket": "$40,000-$59,999",
     },
     # =========================================================================
     # Housing Stability (Casey Worker)
@@ -60,6 +100,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(416) 555-0457",
         "Referral Source": "Shelter/Housing provider",
         "Referring Agency Name": "Fred Victor Centre",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["White"]',
+        "Disability": "Yes",
+        "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "On disability",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-005": {
         "Primary Phone": "(647) 555-0567",
@@ -71,6 +124,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(647) 555-0568",
         "Referral Source": "Social services (OW/ODSP)",
         "Accommodation Needs": "Prefers French when possible; OK with English",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["Yes, Métis"]',
+        "Racial Identity": '["Indigenous (First Nations, Inuk/Inuit, Métis)", "White"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "French",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     "DEMO-006": {
         "Primary Phone": "(416) 555-0678",
@@ -82,6 +148,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(416) 555-0679",
         "Referral Source": "Community agency",
         "Referring Agency Name": "Dixon Hall",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "Unsure or questioning",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Latin American", "White"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Spanish",
+        "Employment Status at Intake": "Student",
+        "Household Income Bracket": "Under $20,000",
     },
     # =========================================================================
     # Youth Drop-In (Noor Worker)
@@ -96,6 +175,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(905) 555-0790",
         "Referral Source": "School/Education",
         "Referring Agency Name": "Toronto District School Board",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Latin American"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Student",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-008": {
         "Preferred Name": "Maya",
@@ -108,6 +200,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(647) 555-0891",
         "Referral Source": "Hospital/Health provider",
         "Accommodation Needs": "Needs quiet space for meetings; social anxiety",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "Prefer not to say",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["Yes, First Nations"]',
+        "Racial Identity": '["Indigenous (First Nations, Inuk/Inuit, Métis)"]',
+        "Disability": "Unsure",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Unemployed - not seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-009": {
         "Preferred Name": "Zara",
@@ -120,6 +225,20 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Relationship": "Parent/Guardian",
         "Emergency Contact Phone": "(416) 555-0902",
         "Referral Source": "Self-referral",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "No",
+        "Time in Canada": "6-10 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Middle Eastern"]',
+        "Disability": "No",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Arabic",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     # =========================================================================
     # Newcomer Connections (Noor Worker)
@@ -136,6 +255,20 @@ CLIENT_CUSTOM_FIELDS = {
         "Referral Source": "Community agency",
         "Referring Agency Name": "Centre francophone de Toronto",
         "Accommodation Needs": "French-speaking; English is limited but improving",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "No",
+        "Time in Canada": "0-5 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Black"]',
+        "Disability": "No",
+        "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "French",
+        "Employment Status at Intake": "Unemployed - seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-011": {
         "Primary Phone": "(416) 555-1123",
@@ -148,6 +281,20 @@ CLIENT_CUSTOM_FIELDS = {
         "Referral Source": "Community agency",
         "Referring Agency Name": "Catholic Crosscultural Services",
         "Accommodation Needs": "Somali-speaking; needs interpreter for complex topics",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "No",
+        "Time in Canada": "0-5 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Black"]',
+        "Disability": "No",
+        "Caregiver Status": '["Yes, I have a child or children under 18 years of age", "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Somali",
+        "Employment Status at Intake": "Unemployed - not seeking",
+        "Household Income Bracket": "Under $20,000",
     },
     "DEMO-012": {
         "Preferred Name": "Carlos",
@@ -161,6 +308,20 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(647) 555-1235",
         "Referral Source": "Self-referral",
         "Accommodation Needs": "Spanish-speaking; conversational in English",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "No",
+        "Time in Canada": "0-5 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["Latin American"]',
+        "Disability": "No",
+        "Caregiver Status": '["Yes, I have a child or children under 18 years of age"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Spanish",
+        "Employment Status at Intake": "Self-employed",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     # =========================================================================
     # Community Kitchen (Both workers)
@@ -176,6 +337,20 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(905) 555-1346",
         "Referral Source": "Community agency",
         "Referring Agency Name": "Neighbourhood Food Bank",
+        # Demographics
+        "Gender Identity": "Woman",
+        "Transgender Experience": "No",
+        "2SLGBTQIA+ Identity": "No",
+        "Born in Canada": "No",
+        "Time in Canada": "More than 10 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["South Asian"]',
+        "Disability": "No",
+        "Caregiver Status": '["Yes, I have a child or children under 18 years of age", "Yes, I provide care for a family member or friend due to a long-term health condition, disability, or problems related to aging"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Tamil",
+        "Employment Status at Intake": "Employed part-time",
+        "Household Income Bracket": "$20,000-$39,999",
     },
     "DEMO-014": {
         "Preferred Name": "Liam",
@@ -188,6 +363,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Relationship": "Parent/Guardian",
         "Emergency Contact Phone": "(416) 555-1457",
         "Referral Source": "Self-referral",
+        # Demographics
+        "Gender Identity": "Man",
+        "Transgender Experience": "Unsure or questioning",
+        "2SLGBTQIA+ Identity": "Yes",
+        "Born in Canada": "Yes",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["White"]',
+        "Disability": "Prefer not to say",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "English",
+        "Employment Status at Intake": "Employed full-time",
+        "Household Income Bracket": "$40,000-$59,999",
     },
     "DEMO-015": {
         "Primary Phone": "(647) 555-1567",
@@ -199,5 +387,19 @@ CLIENT_CUSTOM_FIELDS = {
         "Emergency Contact Phone": "(647) 555-1568",
         "Referral Source": "Social services (OW/ODSP)",
         "Accommodation Needs": "Serbian-speaking at home; English is functional",
+        # Demographics
+        "Gender Identity": "Non-binary and/or gender-diverse",
+        "Transgender Experience": "Prefer not to say",
+        "2SLGBTQIA+ Identity": "Yes",
+        "Born in Canada": "No",
+        "Time in Canada": "6-10 years",
+        "Indigenous Identity": '["No"]',
+        "Racial Identity": '["White"]',
+        "Disability": "Yes",
+        "Caregiver Status": '["No"]',
+        # RF Social Identity (Prosper Canada)
+        "Primary Language": "Other",
+        "Employment Status at Intake": "On disability",
+        "Household Income Bracket": "Under $20,000",
     },
 }

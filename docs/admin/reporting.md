@@ -64,9 +64,7 @@ Run this command **once per week** (e.g., every Monday morning):
 0 8 * * 1 docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_export_summary >> /var/log/konote-export-summary.log 2>&1
 ```
 
-**Railway:**
-
-Add a cron job service that runs `python manage.py send_export_summary` on a weekly schedule (e.g., `0 8 * * 1` for Monday at 8:00 AM).
+**OVHcloud VPS or other Linux host:** Use the cron method above (Linux/Mac cron).
 
 ### Who Receives the Email
 

@@ -1,4 +1,6 @@
 """Plan sections, targets, metrics — the core outcomes tracking models."""
+import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -19,6 +21,7 @@ class MetricDefinition(models.Model):
     METRIC_TYPE_CHOICES = [
         ("scale", _("Numeric scale")),
         ("achievement", _("Achievement")),
+        ("open_text", _("Open text")),
     ]
 
     CATEGORY_CHOICES = [
@@ -28,6 +31,7 @@ class MetricDefinition(models.Model):
         ("substance_use", _("Substance Use")),
         ("youth", _("Youth")),
         ("general", _("General")),
+        ("client_experience", _("Client Experience")),
         ("custom", _("Custom")),
     ]
 
@@ -76,6 +80,10 @@ class MetricDefinition(models.Model):
         max_length=30, blank=True, default="",
         choices=COMPUTATION_TYPE_CHOICES,
         help_text="If set, value is computed automatically instead of manual entry.",
+    )
+    cadence_sessions = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("How often to prompt for this metric (in sessions). Blank = every session."),
     )
     portal_description = models.TextField(
         blank=True, default="",
@@ -170,6 +178,41 @@ class MetricDefinition(models.Model):
         help_text=_("Admin override for CIDS theme derivation when auto-derivation is wrong."),
     )
 
+    # ── Rationale log ─────────────────────────────────────────────────
+    rationale_log = models.JSONField(
+        default=list, blank=True,
+        help_text=_("Append-only changelog: [{date, note, note_fr, author}]. Most recent entry is the current rationale."),
+    )
+
+    # ── Instrument grouping ──────────────────────────────────────────
+    instrument_name = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_("Group name for multi-item instruments (e.g. 'PHQ-9'). "
+                    "Metrics sharing an instrument_name are reported together."),
+    )
+
+    # ── Standardized instrument / assessment fields ───────────────────
+    is_standardized_instrument = models.BooleanField(
+        default=False,
+        help_text=_("True for published validated instruments (PHQ-9, GAD-7, K10, etc.)."),
+    )
+    scoring_bands = models.JSONField(
+        null=True, blank=True,
+        help_text=_('Published severity cutoffs, e.g. [{"label": "Minimal", "min": 0, "max": 4}]. Display-only.'),
+    )
+    assessment_interval_days = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=_("Days between scheduled administrations (e.g. 90 for quarterly). Global per-metric."),
+    )
+    assessment_at_intake = models.BooleanField(
+        default=False,
+        help_text=_("Administer this assessment at intake (first session)."),
+    )
+    assessment_at_discharge = models.BooleanField(
+        default=False,
+        help_text=_("Administer this assessment at discharge."),
+    )
+
     def clean(self):
         super().clean()
         if self.threshold_low is not None and self.threshold_high is not None:
@@ -244,6 +287,45 @@ class MetricDefinition(models.Model):
         if get_language() == "fr" and self.unit_fr:
             return self.unit_fr
         return self.unit
+
+    # ── Rationale helpers ────────────────────────────────────────────
+    @property
+    def current_rationale(self):
+        """Return the most recent rationale entry's note text, or empty string."""
+        if self.rationale_log:
+            entry = self.rationale_log[-1]
+            from django.utils.translation import get_language
+            if get_language() == "fr" and entry.get("note_fr"):
+                return entry["note_fr"]
+            return entry.get("note", "")
+        return ""
+
+    def append_rationale(self, note, note_fr="", author="System"):
+        """Append a new entry to the rationale log."""
+        import datetime as _dt
+        if self.rationale_log is None:
+            self.rationale_log = []
+        self.rationale_log.append({
+            "date": _dt.date.today().isoformat(),
+            "note": note,
+            "note_fr": note_fr,
+            "author": author,
+        })
+
+    # ── Scoring band lookup ───────────────────────────────────────────
+    def get_severity_band(self, score):
+        """Return the severity band label for a given score, or None."""
+        if not self.scoring_bands:
+            return None
+        try:
+            score_val = float(score)
+        except (ValueError, TypeError):
+            return None
+        for band in self.scoring_bands:
+            if band.get("min") is not None and band.get("max") is not None:
+                if band["min"] <= score_val <= band["max"]:
+                    return band.get("label")
+        return None
 
     @property
     def translated_portal_description(self):
@@ -479,6 +561,11 @@ class PlanTargetMetric(models.Model):
     plan_target = models.ForeignKey(PlanTarget, on_delete=models.CASCADE)
     metric_def = models.ForeignKey(MetricDefinition, on_delete=models.CASCADE)
     sort_order = models.IntegerField(default=0)
+    assigned_date = models.DateField(default=datetime.date.today)
+    last_reviewed_date = models.DateField(
+        null=True, blank=True,
+        help_text=_("When the worker last confirmed this metric is still relevant."),
+    )
 
     class Meta:
         app_label = "plans"

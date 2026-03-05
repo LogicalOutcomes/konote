@@ -3,7 +3,6 @@
 ## Flagged
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
-- [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -43,7 +42,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
-- [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
+- [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
 
 ## Coming Up
 
@@ -57,7 +56,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
 
-Multiple agencies can deploy today on independent instances ($35–100/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
+Multiple agencies can deploy today on independent OVHcloud VPS instances (~$22/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
 
 Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
 
@@ -78,7 +77,7 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Fill 863 empty French translations in django.po — run `translate_strings --auto-translate` then review output (I18N-FILL1)
+_Nothing here — all scoped tasks are in Active Work or Coming Up._
 
 ## Parking Lot: Needs Review
 
@@ -86,21 +85,34 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 - [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
-- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
-- [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
-- [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
-- [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
-- [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
-- [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
-- [ ] Self-hosted LLM infrastructure — Ollama VPS-4 on OVHcloud Beauharnois serving KoNote + OpenWebUI + survey analysis. Qwen3.5-35B-A3B (MoE). DRR complete — see tasks/design-rationale/self-hosted-llm-infrastructure.md — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
+
+### Session 11 — Cleanup
+
+- [x] Clean Railway/FullHost/Elestio references from ~24 historical task and plan files — updated active docs to OVHcloud, added archive banners to historical docs — 2026-03-04 (CHORE-HIST-CLEANUP1)
+- [x] Self-hosted LLM infrastructure DRR — Ollama VPS-4, Qwen3.5-35B-A3B, OVHcloud Beauharnois — PR #237 — 2026-03-03 (AI-SELFHOST1)
+- [x] In-app configuration overview dashboard — all active settings with decision rationale — PR #278 — 2026-03-04 (DEPLOY-CONFIG-UI1)
+- [x] Metric rationale log + scheduled assessments — append-only rationale changelog, AI auto-generation, assessment-due detection, severity bands, assessment note form — PR #283 — 2026-03-04 (ASSESS1)
+- [x] PR #283 review fixes — French rationale display, @require_POST on HTMX endpoints, audit logging for rationale changes, restored missing ai.py functions, 8 new view tests — PR #286 — 2026-03-04 (ASSESS1-FIX)
+- [x] Updated konote-qa-scenarios page-inventory.yaml v2.3 — 6 new pages for assessments, rationale, config dashboard — 2026-03-04 (QA-PAGES1)
+
+### Session 10 — Translations & Consent
+
+- [x] Fill empty French translations in django.po — all 5,124 entries translated, 0 empty — 2026-03-04 (I18N-FILL1)
+- [x] Consent withdrawal workflow — PIPEDA withdrawal with data retention, read-only enforcement, audit trail, 10 tests — 2026-03-04 (QA-R7-PRIVACY2)
+
+### Session 9 — Metric Freshness & Alliance
+
+- [x] Metric cadence system — configurable per-metric recording frequency, skips metrics not yet due — 2026-03-04 (METRIC-CADENCE1)
+- [x] 90-day metric relevance check — HTMX banner prompts worker to confirm or change stale metrics — 2026-03-04 (METRIC-REVIEW1)
+- [x] Alliance prompt rotation — cycles 3 prompt phrasings to prevent habituation — 2026-03-04 (ALLIANCE-ROTATE1)
+- [x] Portal async alliance rating — post-session participant self-rating via portal, auto-created on note save — 2026-03-04 (PORTAL-ALLIANCE1)
 
 ### Session 8 — Admin UX Improvements
 

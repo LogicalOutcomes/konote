@@ -37,7 +37,7 @@ Translate **all human-readable English prose** in `TODO.md`, including:
    - Backticked content such as `tasks/ux-review-latest.md`, `pytest ...`, `.env.example`, `/run-scenarios`, `C:\Users\...`.
 
 4. Product and platform proper nouns
-   - `KoNote`, `Railway`, `Playwright`, `PowerShell`, `VS Code`, `Claude Code`, `Kilo Code`, `Resend.com`, `M365`, `Twilio`, `PIPEDA`, `PHIPA`, `CASL`.
+   - `KoNote`, `OVHcloud`, `Playwright`, `PowerShell`, `VS Code`, `Claude Code`, `Kilo Code`, `Resend.com`, `M365`, `Twilio`, `PIPEDA`, `PHIPA`, `CASL`.
 
 5. Branch names and git literals
    - `main`, `PR #73`, environment variable names like `DEMO_EMAIL_BASE`.

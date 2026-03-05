@@ -101,6 +101,7 @@ class Command(BaseCommand):
                     "category": m["category"],
                     "is_library": True,
                     "is_universal": m.get("is_universal", False),
+                    "status": m.get("status", "active"),
                     "is_enabled": True,
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
@@ -109,15 +110,28 @@ class Command(BaseCommand):
                     "achievement_options": m.get("achievement_options", []),
                     "achievement_success_values": m.get("achievement_success_values", []),
                     "target_rate": m.get("target_rate"),
+                    # Convention: set higher_is_better=false in metric_library.json
+                    # for distress/deficit scales (PHQ-9, GAD-7, K10, Nights in
+                    # Shelter) where lower scores indicate better outcomes.
+                    "higher_is_better": m.get("higher_is_better", True),
+                    "portal_visibility": m.get("portal_visibility", "no"),
+                    "instrument_name": m.get("instrument_name", ""),
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
+                    # Rationale & assessment fields
+                    "rationale_log": m.get("rationale_log", []),
+                    "is_standardized_instrument": m.get("is_standardized_instrument", False),
+                    "scoring_bands": m.get("scoring_bands"),
+                    "assessment_interval_days": m.get("assessment_interval_days"),
+                    "assessment_at_intake": m.get("assessment_at_intake", False),
+                    "assessment_at_discharge": m.get("assessment_at_discharge", False),
                 },
             )
             if was_created:
                 created += 1
             else:
-                # Backfill French translations and is_universal for existing metrics
+                # Backfill French translations, is_universal, and new fields
                 changed = False
                 for fr_field in ("name_fr", "definition_fr", "unit_fr"):
                     new_val = m.get(fr_field, "")
@@ -126,6 +140,28 @@ class Command(BaseCommand):
                         changed = True
                 if m.get("is_universal") and not obj.is_universal:
                     obj.is_universal = True
+                    changed = True
+                if m.get("instrument_name") and not obj.instrument_name:
+                    obj.instrument_name = m["instrument_name"]
+                    changed = True
+                # Backfill rationale and assessment fields
+                if m.get("rationale_log") and not obj.rationale_log:
+                    obj.rationale_log = m["rationale_log"]
+                    changed = True
+                if m.get("is_standardized_instrument") and not obj.is_standardized_instrument:
+                    obj.is_standardized_instrument = True
+                    changed = True
+                if m.get("scoring_bands") and not obj.scoring_bands:
+                    obj.scoring_bands = m["scoring_bands"]
+                    changed = True
+                if m.get("assessment_interval_days") and not obj.assessment_interval_days:
+                    obj.assessment_interval_days = m["assessment_interval_days"]
+                    changed = True
+                if m.get("assessment_at_intake") and not obj.assessment_at_intake:
+                    obj.assessment_at_intake = True
+                    changed = True
+                if m.get("assessment_at_discharge") and not obj.assessment_at_discharge:
+                    obj.assessment_at_discharge = True
                     changed = True
                 if changed:
                     obj.save()
@@ -136,11 +172,28 @@ class Command(BaseCommand):
             name__in=old_universals, is_universal=True
         ).update(is_universal=False)
 
+        # ── Deactivate v1 metrics removed from the library ──
+        # These were staff-assessed composites, abstinence-framed, or superseded
+        # by participant-voiced alternatives. Expert panel review 2026-03-04.
+        v1_removed = [
+            "Wellness Scale", "Coping Skills Rating", "Housing Stability Index",
+            "Housing Readiness", "Job Readiness Score", "Employment Status",
+            "Job Applications (past month)", "Days Clean", "Cravings Intensity",
+            "Harm Reduction Score", "Family Connection Score",
+            "Risk Behaviour Index", "Goal Progress (1-10)", "Client Satisfaction",
+            "Life Skills Assessment", "Social Support Network", "Service Engagement",
+        ]
+        deactivated = MetricDefinition.objects.filter(
+            name__in=v1_removed, is_library=True, status="active",
+        ).update(status="deactivated")
+
         msg = f"  Metrics: {created} created, {len(metrics) - created} already existed."
         if updated_fr:
             msg += f" {updated_fr} backfilled with French translations."
         if retired:
             msg += f" {retired} old universal metric(s) retired."
+        if deactivated:
+            msg += f" {deactivated} v1 metric(s) deactivated."
         self.stdout.write(msg)
 
     def _seed_feature_toggles(self):
@@ -163,6 +216,7 @@ class Command(BaseCommand):
             ("messaging_email", True),
             ("surveys", False),
             ("circles", False),
+            ("portal_resources", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -193,8 +247,11 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(feature_key="circles").update(
                 is_enabled=True
             )
+            FeatureToggle.objects.filter(feature_key="portal_resources").update(
+                is_enabled=True
+            )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles, portal_resources enabled."
             )
 
     def _seed_instance_settings(self):
@@ -375,6 +432,7 @@ class Command(BaseCommand):
                     "display_name": display_name,
                     "is_admin": is_admin,
                     "is_demo": True,
+                    "demo_group": "default",
                     "email": demo_email,
                     "preferred_language": "en",
                 },
@@ -383,13 +441,16 @@ class Command(BaseCommand):
                 user.set_password("demo1234")
                 user.save()
             else:
-                # Backfill email and preferred_language on existing demo users
+                # Backfill fields on existing demo users
                 changed = False
                 if not user.email and demo_email:
                     user.email = demo_email
                     changed = True
                 if not user.preferred_language:
                     user.preferred_language = "en"
+                    changed = True
+                if not user.demo_group:
+                    user.demo_group = "default"
                     changed = True
                 if changed:
                     user.save()

@@ -58,6 +58,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text="Demo users see demo data only. Set at creation, never changed.",
     )
+    demo_group = models.CharField(
+        max_length=50, null=True, blank=True,
+        help_text=(
+            "Groups demo users by instance type (e.g. 'default', 'prosper-canada'). "
+            "When instance-specific demo users exist, the login page suppresses "
+            "the 'default' group automatically."
+        ),
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

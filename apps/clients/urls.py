@@ -46,6 +46,9 @@ urlpatterns = [
     path("<int:client_id>/consent/display/", views.client_consent_display, name="client_consent_display"),
     path("<int:client_id>/consent/edit/", views.client_consent_edit, name="client_consent_edit"),
     path("<int:client_id>/consent/", views.client_consent_save, name="client_consent_save"),
+    # Consent withdrawal (QA-R7-PRIVACY2)
+    path("<int:client_id>/consent/withdraw/", views.client_consent_withdraw_form, name="client_consent_withdraw_form"),
+    path("<int:client_id>/consent/withdraw/save/", views.client_consent_withdraw, name="client_consent_withdraw"),
     # Custom field admin (FIELD1)
     path("admin/fields/", views.custom_field_admin, name="custom_field_admin"),
     path("admin/fields/groups/create/", views.custom_field_group_create, name="custom_field_group_create"),
@@ -71,4 +74,6 @@ urlpatterns = [
     path("<int:client_id>/portal/revoke/", portal_revoke_access, name="portal_revoke"),
     path("<int:client_id>/portal/reset-mfa/", portal_reset_mfa, name="portal_reset_mfa"),
     path("<int:client_id>/portal/staff-login/", generate_staff_login_token, name="portal_staff_login"),
+    # Assessment-due banner (HTMX partial)
+    path("<int:client_id>/assessments-due/", views.assessment_due_banner, name="assessment_due_banner"),
 ]

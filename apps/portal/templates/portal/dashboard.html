@@ -19,6 +19,17 @@
 {% include "portal/_new_since_banner.html" %}
 {% endif %}
 
+{# Alliance rating request — prompt to rate after session #}
+{% if pending_alliance %}
+<section class="portal-alliance-prompt" aria-labelledby="alliance-heading">
+    <article>
+        <h2 id="alliance-heading">{% trans "How did your session go?" %}</h2>
+        <p>{% trans "Your worker recorded a session recently. Take a moment to share how you felt about working together." %}</p>
+        <a href="{% url 'portal:alliance_rating' request_id=pending_alliance.pk %}" role="button">{% trans "Rate now" %}</a>
+    </article>
+</section>
+{% endif %}
+
 {# Staff notes — encouragement and updates from worker #}
 {% if staff_notes %}
 <section aria-labelledby="staff-notes-heading" class="portal-staff-notes">

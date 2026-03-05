@@ -2,7 +2,7 @@
 
 Task ID: AI-SELFHOST1
 Date: 2026-03-03
-Status: Draft — GK reviews before deployment
+Status: Approved — design complete, deployment is ops work
 Related: [AI feature toggles DRR](ai-feature-toggles.md), [OVHcloud deployment DRR](ovhcloud-deployment.md), [Data access residency policy](data-access-residency-policy.md)
 
 ---
@@ -788,8 +788,8 @@ The [OVHcloud DRR](ovhcloud-deployment.md) lists this as an anti-pattern for hig
 
 ## GK Review Items
 
-- [ ] Confirm the two-stage survey pipeline meets quality needs — test: Qwen for PII stripping + Claude for analysis vs Claude for everything
-- [ ] Review OpenWebUI acceptable use guidelines for staff — what can/can't be pasted into chat
-- [ ] Confirm VPS-4 sizing is appropriate for expected workload (KoNote instances + external OpenWebUI connections + survey Stage 1)
-- [ ] Review whether survey analysis outputs need the same privacy controls as KoNote insights
-- [ ] Decide domain name for the LLM endpoint (e.g., llm.logicaloutcomes.ca)
+- [x] Confirm the two-stage survey pipeline meets quality needs — **Approved.** Two-stage approach (Qwen strips PII, Claude does analysis) confirmed.
+- [ ] Review OpenWebUI acceptable use guidelines for staff — deferred to OpenWebUI project, not a KoNote blocker
+- [ ] Confirm VPS-4 sizing is appropriate for expected workload — deferred to deployment, will be confirmed via testing
+- [ ] Review whether survey analysis outputs need the same privacy controls as KoNote insights — deferred to deployment assessment
+- [ ] Choose subdomain on logicaloutcomes.net — use a non-obvious, hard-to-guess subdomain (not `llm.`). Decided during deployment.

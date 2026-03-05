@@ -128,6 +128,11 @@ class ClientFile(models.Model):
         self._preferred_name_encrypted = encrypt_field(value)
 
     @property
+    def is_consent_withdrawn(self):
+        """True when consent was withdrawn and retention clock is ticking."""
+        return self.consent_given_at is None and self.retention_expires is not None
+
+    @property
     def display_name(self):
         """Return preferred name if set, otherwise first name.
 
@@ -329,6 +334,73 @@ class ClientFile(models.Model):
             visible['birth_date_editable'] = has_clinical
 
         return visible
+
+
+class ConsentEvent(models.Model):
+    """Append-only history of privacy consent events for audit compliance.
+
+    Each row records a consent grant or withdrawal. The most recent event
+    determines the current state, which is denormalized onto
+    ClientFile.consent_given_at for fast checking.
+    """
+
+    EVENT_TYPE_CHOICES = [
+        ("granted", _("Consent Granted")),
+        ("withdrawn", _("Consent Withdrawn")),
+    ]
+
+    WITHDRAWAL_REASON_CHOICES = [
+        ("", _("— Not specified —")),
+        ("participant_requested", _("Participant requested")),
+        ("guardian_requested", _("Guardian/substitute decision-maker requested")),
+        ("service_ended", _("Service relationship ended")),
+        ("transferred", _("Transferred to another agency")),
+        ("other", _("Other")),
+    ]
+
+    client_file = models.ForeignKey(
+        ClientFile,
+        on_delete=models.CASCADE,
+        related_name="consent_events",
+    )
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
+    event_date = models.DateField(
+        help_text=_("Date the consent event occurred."),
+    )
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    recorded_by_display = models.CharField(max_length=255, default="")
+
+    # Grant-specific
+    consent_type = models.CharField(max_length=50, default="", blank=True)
+
+    # Withdrawal-specific
+    withdrawal_reason = models.CharField(
+        max_length=30,
+        blank=True,
+        default="",
+        choices=WITHDRAWAL_REASON_CHOICES,
+    )
+    request_received_via = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text=_("How the withdrawal request was received (written, verbal, representative)."),
+    )
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        app_label = "clients"
+        db_table = "consent_events"
+        ordering = ["-recorded_at"]
+
+    def __str__(self):
+        return f"Consent {self.event_type} for client #{self.client_file_id} on {self.event_date}"
 
 
 class ServiceEpisode(models.Model):
@@ -658,6 +730,8 @@ class CustomFieldDefinition(models.Model):
         ("textarea", _("Text Area")),
         ("select", _("Dropdown")),
         ("select_other", _("Dropdown with Other option")),
+        ("multi_select", _("Multi-select checkboxes")),
+        ("multi_select_other", _("Multi-select with Other option")),
         ("date", _("Date")),
         ("number", _("Number")),
     ]

@@ -96,7 +96,7 @@ TENANT_DOMAIN_MODEL = "tenants.AgencyDomain"
 MIDDLEWARE = [
     # HealthCheckMiddleware MUST be first — it responds to GET /health/ before
     # TenantMainMiddleware attempts domain lookup (which fails for internal IPs
-    # used by Railway / Docker health probes and load-balancers).
+    # used by Docker health probes and load-balancers).
     "konote.middleware.health_check.HealthCheckMiddleware",
     # SecurityMiddleware MUST be second for security headers
     "django.middleware.security.SecurityMiddleware",
@@ -338,7 +338,7 @@ if not EMAIL_HASH_KEY:
 PORTAL_DOMAIN = os.environ.get("PORTAL_DOMAIN", "")
 STAFF_DOMAIN = os.environ.get("STAFF_DOMAIN", "")
 
-# Secure export file storage — outside web root, ephemeral on Railway
+# Secure export file storage — outside web root, ephemeral on Docker Compose (OVHcloud VPS)
 # Files are temporary (24hr links) so ephemeral /tmp storage is acceptable
 SECURE_EXPORT_DIR = os.environ.get(
     "SECURE_EXPORT_DIR",
@@ -393,7 +393,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514")
 OPENROUTER_SITE_URL = os.environ.get("OPENROUTER_SITE_URL", "https://konote.app")
 
-# Logging — errors to stderr so they appear in Railway logs
+# Logging — errors to stderr so they appear in Docker / container logs
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

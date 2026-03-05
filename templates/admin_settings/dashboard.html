@@ -194,6 +194,12 @@
     <h2>{% trans "Tools" %}</h2>
 
     <article>
+        <header>{% trans "Configuration Overview" %}</header>
+        <p>{% trans "Read-only summary of all active settings in one place. Designed for printing." %}</p>
+        <footer><a href="{% url 'admin_settings:configuration_overview' %}" role="button" class="outline">{% trans "View Configuration" %}</a></footer>
+    </article>
+
+    <article>
         <header>{% trans "Demo Accounts" %}</header>
         <p>{% trans "View all demo users and demo participants. Impersonate demo users for testing." %}</p>
         <p class="settings-indicator">

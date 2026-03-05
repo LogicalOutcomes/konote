@@ -16938,6 +16938,15 @@ msgstr "URL"
 msgid "Website URL"
 msgstr "URL du site Web"
 
+msgid "Website URL (English)"
+msgstr "URL du site Web (anglais)"
+
+msgid "Website URL (French)"
+msgstr "URL du site Web (français)"
+
+msgid "https:// (leave blank if same as English)"
+msgstr "https:// (laisser vide si identique à l'anglais)"
+
 msgid "client resource link"
 msgstr "lien de ressource pour le participant"
 
@@ -18359,7 +18368,8 @@ msgid "Event updated."
 msgstr "Événement mis à jour."
 
 msgid "Too many requests. Please wait a few minutes before trying again."
-msgstr "Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
+msgstr ""
+"Trop de requêtes. Veuillez patienter quelques minutes avant de réessayer."
 
 msgid "Data & Measurement"
 msgstr "Données et mesure"
@@ -18587,3 +18597,611 @@ msgid "%(count)d metric with high override rate"
 msgid_plural "%(count)d metrics with high override rate"
 msgstr[0] "%(count)d indicateur avec un taux de dérogation élevé"
 msgstr[1] "%(count)d indicateurs avec un taux de dérogation élevé"
+
+msgid "Confirmed — still relevant"
+msgstr "Confirmé — toujours pertinent"
+
+msgid ""
+"How many sessions between prompts for this metric. Leave blank to prompt "
+"every session."
+msgstr ""
+"Combien de séances entre les invites pour cet indicateur. Laisser vide pour "
+"demander à chaque séance."
+
+msgid ""
+"How often to prompt for this metric (in sessions). Blank = every session."
+msgstr ""
+"Fréquence de l'invite pour cet indicateur (en séances). Vide = chaque "
+"séance."
+
+msgid "Recording cadence (sessions)"
+msgstr "Cadence d'enregistrement (séances)"
+
+# NOTE: This is a blocktrans string — translate_strings cannot auto-extract
+# it.
+# If the English wording changes in note_form.html, update this msgid
+# manually.
+#: templates/notes/note_form.html
+#, python-format
+msgid "next due in %(n)s session(s)"
+msgstr "prochaine saisie dans %(n)s séance(s)"
+
+msgid "Sign in as"
+msgstr "Se connecter en tant que"
+
+msgid "When the worker last confirmed this metric is still relevant."
+msgstr "Date de la dernière confirmation de la pertinence de cet indicateur."
+
+msgid "Which alliance prompt set was shown (index into ALLIANCE_PROMPT_SETS)."
+msgstr ""
+"Quel ensemble d'invites d'alliance a été affiché (index dans "
+"ALLIANCE_PROMPT_SETS)."
+
+msgid "Change metric"
+msgstr "Changer l'indicateur"
+
+msgid "Still right"
+msgstr "Toujours pertinent"
+
+msgid ""
+"This metric has been tracked for 90+ days. Is it still the right measure?"
+msgstr ""
+"Cet indicateur est suivi depuis plus de 90 jours. Est-ce toujours la bonne "
+"mesure?"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "How did your session go?"
+msgstr "Comment s'est passée votre séance?"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "This rating has expired"
+msgstr "Cette évaluation a expiré"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"This alliance rating request is no longer available. Ratings expire 7 days "
+"after your session."
+msgstr ""
+"Cette demande d'évaluation de l'alliance n'est plus disponible. Les "
+"évaluations expirent 7 jours après votre séance."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "Back to dashboard"
+msgstr "Retour au tableau de bord"
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your rating has been recorded. Your feedback helps improve the support you "
+"receive."
+msgstr ""
+"Votre évaluation a été enregistrée. Vos commentaires aident à améliorer le "
+"soutien que vous recevez."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your worker recorded a session. Take a moment to share how you feel about "
+"working together."
+msgstr ""
+"Votre intervenant·e a enregistré une séance. Prenez un moment pour partager "
+"comment vous vous sentez par rapport à votre collaboration."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid ""
+"Your honest feedback helps your worker understand what's working and what to"
+" adjust."
+msgstr ""
+"Vos commentaires honnêtes aident votre intervenant·e à comprendre ce qui "
+"fonctionne et ce qu'il faut ajuster."
+
+#: apps/portal/templates/portal/alliance_rating.html
+msgid "Submit rating"
+msgstr "Soumettre l'évaluation"
+
+#: apps/portal/templates/portal/dashboard.html
+msgid ""
+"Your worker recorded a session recently. Take a moment to share how you felt"
+" about working together."
+msgstr ""
+"Votre intervenant·e a enregistré une séance récemment. Prenez un moment pour"
+" partager comment vous vous êtes senti(e) par rapport à votre collaboration."
+
+#: apps/portal/views.py
+msgid "Please select a rating."
+msgstr "Veuillez sélectionner une évaluation."
+
+#: apps/portal/templates/portal/dashboard.html
+msgid "Rate now"
+msgstr "Évaluer maintenant"
+
+msgid "Additional context about the withdrawal..."
+msgstr "Contexte additionnel sur le retrait..."
+
+msgid "Consent has been withdrawn."
+msgstr "Le consentement a été retiré."
+
+msgid "Consent has been withdrawn. This record is now read-only."
+msgstr ""
+"Le consentement a été retiré. Ce dossier est maintenant en lecture seule."
+
+msgid "Consent withdrawn."
+msgstr "Consentement retiré."
+
+msgid "Date of withdrawal"
+msgstr "Date du retrait"
+
+msgid "Guardian/substitute decision-maker requested"
+msgstr "Tuteur/mandataire spécial l'a demandé"
+
+msgid "I confirm this participant has requested consent withdrawal"
+msgstr ""
+"Je confirme que ce participant a demandé le retrait de son consentement"
+
+msgid "Make this record read-only — no new notes or edits"
+msgstr ""
+"Rendre ce dossier en lecture seule — aucune nouvelle note ni modification"
+
+msgid "No active consent to withdraw."
+msgstr "Aucun consentement actif à retirer."
+
+msgid "Re-record Consent"
+msgstr "Ré-enregistrer le consentement"
+
+msgid "Re-record consent"
+msgstr "Ré-enregistrer le consentement"
+
+msgid "Reason for withdrawal"
+msgstr "Raison du retrait"
+
+msgid "Record the withdrawal in the audit trail"
+msgstr "Enregistrer le retrait dans la piste de vérification"
+
+msgid "Service relationship ended"
+msgstr "Fin de la relation de service"
+
+msgid "Set a data retention period per your agency's policy"
+msgstr ""
+"Définir une période de conservation des données selon la politique de votre "
+"organisme"
+
+msgid "This action will:"
+msgstr "Cette action va :"
+
+msgid "This record is read-only because consent has been withdrawn."
+msgstr "Ce dossier est en lecture seule car le consentement a été retiré."
+
+msgid "This record is read-only. Data will be retained until"
+msgstr ""
+"Ce dossier est en lecture seule. Les données seront conservées jusqu'au"
+
+msgid "This record is read-only. No new notes or edits can be made."
+msgstr ""
+"Ce dossier est en lecture seule. Aucune nouvelle note ni modification ne "
+"peut être effectuée."
+
+msgid "Transferred to another agency"
+msgstr "Transféré à un autre organisme"
+
+msgid "Withdraw"
+msgstr "Retirer"
+
+msgid "Withdraw Consent"
+msgstr "Retirer le consentement"
+
+msgid "Withdraw Privacy Consent"
+msgstr "Retirer le consentement à la protection des renseignements personnels"
+
+msgid "Withdraw consent"
+msgstr "Retirer le consentement"
+
+msgid "Consent Granted"
+msgstr "Consentement accordé"
+
+msgid "Consent Withdrawn"
+msgstr "Consentement retiré"
+
+msgid "Date the consent event occurred."
+msgstr "Date à laquelle l'événement de consentement s'est produit."
+
+msgid ""
+"How the withdrawal request was received (written, verbal, representative)."
+msgstr ""
+"Comment la demande de retrait a été reçue (écrite, verbale, représentant)."
+
+msgid "Written request"
+msgstr "Demande écrite"
+
+msgid "Verbal request"
+msgstr "Demande verbale"
+
+msgid "Representative / substitute decision-maker"
+msgstr "Représentant / mandataire spécial"
+
+msgid "Request received via"
+msgstr "Demande reçue par"
+
+msgid "Withdrawal date cannot be in the future."
+msgstr "La date de retrait ne peut pas être dans le futur."
+
+#: templates/admin_settings/configuration_overview.html
+msgid "Configuration Overview"
+msgstr "Aperçu de la configuration"
+
+msgid "Read-only summary of all active settings. Designed for printing."
+msgstr ""
+"Résumé en lecture seule de tous les paramètres actifs. Conçu pour "
+"l'impression."
+
+msgid "Legal Name"
+msgstr "Nom légal"
+
+msgid "Operating Name"
+msgstr "Nom d'exploitation"
+
+msgid "Legal Status"
+msgstr "Statut juridique"
+
+msgid "Sector Codes"
+msgstr "Codes sectoriels"
+
+msgid "Tier"
+msgstr "Niveau"
+
+msgid "Not required"
+msgstr "Non requis"
+
+msgid "Missing config:"
+msgstr "Configuration manquante :"
+
+msgid "English Override"
+msgstr "Remplacement anglais"
+
+msgid "French Override"
+msgstr "Remplacement français"
+
+msgid "No terminology overrides. All terms use defaults."
+msgstr ""
+"Aucun remplacement de terminologie. Tous les termes utilisent les valeurs "
+"par défaut."
+
+msgid "Metrics & Assessments"
+msgstr "Indicateurs et évaluations"
+
+msgid "%(enabled)s of %(total)s metrics enabled."
+msgstr "%(enabled)s indicateurs sur %(total)s activés."
+
+msgid "Library Instruments"
+msgstr "Instruments de la bibliothèque"
+
+msgid "Scoring Bands"
+msgstr "Bandes de cotation"
+
+msgid "Mid"
+msgstr "Moyen"
+
+msgid "No library instruments are currently enabled."
+msgstr "Aucun instrument de la bibliothèque n'est actuellement activé."
+
+msgid "Session Timeout"
+msgstr "Délai d'expiration de la session"
+
+msgid "%(mins)s minutes"
+msgstr "%(mins)s minutes"
+
+msgid "SMS (Twilio)"
+msgstr "SMS (Twilio)"
+
+msgid "ODK Central (Field Collection)"
+msgstr "ODK Central (collecte sur le terrain)"
+
+msgid "Staff Messaging"
+msgstr "Messagerie du personnel"
+
+msgid "Automated Reminders"
+msgstr "Rappels automatisés"
+
+msgid "Recent Configuration Changes"
+msgstr "Modifications récentes de la configuration"
+
+msgid "Detail"
+msgstr "Détail"
+
+msgid "No recent configuration changes found in the audit log."
+msgstr ""
+"Aucune modification récente de la configuration trouvée dans le journal "
+"d'audit."
+
+#: templates/admin_settings/dashboard.html (Configuration Overview card)
+msgid ""
+"Read-only summary of all active settings in one place. Designed for "
+"printing."
+msgstr ""
+"Résumé en lecture seule de tous les paramètres actifs en un seul endroit. "
+"Conçu pour l'impression.Résumé en lecture seule de tous les paramètres "
+"actifs en un seul endroit. Conçu pour l'impression."
+
+msgid "View Configuration"
+msgstr "Voir la configuration"
+
+msgid "A score is required for assessments."
+msgstr "Un score est requis pour les évaluations."
+
+msgid "Access & Privacy"
+msgstr "Accès et confidentialité"
+
+msgid "Add Note"
+msgstr "Ajouter une note"
+
+msgid "Add a note about this metric"
+msgstr "Ajouter une note à propos de cette mesure"
+
+msgid "Administer this assessment at discharge."
+msgstr "Administrer cette évaluation au congé."
+
+msgid "Administer this assessment at intake (first session)."
+msgstr "Administrer cette évaluation à l'admission (première séance)."
+
+msgid ""
+"Append-only changelog: [{date, note, note_fr, author}]. Most recent entry is"
+" the current rationale."
+msgstr ""
+"Journal des modifications (ajout seulement) : [{date, note, note_fr, "
+"author}]. L'entrée la plus récente est la justification actuelle."
+
+msgid "Assessment date"
+msgstr "Date de l'évaluation"
+
+msgid "Assessment due"
+msgstr "Évaluation due"
+
+msgid "Assessment interval (days)"
+msgstr "Intervalle d'évaluation (jours)"
+
+msgid "Assessment saved: %(name)s = %(value)s"
+msgstr "Évaluation enregistrée : %(name)s = %(value)s"
+
+msgid "Assessments due"
+msgstr "Évaluations dues"
+
+msgid "Auto-generate"
+msgstr "Générer automatiquement"
+
+msgid "Branding"
+msgstr "Image de marque"
+
+msgid "Change if this assessment was done on a different day."
+msgstr "Modifier si cette évaluation a été faite un autre jour."
+
+msgid ""
+"Check if this is a published, validated instrument (e.g. PHQ-9, GAD-7)."
+msgstr ""
+"Cochez s'il s'agit d'un instrument publié et validé (p. ex. PHQ-9, GAD-7)."
+
+msgid "Clinical observation"
+msgstr "Observation clinique"
+
+msgid "Configured"
+msgstr "Configuré"
+
+msgid ""
+"Days between scheduled administrations (e.g. 90 for quarterly). Global per-"
+"metric."
+msgstr ""
+"Jours entre les administrations planifiées (p. ex. 90 pour trimestriel). "
+"Global par mesure."
+
+msgid ""
+"Days between scheduled administrations (e.g. 90 for quarterly). Leave blank "
+"for no schedule."
+msgstr ""
+"Jours entre les administrations planifiées (p. ex. 90 pour trimestriel). "
+"Laisser vide pour aucun calendrier."
+
+msgid "Integrations"
+msgstr "Intégrations"
+
+msgid "No rationale recorded yet."
+msgstr "Aucune justification enregistrée."
+
+msgid "Not set"
+msgstr "Non défini"
+
+msgid "Optional clinical observations about this assessment..."
+msgstr "Observations cliniques facultatives sur cette évaluation..."
+
+msgid "Participant's self-rated alliance score (1-5)."
+msgstr "Score d'alliance autoévalué par le participant (1-5)."
+
+msgid ""
+"Published severity cutoffs, e.g. [{\"label\": \"Minimal\", \"min\": 0, "
+"\"max\": 4}]. Display-only."
+msgstr ""
+"Seuils de sévérité publiés, p. ex. [{\"label\": \"Minimal\", \"min\": 0, "
+"\"max\": 4}]. Affichage seulement."
+
+msgid "Rationale & History"
+msgstr "Justification et historique"
+
+msgid "Record Assessment"
+msgstr "Enregistrer une évaluation"
+
+msgid "Request expires 7 days after creation."
+msgstr "La demande expire 7 jours après la création."
+
+msgid "Save Assessment"
+msgstr "Enregistrer l'évaluation"
+
+msgid "This assessment is not linked to any active plan target."
+msgstr "Cette évaluation n'est liée à aucun objectif de plan actif."
+
+msgid "True for published validated instruments (PHQ-9, GAD-7, K10, etc.)."
+msgstr ""
+"Vrai pour les instruments publiés et validés (PHQ-9, GAD-7, K10, etc.)."
+
+msgid "Which alliance prompt set to show (index into ALLIANCE_PROMPT_SETS)."
+msgstr ""
+"Quel ensemble de questions d'alliance afficher (index dans "
+"ALLIANCE_PROMPT_SETS)."
+
+msgid ""
+"e.g., Required by United Way reporting, replaced OARS per clinical team"
+msgstr ""
+"p. ex., Requis par les rapports de Centraide, a remplacé OARS selon l'équipe"
+" clinique"
+
+msgid "no baseline recorded"
+msgstr "aucune mesure de référence enregistrée"
+
+msgid "portal alliance request"
+msgstr "demande d'alliance du portail"
+
+msgid "portal alliance requests"
+msgstr "demandes d'alliance du portail"
+
+#: apps/surveys/forms.py
+msgid "Consent text (shown before the survey begins)"
+msgstr "Texte de consentement (affiché avant le début du sondage)"
+
+#: apps/surveys/forms.py
+msgid "Consent text — French"
+msgstr "Texte de consentement — français"
+
+#: apps/surveys/forms.py
+msgid ""
+"If provided, respondents must agree to this text before they can see the "
+"survey questions. Leave blank to skip the consent step. Good consent text "
+"explains: what data is collected, how it will be used, and whether responses"
+" are anonymous."
+msgstr ""
+"Si fourni, les répondants doivent accepter ce texte avant de pouvoir voir "
+"les questions du sondage. Laissez vide pour sauter l'étape de consentement. "
+"Un bon texte de consentement explique : quelles données sont collectées, "
+"comment elles seront utilisées et si les réponses sont anonymes."
+
+#: apps/surveys/forms.py
+msgid ""
+"French version of the consent text. If left blank, the English text will be "
+"used for French respondents."
+msgstr ""
+"Version française du texte de consentement. Si laissé vide, le texte anglais"
+" sera utilisé pour les répondants francophones."
+
+#: apps/surveys/models.py
+msgid "When the respondent agreed to the consent text, if applicable."
+msgstr ""
+"Date et heure à laquelle le répondant a accepté le texte de consentement, le"
+" cas échéant."
+
+#: apps/surveys/models.py
+msgid ""
+"Consent text shown before the survey begins. The respondent must agree "
+"before proceeding. Leave blank to skip the consent step."
+msgstr ""
+"Texte de consentement affiché avant le début du sondage. Le répondant doit "
+"accepter avant de continuer. Laissez vide pour sauter l'étape de "
+"consentement."
+
+#: apps/surveys/models.py
+msgid "French consent text (displayed when language is French)."
+msgstr ""
+"Texte de consentement en français (affiché lorsque la langue est le "
+"français)."
+
+#: templates/surveys/public_consent.html
+msgid "Consent to Participate"
+msgstr "Consentement à participer"
+
+#: templates/surveys/public_consent.html
+msgid "I have read and agree to the above"
+msgstr "J'ai lu et j'accepte ce qui précède"
+
+#: apps/plans/models.py
+msgid ""
+"Group name for multi-item instruments (e.g. 'PHQ-9'). Metrics sharing an "
+"instrument_name are reported together."
+msgstr ""
+"Nom de groupe pour les instruments à items multiples (p. ex. « PHQ-9 »). Les"
+" indicateurs partageant un instrument_name sont rapportés ensemble."
+
+#: templates/reports/_insights_basic.html
+#: templates/reports/_insights_instruments.html
+msgid "Instrument Batteries"
+msgstr "Batteries d'instruments"
+
+#: templates/reports/_insights_instruments.html
+msgid ""
+"Aggregated results for multi-item instruments. Top-two-box shows the "
+"percentage of responses in the positive range (3 or 4 on a 4-point scale)."
+msgstr ""
+"Résultats agrégés pour les instruments à items multiples. Le « top-two-box »"
+" montre le pourcentage de réponses dans la plage positive (3 ou 4 sur une "
+"échelle en 4 points)."
+
+#: templates/reports/_insights_instruments.html
+msgid "Positive"
+msgstr "Positif"
+
+#: templates/reports/_insights_instruments.html
+msgid "positive (top-two-box)"
+msgstr "positif (top-two-box)"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "View item breakdown for %(name)s"
+msgstr "Voir le détail par item pour %(name)s"
+
+#: templates/reports/_insights_instruments.html
+msgid "Item"
+msgstr "Item"
+
+#: templates/reports/_insights_instruments.html
+msgid "Top-two-box %"
+msgstr "% top-two-box"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "%(count)s responses"
+msgstr "%(count)s réponses"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "Top-two-box percentage for %(name)s"
+msgstr "Pourcentage top-two-box pour %(name)s"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "Item breakdown for %(name)s"
+msgstr "Détail par item pour %(name)s"
+
+#: templates/reports/_insights_instruments.html
+#, python-format
+msgid "%(count)s item(s) not shown due to insufficient responses for privacy."
+msgstr "%(count)s item(s) non affiché(s) en raison d'un nombre insuffisant de réponses pour la confidentialité."
+
+msgid "Client Experience"
+msgstr "Expérience client"
+
+msgid "Group name for multi-item instruments (e.g. 'PHQ-9"
+msgstr ""
+"Nom de groupe pour les instruments à items multiples (p. ex. « PHQ-9 »"
+
+msgid "I have read and agree to the consent information above"
+msgstr "J'ai lu et j'accepte les informations de consentement ci-dessus"
+
+msgid "Multi-select checkboxes"
+msgstr "Cases à cocher à sélection multiple"
+
+msgid "Multi-select with Other option"
+msgstr "Sélection multiple avec option Autre"
+
+msgid "Open text"
+msgstr "Texte libre"
+
+msgid "When the respondent withdrew consent, if applicable."
+msgstr "Quand le répondant a retiré son consentement, le cas échéant."
+
+msgid ""
+"If provided, respondents must agree to this text before they can see the "
+"survey questions. Leave blank to skip the consent step."
+msgstr ""
+"Si fourni, les répondants doivent accepter ce texte avant de pouvoir voir "
+"les questions du sondage. Laissez vide pour sauter l'étape de consentement."

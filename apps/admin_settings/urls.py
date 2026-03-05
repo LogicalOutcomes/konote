@@ -11,6 +11,7 @@ from apps.auth_app import access_grant_views
 app_name = "admin_settings"
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
+    path("configuration/", views.configuration_overview, name="configuration_overview"),
     path("terminology/", views.terminology, name="terminology"),
     path("terminology/reset/<str:term_key>/", views.terminology_reset, name="terminology_reset"),
     path("features/", views.features, name="features"),

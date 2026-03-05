@@ -234,9 +234,79 @@ class MetricExportTest(TestCase):
         response = c.get(reverse("metrics:metric_export"))
         content = response.content.decode("utf-8-sig")
         header_line = content.split("\n")[0]
-        for col in ["id", "name", "definition", "category", "min_value",
-                     "max_value", "unit", "is_enabled", "status"]:
+        for col in ["id", "name", "definition", "category", "metric_type",
+                     "min_value", "max_value", "unit", "is_enabled", "status"]:
             self.assertIn(col, header_line)
+
+    def test_export_metric_type_in_correct_position(self):
+        """metric_type column appears after category in export rows."""
+        c = TestClient()
+        c.login(username="admin", password="pass123")
+        response = c.get(reverse("metrics:metric_export"))
+        content = response.content.decode("utf-8-sig")
+        lines = content.strip().split("\n")
+        header_cols = lines[0].split(",")
+        cat_idx = header_cols.index("category")
+        type_idx = header_cols.index("metric_type")
+        self.assertEqual(type_idx, cat_idx + 1)
+        # Verify data row has the right metric_type value
+        data_cols = lines[1].split(",")
+        self.assertEqual(data_cols[type_idx], "scale")
+
+
+class OpenTextMetricTest(TestCase):
+    """Tests for open_text metric type in the note form."""
+
+    def test_open_text_form_accepts_text(self):
+        """Open-text metric form accepts arbitrary string values."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="How has this helped?",
+            definition="Describe impact in your own words",
+            category="client_experience",
+            metric_type="open_text",
+        )
+        form = MetricValueForm(
+            data={"metric_def_id": metric_def.pk, "value": "It helped me a lot with my confidence"},
+            metric_def=metric_def,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["value"], "It helped me a lot with my confidence")
+        self.assertTrue(form.is_open_text)
+
+    def test_open_text_skips_numeric_plausibility(self):
+        """A numeric-looking open_text value doesn't trigger plausibility warning."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="Feedback",
+            definition="Open feedback",
+            category="client_experience",
+            metric_type="open_text",
+        )
+        form = MetricValueForm(
+            data={"metric_def_id": metric_def.pk, "value": "42"},
+            metric_def=metric_def,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["value"], "42")
+
+    def test_open_text_empty_is_valid(self):
+        """Open-text metric allows empty value (not required)."""
+        from apps.notes.forms import MetricValueForm
+
+        metric_def = MetricDefinition.objects.create(
+            name="Comments",
+            definition="Optional comments",
+            category="client_experience",
+            metric_type="open_text",
+        )
+        form = MetricValueForm(
+            data={"metric_def_id": metric_def.pk, "value": ""},
+            metric_def=metric_def,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
 
 
 class MetricCsvParseTest(TestCase):

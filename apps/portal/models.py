@@ -628,6 +628,7 @@ class PortalResourceLink(models.Model):
     title = models.CharField(max_length=255)
     title_fr = models.CharField(max_length=255, blank=True, default="")
     url = models.URLField()
+    url_fr = models.URLField(blank=True, default="")
     description = models.TextField(blank=True, default="")
     description_fr = models.TextField(blank=True, default="")
     display_order = models.PositiveIntegerField(default=0)
@@ -656,6 +657,12 @@ class PortalResourceLink(models.Model):
         if lang.startswith("fr") and self.title_fr:
             return self.title_fr
         return self.title
+
+    def get_url(self, lang="en"):
+        """Return the URL in the requested language, falling back to English."""
+        if lang.startswith("fr") and self.url_fr:
+            return self.url_fr
+        return self.url
 
     def get_description(self, lang="en"):
         """Return the description in the requested language, falling back to English."""
@@ -703,3 +710,76 @@ class ClientResourceLink(models.Model):
 
     def __str__(self):
         return f"{self.title} (for {self.client_file})"
+
+
+# ---------------------------------------------------------------------------
+# J) PortalAllianceRequest — async alliance rating after a session
+# ---------------------------------------------------------------------------
+
+
+class PortalAllianceRequest(models.Model):
+    """A post-session request for a participant to self-rate the alliance.
+
+    Created automatically after a full note is saved when:
+    - The participant has portal access
+    - The worker didn't record an in-person alliance rating
+    - The portal_alliance_ratings feature toggle is enabled
+
+    The participant sees this on their portal dashboard and can rate at
+    their own pace (up to 7 days). The rating uses the same 1-5 scale
+    and prompt rotation as the in-session alliance rating.
+    """
+
+    STATUS_CHOICES = [
+        ("pending", _("Pending")),
+        ("completed", _("Completed")),
+        ("expired", _("Expired")),
+    ]
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    progress_note = models.OneToOneField(
+        "notes.ProgressNote",
+        on_delete=models.CASCADE,
+        related_name="portal_alliance_request",
+    )
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        related_name="portal_alliance_requests",
+    )
+    prompt_index = models.PositiveSmallIntegerField(
+        help_text=_("Which alliance prompt set to show (index into ALLIANCE_PROMPT_SETS)."),
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+    rating = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text=_("Participant's self-rated alliance score (1-5)."),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(
+        help_text=_("Request expires 7 days after creation."),
+    )
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_alliance_requests"
+        ordering = ["-created_at"]
+        verbose_name = _("portal alliance request")
+        verbose_name_plural = _("portal alliance requests")
+
+    def __str__(self):
+        return f"Alliance request for note {self.progress_note_id} ({self.get_status_display()})"
+
+    @property
+    def is_valid(self):
+        """True if the request is still pending and not expired."""
+        return self.status == "pending" and timezone.now() < self.expires_at

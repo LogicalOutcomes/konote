@@ -10,11 +10,24 @@
 </article>
 {% endif %}
 
-{# Consent warning - only shown when missing #}
+{# Consent withdrawn banner #}
+{% if not client.consent_given_at and client.retention_expires %}
+<article aria-label="notice" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-card-background-color);">
+    <strong>{% trans "Consent withdrawn." %}</strong>
+    {% trans "This record is read-only. No new notes or edits can be made." %}
+</article>
+{% endif %}
+
+{# Consent warning - shown when missing or withdrawn #}
 {% if not client.consent_given_at %}
 <section id="consent-section" aria-labelledby="consent-heading">
     {% include "clients/_consent_display.html" %}
 </section>
+{% endif %}
+
+{# Assessment-due banner — HTMX loaded #}
+{% if not is_receptionist %}
+<div hx-get="{% url 'clients:assessment_due_banner' client_id=client.pk %}" hx-trigger="load" hx-swap="innerHTML"></div>
 {% endif %}
 
 {# Quick info row - high-frequency data for front desk #}
