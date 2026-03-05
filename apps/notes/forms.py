@@ -548,6 +548,16 @@ class SuggestionThemeForm(forms.ModelForm):
         return cleaned
 
 
+class FocusedAnalysisForm(forms.Form):
+    """Validate the question for focused theme analysis."""
+    question = forms.CharField(
+        max_length=500,
+        strip=True,
+        label=_("Question"),
+    )
+    program_id = forms.IntegerField()
+
+
 class SuggestionThemeStatusForm(forms.ModelForm):
     """Inline status update for a suggestion theme.
 

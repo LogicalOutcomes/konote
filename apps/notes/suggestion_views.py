@@ -1,24 +1,32 @@
 """Views for suggestion theme management (UX-INSIGHT6 Phase 1)."""
+import logging
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.db.models import Count, DateTimeField
 from django.db.models.functions import Coalesce
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 
+from apps.admin_settings.models import FeatureToggle
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs
+from apps.programs.models import Program, UserProgramRole
 from apps.utils.dates import parse_date_safely
-from apps.programs.models import UserProgramRole
 
-from .forms import SuggestionThemeForm
+from .forms import FocusedAnalysisForm, SuggestionThemeForm
 from .models import (
     ProgressNote, SuggestionLink, SuggestionTheme, recalculate_theme_priority,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────
@@ -126,8 +134,17 @@ def theme_form(request, pk=None):
             )
             return redirect("suggestion_themes:theme_detail", pk=obj.pk)
     else:
+        initial = {}
+        if not editing:
+            # Support prefill from focused analysis "Create Theme from This"
+            if request.GET.get("prefill_name"):
+                initial["name"] = request.GET["prefill_name"][:200]
+            if request.GET.get("prefill_description"):
+                initial["description"] = request.GET["prefill_description"][:500]
+            if request.GET.get("prefill_program"):
+                initial["program"] = request.GET["prefill_program"]
         form = SuggestionThemeForm(
-            instance=theme, requesting_user=request.user,
+            instance=theme, requesting_user=request.user, initial=initial,
         )
 
     breadcrumbs = [
@@ -209,6 +226,12 @@ def theme_detail(request, pk):
             "date": note.effective_date,
         })
 
+    # Determine if verbatim text should be suppressed (5–14 participant programs)
+    from apps.notes.theme_engine import get_participant_count
+    from apps.reports.insights import MIN_PARTICIPANTS_FOR_QUOTES
+    participant_count = get_participant_count(theme.program)
+    suppress_verbatim = participant_count < MIN_PARTICIPANTS_FOR_QUOTES
+
     breadcrumbs = [
         {"url": reverse("suggestion_themes:theme_list"), "label": _("Suggestion Themes")},
         {"url": "", "label": theme.name},
@@ -222,6 +245,8 @@ def theme_detail(request, pk):
         "is_filtered": is_filtered,
         "date_from": date_from,
         "date_to": date_to,
+        "suppress_verbatim": suppress_verbatim,
+        "participant_count": participant_count,
     })
 
 
@@ -424,4 +449,118 @@ def theme_status_update(request, pk):
     return render(request, "reports/_theme_row.html", {
         "theme": theme,
         "can_manage_themes": True,
+    })
+
+
+# ── Focused Theme Analysis (AI-FOCUSED-THEME1) ──────────────────────
+
+FOCUSED_ANALYSIS_RATE_KEY = "focused_analysis:{user_id}"
+FOCUSED_ANALYSIS_RATE_LIMIT = 10  # per hour
+FOCUSED_ANALYSIS_RATE_WINDOW = 3600  # seconds
+
+
+def _check_focused_rate_limit(user_id):
+    """Return True if the user is within the rate limit."""
+    key = FOCUSED_ANALYSIS_RATE_KEY.format(user_id=user_id)
+    count = cache.get(key, 0)
+    return count < FOCUSED_ANALYSIS_RATE_LIMIT
+
+
+def _increment_focused_rate_limit(user_id):
+    key = FOCUSED_ANALYSIS_RATE_KEY.format(user_id=user_id)
+    count = cache.get(key, 0)
+    cache.set(key, count + 1, FOCUSED_ANALYSIS_RATE_WINDOW)
+
+
+@login_required
+@require_POST
+@requires_permission("suggestion_theme.view", allow_admin=True)
+def focused_analysis_view(request):
+    """HTMX POST: Run focused theme analysis on a program's suggestions."""
+    # Check feature toggle
+    flags = FeatureToggle.get_all_flags()
+    if not flags.get("ai_assist_participant_data", False):
+        return HttpResponseForbidden(_("AI participant data features are not enabled."))
+
+    form = FocusedAnalysisForm(request.POST)
+    if not form.is_valid():
+        return render(request, "notes/suggestions/_focused_results.html", {
+            "error": _("Please enter a question (max 500 characters)."),
+        })
+
+    question = form.cleaned_data["question"]
+    program_id = form.cleaned_data["program_id"]
+
+    # Verify program access
+    program = get_object_or_404(Program, pk=program_id)
+    accessible_ids = set(
+        get_accessible_programs(request.user).values_list("pk", flat=True)
+    )
+    if program.pk not in accessible_ids:
+        return HttpResponseForbidden()
+
+    # Check privacy gate
+    from apps.notes.theme_engine import get_participant_count, _check_privacy_gate
+    if not _check_privacy_gate(program):
+        participant_count = get_participant_count(program)
+        return render(request, "notes/suggestions/_focused_results.html", {
+            "error": _("This program has %(count)d participants. A minimum of 5 is required for AI analysis.") % {"count": participant_count},
+        })
+
+    # Rate limit
+    if not _check_focused_rate_limit(request.user.pk):
+        return render(request, "notes/suggestions/_focused_results.html", {
+            "error": _("Rate limit reached (10 per hour). Please try again later."),
+        })
+
+    # Collect suggestions (PII-scrubbed) using the same pipeline as insights
+    from apps.reports.insights import collect_quotes
+    suggestions = collect_quotes(
+        program=program,
+        include_dates=False,
+    )
+    # Filter to only suggestion-source items
+    suggestion_items = [q for q in suggestions if q.get("source") == "suggestion"]
+    if not suggestion_items:
+        # Fall back to all quotes if no dedicated suggestions exist
+        suggestion_items = suggestions
+
+    if not suggestion_items:
+        return render(request, "notes/suggestions/_focused_results.html", {
+            "error": _("No suggestions found for this program."),
+        })
+
+    # Call AI
+    from konote.ai import generate_focused_analysis
+    result = generate_focused_analysis(question, suggestion_items, program.name)
+
+    _increment_focused_rate_limit(request.user.pk)
+
+    # Audit log
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=str(request.user),
+        ip_address=request.META.get("REMOTE_ADDR", ""),
+        action="focused_analysis",
+        resource_type="suggestion_theme",
+        resource_id=0,
+        program_id=program.pk,
+        old_values={},
+        new_values={
+            "question": question,
+            "participant_count": get_participant_count(program),
+        },
+        is_demo_context=getattr(request.user, "is_demo", False),
+    )
+
+    if result is None:
+        return render(request, "notes/suggestions/_focused_results.html", {
+            "error": _("AI analysis could not be completed. Please try again."),
+        })
+
+    return render(request, "notes/suggestions/_focused_results.html", {
+        "result": result,
+        "question": question,
+        "program": program,
     })
