@@ -2648,25 +2648,6 @@ p.notice.warning {
     border-left-color: var(--kn-warning-fg);
 }
 
-/* ---- Plan targets table ---- */
-.plan-targets-table {
-    table-layout: fixed;
-    width: 100%;
-}
-.plan-targets-table th:nth-child(1),
-.plan-targets-table td:nth-child(1) { width: 40%; }
-.plan-targets-table th:nth-child(2),
-.plan-targets-table td:nth-child(2) { width: 10%; }
-.plan-targets-table th:nth-child(3),
-.plan-targets-table td:nth-child(3) { width: 15%; }
-.plan-targets-table th:nth-child(4),
-.plan-targets-table td:nth-child(4) { width: 20%; }
-.plan-targets-table th:nth-child(5),
-.plan-targets-table td:nth-child(5) { width: 15%; }
-.plan-targets-table td:nth-child(1) {
-    overflow: hidden;
-}
-
 /* ---- Note metric values table ---- */
 .metric-values-table {
     width: auto;
@@ -2758,6 +2739,8 @@ p.notice.warning {
     flex-shrink: 0;
 }
 .goal-card-quote {
+    /* Reset Pico CSS blockquote defaults */
+    border-right: none;
     margin: 0.375rem 0 0.25rem 0;
     padding: 0.375rem 0 0.375rem 0.75rem;
     border-left: 2px solid var(--kn-primary, #3176aa);
