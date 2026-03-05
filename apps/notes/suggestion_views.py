@@ -1,6 +1,4 @@
 """Views for suggestion theme management (UX-INSIGHT6 Phase 1)."""
-from datetime import date
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, DateTimeField
@@ -14,6 +12,7 @@ from django.utils.translation import gettext as _
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs
+from apps.utils.dates import parse_date_safely
 from apps.programs.models import UserProgramRole
 
 from .forms import SuggestionThemeForm
@@ -174,33 +173,22 @@ def theme_detail(request, pk):
     # ── GET: render detail page ──
 
     # Optional date filtering (passed from Insights page)
-    date_from = None
-    date_to = None
-    is_filtered = False
-    raw_from = request.GET.get("date_from", "")
-    raw_to = request.GET.get("date_to", "")
-    if raw_from and raw_to:
-        try:
-            date_from = date.fromisoformat(raw_from)
-            date_to = date.fromisoformat(raw_to)
-            if date_from <= date_to:
-                is_filtered = True
-        except ValueError:
-            pass
+    date_from = parse_date_safely(request.GET.get("date_from", ""))
+    date_to = parse_date_safely(request.GET.get("date_to", ""))
+    is_filtered = bool(date_from and date_to and date_from <= date_to)
 
     linked_links = (
         theme.links.select_related("progress_note", "linked_by")
-        .annotate(
+        .order_by("-linked_at")
+    )
+    if is_filtered:
+        linked_links = linked_links.annotate(
             _effective_date=Coalesce(
                 "progress_note__backdate",
                 "progress_note__created_at",
                 output_field=DateTimeField(),
             ),
-        )
-        .order_by("-linked_at")
-    )
-    if is_filtered:
-        linked_links = linked_links.filter(
+        ).filter(
             _effective_date__date__gte=date_from,
             _effective_date__date__lte=date_to,
         )
