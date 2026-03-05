@@ -4093,7 +4093,6 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-text-muted, #666);
 }
 .insights-about summary {
-    cursor: pointer;
     list-style: revert;
 }
 .insights-about-body {
