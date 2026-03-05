@@ -216,6 +216,7 @@ class Command(BaseCommand):
             ("messaging_email", True),
             ("surveys", False),
             ("circles", False),
+            ("portal_resources", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -246,8 +247,11 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(feature_key="circles").update(
                 is_enabled=True
             )
+            FeatureToggle.objects.filter(feature_key="portal_resources").update(
+                is_enabled=True
+            )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist_tools_only, ai_assist_participant_data, surveys, circles, portal_resources enabled."
             )
 
     def _seed_instance_settings(self):
