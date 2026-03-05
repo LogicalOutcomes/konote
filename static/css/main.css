@@ -4086,6 +4086,34 @@ article[aria-label="notification"].fading-out {
     font-style: italic;
     padding: 0.5rem 0;
 }
+/* About these insights */
+.insights-about {
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--kn-text-muted, #666);
+}
+.insights-about summary {
+    cursor: pointer;
+    list-style: revert;
+}
+.insights-about-body {
+    padding: 0.5rem 0 0;
+    line-height: 1.5;
+}
+.insights-about-body p {
+    margin: 0 0 0.5rem;
+}
+.insights-about-body dl {
+    margin: 0;
+}
+.insights-about-body dt {
+    font-weight: 600;
+    color: var(--kn-text, #333);
+    margin-top: 0.5rem;
+}
+.insights-about-body dd {
+    margin: 0.15rem 0 0 1rem;
+}
 /* Descriptor pills */
 .descriptor-pills {
     display: flex;
