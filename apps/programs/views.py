@@ -11,8 +11,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST
 from apps.auth_app.decorators import admin_required
 from apps.auth_app.models import User
+from apps.groups.models import Group
 
 from .context import (
     get_switcher_options,
@@ -20,11 +22,7 @@ from .context import (
     needs_program_selector,
     set_active_program,
 )
-from apps.groups.models import Group
-
 from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm, SwitchProgramForm
-from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST
-
 from .models import Program, UserProgramRole
 
 logger = logging.getLogger(__name__)

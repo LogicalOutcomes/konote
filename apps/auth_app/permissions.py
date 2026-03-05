@@ -512,7 +512,7 @@ def validate_permissions():
         all_keys.update(role_perms.keys())
 
     # Check each role has all keys
-    for role in list(ALL_PROGRAM_ROLES):
+    for role in sorted(ALL_PROGRAM_ROLES, key=ROLE_RANK.get):
         if role not in PERMISSIONS:
             errors.append(f"Role '{role}' missing from PERMISSIONS")
             continue

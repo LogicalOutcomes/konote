@@ -1,5 +1,6 @@
 """Template context processors for terminology, features, and settings."""
 from django.core.cache import cache
+from django.utils.translation import get_language
 
 from apps.auth_app.constants import (
     ROLE_EXECUTIVE,
@@ -7,7 +8,6 @@ from apps.auth_app.constants import (
     ROLE_RECEPTIONIST,
     ROLE_RANK,
 )
-from django.utils.translation import get_language
 
 
 def nav_active(request):

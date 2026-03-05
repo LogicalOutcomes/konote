@@ -39,7 +39,7 @@ from apps.events.models import Alert, Event, Meeting
 from apps.groups.models import Group
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
-from apps.auth_app.constants import ALL_PROGRAM_ROLES, ROLE_PROGRAM_MANAGER, ROLE_STAFF
+from apps.auth_app.constants import ALL_PROGRAM_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -161,7 +161,7 @@ PERMISSION_URL_MAP = {
     "circle.edit": {"url": "/circles/{circle_id}/edit/"},
 }
 
-ALL_ROLES = list(ALL_PROGRAM_ROLES)
+ALL_ROLES = sorted(ALL_PROGRAM_ROLES, key=ROLE_RANK.get)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

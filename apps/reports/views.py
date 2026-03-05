@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
 from apps.auth_app.decorators import admin_required, requires_permission
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
@@ -1992,7 +1992,6 @@ def team_meeting_view(request):
     from django.db.models import Count, Max, Q
 
     from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
     from apps.programs.models import UserProgramRole, Program
     from apps.programs.access import get_user_program_ids
     from apps.notes.models import ProgressNote
