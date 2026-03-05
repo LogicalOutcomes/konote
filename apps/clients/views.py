@@ -381,6 +381,58 @@ def client_list(request):
     return render(request, "clients/list.html", context)
 
 
+def _get_create_field_defs(user):
+    """Return CustomFieldDefinitions marked show_on_create, respecting role access."""
+    qs = CustomFieldDefinition.objects.filter(
+        status="active",
+        group__status="active",
+        show_on_create=True,
+    ).select_related("group").order_by("group__sort_order", "sort_order")
+    user_role = getattr(user, "_program_role", None) or _get_user_highest_role(user)
+    if user_role == "receptionist":
+        qs = qs.filter(front_desk_access="edit")
+    return list(qs)
+
+
+def _group_create_field_defs(field_defs):
+    """Group field defs by CustomFieldGroup for template rendering."""
+    from collections import OrderedDict
+    grouped = OrderedDict()
+    for fd in field_defs:
+        if fd.group_id not in grouped:
+            grouped[fd.group_id] = {"group": fd.group, "fields": []}
+        grouped[fd.group_id]["fields"].append({"def": fd, "key": f"custom_{fd.pk}"})
+    return list(grouped.values())
+
+
+def _save_create_custom_fields(client, custom_form, field_defs):
+    """Save custom field values from the create form into ClientDetailValue records."""
+    for field_def in field_defs:
+        raw_value = custom_form.cleaned_data.get(f"custom_{field_def.pk}", "")
+        if field_def.input_type == "select_other" and raw_value == "__other__":
+            raw_value = custom_form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+        elif field_def.input_type == "multi_select":
+            raw_value = json.dumps(raw_value) if raw_value else ""
+        elif field_def.input_type == "multi_select_other":
+            selected = raw_value if isinstance(raw_value, list) else []
+            other_text = custom_form.cleaned_data.get(f"custom_{field_def.pk}_other", "").strip()
+            if other_text:
+                selected = list(selected) + [other_text]
+            raw_value = json.dumps(selected) if selected else ""
+        # Validate and normalise Canadian-specific fields
+        if field_def.validation_type == "postal_code" and raw_value:
+            validate_postal_code(raw_value)
+            raw_value = normalize_postal_code(raw_value)
+        if field_def.validation_type == "phone" and raw_value:
+            validate_phone_number(raw_value)
+            raw_value = normalize_phone_number(raw_value)
+        if not raw_value:
+            continue
+        cdv = ClientDetailValue(client_file=client, field_def=field_def)
+        cdv.set_value(raw_value)
+        cdv.save()
+
+
 @login_required
 @requires_permission("client.create")
 def client_create(request):
@@ -394,9 +446,15 @@ def client_create(request):
         visible = get_visible_circles(request.user)
         circle_choices = [(c.pk, c.name) for c in visible]
 
+    # Custom fields marked show_on_create
+    create_field_defs = _get_create_field_defs(request.user)
+    custom_groups = _group_create_field_defs(create_field_defs)
+
     if request.method == "POST":
         form = ClientFileForm(request.POST, available_programs=available_programs, circle_choices=circle_choices)
-        if form.is_valid():
+        custom_form = CustomFieldValuesForm(request.POST, field_definitions=create_field_defs) if create_field_defs else None
+        forms_valid = form.is_valid() and (custom_form is None or custom_form.is_valid())
+        if forms_valid:
             # BUG-7: Wrap in transaction so client + enrollments commit
             # atomically. Prevents a half-created client if enrollment
             # creation fails, and ensures the redirect sees all data.
@@ -428,6 +486,9 @@ def client_create(request):
                 # Security: is_demo is immutable after creation
                 client.is_demo = request.user.is_demo
                 client.save()
+                # Save custom fields (Pronouns, Emergency Contact, etc.)
+                if custom_form:
+                    _save_create_custom_fields(client, custom_form, create_field_defs)
                 # Enrol in selected programs
                 for program in form.cleaned_data["programs"]:
                     ClientProgramEnrolment.objects.create(
@@ -470,7 +531,13 @@ def client_create(request):
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(available_programs=available_programs, circle_choices=circle_choices)
-    return render(request, "clients/form.html", {"form": form, "editing": False})
+        custom_form = CustomFieldValuesForm(field_definitions=create_field_defs) if create_field_defs else None
+    return render(request, "clients/form.html", {
+        "form": form,
+        "editing": False,
+        "custom_form": custom_form,
+        "custom_groups": custom_groups,
+    })
 
 
 @login_required
