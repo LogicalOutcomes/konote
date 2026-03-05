@@ -550,7 +550,7 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         resp = self.http.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Rapport sur les r\u00e9sultats du programme")
-        self.assertContains(resp, "G\u00e9n\u00e9rer le rapport")  # "Generate Report"
+        self.assertContains(resp, "Cr\u00e9er un rapport")  # "Build a Report" button
 
     def test_funder_report_form_in_french(self):
         """Funder report form renders in French."""

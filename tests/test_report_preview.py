@@ -368,7 +368,7 @@ class TemplateReportPreviewTest(TestCase):
             self._preview_post_data(),
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Back to Generate Report")
+        self.assertContains(resp, "Back to Standard Report")
         self.assertContains(resp, "/reports/generate/")
 
 
@@ -572,7 +572,7 @@ class AdhocReportPreviewTest(TestCase):
             self._preview_post_data(),
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Back to Custom Export")
+        self.assertContains(resp, "Back to Build a Report")
         self.assertContains(resp, "/reports/export/")
 
     def test_download_buttons_include_form_fields(self):
