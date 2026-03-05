@@ -628,6 +628,7 @@ class PortalResourceLink(models.Model):
     title = models.CharField(max_length=255)
     title_fr = models.CharField(max_length=255, blank=True, default="")
     url = models.URLField()
+    url_fr = models.URLField(blank=True, default="")
     description = models.TextField(blank=True, default="")
     description_fr = models.TextField(blank=True, default="")
     display_order = models.PositiveIntegerField(default=0)
@@ -656,6 +657,12 @@ class PortalResourceLink(models.Model):
         if lang.startswith("fr") and self.title_fr:
             return self.title_fr
         return self.title
+
+    def get_url(self, lang="en"):
+        """Return the URL in the requested language, falling back to English."""
+        if lang.startswith("fr") and self.url_fr:
+            return self.url_fr
+        return self.url
 
     def get_description(self, lang="en"):
         """Return the description in the requested language, falling back to English."""
