@@ -62,6 +62,8 @@ Scope is clear, just needs time. A session can pick these up without special app
 
 - [ ] Graduated privacy threshold (N=5 self-hosted, N=15 external) + focused theme analysis — managers type a question, AI searches suggestions for relevant patterns. Includes DRR updates. See [tasks/focused-theme-analysis.md](tasks/focused-theme-analysis.md) — GK approved (AI-FOCUSED-THEME1)
 - [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
+- [ ] Extract shared CSS from html_report.html and html_report_all_programs.html into `_report_styles.html` partial — ~240 duplicate lines (CHORE-RPT-CSS1)
+- [ ] Add isinstance guard to preview path total_contacts sum + add smoke test for all-programs HTML export (CHORE-RPT-FIX1)
 
 ## Parking Lot: Needs Review
 
@@ -76,6 +78,12 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
 
 ## Recently Done
+
+### Session 13 — Report Fixes & Cleanup
+
+- [x] All-programs HTML export support — added template + view branch for HTML format — PR #337 — 2026-03-05 (RPT-HTML-ALLPROG1)
+- [x] Simplified all-programs aggregation — consolidated 4 iterations into single pass — PR #337 — 2026-03-05 (RPT-SIMPLIFY1)
+- [x] Marked DOC-RP4, SCALE-ROLLUP1, OPS-MANAGED1, QA-R7-EXEC-COMPLIANCE1 as done — PR #336 — 2026-03-05
 
 ### Session 12 — TODO Cleanup
 
@@ -120,23 +128,5 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Merge PR #236 — DQ1-TIER2 thresholds + docs verification — 2026-03-03 (DQ1-TIER2)
 - [x] Merge PR #239 — survey shareable links + 6 missing French translations — 2026-03-03 (SURVEY-LINK1)
 - [x] Clean up TODO.md — mark completed parking lot items, archive old entries — 2026-03-03
-
-### Session 6 — Data Quality + Documentation + AI Toggles
-
-- [x] Add second-tier plausibility thresholds — model fields, JS two-click confirm, 17 tests — 2026-03-03 (DQ1-TIER2)
-- [x] Verify docs: DOC-DEMO1, DOC-PERM1-3, QA-PA-TEST1-2 — all accurate — 2026-03-03
-- [x] Implement two-tier AI feature toggle split — 2026-03-03 (AI-TOGGLE1)
-- [x] Verified: note sharing toggle (6/7 checks pass) — 2026-03-03 (QA-R7-PRIVACY2)
-- [x] Build SRE workflow — PR #243 merged — 2026-03-03 (SRE1)
-- [x] Build plausibility tuning dashboard — PR #244 merged — 2026-03-03 (DQ1-TUNE)
-
-### Session 5 — Small-Cell Suppression + Compliance Summary
-
-- [x] Small-cell suppression with secondary suppression — 2026-03-03 (QA-R8-RPT1)
-- [x] Compliance summary page for executives (no PII) — 2026-03-03 (QA-R8-PERM2, QA-R7-EXEC-COMPLIANCE1)
-
-### Session 4 — Documentation & Cleanup
-
-- [x] Admin toolkit docs (01-09), deployment docs, website updates — 2026-03-03 (DEPLOY-TOOLKIT1, DOC-DEPLOY1, DOC-TECH1, WEBSITE-UPDATE1)
 
 _Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
