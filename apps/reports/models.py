@@ -209,6 +209,14 @@ class ReportTemplate(models.Model):
             "When blank, the default HTML report template is used."
         ),
     )
+    include_all_metrics = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, the report includes every metric with recorded "
+            "data in the selected period. Use for org-wide or board reports. "
+            "Leave unchecked for funder reports that require specific metrics."
+        ),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -6671,6 +6671,27 @@ msgstr "Taux de réussite global"
 msgid "Overall Summary"
 msgstr "Résumé général"
 
+msgid "Overall achievement rate"
+msgstr "Taux de réussite global"
+
+msgid "Contents"
+msgstr "Table des matières"
+
+msgid "Report sections"
+msgstr "Sections du rapport"
+
+msgid "Increased"
+msgstr "En hausse"
+
+msgid "Decreased"
+msgstr "En baisse"
+
+msgid "from"
+msgstr "par rapport à"
+
+msgid "previous period"
+msgstr "la période précédente"
+
 msgid "PLAN SECTIONS & TARGETS"
 msgstr "SECTIONS DU PLAN ET CIBLES"
 
@@ -14511,8 +14532,20 @@ msgstr "(total)"
 msgid "All Participants"
 msgstr "Tous les participants"
 
-msgid "All metrics with data will be included."
-msgstr "Tous les indicateurs avec des données seront inclus."
+msgid "This report includes all recorded outcomes for each program."
+msgstr "Ce rapport inclut tous les résultats enregistrés pour chaque programme."
+
+msgid "Metrics are shown per program — only outcomes with data in the selected period will appear."
+msgstr "Les indicateurs sont affichés par programme — seuls les résultats avec des données dans la période sélectionnée apparaîtront."
+
+msgid "No specific metrics have been configured for this template."
+msgstr "Aucun indicateur spécifique n'a été configuré pour ce modèle."
+
+msgid "All outcomes with recorded data will be included by default."
+msgstr "Tous les résultats avec des données enregistrées seront inclus par défaut."
+
+msgid "To specify which metrics appear, ask your administrator to edit this template."
+msgstr "Pour préciser quels indicateurs apparaissent, demandez à votre administrateur de modifier ce modèle."
 
 msgid "Chart visualisation is not yet available in PDF reports."
 msgstr ""

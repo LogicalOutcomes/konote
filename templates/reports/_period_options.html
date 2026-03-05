@@ -28,7 +28,7 @@
 {# Read-only confirmation panel: shows what the template includes #}
 {% if template %}
 <article aria-label="{% trans 'Report details' %}" style="border-left: 4px solid var(--kn-info-fg); padding: 0.75rem 1rem; margin-top: 1rem;">
-    <strong>{{ template.partner.translated_name }} &mdash; {{ template.name }}</strong>
+    <strong>{% if template.partner and template.partner.translated_name not in template.name %}{{ template.partner.translated_name }} &mdash; {% endif %}{{ template.name }}</strong>
     {% if template.description %}
     <br><small class="secondary">{{ template.description }}</small>
     {% endif %}
@@ -47,8 +47,17 @@
         <li>{{ rm.translated_label }}</li>
         {% endfor %}
     </ul>
+    {% elif template.include_all_metrics %}
+    <p style="margin-bottom: 0.25rem;">
+        <strong>{% trans "This report includes all recorded outcomes for each program." %}</strong>
+        {% trans "Metrics are shown per program — only outcomes with data in the selected period will appear." %}
+    </p>
     {% else %}
-    <p><small>{% trans "All metrics with data will be included." %}</small></p>
+    <p style="margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: var(--kn-warning-bg, #fff3cd); border-radius: 4px;">
+        &#9888; {% trans "No specific metrics have been configured for this template." %}
+        {% trans "All outcomes with recorded data will be included by default." %}
+        <br><small>{% trans "To specify which metrics appear, ask your administrator to edit this template." %}</small>
+    </p>
     {% endif %}
 
     {% if breakdowns %}
