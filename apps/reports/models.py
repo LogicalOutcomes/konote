@@ -450,7 +450,7 @@ class SecureExportLink(models.Model):
     EXPORT_TYPE_CHOICES = [
         ("client_data", _("Participant Data")),
         ("metrics", _("Metric Report")),
-        ("funder_report", _("Funder Report")),
+        ("standard_report", _("Standard Report")),
         ("individual_client", _("Individual Client Export")),
     ]
 
@@ -711,7 +711,7 @@ class ReportSchedule(models.Model):
 
     REPORT_TYPE_CHOICES = [
         ("oversight", _("Safety Oversight Report")),
-        ("funder_report", _("Funder Report")),
+        ("standard_report", _("Standard Report")),
     ]
 
     name = models.CharField(max_length=255)

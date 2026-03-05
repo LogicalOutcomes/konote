@@ -68,7 +68,7 @@ def can_create_export(user, export_type, program=None):
 
     Args:
         user: The User instance.
-        export_type: One of "metrics", "funder_report".
+        export_type: One of "metrics", "standard_report".
         program: Optional Program instance — when provided, checks whether
                  the user manages that specific program.
 
@@ -80,7 +80,7 @@ def can_create_export(user, export_type, program=None):
     if user.is_admin:
         return True
 
-    if export_type in ("metrics", "funder_report", "session_report"):
+    if export_type in ("metrics", "standard_report", "session_report"):
         qs = UserProgramRole.objects.filter(
             user=user, role__in=[ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE], status="active"
         )
