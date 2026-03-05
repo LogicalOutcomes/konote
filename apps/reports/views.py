@@ -109,6 +109,59 @@ def _notify_admins_elevated_export(link, request):
         )
 
 
+def _publish_to_consortium(user, report_data, report_template, date_from,
+                           date_to, program_display_name):
+    """Publish de-identified aggregate data to consortium (if member).
+
+    Called after funder report approval. Only publishes if:
+    1. This agency has an active ConsortiumMembership
+    2. The report_template is linked to a Partner with a consortium
+    3. report_data is available (not all-programs mode)
+    """
+    if report_data is None:
+        return  # All-programs mode — skip consortium publish
+
+    try:
+        from apps.consortia.models import ConsortiumMembership, PublishedReport
+        from apps.consortia.publish import format_published_data
+        from datetime import date as date_type
+
+        # Find active consortium memberships for this agency
+        memberships = ConsortiumMembership.objects.filter(is_active=True)
+        if not memberships.exists():
+            return
+
+        # Format and suppress the data
+        published_data = format_published_data(report_data, report_template)
+
+        # Parse dates
+        period_start = (
+            date_type.fromisoformat(date_from) if isinstance(date_from, str)
+            else date_from
+        )
+        period_end = (
+            date_type.fromisoformat(date_to) if isinstance(date_to, str)
+            else date_to
+        )
+
+        for membership in memberships:
+            PublishedReport.objects.create(
+                membership=membership,
+                title=f"{program_display_name} — {date_from} to {date_to}",
+                period_start=period_start,
+                period_end=period_end,
+                data_json=published_data,
+                published_by=user,
+            )
+            logger.info(
+                "Published report to consortium #%s for %s",
+                membership.consortium_id, program_display_name,
+            )
+    except Exception:
+        # Don't block the approval if consortium publish fails
+        logger.exception("Failed to publish report to consortium")
+
+
 def _save_export_and_create_link(request, content, filename, export_type,
                                   client_count, includes_notes, recipient,
                                   filters_dict=None, contains_pii=True):
@@ -1493,6 +1546,16 @@ def funder_report_approve(request):
             "report_template": report_template.name if report_template else None,
             "partner": report_template.partner.name if report_template and report_template.partner else None,
         },
+    )
+
+    # Publish to consortium if this agency is a consortium member
+    _publish_to_consortium(
+        request.user,
+        report_data=data_or_sections if not all_programs_mode else None,
+        report_template=report_template,
+        date_from=date_from,
+        date_to=date_to,
+        program_display_name=program_display_name,
     )
 
     # Clear session data

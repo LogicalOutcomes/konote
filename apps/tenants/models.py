@@ -5,6 +5,7 @@ These models live in the public PostgreSQL schema (shared across all tenants):
 - AgencyDomain: domain routing for each agency
 - TenantKey: per-agency Fernet encryption key (encrypted by master key)
 - Consortium: cross-agency groups for funder reporting
+- ConsortiumRollup: aggregated cross-agency data for a reporting period
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -116,3 +117,51 @@ class Consortium(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ConsortiumRollup(models.Model):
+    """Aggregated cross-agency data for a consortium reporting period.
+
+    Lives in the shared schema because it combines data from multiple
+    tenant schemas. Each rollup is a snapshot — the aggregate_consortium
+    management command rebuilds it from PublishedReport records.
+
+    Data retention: rollup data follows the same retention policy as the
+    source PublishedReport records. When a PublishedReport is deleted,
+    the next aggregation run will exclude it.
+    """
+
+    consortium = models.ForeignKey(
+        Consortium, on_delete=models.CASCADE, related_name="rollups",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    agency_count = models.PositiveIntegerField(
+        help_text="Number of agencies included in this rollup.",
+    )
+    participant_count = models.PositiveIntegerField(
+        help_text="Total participants across all agencies.",
+    )
+    data_json = models.JSONField(
+        help_text=(
+            "Aggregated report data. Structure: "
+            "{demographics: {...}, outcomes: {...}, service_stats: {...}}"
+        ),
+    )
+    generated_at = models.DateTimeField(auto_now=True)
+    generated_by = models.CharField(
+        max_length=100, default="aggregate_consortium",
+        help_text="Management command or process that generated this rollup.",
+    )
+
+    class Meta:
+        app_label = "tenants"
+        db_table = "consortium_rollups"
+        unique_together = ("consortium", "period_start", "period_end")
+        ordering = ["-period_start"]
+
+    def __str__(self):
+        return (
+            f"{self.consortium.name} rollup "
+            f"({self.period_start} – {self.period_end})"
+        )
