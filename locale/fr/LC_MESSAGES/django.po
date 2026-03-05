@@ -743,6 +743,11 @@ msgstr ""
 msgid "None"
 msgstr "Aucun"
 
+#: templates/plans/_target.html
+#, python-format
+msgid "No %(metrics)s assigned"
+msgstr "Aucune %(metrics)s attribuée"
+
 msgid "History"
 msgstr "Historique"
 
