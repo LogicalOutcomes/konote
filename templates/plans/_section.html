@@ -38,26 +38,15 @@
     {% endif %}
 </header>
 
-<!-- Targets within this section -->
+<!-- Goals within this section -->
 {% if section.targets.all %}
-<table class="plan-targets-table" role="grid" aria-labelledby="section-heading-{{ section.pk }}">
-    <thead>
-        <tr>
-            <th scope="col">{{ term.target|default:"Target" }}</th>
-            <th scope="col">{% trans "Status" %}</th>
-            <th scope="col">{% trans "Progress" %}</th>
-            <th scope="col">{{ term.metric_plural|default:"Metrics" }}</th>
-            {% if can_edit %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for target in section.targets.all %}
-        <tr id="target-{{ target.pk }}">
-            {% include "plans/_target.html" with target=target can_edit=can_edit %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="goal-card-list" aria-labelledby="section-heading-{{ section.pk }}">
+    {% for target in section.targets.all %}
+    <div id="target-{{ target.pk }}">
+        {% include "plans/_target.html" with target=target can_edit=can_edit %}
+    </div>
+    {% endfor %}
+</div>
 {% else %}
 <p><em>{% blocktrans with targets=term.target_plural|default:"targets" section=term.section|default:"section" %}No {{ targets }} in this {{ section }}.{% endblocktrans %}</em></p>
 {% endif %}
