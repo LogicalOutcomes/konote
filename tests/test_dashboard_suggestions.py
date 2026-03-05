@@ -12,6 +12,7 @@ from apps.clients.dashboard_views import _batch_suggestion_counts, _batch_top_th
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.notes.models import ProgressNote, SuggestionLink, SuggestionTheme
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
 
 User = get_user_model()
 
@@ -240,7 +241,7 @@ class ExecutiveDashboardSuggestionViewTest(TestCase):
         self.program = Program.objects.create(name="Housing", status="active")
         self.user = User.objects.create_user(username="exec", password="testpass123")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="executive", status="active",
+            user=self.user, program=self.program, role=ROLE_EXECUTIVE, status="active",
         )
 
         self.client_file = ClientFile.objects.create(record_id="EXEC-001")
@@ -359,7 +360,7 @@ class ThemeDetailDateFilteringTest(TestCase):
         self.user = User.objects.create_user(username="pm", password="testpass123")
         UserProgramRole.objects.create(
             user=self.user, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.theme = SuggestionTheme.objects.create(
             program=self.program,

@@ -21,6 +21,7 @@ from apps.groups.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -90,7 +91,7 @@ class AttendanceReportTest(TestCase):
             name="Youth Group", service_model="group",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.group = Group.objects.create(
             name="Monday Group", program=self.program, group_type="group",
@@ -173,7 +174,7 @@ class GroupDetailSessionCountsTest(TestCase):
             name="Test Program", service_model="group",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.group = Group.objects.create(
             name="Test Group", program=self.program, group_type="group",
@@ -235,7 +236,7 @@ class SessionLogHappyPathTest(TestCase):
             name="Youth Group", service_model="group",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.group = Group.objects.create(
             name="Monday Group", program=self.program, group_type="group",
@@ -335,7 +336,7 @@ class SessionLogHappyPathTest(TestCase):
             username="other", password="testpass123", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=other_user, program=other_program, role="staff", status="active",
+            user=other_user, program=other_program, role=ROLE_STAFF, status="active",
         )
         self.client.login(username="other", password="testpass123")
         data = self._valid_post_data()

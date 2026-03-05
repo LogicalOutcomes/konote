@@ -8,6 +8,7 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -310,15 +311,15 @@ class ProgramAuditLogTests(TestCase):
         # Assign roles
         UserProgramRole.objects.create(
             user=self.manager, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         UserProgramRole.objects.create(
             user=self.executive, program=self.program,
-            role="executive", status="active",
+            role=ROLE_EXECUTIVE, status="active",
         )
         UserProgramRole.objects.create(
             user=self.caseworker, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Create a client enrolled in the program
@@ -372,7 +373,7 @@ class ProgramAuditLogTests(TestCase):
         )
         UserProgramRole.objects.create(
             user=removed_user, program=self.program,
-            role="program_manager", status="removed",
+            role=ROLE_PROGRAM_MANAGER, status="removed",
         )
         self.client.login(username="removed", password="testpass123")
         resp = self.client.get(self._url())
@@ -584,7 +585,7 @@ class ComplianceSummaryPermissionTests(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         UserProgramRole.objects.create(
             user=self.executive, program=self.program,
-            role="executive", status="active",
+            role=ROLE_EXECUTIVE, status="active",
         )
 
         # Staff — should be denied
@@ -593,7 +594,7 @@ class ComplianceSummaryPermissionTests(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Program manager — should be denied (uses audit.view for their program)
@@ -602,7 +603,7 @@ class ComplianceSummaryPermissionTests(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.pm, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Seed one audit entry so the view has data to aggregate

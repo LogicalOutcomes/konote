@@ -26,6 +26,7 @@ from apps.reports.funder_report import (
     generate_funder_report_data,
 )
 from apps.reports.utils import get_quarter_range, get_quarter_choices
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 
 class FormatNumberTests(SimpleTestCase):
@@ -224,7 +225,7 @@ class StructuredInsightsJSONTest(TestCase):
         )
         self.program = Program.objects.create(name="Housing")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active"
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -277,7 +278,7 @@ class AnalysisChartTimeframeTest(TestCase):
         )
         self.program = Program.objects.create(name="Coaching")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active"
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Chart"
@@ -464,7 +465,7 @@ class FunderReportTemplateMetricFilterTest(TestCase):
         )
         self.program = Program.objects.create(name="Coaching")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="executive", status="active"
+            user=self.user, program=self.program, role=ROLE_EXECUTIVE, status="active"
         )
 
         self.client_file = ClientFile()
@@ -790,7 +791,7 @@ class ConsortiumMetricLockingTest(TestCase):
         )
         self.program = Program.objects.create(name="Coaching")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active"
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
         )
 
         self.metric_a = MetricDefinition.objects.create(
@@ -881,10 +882,10 @@ class AllProgramsFormChoicesTest(TestCase):
         self.program_a = Program.objects.create(name="Housing")
         self.program_b = Program.objects.create(name="Employment")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_a, role="program_manager", status="active"
+            user=self.user, program=self.program_a, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_b, role="program_manager", status="active"
+            user=self.user, program=self.program_b, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
         # A user with only one program
@@ -892,7 +893,7 @@ class AllProgramsFormChoicesTest(TestCase):
             username="single_pm", password="pass", display_name="Single PM"
         )
         UserProgramRole.objects.create(
-            user=self.single_user, program=self.program_a, role="program_manager", status="active"
+            user=self.single_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
     def tearDown(self):
@@ -952,10 +953,10 @@ class AllProgramsCleanProgramTest(TestCase):
         self.program_a = Program.objects.create(name="Housing")
         self.program_b = Program.objects.create(name="Employment")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_a, role="program_manager", status="active"
+            user=self.user, program=self.program_a, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_b, role="program_manager", status="active"
+            user=self.user, program=self.program_b, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         # Create metric for form validation to pass
         self.metric = MetricDefinition.objects.create(
@@ -1085,10 +1086,10 @@ class AllProgramsFunderFormCleanTest(TestCase):
         self.program_a = Program.objects.create(name="Housing")
         self.program_b = Program.objects.create(name="Employment")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_a, role="program_manager", status="active"
+            user=self.user, program=self.program_a, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program_b, role="program_manager", status="active"
+            user=self.user, program=self.program_b, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         # Create a report template linked to program A
         partner = Partner.objects.create(name="Test Funder", partner_type="funder")
@@ -1451,7 +1452,7 @@ class ComplianceBannerIntegrationTests(TestCase):
             username="banner_exec", password="pass", is_admin=False,
         )
         UserProgramRole.objects.create(
-            user=self.executive, program=self.prog, role="executive",
+            user=self.executive, program=self.prog, role=ROLE_EXECUTIVE,
         )
 
         # Create a client enrolled in the program

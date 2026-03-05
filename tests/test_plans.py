@@ -20,6 +20,7 @@ from apps.plans.models import (
     PlanTargetMetric,
 )
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -575,7 +576,7 @@ class TestMetricReview(TestCase):
             username="revtest", password="testpass123", is_admin=True,
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active",
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active",
         )
 
         self.client_file = ClientFile()
@@ -999,7 +1000,7 @@ class AssessmentDueBannerViewTest(TestCase):
         )
         self.program = Program.objects.create(name="Banner Program", status="active")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active",
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active",
         )
         self.client_file = ClientFile()
         self.client_file.first_name = "Banner"

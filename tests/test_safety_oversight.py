@@ -28,6 +28,7 @@ from apps.reports.oversight import (
     quarter_dates,
 )
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -51,7 +52,7 @@ class EnhancedAlertCardTest(TestCase):
         )
         self.prog = Program.objects.create(name="Test Program", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.prog, role="executive",
+            user=self.exec_user, program=self.prog, role=ROLE_EXECUTIVE,
         )
 
     def _create_client(self, status="active"):

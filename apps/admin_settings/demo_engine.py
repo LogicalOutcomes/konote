@@ -43,6 +43,12 @@ from apps.plans.models import (
     PlanTargetRevision,
     PlanTemplate,
 )
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
@@ -574,14 +580,14 @@ class DemoDataEngine:
         for prog in programs:
             UserProgramRole.objects.get_or_create(
                 user=front_desk, program=prog,
-                defaults={"role": "receptionist"},
+                defaults={"role": ROLE_RECEPTIONIST},
             )
 
         # Executive: executive on all programs
         for prog in programs:
             UserProgramRole.objects.get_or_create(
                 user=executive, program=prog,
-                defaults={"role": "executive"},
+                defaults={"role": ROLE_EXECUTIVE},
             )
 
         # Distribute workers and manager across programs
@@ -590,26 +596,26 @@ class DemoDataEngine:
             for worker in (worker1, worker2):
                 UserProgramRole.objects.get_or_create(
                     user=worker, program=programs[0],
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             UserProgramRole.objects.get_or_create(
                 user=manager, program=programs[0],
-                defaults={"role": "program_manager"},
+                defaults={"role": ROLE_PROGRAM_MANAGER},
             )
         elif len(programs) == 2:
             # Two programs: split workers
             UserProgramRole.objects.get_or_create(
                 user=worker1, program=programs[0],
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
             UserProgramRole.objects.get_or_create(
                 user=worker2, program=programs[1],
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
             for prog in programs:
                 UserProgramRole.objects.get_or_create(
                     user=manager, program=prog,
-                    defaults={"role": "program_manager"},
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
                 )
         else:
             # 3+ programs: split workers, manager on first half
@@ -617,25 +623,25 @@ class DemoDataEngine:
             for prog in programs[:mid]:
                 UserProgramRole.objects.get_or_create(
                     user=worker1, program=prog,
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             for prog in programs[mid:]:
                 UserProgramRole.objects.get_or_create(
                     user=worker2, program=prog,
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             # Worker1 also gets program_manager on first program
             role = UserProgramRole.objects.filter(
                 user=worker1, program=programs[0],
             ).first()
             if role:
-                role.role = "program_manager"
+                role.role = ROLE_PROGRAM_MANAGER
                 role.save(update_fields=["role"])
             # Manager on first half of programs
             for prog in programs[:mid + 1]:
                 UserProgramRole.objects.get_or_create(
                     user=manager, program=prog,
-                    defaults={"role": "program_manager"},
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
                 )
 
         self.log(f"  Created {len(user_specs)} demo users with roles across {len(programs)} programs.")

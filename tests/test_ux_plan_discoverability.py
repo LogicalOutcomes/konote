@@ -16,6 +16,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.models import Program, UserProgramRole
 from konote.middleware.htmx_vary import HtmxVaryMiddleware
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -52,10 +53,10 @@ class EditableFilterTest(TestCase):
             username="staffuser", password="testpass123", display_name="Staff User"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.prog_a, role="staff", status="active"
+            user=self.user, program=self.prog_a, role=ROLE_STAFF, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.prog_b, role="program_manager", status="active"
+            user=self.user, program=self.prog_b, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
         # editable_client is enrolled in prog_a (staff can edit plans there)
@@ -108,7 +109,7 @@ class EditableFilterTest(TestCase):
             username="pmonly", password="testpass123", display_name="PM Only"
         )
         UserProgramRole.objects.create(
-            user=pm_only, program=self.prog_a, role="program_manager", status="active"
+            user=pm_only, program=self.prog_a, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         self.http.login(username="pmonly", password="testpass123")
         resp = self.http.get("/participants/?editable=1")
@@ -138,7 +139,7 @@ class PlanViewDisabledButtonTest(TestCase):
             username="staff", password="testpass123", display_name="Staff"
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active"
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active"
         )
 
         # Program manager (plan.edit=DENY — cannot edit)
@@ -146,7 +147,7 @@ class PlanViewDisabledButtonTest(TestCase):
             username="pm", password="testpass123", display_name="PM"
         )
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager", status="active"
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
         self.client_file = _make_client_in_program("Jane", "Doe", self.program)

@@ -15,6 +15,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
 from apps.clients.models import ClientProgramEnrolment
 from apps.notes.models import ProgressNote, SuggestionTheme
 from apps.programs.models import Program, UserProgramRole
@@ -1245,7 +1246,7 @@ def executive_dashboard(request):
     # Only computed for executive/admin roles. Shows pending items only.
     from apps.auth_app.decorators import _get_user_highest_role_any
     user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
-    is_exec_or_admin = user_role in ("executive", "program_manager") or getattr(request.user, "is_admin", False)
+    is_exec_or_admin = user_role in (ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER) or getattr(request.user, "is_admin", False)
 
     privacy_banner_items = []
     if is_exec_or_admin:
@@ -1328,7 +1329,7 @@ def _prepare_dashboard_export(request):
     # Role gate: only executives, PMs, and admins may export
     user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
     is_admin = getattr(request.user, "is_admin", False)
-    if user_role not in ("executive", "program_manager") and not is_admin:
+    if user_role not in (ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER) and not is_admin:
         return None, HttpResponseForbidden("Access restricted to management roles.")
 
     user_program_ids = list(

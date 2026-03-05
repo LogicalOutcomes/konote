@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
@@ -276,8 +277,8 @@ def client_list(request):
     }
 
     # Role-to-program mappings for grouped display.
-    staff_programs = [upr.program for upr in _user_roles if upr.role == "staff"]
-    pm_programs = [upr.program for upr in _user_roles if upr.role == "program_manager"]
+    staff_programs = [upr.program for upr in _user_roles if upr.role == ROLE_STAFF]
+    pm_programs = [upr.program for upr in _user_roles if upr.role == ROLE_PROGRAM_MANAGER]
     staff_program_ids = {p.pk for p in staff_programs}
     has_mixed_roles = bool(staff_program_ids) and bool(pm_programs)
 
@@ -447,7 +448,7 @@ def _get_create_field_defs(user):
         show_on_create=True,
     ).select_related("group").order_by("group__sort_order", "sort_order")
     user_role = getattr(user, "_program_role", None) or _get_user_highest_role(user)
-    if user_role == "receptionist":
+    if user_role == ROLE_RECEPTIONIST:
         qs = qs.filter(front_desk_access="edit")
     return list(qs)
 
@@ -1098,7 +1099,7 @@ def client_detail(request, client_id):
     request.session["recent_clients"] = recent[:10]
 
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
 
     # Only show enrolments in programs the user has access to.
     # Prevents leaking confidential program names.
@@ -1133,7 +1134,7 @@ def client_detail(request, client_id):
         client_file=client, status="pending",
     ).exists()
 
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
 
     # Circles sidebar (only when feature toggle is on and user is not front desk)
     client_circles = []
@@ -1180,7 +1181,7 @@ def client_detail(request, client_id):
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
     effective_role = user_role or _get_user_highest_role(request.user)
-    visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
+    visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields(ROLE_RECEPTIONIST)
 
     # Compute effective sharing state for the note sharing toggle (QA-R7-PRIVACY2).
     # Binary: ON if field is "consent", or "default" with agency toggle on.
@@ -1279,7 +1280,7 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
     of their front_desk_access setting. Fail closed: if is_dv_safe cannot be
     read, assume True for receptionists.
     """
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
     # DV-safe: determine whether to hide DV-sensitive fields from front desk
     dv_hide = False
     if is_receptionist:
@@ -1393,7 +1394,7 @@ def client_save_custom_fields(request, client_id):
         return redirect("clients:client_detail", client_id=client.pk)
 
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
 
     if request.method == "POST":
         groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
@@ -1482,7 +1483,7 @@ def client_consent_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
     return render(request, "clients/_consent_display.html", {
         "client": client,
         "is_pm_or_admin": is_pm_or_admin,
@@ -1524,7 +1525,7 @@ def client_consent_save(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         form = ConsentRecordForm(request.POST)
@@ -1614,7 +1615,7 @@ def client_consent_withdraw_form(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
 
     if not client.consent_given_at:
         messages.info(request, _("No active consent to withdraw."))
@@ -1646,7 +1647,7 @@ def client_consent_withdraw(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in (ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE) or getattr(request.user, "is_admin", False)
 
     if request.method != "POST":
         return redirect("clients:client_detail", client_id=client.pk)

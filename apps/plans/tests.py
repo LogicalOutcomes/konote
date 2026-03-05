@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 from apps.programs.models import Program, UserProgramRole
 
 from .models import (
@@ -43,11 +44,11 @@ class PlanPermissionHelperTest(TestCase):
         )
         # PM role
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager", status="active"
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         # Staff role
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active"
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active"
         )
 
     def test_admin_cannot_edit_without_staff_role(self):
@@ -100,10 +101,10 @@ class SectionCreatePermissionTest(TestCase):
             client_file=self.client_file, program=self.program, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active"
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager", status="active"
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
     def test_staff_can_create_section(self):
@@ -143,7 +144,7 @@ class TargetEditRevisionTest(TestCase):
             client_file=self.client_file, program=self.program, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active"
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active"
         )
         self.section = PlanSection.objects.create(
             client_file=self.client_file, name="Section A"

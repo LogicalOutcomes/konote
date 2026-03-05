@@ -10,6 +10,13 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
+
 
 class Command(BaseCommand):
     help = "Seed database with metric library, default terminology, and feature toggles."
@@ -466,26 +473,26 @@ class Command(BaseCommand):
         for prog in all_programs:
             UserProgramRole.objects.get_or_create(
                 user=front_desk, program=prog,
-                defaults={"role": "receptionist"},
+                defaults={"role": ROLE_RECEPTIONIST},
             )
 
         # Casey (worker-1): program_manager for Employment, staff for Housing + Kitchen
         # Mixed roles demonstrate how the same person sees different things per program
         UserProgramRole.objects.get_or_create(
             user=worker1, program=employment,
-            defaults={"role": "program_manager"},
+            defaults={"role": ROLE_PROGRAM_MANAGER},
         )
         for prog in (housing, kitchen):
             UserProgramRole.objects.get_or_create(
                 user=worker1, program=prog,
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
 
         # Noor (worker-2): group programs + shared Kitchen
         for prog in (youth, newcomer, kitchen):
             UserProgramRole.objects.get_or_create(
                 user=worker2, program=prog,
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
 
         # Manager: program_manager on Employment, Housing, Kitchen (not all 5)
@@ -493,14 +500,14 @@ class Command(BaseCommand):
         for prog in (employment, housing, kitchen):
             UserProgramRole.objects.get_or_create(
                 user=manager, program=prog,
-                defaults={"role": "program_manager"},
+                defaults={"role": ROLE_PROGRAM_MANAGER},
             )
 
         # Executive: executive on all 5 (dashboard only)
         for prog in all_programs:
             UserProgramRole.objects.get_or_create(
                 user=executive, program=prog,
-                defaults={"role": "executive"},
+                defaults={"role": ROLE_EXECUTIVE},
             )
 
         # --- 15 Demo Clients ---
