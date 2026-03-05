@@ -2654,13 +2654,15 @@ p.notice.warning {
     width: 100%;
 }
 .plan-targets-table th:nth-child(1),
-.plan-targets-table td:nth-child(1) { width: 50%; }
+.plan-targets-table td:nth-child(1) { width: 40%; }
 .plan-targets-table th:nth-child(2),
-.plan-targets-table td:nth-child(2) { width: 13%; }
+.plan-targets-table td:nth-child(2) { width: 10%; }
 .plan-targets-table th:nth-child(3),
-.plan-targets-table td:nth-child(3) { width: 25%; }
+.plan-targets-table td:nth-child(3) { width: 15%; }
 .plan-targets-table th:nth-child(4),
-.plan-targets-table td:nth-child(4) { width: 12%; }
+.plan-targets-table td:nth-child(4) { width: 20%; }
+.plan-targets-table th:nth-child(5),
+.plan-targets-table td:nth-child(5) { width: 15%; }
 .plan-targets-table td:nth-child(1) {
     overflow: hidden;
 }
