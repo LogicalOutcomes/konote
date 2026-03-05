@@ -139,7 +139,7 @@ class ProgramSelectionMixin:
         if cleaned.get("program") is None and cleaned.get("format") == "pdf":
             self.add_error(
                 "format",
-                _("PDF export is not available for All Programs. Please select CSV."),
+                _("PDF export is not available for All Programs. Please select CSV or HTML."),
             )
 
 

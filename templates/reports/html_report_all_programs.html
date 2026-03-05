@@ -7,8 +7,11 @@
     <style>
         {% include "reports/_report_styles.html" %}
 
-        /* All-programs print: page breaks between programs */
         @media print {
+            body { padding: 0; max-width: none; }
+            .no-print { display: none; }
+            details > summary { display: none; }
+            details > *:not(summary) { display: block !important; }
             .program-section { page-break-before: always; }
             .program-section:first-of-type { page-break-before: auto; }
         }
@@ -28,15 +31,6 @@
             font-weight: 700;
             color: #3176aa;
             margin-bottom: 0.5rem;
-        }
-
-        /* Agency notes box */
-        .agency-notes-box {
-            padding: 0.8rem 1rem;
-            background-color: #f7f8fa;
-            border: 1px solid #d1d5db;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
         }
     </style>
 </head>
@@ -61,7 +55,7 @@
 
 {% if agency_notes %}
 <div class="report-header-bar">{% trans "Agency Notes" %}</div>
-<div class="agency-notes-box">
+<div style="padding: 0.8rem 1rem; background-color: #f7f8fa; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 4px 4px;">
     <p>{{ agency_notes }}</p>
 </div>
 {% endif %}

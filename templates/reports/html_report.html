@@ -8,6 +8,14 @@
         {% block styles %}
         {% include "reports/_report_styles.html" %}
 
+        /* Print: expand all details, hide toggles and no-print elements */
+        @media print {
+            body { padding: 0; max-width: none; }
+            .no-print { display: none; }
+            details > summary { display: none; }
+            details > *:not(summary) { display: block !important; }
+        }
+
         .stat-box .change {
             font-size: 0.75rem;
             color: #4a5568;
