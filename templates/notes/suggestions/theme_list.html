@@ -42,6 +42,38 @@
 <p><a href="{% url 'suggestion_themes:theme_create' %}" role="button">{% trans "Create Theme" %}</a></p>
 {% endif %}
 
+{# ── Focused Analysis (Ask a Question) ── #}
+{% if features.ai_assist_participant_data and can_manage %}
+<details class="focused-analysis-section" style="margin-bottom:1.5rem;">
+    <summary><strong>{% trans "Ask a Question" %}</strong> — {% trans "Search suggestions for a specific topic" %}</summary>
+    <form hx-post="{% url 'suggestion_themes:focused_analysis' %}"
+          hx-target="#focused-results"
+          hx-indicator="#focused-spinner"
+          style="margin-top:0.75rem;">
+        {% csrf_token %}
+        <div class="grid" style="grid-template-columns:1fr auto auto;">
+            <label for="focused-program">
+                {% trans "Program" %}
+                <select id="focused-program" name="program_id" required>
+                    {% for prog in accessible_programs %}
+                    <option value="{{ prog.pk }}" {% if program_filter == prog.pk|stringformat:"d" %}selected{% endif %}>{{ prog.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <label for="focused-question">
+            {% trans "Question" %}
+            <input type="text" id="focused-question" name="question"
+                   maxlength="500" required
+                   placeholder="{% trans 'e.g., Are there any themes about scheduling or opening hours?' %}">
+        </label>
+        <button type="submit">{% trans "Analyse" %}</button>
+        <span id="focused-spinner" class="htmx-indicator" aria-busy="true" style="display:none;">{% trans "Analysing..." %}</span>
+    </form>
+    <div id="focused-results"></div>
+</details>
+{% endif %}
+
 {# ── Theme cards ── #}
 {% if themes %}
 <div class="theme-cards">
