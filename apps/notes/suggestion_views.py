@@ -209,6 +209,12 @@ def theme_detail(request, pk):
             "date": note.effective_date,
         })
 
+    # Determine if verbatim text should be suppressed (5–14 participant programs)
+    from apps.notes.theme_engine import get_participant_count
+    from apps.reports.insights import MIN_PARTICIPANTS_FOR_QUOTES
+    participant_count = get_participant_count(theme.program)
+    suppress_verbatim = participant_count < MIN_PARTICIPANTS_FOR_QUOTES
+
     breadcrumbs = [
         {"url": reverse("suggestion_themes:theme_list"), "label": _("Suggestion Themes")},
         {"url": "", "label": theme.name},
@@ -222,6 +228,8 @@ def theme_detail(request, pk):
         "is_filtered": is_filtered,
         "date_from": date_from,
         "date_to": date_to,
+        "suppress_verbatim": suppress_verbatim,
+        "participant_count": participant_count,
     })
 
 
