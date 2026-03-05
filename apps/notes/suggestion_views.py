@@ -1,7 +1,10 @@
 """Views for suggestion theme management (UX-INSIGHT6 Phase 1)."""
+from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -169,10 +172,37 @@ def theme_detail(request, pk):
             return _handle_unlink(request, theme)
 
     # ── GET: render detail page ──
+
+    # Optional date filtering (passed from Insights page)
+    date_from = None
+    date_to = None
+    is_filtered = False
+    raw_from = request.GET.get("date_from", "")
+    raw_to = request.GET.get("date_to", "")
+    if raw_from and raw_to:
+        try:
+            date_from = date.fromisoformat(raw_from)
+            date_to = date.fromisoformat(raw_to)
+            is_filtered = True
+        except ValueError:
+            pass
+
     linked_links = (
         theme.links.select_related("progress_note", "linked_by")
+        .annotate(
+            _effective_date=Coalesce(
+                "progress_note__backdate",
+                "progress_note__created_at",
+            ),
+        )
         .order_by("-linked_at")
     )
+    if is_filtered:
+        linked_links = linked_links.filter(
+            _effective_date__date__gte=date_from,
+            _effective_date__date__lte=date_to,
+        )
+
     linked_notes = []
     for link in linked_links:
         note = link.progress_note
@@ -199,6 +229,9 @@ def theme_detail(request, pk):
         "can_manage": can_manage,
         "status_choices": SuggestionTheme.STATUS_CHOICES,
         "breadcrumbs": breadcrumbs,
+        "is_filtered": is_filtered,
+        "date_from": date_from,
+        "date_to": date_to,
     })
 
 

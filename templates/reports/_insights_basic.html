@@ -275,7 +275,7 @@
         <ul class="addressed-themes-list">
             {% for theme in addressed_themes %}
             <li>
-                <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+                <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}{% if date_from and date_to %}?date_from={{ date_from|date:"Y-m-d" }}&amp;date_to={{ date_to|date:"Y-m-d" }}{% endif %}">{{ theme.name }}</a>
                 <span class="muted">({{ theme.link_count }})</span>
             </li>
             {% endfor %}
