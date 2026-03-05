@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ consortium.name }} — {% trans "Dashboard" %}{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { text-align: center; padding: 1.5rem 1rem; }
+.stat-card .stat-value { font-size: 2.5rem; font-weight: 700; line-height: 1.1; }
+.stat-card .stat-label { font-size: 0.875rem; opacity: 0.8; margin-top: 0.25rem; }
+.chart-container { position: relative; max-width: 600px; margin: 0 auto; }
+.chart-container canvas { max-height: 350px; }
+.suppressed { color: #7b2d8b; font-style: italic; }
+.consent-notice { background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 2rem; }
+.consent-notice strong { display: block; margin-bottom: 0.25rem; }
+.scrollable-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scrollable-table[tabindex] { outline-offset: 2px; }
+.view-toggle { margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li aria-current="page">{{ consortium.name }}</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>{{ consortium.name }} — {% trans "Consortium Dashboard" %}</h1>
+    {% if rollup %}
+    <p>{% blocktrans with start=rollup.period_start end=rollup.period_end %}Reporting period: {{ start }} to {{ end }}{% endblocktrans %}</p>
+    {% endif %}
+</hgroup>
+
+{# Consent notice — expert panel item #1 #}
+<div class="consent-notice" role="note" aria-label="{% trans 'Data sharing notice' %}">
+    <strong>{% trans "Data Sharing Notice" %}</strong>
+    {% trans "This dashboard shows de-identified aggregate data published by partner agencies. Individual participant records are never shared. Data suppression is applied to protect small groups." %}
+</div>
+
+{# View toggle — expert panel item #5 #}
+{% if is_consortium_lead %}
+<div class="view-toggle">
+    <fieldset role="group">
+        <button id="btn-network" class="outline" aria-pressed="true" onclick="toggleView('network')">
+            {% trans "Network View" %}
+        </button>
+        <button id="btn-agency" class="outline secondary" aria-pressed="false" onclick="toggleView('agency')">
+            {% trans "Agency View" %}
+        </button>
+    </fieldset>
+</div>
+{% endif %}
+
+{% if rollup %}
+{# Stat cards #}
+<div class="stat-grid" id="stat-cards">
+    <article class="stat-card">
+        <div class="stat-value" id="stat-participants">{{ rollup.participant_count }}</div>
+        <div class="stat-label">{% trans "Total Participants" %}</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-value">{{ rollup.agency_count }}</div>
+        <div class="stat-label">{% trans "Partner Agencies" %}</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-value" id="stat-sessions">—</div>
+        <div class="stat-label">{% trans "Total Sessions" %}</div>
+    </article>
+</div>
+
+{# Demographic charts with fallback tables — expert panel item #2 #}
+<article aria-label="{% trans 'Age Distribution' %}">
+    <h2>{% trans "Age Distribution" %}</h2>
+    <div class="chart-container">
+        <canvas id="chart-age" aria-label="{% trans 'Age group distribution bar chart' %}" role="img"></canvas>
+    </div>
+    <details>
+        <summary>{% trans "View data table" %}</summary>
+        <div class="scrollable-table" tabindex="0" role="region" aria-label="{% trans 'Age data table' %}">
+            <table role="grid" id="table-age">
+                <thead><tr><th>{% trans "Age Group" %}</th><th>{% trans "Count" %}</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</article>
+
+<article aria-label="{% trans 'Gender Identity' %}">
+    <h2>{% trans "Gender Identity" %}</h2>
+    <div class="chart-container">
+        <canvas id="chart-gender" aria-label="{% trans 'Gender identity distribution chart' %}" role="img"></canvas>
+    </div>
+    <details>
+        <summary>{% trans "View data table" %}</summary>
+        <div class="scrollable-table" tabindex="0" role="region" aria-label="{% trans 'Gender data table' %}">
+            <table role="grid" id="table-gender">
+                <thead><tr><th>{% trans "Gender Identity" %}</th><th>{% trans "Count" %}</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</article>
+
+<article aria-label="{% trans 'Racial Identity' %}">
+    <h2>{% trans "Racial Identity" %}</h2>
+    <div class="chart-container">
+        <canvas id="chart-racial" aria-label="{% trans 'Racial identity distribution chart' %}" role="img"></canvas>
+    </div>
+    <details>
+        <summary>{% trans "View data table" %}</summary>
+        <div class="scrollable-table" tabindex="0" role="region" aria-label="{% trans 'Racial identity data table' %}">
+            <table role="grid" id="table-racial">
+                <thead><tr><th>{% trans "Racial Identity" %}</th><th>{% trans "Count" %}</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</article>
+
+<article aria-label="{% trans 'Born in Canada' %}">
+    <h2>{% trans "Born in Canada" %}</h2>
+    <div class="chart-container">
+        <canvas id="chart-born-canada" aria-label="{% trans 'Born in Canada distribution chart' %}" role="img"></canvas>
+    </div>
+    <details>
+        <summary>{% trans "View data table" %}</summary>
+        <div class="scrollable-table" tabindex="0" role="region" aria-label="{% trans 'Born in Canada data table' %}">
+            <table role="grid" id="table-born-canada">
+                <thead><tr><th>{% trans "Born in Canada" %}</th><th>{% trans "Count" %}</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </details>
+</article>
+
+{# Service stats per agency — expert panel item #3 (no demographics per agency) #}
+{% if is_consortium_lead %}
+<article aria-label="{% trans 'Agency Service Statistics' %}" id="agency-stats-section">
+    <h2>{% trans "Per-Agency Service Statistics" %}</h2>
+    <p class="help-text">{% trans "Demographics are shown only in network totals to protect participant privacy." %}</p>
+    <div class="scrollable-table" tabindex="0" role="region" aria-label="{% trans 'Per-agency service statistics table' %}">
+        <table role="grid" id="table-agency-stats">
+            <thead>
+                <tr>
+                    <th>{% trans "Agency" %}</th>
+                    <th>{% trans "Participants" %}</th>
+                    <th>{% trans "Sessions" %}</th>
+                    <th>{% trans "New" %}</th>
+                    <th>{% trans "Returning" %}</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</article>
+{% endif %}
+
+{# Export #}
+<article aria-label="{% trans 'Export' %}">
+    <h2>{% trans "Export Data" %}</h2>
+    <a href="{% url 'consortia:export_csv' consortium_id=consortium.pk %}" role="button" class="outline">
+        {% trans "Download CSV" %}
+    </a>
+</article>
+
+{% else %}
+<article>
+    <p>{% trans "No rollup data available yet. Published reports from partner agencies will appear here once aggregated." %}</p>
+</article>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% if rollup %}
+<script>
+// Colourblind-safe palette — expert panel item #6
+const PALETTE = ['#0077BB','#33BBEE','#009988','#EE7733','#CC3311','#EE3377','#BBBBBB','#AA4499'];
+
+const rollupData = {{ rollup_data_json|safe }};
+
+// Populate stat cards
+const stats = rollupData.service_stats || {};
+const sessionsEl = document.getElementById('stat-sessions');
+if (sessionsEl && stats.total_sessions) sessionsEl.textContent = stats.total_sessions;
+
+// Helper: create bar chart with data labels and fallback table
+function makeBarChart(canvasId, tableId, dataKey, labelKey) {
+    const rows = (rollupData.demographics || {})[dataKey] || [];
+    const labels = rows.map(r => r.label || '');
+    const counts = rows.map(r => typeof r.count === 'number' ? r.count : 0);
+
+    // Chart
+    const ctx = document.getElementById(canvasId);
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: labelKey || 'Count',
+                    data: counts,
+                    backgroundColor: PALETTE.slice(0, labels.length),
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    // Data labels for colourblind accessibility
+                    tooltip: { enabled: true },
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    // Fallback table
+    const table = document.getElementById(tableId);
+    if (table) {
+        const tbody = table.querySelector('tbody');
+        rows.forEach(r => {
+            const tr = document.createElement('tr');
+            const tdLabel = document.createElement('td');
+            tdLabel.textContent = r.label || '';
+            const tdCount = document.createElement('td');
+            if (typeof r.count === 'string' && r.count.startsWith('<')) {
+                tdCount.textContent = r.count;
+                tdCount.className = 'suppressed';
+            } else {
+                tdCount.textContent = r.count;
+            }
+            tr.appendChild(tdLabel);
+            tr.appendChild(tdCount);
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+makeBarChart('chart-age', 'table-age', 'age_groups', 'Participants');
+makeBarChart('chart-gender', 'table-gender', 'gender_identity', 'Participants');
+makeBarChart('chart-racial', 'table-racial', 'racial_identity', 'Participants');
+makeBarChart('chart-born-canada', 'table-born-canada', 'born_in_canada', 'Participants');
+
+// View toggle
+function toggleView(view) {
+    const btnNetwork = document.getElementById('btn-network');
+    const btnAgency = document.getElementById('btn-agency');
+    const agencySection = document.getElementById('agency-stats-section');
+
+    if (view === 'network') {
+        btnNetwork.setAttribute('aria-pressed', 'true');
+        btnNetwork.classList.remove('secondary');
+        btnAgency.setAttribute('aria-pressed', 'false');
+        btnAgency.classList.add('secondary');
+        if (agencySection) agencySection.style.display = '';
+    } else {
+        btnNetwork.setAttribute('aria-pressed', 'false');
+        btnNetwork.classList.add('secondary');
+        btnAgency.setAttribute('aria-pressed', 'true');
+        btnAgency.classList.remove('secondary');
+        if (agencySection) agencySection.style.display = 'none';
+    }
+}
+</script>
+{% endif %}
+{% endblock %}
