@@ -16,6 +16,7 @@
 </header>
 
 <!-- First-time onboarding banner (QA-W19) — dismissed permanently via localStorage -->
+{% if not is_executive %}
 <article class="onboarding-banner" id="onboarding-banner" role="complementary" aria-label="{% trans 'Welcome banner' %}" hidden>
     <header>
         <strong>{% trans "Welcome to KoNote! Need help getting started?" %}</strong>
@@ -28,7 +29,9 @@
     </ul>
     <p class="onboarding-help-link"><a href="{% url 'help' %}">{% trans "View help guide" %} &rarr;</a></p>
 </article>
+{% endif %}
 
+{% if not is_executive %}
 <!-- Search and actions bar -->
 <div class="search-bar">
     <form id="search-filters">
@@ -120,6 +123,7 @@
 <div id="search-results" aria-live="polite">
     {% include "clients/_search_results.html" %}
 </div>
+{% endif %}
 
 {% if is_executive %}
   {% include "clients/_dashboard_executive_summary.html" %}
@@ -251,6 +255,7 @@
     </article>
     {% endif %}
 
+    {% if not is_executive %}
     <!-- Recent activity -->
     <article>
         <header class="card-header">
@@ -271,6 +276,7 @@
             <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"participants" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
         </footer>
     </article>
+    {% endif %}
 </div>
 
 {% endblock %}

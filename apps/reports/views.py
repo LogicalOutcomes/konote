@@ -949,36 +949,39 @@ def export_form(request):
         })
 
     # Audit log with recipient tracking
-    audit_metadata = {
-        "program": str(program_display_name),
-        "all_programs": all_programs_mode,
-        "metrics": [m.name for m in selected_metrics],
-        "date_from": str(date_from),
-        "date_to": str(date_to),
-        "total_clients": (
-            "suppressed" if _has_confidential_program else len(unique_clients)
-        ),
-        "total_data_points": total_data_points_count if is_aggregate else len(rows),
-        "export_mode": "aggregate" if is_aggregate else "individual",
-        "recipient": recipient,
-        "secure_link_id": str(link.id),
-    }
-    if grouping_type != "none":
-        audit_metadata["grouped_by"] = grouping_label
-    if achievement_summary:
-        audit_metadata["include_achievement_rate"] = True
-        audit_metadata["achievement_rate"] = achievement_summary.get("overall_rate")
+    try:
+        audit_metadata = {
+            "program": str(program_display_name),
+            "all_programs": all_programs_mode,
+            "metrics": [m.name for m in selected_metrics],
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+            "total_clients": (
+                "suppressed" if _has_confidential_program else len(unique_clients)
+            ),
+            "total_data_points": total_data_points_count if is_aggregate else len(rows),
+            "export_mode": "aggregate" if is_aggregate else "individual",
+            "recipient": recipient,
+            "secure_link_id": str(link.id),
+        }
+        if grouping_type != "none":
+            audit_metadata["grouped_by"] = grouping_label
+        if achievement_summary:
+            audit_metadata["include_achievement_rate"] = True
+            audit_metadata["achievement_rate"] = achievement_summary.get("overall_rate")
 
-    AuditLog.objects.using("audit").create(
-        event_timestamp=timezone.now(),
-        user_id=request.user.pk,
-        user_display=request.user.display_name,
-        action="export",
-        resource_type="metric_report",
-        ip_address=_get_client_ip(request),
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata=audit_metadata,
-    )
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            action="export",
+            resource_type="metric_report",
+            ip_address=_get_client_ip(request),
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata=audit_metadata,
+        )
+    except Exception:
+        logger.exception("Failed to create audit log for metric export")
 
     download_url = request.build_absolute_uri(
         reverse("reports:download_export", args=[link.id])
