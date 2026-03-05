@@ -1460,8 +1460,8 @@ def funder_report_approve(request):
                 "reports/html_report_all_programs.html", html_context,
             )
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
-        elif all_programs_mode:
-            # All-programs CSV (covers CSV, PDF, and any other format)
+        elif all_programs_mode and export_format == "csv":
+            # All-programs CSV
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Agency notes header
@@ -1487,6 +1487,9 @@ def funder_report_approve(request):
                 writer.writerow([])
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
             content = csv_buffer.getvalue()
+        elif all_programs_mode:
+            # Unsupported format for all-programs (form should block this)
+            raise ValueError(f"Unsupported export format for All Programs: {export_format}")
         elif export_format == "pdf":
             from .pdf_views import generate_funder_report_pdf
             report_data = data_or_sections

@@ -1926,6 +1926,53 @@ class FunderReportViewTests(TestCase):
         self.assertEqual(resp["Location"], "/reports/funder-report/")
 
 
+
+class AggregateAllProgramsTotalsTest(TestCase):
+    """Tests for aggregate_all_programs_totals() utility."""
+
+    def test_sums_integer_values(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        from unittest.mock import Mock
+        p1 = Mock(name='Program A')
+        p1.name = 'Program A'
+        p2 = Mock(name='Program B')
+        p2.name = 'Program B'
+        data = [
+            (p1, {'total_individuals_served': 10, 'new_clients_this_period': 3, 'total_contacts': 20}),
+            (p2, {'total_individuals_served': 5, 'new_clients_this_period': 2, 'total_contacts': 8}),
+        ]
+        result = aggregate_all_programs_totals(data)
+        self.assertEqual(result['total_served'], 15)
+        self.assertEqual(result['total_new_clients'], 5)
+        self.assertEqual(result['total_contacts'], 28)
+        self.assertEqual(len(result['programs']), 2)
+        self.assertEqual(result['programs'][0]['name'], 'Program A')
+
+    def test_skips_suppressed_string_values(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        from unittest.mock import Mock
+        p1 = Mock(name='Program A')
+        p1.name = 'Program A'
+        p2 = Mock(name='Program B')
+        p2.name = 'Program B'
+        data = [
+            (p1, {'total_individuals_served': '< 5', 'new_clients_this_period': 3, 'total_contacts': 10}),
+            (p2, {'total_individuals_served': 7, 'new_clients_this_period': '< 5', 'total_contacts': 5}),
+        ]
+        result = aggregate_all_programs_totals(data)
+        self.assertEqual(result['total_served'], 7)  # skips suppressed '< 5'
+        self.assertEqual(result['total_new_clients'], 3)  # skips suppressed '< 5'
+        self.assertEqual(result['total_contacts'], 15)
+
+    def test_empty_input(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        result = aggregate_all_programs_totals([])
+        self.assertEqual(result['total_served'], 0)
+        self.assertEqual(result['total_new_clients'], 0)
+        self.assertEqual(result['total_contacts'], 0)
+        self.assertEqual(result['programs'], [])
+
+
 # =============================================================================
 # Template-driven report generation (DRR: reporting-architecture.md)
 # =============================================================================
