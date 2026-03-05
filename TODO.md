@@ -7,23 +7,6 @@
 
 ## Active Work
 
-### Phase: P0 — Requirements Analysis (March 31)
-
-Items from `requirements-analysis.md` that need work before the deliverable deadline.
-
-**Product code to build:**
-
-- [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
-- [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. Depends on DOC-RP4 (SCALE-ROLLUP1)
-
-**Ops & business model:**
-
-- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
-
-### Phase: Session 7 — Compliance, Safety, Data Quality
-
-- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -93,6 +76,13 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
 
 ## Recently Done
+
+### Session 12 — TODO Cleanup
+
+- [x] Funder reporting design doc — architecture in reporting-architecture DRR, cross-agency reporting plan, funder report approval design — 2026-03-05 (DOC-RP4)
+- [x] Funder reporting dashboard — funder_report.py, consortia/publish.py, rollup aggregation, report templates, approval workflow, cell suppression — 2026-03-05 (SCALE-ROLLUP1)
+- [x] Managed service model — defined in p0-managed-service-plan.md + ovhcloud-deployment DRR — 2026-03-05 (OPS-MANAGED1)
+- [x] Executive compliance report — aggregate dashboard, privacy request counts, processing times (no PII) — 2026-03-05 (QA-R7-EXEC-COMPLIANCE1)
 
 ### Session 11 — Cleanup
 
