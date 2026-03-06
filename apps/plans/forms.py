@@ -371,7 +371,7 @@ class GoalForm(forms.Form):
 
         # R9: If "new" chosen but no name given, default to "General"
         if section_choice == "new" and not new_name:
-            cleaned["new_section_name"] = "General"
+            cleaned["new_section_name"] = str(_("General"))
         elif not section_choice:
             raise forms.ValidationError(
                 _("Please choose which area of the plan this goal belongs to.")

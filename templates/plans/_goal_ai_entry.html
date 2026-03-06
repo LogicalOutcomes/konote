@@ -4,8 +4,9 @@
     <legend>
         {% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}
         {# R13: Contextual help tooltip replacing onboarding hint #}
-        <span class="help-icon" title="{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}" aria-label="{% trans 'Help' %}">&#9432;</span>
+        <span class="help-icon" aria-describedby="goal-help-text" tabindex="0" title="{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}" aria-label="{% trans 'Help' %}">&#9432;</span>
     </legend>
+    <span id="goal-help-text" hidden>{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}</span>
     <small>{% trans "Write what they said, in their own words." %}</small>
     <small class="secondary">
         {% trans "Names and personal details are removed before sending to AI." %}

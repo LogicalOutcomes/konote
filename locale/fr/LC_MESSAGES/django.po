@@ -19786,5 +19786,5 @@ msgstr "Pourquoi ces mesures?"
 
 #: templates/plans/goal_form.html — R22: Quick pick words prompt (blocktrans)
 #, python-format
-msgid "What did the %(client)s say about this?"
-msgstr "Qu'est-ce que le/la %(client)s a dit à ce sujet?"
+msgid "What did %(client)s say about this?"
+msgstr "Qu'a dit %(client)s à ce sujet?"

@@ -47,7 +47,7 @@
     {% include "plans/_goal_quick_pick_entry.html" %}
     {% endif %}{# end quick_pick_first conditional #}
 
-    <p><a href="#" id="btn-manual-entry" class="secondary">
+    <p id="manual-entry-row"><a href="#" id="btn-manual-entry" class="secondary">
         {% trans "Or fill in the form manually" %}
     </a></p>
 </div>
@@ -691,7 +691,7 @@
                 var aiEntry = document.getElementById("ai-entry");
                 var quickPickEntry = document.getElementById("quick-pick-entry");
                 var dividers = entryPoints ? entryPoints.querySelectorAll(".entry-divider") : [];
-                var manualLink = entryPoints ? entryPoints.querySelector("p:last-child") : null;
+                var manualLink = document.getElementById("manual-entry-row");
 
                 if (aiEntry) aiEntry.hidden = true;
                 if (quickPickEntry) quickPickEntry.hidden = true;

@@ -24,7 +24,7 @@
 
 {# R22: Quick pick words prompt (hidden until a card is clicked) #}
 <div id="quick-pick-words" hidden>
-    <label>{% blocktrans with client=term.client|default:"participant" %}What did the {{ client }} say about this?{% endblocktrans %}</label>
+    <label>{% blocktrans with client=term.client|default:"participant" %}What did {{ client }} say about this?{% endblocktrans %}</label>
     <textarea name="quick_pick_words" rows="2" placeholder="{% trans 'Optional — in their own words…' %}"></textarea>
     <button type="button" id="btn-continue-quick-pick">{% trans "Continue" %}</button>
 </div>
