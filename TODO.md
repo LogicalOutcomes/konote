@@ -25,6 +25,9 @@
 
 - [ ] Clean up translation catalog health: remove duplicate `msgid`s, fill missing and empty French strings, and rebuild `django.mo` (REV26-I18N2)
 - [ ] Make tenant provisioning and backup recovery paths more resumable and consistent (REV26-DEP3)
+- [ ] Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
+- [ ] Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
+- [ ] Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
 
 ## Do Occasionally
 
