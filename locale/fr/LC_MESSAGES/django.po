@@ -11967,6 +11967,18 @@ msgstr "Veuillez corriger les éléments suivants :"
 msgid "Please select a section or create a new one."
 msgstr "Veuillez sélectionner une section ou en créer une nouvelle."
 
+msgid "Almost there — a few things need your attention:"
+msgstr "Presque terminé — quelques éléments nécessitent votre attention :"
+
+msgid "You chose to create a new section — please give it a name."
+msgstr "Vous avez choisi de créer une nouvelle section — veuillez lui donner un nom."
+
+msgid "Please choose which area of the plan this goal belongs to."
+msgstr "Veuillez choisir à quelle section du plan cet objectif appartient."
+
+msgid "Please give this goal a short name."
+msgstr "Veuillez donner un nom court à cet objectif."
+
 msgid "Prefer to fill in the form yourself? Go to manual form"
 msgstr ""
 "Vous préférez remplir le formulaire vous-même? Aller au formulaire manuel"
@@ -19718,6 +19730,18 @@ msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-d
 #: templates/admin_settings/features.html
 msgid "No AI API key is configured. AI features are unavailable even if enabled below."
 msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
+
+#: templates/clients/custom_fields_admin.html
+msgid "Collapsed by default"
+msgstr "Réduit par défaut"
+
+#: apps/clients/models.py
+msgid "When checked, this group is collapsed on the participant info tab. Use for sensitive demographics that aren’t needed for daily service delivery. This is a display preference — it does not restrict access to the data."
+msgstr "Lorsque coché, ce groupe est réduit dans l’onglet d’information du participant. Utilisez cette option pour les données démographiques sensibles qui ne sont pas nécessaires pour la prestation quotidienne des services. Il s’agit d’une préférence d’affichage — cela ne restreint pas l’accès aux données."
+
+#: apps/clients/forms.py
+msgid "Collapsed by default (display only — does not restrict access)"
+msgstr "Réduit par défaut (affichage seulement — ne restreint pas l’accès)"
 
 #: templates/reports/_insights_client.html
 msgid "How they’re doing"

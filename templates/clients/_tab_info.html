@@ -139,24 +139,20 @@
 {# Additional details - only if client has middle name or custom data #}
 {% if client.middle_name or custom_data %}
 <section>
-    <details open>
-        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Details" %}</h2></summary>
-
-        {% if client.middle_name %}
-        <dl class="info-grid-compact" style="margin-top: var(--kn-space-base);">
-            <div class="info-field">
-                <dt>{% trans "Middle Name" %}</dt>
-                <dd>{{ client.middle_name }}</dd>
-            </div>
-        </dl>
-        {% endif %}
-
-        {% if custom_data %}
-        <div id="custom-fields-section">
-            {% include "clients/_custom_fields_display.html" %}
+    {% if client.middle_name %}
+    <dl class="info-grid-compact" style="margin-top: var(--kn-space-base);">
+        <div class="info-field">
+            <dt>{% trans "Middle Name" %}</dt>
+            <dd>{{ client.middle_name }}</dd>
         </div>
-        {% endif %}
-    </details>
+    </dl>
+    {% endif %}
+
+    {% if custom_data %}
+    <div id="custom-fields-section">
+        {% include "clients/_custom_fields_display.html" %}
+    </div>
+    {% endif %}
 </section>
 {% endif %}
 

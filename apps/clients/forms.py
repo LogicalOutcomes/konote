@@ -330,9 +330,10 @@ class ClientTransferForm(forms.Form):
 class CustomFieldGroupForm(forms.ModelForm):
     class Meta:
         model = CustomFieldGroup
-        fields = ["title", "sort_order", "status"]
+        fields = ["title", "sort_order", "collapsed_by_default", "status"]
         labels = {
             "sort_order": _("Display order"),
+            "collapsed_by_default": _("Collapsed by default (display only — does not restrict access)"),
         }
 
 

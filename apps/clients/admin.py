@@ -137,7 +137,7 @@ class ClientAccessBlockAdmin(admin.ModelAdmin):
 
 @admin.register(CustomFieldGroup)
 class CustomFieldGroupAdmin(admin.ModelAdmin):
-    list_display = ("title", "sort_order")
+    list_display = ("title", "sort_order", "collapsed_by_default")
 
 
 @admin.register(CustomFieldDefinition)
