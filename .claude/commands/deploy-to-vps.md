@@ -6,15 +6,15 @@ Deploys the latest `develop` branch to the OVHcloud VPS. Supports both productio
 
 | Instance | URL | Directory | Deploy command |
 |----------|-----|-----------|----------------|
-| Production | konote.llewelyn.ca | `/opt/konote` | `ssh konote-vps /opt/konote/deploy.sh` |
-| Dev | konote-dev.llewelyn.ca | `/opt/konote-dev` | `ssh konote-vps /opt/konote/deploy.sh --dev` |
+| Production | konote.llewelyn.ca | `/opt/konote` | `ssh konote-vps "sudo /opt/konote/scripts/deploy.sh"` |
+| Dev | konote-dev.llewelyn.ca | `/opt/konote-dev` | `ssh konote-vps "sudo /opt/konote/scripts/deploy.sh --dev"` |
 
 ## Steps
 
 1. Ask the user which instance to deploy (or deploy both if they say "both"):
-   - **Production only**: `ssh konote-vps /opt/konote/deploy.sh`
-   - **Dev only**: `ssh konote-vps /opt/konote/deploy.sh --dev`
-   - **Both**: `ssh konote-vps /opt/konote/deploy.sh --all`
+   - **Production only**: `ssh konote-vps "sudo /opt/konote/scripts/deploy.sh"`
+   - **Dev only**: `ssh konote-vps "sudo /opt/konote/scripts/deploy.sh --dev"`
+   - **Both**: `ssh konote-vps "sudo /opt/konote/scripts/deploy.sh --all"`
 
 2. The script pulls `develop`, rebuilds the web container, restarts, and waits for the health check.
    - Timeout: 5 minutes (build ~30s, migrations can take longer).
@@ -34,7 +34,7 @@ Deploys the latest `develop` branch to the OVHcloud VPS. Supports both productio
 
 ## Notes
 
-- The VPS deploy script lives at `/opt/konote/deploy.sh` on the server.
+- The VPS deploy script lives at `/opt/konote/scripts/deploy.sh` on the server.
 - This only deploys what's on `develop` in GitHub. Make sure your changes are pushed and merged before running.
 - Migrations run automatically on container startup via `entrypoint.sh`.
 - The dev instance uses `DEMO_MODE=true` — all data is demo data and safe to reset.

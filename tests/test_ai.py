@@ -67,15 +67,24 @@ def test_validate_suggest_target_preserves_valid_section():
 
 
 @pytest.mark.django_db
-def test_call_insights_api_rejects_remote_http_provider(settings):
+def test_call_insights_api_warns_but_allows_remote_http_provider(settings):
     settings.OPENROUTER_API_KEY = "test-key"
     settings.INSIGHTS_API_BASE = "http://example.com/v1"
 
-    with patch("konote.ai.requests.post") as mock_post:
-        result = _call_insights_api("system", "user")
+    mock_response = Mock()
+    mock_response.raise_for_status.return_value = None
+    mock_response.json.return_value = {
+        "choices": [{"message": {"content": "ok"}}],
+    }
 
-    assert result is None
-    mock_post.assert_not_called()
+    with patch("konote.ai.requests.post", return_value=mock_response) as mock_post:
+        with patch("konote.ai.logger.warning") as mock_warning:
+            result = _call_insights_api("system", "user")
+
+    assert result == "ok"
+    mock_post.assert_called_once()
+    mock_warning.assert_called_once()
+    assert "Use HTTPS for production deployments" in mock_warning.call_args[0][0]
 
 
 @pytest.mark.django_db
