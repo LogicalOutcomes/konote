@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] Fix VPS dev repo divergent branches — `/opt/konote-dev` has diverged from `origin/develop`, causing deploy script to skip pulling latest code. Reset with `sudo git -C /opt/konote-dev reset --hard origin/develop`. Due 2026-03-07 — GK (OPS-DEVFIX1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
