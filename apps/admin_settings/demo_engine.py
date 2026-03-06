@@ -685,18 +685,20 @@ class DemoDataEngine:
         used_names = set()
         client_num = 1
 
-        # Determine which worker handles which program
+        # Determine which worker handles which program.
+        # Workers are the 2nd and 3rd users in the spec (index 1 and 2).
+        usernames = list(users.keys())
+        worker_usernames = usernames[1:3] if len(usernames) >= 3 else usernames[:1]
         program_workers = {}
         for prog in programs:
-            # Check which worker has a role on this program
-            for username in ("demo-worker-1", "demo-worker-2"):
+            for uname in worker_usernames:
                 if UserProgramRole.objects.filter(
-                    user=users[username], program=prog,
+                    user=users[uname], program=prog,
                 ).exists():
-                    program_workers[prog.pk] = users[username]
+                    program_workers[prog.pk] = users[uname]
                     break
             else:
-                program_workers[prog.pk] = users["demo-worker-1"]
+                program_workers[prog.pk] = users[worker_usernames[0]]
 
         for prog in programs:
             prog_profile = profile_programs.get(prog.name, {})
@@ -1070,7 +1072,9 @@ class DemoDataEngine:
     def generate_suggestion_themes(self, programs, users, profile):
         """Create suggestion themes for each program."""
         profile_programs = profile.get("programs", {})
-        creator = users.get("demo-worker-1") or users.get("demo-admin")
+        # Use the first worker (index 1) or fall back to any available user
+        usernames = list(users.keys())
+        creator = users.get(usernames[1]) if len(usernames) > 1 else next(iter(users.values()), None)
         if not creator:
             return
 
