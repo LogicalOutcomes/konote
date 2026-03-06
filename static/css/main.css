@@ -498,7 +498,7 @@ nav.breadcrumb [aria-current="page"] {
 .tab-bar {
     list-style: none;
     display: flex;
-    gap: 0;
+    gap: var(--kn-space-2xs, 0.25rem);
     padding: 0;
     margin: 0 0 var(--kn-space-lg) 0;
     border-bottom: 1px solid var(--kn-border-light);
@@ -2351,22 +2351,29 @@ label {
     cursor: pointer;
     padding: var(--kn-space-sm) 0;
     list-style: none;
+    display: flex;
+    align-items: center;
 }
 #tab-content section > details > summary::-webkit-details-marker {
     display: none;
 }
 #tab-content section > details > summary::marker {
     display: none;
+    content: "";
 }
 #tab-content section > details > summary::after {
-    content: "▸";
-    float: right;
-    font-size: 1.2rem;
-    color: var(--kn-text);
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    border-right: 2px solid var(--kn-text-muted);
+    border-bottom: 2px solid var(--kn-text-muted);
+    transform: rotate(-45deg);
     transition: transform 0.2s ease;
 }
 #tab-content section > details[open] > summary::after {
-    transform: rotate(90deg);
+    transform: rotate(45deg);
 }
 
 /* Follow-up Chips */
@@ -4506,7 +4513,7 @@ article[aria-label="notification"].fading-out {
         display: flex !important;
         align-items: center;
         min-height: 44px !important;
-        padding: 8px 8px !important;
+        padding: 8px 12px !important;
     }
 
     /* Actions ▾ dropdown trigger and ✎ Edit button on client pages */
