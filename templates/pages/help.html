@@ -10,7 +10,7 @@
     <p>{% trans "Welcome to KoNote! This guide helps you find what you need quickly." %}</p>
 
     <!-- Quick Navigation -->
-    <nav class="help-nav" aria-label="{% trans 'Help navigation' %}">
+    <nav class="pill-nav" aria-label="{% trans 'Help navigation' %}">
         <h2>{% trans "Quick Navigation" %}</h2>
         <ul>
             <li><a href="#getting-started">{% trans "Getting Started" %}</a></li>
@@ -688,46 +688,11 @@
     padding: 2rem 1rem;
 }
 
-.help-nav {
-    background: var(--pico-card-background-color, #f5f5f5);
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-}
+/* pill-nav styles are in main.css */
 
-.help-nav h2 {
+.pill-nav h2 {
     margin-top: 0;
     font-size: 1.1rem;
-}
-
-.help-nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.help-nav li {
-    margin: 0;
-}
-
-.help-nav a {
-    display: block;
-    padding: 0.4rem 0.9rem;
-    background: var(--pico-primary-background, #3176aa);
-    color: var(--pico-primary-inverse, #fff);
-    border-radius: 2rem;
-    text-decoration: none;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    transition: opacity 0.15s;
-}
-
-.help-nav a:hover,
-.help-nav a:focus {
-    opacity: 0.85;
 }
 
 .help-page section {
