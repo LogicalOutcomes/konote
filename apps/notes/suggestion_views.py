@@ -15,13 +15,18 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
+from konote.utils import get_client_ip
 
 from apps.admin_settings.models import FeatureToggle
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
+from apps.auth_app.models import User
 from apps.programs.access import get_accessible_programs
 from apps.programs.models import Program, UserProgramRole
+from apps.reports.pii_scrub import scrub_pii
 from apps.utils.dates import parse_date_safely
+from konote.ai_views import ai_rate_limited_response
+from konote.ai import generate_focused_analysis
 
 from .forms import FocusedAnalysisForm, SuggestionThemeForm
 from .models import (
@@ -54,7 +59,7 @@ def _log_audit(request, action, theme, old_values=None, new_values=None):
         event_timestamp=timezone.now(),
         user_id=request.user.pk,
         user_display=str(request.user),
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         action=action,
         resource_type="suggestion_theme",
         resource_id=theme.pk,
@@ -511,15 +516,21 @@ def focused_analysis_view(request):
 
     # Rate limit
     if not _check_focused_rate_limit(request.user.pk):
-        return render(request, "notes/suggestions/_focused_results.html", {
-            "error": _("Rate limit reached (10 per hour). Please try again later."),
-        })
+        return ai_rate_limited_response(
+            request,
+            template_name="notes/suggestions/_focused_results.html",
+        )
 
-    # Collect suggestions (PII-scrubbed) using the same pipeline as insights
+    # Collect suggestions using the same quote pipeline as insights, then scrub
+    # both the quotes and the manager's question before the AI call.
     from apps.reports.insights import collect_quotes
+    from konote.ai_views import get_program_known_names
+    known_names = get_program_known_names(program)
+
     suggestions = collect_quotes(
         program=program,
         include_dates=False,
+        program_ids=accessible_ids,
     )
     # Filter to only suggestion-source items
     suggestion_items = [q for q in suggestions if q.get("source") == "suggestion"]
@@ -532,9 +543,14 @@ def focused_analysis_view(request):
             "error": _("No suggestions found for this program."),
         })
 
-    # Call AI
-    from konote.ai import generate_focused_analysis
-    result = generate_focused_analysis(question, suggestion_items, program.name)
+    scrubbed_question = scrub_pii(question, known_names)
+    scrubbed_suggestions = []
+    for item in suggestion_items:
+        scrubbed_item = dict(item)
+        scrubbed_item["text"] = scrub_pii(item.get("text", ""), known_names)
+        scrubbed_suggestions.append(scrubbed_item)
+
+    result = generate_focused_analysis(scrubbed_question, scrubbed_suggestions, program.name)
 
     _increment_focused_rate_limit(request.user.pk)
 
@@ -543,14 +559,14 @@ def focused_analysis_view(request):
         event_timestamp=timezone.now(),
         user_id=request.user.pk,
         user_display=str(request.user),
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         action="focused_analysis",
         resource_type="suggestion_theme",
         resource_id=0,
         program_id=program.pk,
         old_values={},
         new_values={
-            "question": question,
+            "question": scrubbed_question,
             "participant_count": get_participant_count(program),
         },
         is_demo_context=getattr(request.user, "is_demo", False),

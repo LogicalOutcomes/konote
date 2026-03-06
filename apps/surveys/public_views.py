@@ -28,16 +28,24 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 
-def _get_consent_text(survey):
-    """Return the appropriate consent text based on current language.
+def _redact_token(token):
+    """Return a non-sensitive token preview for logs."""
+    if not token:
+        return "[blank]"
+    return f"{token[:8]}..."
 
-    Uses French text when the language is French and French text is
-    available; otherwise falls back to the English consent text.
-    """
+
+def _get_consent_text(survey):
+    """Return the appropriate consent text based on current language."""
+    return _get_bilingual_text(survey.consent_text, survey.consent_text_fr)
+
+
+def _get_bilingual_text(en_value, fr_value):
+    """Return the active-language value with English fallback."""
     lang = get_language() or "en"
-    if lang.startswith("fr") and survey.consent_text_fr:
-        return survey.consent_text_fr
-    return survey.consent_text
+    if lang.startswith("fr") and fr_value:
+        return fr_value
+    return en_value
 
 
 def _consent_session_key(link_pk):
@@ -45,6 +53,7 @@ def _consent_session_key(link_pk):
     return f"consent_given_{link_pk}"
 
 
+@ratelimit(key="ip", rate="120/h", method="GET", block=True)
 @ratelimit(key="ip", rate="30/h", method="POST", block=True)
 def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
@@ -55,7 +64,7 @@ def public_survey_form(request, token):
     except Exception:
         # Database table may not exist yet, or other unexpected error.
         # Show the expired/unavailable page rather than a raw 500.
-        logger.exception("Error loading survey link: %s", token)
+        logger.exception("Error loading survey link: %s", _redact_token(token))
         return render(request, "surveys/public_expired.html", {
             "survey": None,
         })
@@ -147,7 +156,9 @@ def public_survey_form(request, token):
                 if (question.required
                         and not raw_value
                         and section.pk in visible_section_pks):
-                    errors.append(question.question_text)
+                    errors.append(
+                        _get_bilingual_text(question.question_text, question.question_text_fr)
+                    )
                 if raw_value:
                     answers_data.append((question, raw_value))
 
@@ -171,7 +182,7 @@ def public_survey_form(request, token):
             })
 
         respondent_name = ""
-        if link.collect_name:
+        if link.collect_name and not survey.is_anonymous:
             respondent_name = request.POST.get("respondent_name", "").strip()
 
         # Determine consent timestamp if consent was required
@@ -186,14 +197,15 @@ def public_survey_form(request, token):
                     consent_given_at_val = timezone.now()
 
         with transaction.atomic():
-            response = SurveyResponse.objects.create(
+            response = SurveyResponse(
                 survey=survey,
                 channel="link",
                 client_file=None,
-                respondent_name_display=respondent_name,
                 token=link.token,
                 consent_given_at=consent_given_at_val,
             )
+            response.respondent_name_display = respondent_name
+            response.save()
             for question, raw_value in answers_data:
                 answer = SurveyAnswer(
                     response=response,
@@ -256,12 +268,18 @@ def public_survey_form(request, token):
     })
 
 
+@ratelimit(key="ip", rate="120/h", method="GET", block=True)
 def public_survey_thank_you(request, token):
     """Thank-you page after public survey submission."""
     try:
         link = get_object_or_404(SurveyLink, token=token)
+    except Http404:
+        raise
     except Exception:
-        logger.exception("Error loading survey link for thank-you: %s", token)
+        logger.exception(
+            "Error loading survey link for thank-you: %s",
+            _redact_token(token),
+        )
         return render(request, "surveys/public_expired.html", {
             "survey": None,
         })

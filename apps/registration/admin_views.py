@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.audit.models import AuditLog
+from konote.utils import get_client_ip
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import requires_permission
 from apps.clients.models import ClientFile, CustomFieldDefinition
@@ -51,6 +53,28 @@ def _get_embed_code(request, link, height=600):
     style="border: none; max-width: 100%;">
 </iframe>'''
     return embed_code
+
+
+def _log_registration_review(request, submission, action, *, old_status=None, metadata=None):
+    """Write a minimal immutable audit row for a registration review decision."""
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=str(request.user),
+        ip_address=get_client_ip(request),
+        action=action,
+        resource_type="registration",
+        resource_id=submission.pk,
+        program_id=submission.registration_link.program_id,
+        old_values={"status": old_status} if old_status else {},
+        new_values={
+            "status": submission.status,
+            "client_file_id": submission.client_file_id,
+            "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+        },
+        metadata=metadata or {},
+        is_demo_context=getattr(request.user, "is_demo", False),
+    )
 
 
 # --- Registration Link Management ---
@@ -274,7 +298,18 @@ def submission_approve(request, pk):
             messages.error(request, _("This submission has already been reviewed."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         client = approve_submission(submission, reviewed_by=request.user)
+        _log_registration_review(
+            request,
+            submission,
+            "update",
+            old_status=old_status,
+            metadata={
+                "review_type": "approve",
+                "reference_number": submission.reference_number,
+            },
+        )
         messages.success(
             request,
             _("Approved! Participant record created for %(first)s %(last)s.") % {
@@ -308,11 +343,22 @@ def submission_reject(request, pk):
             messages.error(request, _("A rejection reason is required."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         submission.status = "rejected"
         submission.review_notes = reason
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
+        _log_registration_review(
+            request,
+            submission,
+            "update",
+            old_status=old_status,
+            metadata={
+                "review_type": "reject",
+                "reference_number": submission.reference_number,
+            },
+        )
 
         messages.success(request, _("Submission rejected."))
         return redirect("registration:submission_list")
@@ -336,10 +382,21 @@ def submission_waitlist(request, pk):
             messages.error(request, _("This submission cannot be waitlisted."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         submission.status = "waitlist"
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
+        _log_registration_review(
+            request,
+            submission,
+            "update",
+            old_status=old_status,
+            metadata={
+                "review_type": "waitlist",
+                "reference_number": submission.reference_number,
+            },
+        )
 
         messages.success(request, _("Submission moved to waitlist."))
         return redirect("registration:submission_list")
@@ -374,7 +431,19 @@ def submission_merge(request, pk):
             messages.error(request, _("Selected participant not found."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         client = merge_with_existing(submission, existing_client, request.user)
+        _log_registration_review(
+            request,
+            submission,
+            "update",
+            old_status=old_status,
+            metadata={
+                "review_type": "merge",
+                "reference_number": submission.reference_number,
+                "merged_into_client_id": existing_client.pk,
+            },
+        )
         messages.success(
             request,
             _("Merged with existing participant %(first)s %(last)s.") % {

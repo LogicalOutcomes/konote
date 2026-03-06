@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
+from apps.audit.models import AuditLog
 from apps.clients.models import CustomFieldDefinition
 
 from .forms import PublicRegistrationForm
@@ -97,6 +98,22 @@ def _record_submission(request):
     submissions = request.session.get(RATE_LIMIT_SESSION_KEY, [])
     submissions.append(timezone.now().isoformat())
     request.session[RATE_LIMIT_SESSION_KEY] = submissions
+
+
+def _log_registration_audit(submission, action, *, metadata=None, new_values=None):
+    """Write a minimal immutable audit record for registration intake events."""
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=None,
+        user_display="Public registration",
+        ip_address=None,
+        action=action,
+        resource_type="registration",
+        resource_id=submission.pk,
+        program_id=submission.registration_link.program_id,
+        new_values=new_values or {},
+        metadata=metadata or {},
+    )
 
 
 def _get_capacity_info(registration_link):
@@ -253,9 +270,36 @@ def public_registration_form(request, slug):
     # Save the submission first
     submission.save()
 
+    _log_registration_audit(
+        submission,
+        "create",
+        metadata={
+            "registration_link_id": submission.registration_link_id,
+            "reference_number": submission.reference_number,
+            "auto_approve": registration_link.auto_approve,
+        },
+        new_values={
+            "status": submission.status,
+        },
+    )
+
     # Handle auto-approve if enabled - this creates ClientFile and enrolment
     if registration_link.auto_approve:
         approve_submission(submission, reviewed_by=None)
+        submission.refresh_from_db(fields=["status", "client_file_id", "reviewed_at"])
+        _log_registration_audit(
+            submission,
+            "update",
+            metadata={
+                "registration_link_id": submission.registration_link_id,
+                "reference_number": submission.reference_number,
+                "review_type": "auto_approve",
+            },
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+            },
+        )
 
     # Record submission for rate limiting
     _record_submission(request)
