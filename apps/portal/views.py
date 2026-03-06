@@ -830,6 +830,7 @@ def password_change(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="3/h", method="POST", block=True)
 def password_reset_request(request):
     """Request a password reset code via email.
 
