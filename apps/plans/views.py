@@ -718,6 +718,153 @@ def goal_create(request, client_id):
 
 
 @login_required
+@require_POST
+def goal_create_from_suggestion(request, client_id):
+    """Save a goal directly from an AI suggestion — HTMX POST endpoint.
+
+    Retrieves the validated suggestion from the session (stored by suggest_target_view),
+    resolves section using priority chain, creates goal + metrics atomically.
+    Returns HX-Redirect on success, error partial on failure.
+    """
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if not _can_edit_plan(request.user, client):
+        raise PermissionDenied(_("You don't have permission to edit this plan."))
+
+    suggestion_key = request.POST.get("suggestion_key", "")
+    suggestion = request.session.pop(suggestion_key, None) if suggestion_key else None
+
+    if not suggestion:
+        return render(request, "plans/_goal_save_error.html", {
+            "error": _("Suggestion expired or was already used. Please try again."),
+            "client": client,
+        })
+
+    # Get program from enrolment
+    enrolment = (
+        ClientProgramEnrolment.objects.filter(client_file=client, status="active")
+        .select_related("program")
+        .first()
+    )
+    program = enrolment.program if enrolment else None
+
+    # --- Section resolution priority chain (R2) ---
+    section = None
+    suggested_section = (suggestion.get("suggested_section") or "").strip()
+
+    if suggested_section:
+        # Priority 1: Match existing section on THIS participant (case-insensitive)
+        section = PlanSection.objects.filter(
+            client_file=client, status="default",
+            name__iexact=suggested_section,
+        ).first()
+
+        # Priority 2: Match section used by OTHER participants in same program
+        if section is None and program:
+            program_section_name = (
+                PlanSection.objects.filter(program=program)
+                .filter(name__iexact=suggested_section)
+                .values_list("name", flat=True)
+                .first()
+            )
+            if program_section_name:
+                # Use the canonical name from the program (preserve existing casing)
+                section = PlanSection.objects.create(
+                    client_file=client,
+                    name=program_section_name,
+                    program=program,
+                )
+
+        # Priority 3: Create new section with AI's suggested name
+        if section is None:
+            section = PlanSection.objects.create(
+                client_file=client,
+                name=suggested_section,
+                program=program,
+            )
+
+    # Priority 4: Fall back to "General"
+    if section is None:
+        section = PlanSection.objects.create(
+            client_file=client,
+            name="General",
+            program=program,
+        )
+
+    # --- Resolve metrics ---
+    metric_ids = []
+    for m in suggestion.get("metrics", []):
+        mid = m.get("metric_id")
+        if mid:
+            exists = MetricDefinition.objects.filter(
+                pk=mid, is_enabled=True, status="active",
+            ).exists()
+            if exists:
+                metric_ids.append(mid)
+
+    # --- Custom metric (R5: included by default) ---
+    skip_custom = request.POST.get("skip_custom_metric") == "true"
+    custom = suggestion.get("custom_metric")
+    if custom and not skip_custom:
+        custom_metric = MetricDefinition.objects.create(
+            name=custom.get("name", "Custom metric")[:255],
+            definition=custom.get("definition", ""),
+            min_value=custom.get("min_value", 1),
+            max_value=custom.get("max_value", 5),
+            unit=custom.get("unit", "score"),
+            is_library=False,
+            owning_program=program,
+            category="custom",
+        )
+        metric_ids.append(custom_metric.pk)
+
+    # --- Create goal ---
+    try:
+        target = _create_goal(
+            client_file=client,
+            user=request.user,
+            name=suggestion.get("name", ""),
+            description=suggestion.get("description", ""),
+            client_goal=suggestion.get("client_goal", ""),
+            section=section,
+            program=program,
+            metric_ids=metric_ids,
+        )
+    except ValueError as e:
+        return render(request, "plans/_goal_save_error.html", {
+            "error": str(e),
+            "client": client,
+        })
+
+    # --- Success message (R5: include metric names) ---
+    goal_name = suggestion.get("name", "Goal")
+    metric_names = []
+    for m in suggestion.get("metrics", []):
+        if m.get("name"):
+            metric_names.append(m["name"])
+    if custom and not skip_custom:
+        metric_names.append(custom.get("name", "Custom metric"))
+
+    if metric_names:
+        msg = _("Goal added: '%(name)s' with metric%(plural)s %(metrics)s.") % {
+            "name": goal_name,
+            "plural": "s" if len(metric_names) > 1 else "",
+            "metrics": ", ".join(f"'{n}'" for n in metric_names),
+        }
+    else:
+        msg = _("Goal added: '%(name)s'.") % {"name": goal_name}
+
+    messages.success(request, msg)
+
+    # Return HX-Redirect for HTMX
+    redirect_url = reverse("plans:plan_view", kwargs={"client_id": client.pk})
+    response = HttpResponse(status=204)
+    response["HX-Redirect"] = redirect_url
+    return response
+
+
+@login_required
 @requires_permission("plan.view", _get_program_from_client)
 def goal_name_suggestions(request, client_id):
     """HTMX endpoint: return goal name suggestions for autocomplete.
