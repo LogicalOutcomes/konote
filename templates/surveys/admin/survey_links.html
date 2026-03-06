@@ -62,7 +62,7 @@
                                aria-label="{% trans 'Survey link URL' %}"
                                style="margin-bottom:0">
                         <button type="button" class="outline secondary copy-btn"
-                                data-url="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
+                                data-clipboard-text="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
                                 style="margin-bottom:0; white-space:nowrap">{% trans "Copy" %}</button>
                     </div>
                 {% else %}
@@ -118,22 +118,6 @@
     </form>
 </article>
 
-<div id="copy-status" role="status" aria-live="polite"></div>
-
 <p><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">&#8592; {% trans "Back to survey" %}</a></p>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.copy-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var url = this.dataset.url;
-            navigator.clipboard.writeText(url).then(function() {
-                var status = document.getElementById('copy-status');
-                status.textContent = '{% trans "Copied!" %}';
-                setTimeout(function() { status.textContent = ''; }, 2000);
-            });
-        });
-    });
-});
-</script>
 {% endblock %}
