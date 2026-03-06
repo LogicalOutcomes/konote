@@ -1113,7 +1113,7 @@ class DemoDataEngine:
                     available_notes = (
                         ProgressNote.objects.filter(
                             author_program=prog,
-                            is_demo=True,
+                            client_file__is_demo=True,
                         )
                         .exclude(suggestion_priority="")
                         .exclude(
