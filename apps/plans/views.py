@@ -489,6 +489,9 @@ def _create_goal(*, client_file, user, name, description="", client_goal="",
         if section is None:
             raise ValueError("A section or new_section_name is required.")
 
+        if not name or not name.strip():
+            raise ValueError("A goal name is required.")
+
         # 2. Create PlanTarget with encrypted fields
         target = PlanTarget(
             plan_section=section,
@@ -719,6 +722,7 @@ def goal_create(request, client_id):
 
 @login_required
 @require_POST
+@requires_permission("plan.edit", _get_program_from_client)
 def goal_create_from_suggestion(request, client_id):
     """Save a goal directly from an AI suggestion — HTMX POST endpoint.
 

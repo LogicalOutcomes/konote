@@ -765,6 +765,16 @@
                     revealForm();
                 });
             }
+            // Wire up "Start over" button in error partial
+            var retryBtn = document.getElementById("btn-retry-suggestion");
+            if (retryBtn) {
+                retryBtn.addEventListener("click", function() {
+                    suggestionContainer.innerHTML = "";
+                    if (entryPoints) entryPoints.hidden = false;
+                    var pw = document.getElementById("participant-words");
+                    if (pw) { pw.value = ""; pw.focus(); }
+                });
+            }
         });
 
         // Handle suggestion card button clicks
@@ -804,12 +814,30 @@
     }
 
     // ────────────────────────────────────────
-    // Screen reader announcement on save (R17)
+    // HTMX request lifecycle — screen reader + loading text (R17, T-5)
     // ────────────────────────────────────────
+    var loadingTextTimer = null;
     document.addEventListener("htmx:beforeRequest", function(evt) {
-        if (evt.detail.elt && evt.detail.elt.id === "btn-use-suggestion") {
+        if (!evt.detail.elt) return;
+        var id = evt.detail.elt.id;
+        if (id === "btn-use-suggestion") {
             var announce = document.getElementById("save-announce");
             if (announce) announce.textContent = "{% trans 'Saving your goal…' %}";
+        }
+        if (id === "btn-shape-target") {
+            var loadingEl = document.querySelector("#ai-loading small");
+            if (loadingEl) {
+                loadingEl.textContent = "{% trans 'Working on a suggestion…' %}";
+                loadingTextTimer = setTimeout(function() {
+                    if (loadingEl) loadingEl.textContent = "{% trans 'Almost there…' %}";
+                }, 4000);
+            }
+        }
+    });
+    document.addEventListener("htmx:afterRequest", function(evt) {
+        if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target" && loadingTextTimer) {
+            clearTimeout(loadingTextTimer);
+            loadingTextTimer = null;
         }
     });
 
@@ -849,27 +877,6 @@
         });
     }
 
-    // ────────────────────────────────────────
-    // AI loading text rotation (T-5)
-    // ────────────────────────────────────────
-    var loadingTextTimer = null;
-    document.addEventListener("htmx:beforeRequest", function(evt) {
-        if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target") {
-            var loadingEl = document.querySelector("#ai-loading small");
-            if (loadingEl) {
-                loadingEl.textContent = "{% trans 'Working on a suggestion…' %}";
-                loadingTextTimer = setTimeout(function() {
-                    if (loadingEl) loadingEl.textContent = "{% trans 'Almost there…' %}";
-                }, 4000);
-            }
-        }
-    });
-    document.addEventListener("htmx:afterRequest", function(evt) {
-        if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target" && loadingTextTimer) {
-            clearTimeout(loadingTextTimer);
-            loadingTextTimer = null;
-        }
-    });
 
     // ────────────────────────────────────────
     // Quick pick cards (entry point version — AI mode)

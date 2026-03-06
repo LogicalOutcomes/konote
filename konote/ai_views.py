@@ -280,7 +280,6 @@ def suggest_target_view(request):
         # Store suggestion in session for one-click save (R1)
         suggestion_key = f"goal_suggestion_{client_id}_{uuid4().hex[:8]}"
         request.session[suggestion_key] = result
-        request.session.modified = True
 
         return render(request, "plans/_ai_suggestion.html", {
             "suggestion": result,
