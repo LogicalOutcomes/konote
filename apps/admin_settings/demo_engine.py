@@ -1150,6 +1150,32 @@ class DemoDataEngine:
                             },
                         )
 
+    def create_demo_portal_accounts(self, client_assignments):
+        """Create ParticipantUser portal accounts for demo clients.
+
+        This allows demo participants to appear on the portal login page
+        so staff and stakeholders can explore the participant portal.
+        """
+        from apps.portal.models import ParticipantUser
+
+        created = 0
+        for client, program, trend, worker, goal in client_assignments:
+            if hasattr(client, "portal_account"):
+                continue
+            email = f"demo-{client.record_id.lower()}@example.com"
+            display_name = f"{client.first_name} {client.last_name}"
+            pu = ParticipantUser.objects.create_participant(
+                email=email,
+                client_file=client,
+                display_name=display_name,
+                password="demo1234",
+            )
+            pu.mfa_method = "exempt"
+            pu.save(update_fields=["mfa_method"])
+            created += 1
+
+        self.log(f"  Created {created} demo portal accounts.")
+
     # ----- Main orchestrator -----
 
     @transaction.atomic
@@ -1227,6 +1253,9 @@ class DemoDataEngine:
 
         # 6. Create suggestion themes
         self.generate_suggestion_themes(programs, users, profile)
+
+        # 7. Create portal accounts for demo participants
+        self.create_demo_portal_accounts(client_assignments)
 
         # Warn about profile program names that didn't match any active program
         if profile and "programs" in profile:
