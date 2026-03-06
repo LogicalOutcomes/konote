@@ -6,6 +6,10 @@
 
 ## Active Work
 
+### Phase: Infrastructure
+
+- [ ] Migrate KoNote from Swiss VPS to Canadian VPS — waiting for OVH to finish configuring new server (see tasks/vps-migration.md, konote-ops/deployment/vps-migration-runbook.md) — GK (OPS-MIGRATE1)
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
