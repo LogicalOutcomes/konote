@@ -108,6 +108,20 @@ deploy_instance() {
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
+
+    # Ensure dev instance is on the develop branch (not main).
+    # Production stays on whatever branch it's on (typically main).
+    if [ "$is_dev" = "true" ]; then
+        local current_branch
+        current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+        if [ "$current_branch" != "develop" ]; then
+            echo -e "  ${YELLOW}Dev instance on '${current_branch}' — switching to 'develop'${NC}"
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+        fi
+    fi
+
     git pull origin develop
 
     # --- Record after-commit ---
