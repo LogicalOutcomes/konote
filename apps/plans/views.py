@@ -704,6 +704,9 @@ def goal_create(request, client_id):
         {"url": reverse("plans:plan_view", kwargs={"client_id": client.pk}), "label": _("Plan")},
         {"url": "", "label": _("Add a Goal")},
     ]
+    # R11: Show quick picks first if 3+ common goals exist
+    quick_pick_first = len(common_goals) >= 3
+
     context = {
         "form": form,
         "client": client,
@@ -716,6 +719,7 @@ def goal_create(request, client_id):
         "selected_metric_ids": selected_metric_ids,
         "ai_enabled": ai_enabled,
         "participant_words": request.POST.get("participant_words", ""),
+        "quick_pick_first": quick_pick_first,
     }
     return render(request, "plans/goal_form.html", context)
 

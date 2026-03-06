@@ -325,8 +325,8 @@ class GoalForm(forms.Form):
         help_text=_("Choose the one metric most meaningful to both of you. You can change it later."),
     )
 
-    field_order = ["client_goal", "name", "section_choice", "new_section_name",
-                   "description", "metrics"]
+    field_order = ["client_goal", "name", "description", "metrics",
+                   "section_choice", "new_section_name"]
 
     def __init__(self, *args, client_file=None, participant_name="", **kwargs):
         super().__init__(*args, **kwargs)
@@ -355,10 +355,11 @@ class GoalForm(forms.Form):
         )
 
         # Populate section choices from client's active sections
+        # R9: Order by most recently created so the default is the newest section
         if client_file:
             sections = PlanSection.objects.filter(
                 client_file=client_file, status="default",
-            ).order_by("sort_order")
+            ).order_by("-pk")
             choices = [(str(s.pk), s.name) for s in sections]
             choices.append(("new", _("+ Create new section")))
             self.fields["section_choice"].choices = choices
@@ -368,11 +369,9 @@ class GoalForm(forms.Form):
         section_choice = cleaned.get("section_choice", "")
         new_name = cleaned.get("new_section_name", "").strip()
 
+        # R9: If "new" chosen but no name given, default to "General"
         if section_choice == "new" and not new_name:
-            self.add_error(
-                "new_section_name",
-                _("You chose to create a new section — please give it a name."),
-            )
+            cleaned["new_section_name"] = "General"
         elif not section_choice:
             raise forms.ValidationError(
                 _("Please choose which area of the plan this goal belongs to.")
