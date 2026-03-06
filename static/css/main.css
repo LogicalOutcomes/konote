@@ -5041,12 +5041,6 @@ article[aria-label="notification"].fading-out {
     animation: loading-pulse 2s ease-in-out infinite;
 }
 
-/* Suggestion card loading overlay */
-.ai-suggestion-card[aria-busy="true"] {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
 /* Suggestion area demoted line (R4) */
 .suggestion-area {
     display: block;
