@@ -3359,6 +3359,8 @@ article[aria-label="notification"].fading-out {
         left: 0;
         right: 0;
         min-width: 0;
+        list-style: none;
+        padding-left: 0;
     }
 }
 
@@ -3474,6 +3476,8 @@ article[aria-label="notification"].fading-out {
         box-shadow: none;
         border: 1px solid var(--kn-border-light);
         margin-top: var(--kn-space-xs);
+        list-style: none;
+        padding-left: 0;
     }
 }
 
@@ -4515,11 +4519,14 @@ article[aria-label="notification"].fading-out {
         padding: 8px 0 !important;
     }
 
-    /* Actions dropdown menu items */
+    /* Actions dropdown menu items — flex-column keeps <small> descriptions
+       on their own line instead of running into the link text */
     .actions-dropdown-menu li a,
     .actions-dropdown-menu li button {
         display: flex !important;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
         min-height: 44px !important;
         padding: 8px var(--kn-space-base, 16px) !important;
     }
