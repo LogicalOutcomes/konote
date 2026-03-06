@@ -188,6 +188,61 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     });
 })();
 
+// --- Unified "Copy to Clipboard" utility ---
+// Attaches a click handler to any element with the class "copy-btn"
+(function () {
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".copy-btn");
+        if (!btn) return;
+        e.preventDefault();
+
+        var textToCopy = "";
+
+        // 1. Direct text via data attribute
+        if (btn.hasAttribute("data-clipboard-text")) {
+            textToCopy = btn.getAttribute("data-clipboard-text");
+        }
+        // 2. Read from a target element (input value or text content)
+        else if (btn.hasAttribute("data-clipboard-target")) {
+            var targetSelector = btn.getAttribute("data-clipboard-target");
+            // If it doesn't start with # or ., assume it's an ID
+            if (!targetSelector.startsWith("#") && !targetSelector.startsWith(".")) {
+                targetSelector = "#" + targetSelector;
+            }
+            var targetEl = document.querySelector(targetSelector);
+            if (targetEl) {
+                textToCopy = targetEl.tagName === "INPUT" || targetEl.tagName === "TEXTAREA"
+                    ? targetEl.value
+                    : targetEl.textContent;
+            }
+        }
+
+        if (!textToCopy) return;
+
+        // Perform the copy
+        navigator.clipboard.writeText(textToCopy).then(function () {
+            // Visual feedback
+            var originalText = btn.innerHTML;
+            // Use translation if available, fallback to "Copied!"
+            btn.textContent = t("copied", "Copied!");
+
+            // Temporary success styling
+            var originalColor = btn.style.color;
+            var originalBorder = btn.style.borderColor;
+            btn.style.color = "var(--kn-success-fg, #10B981)";
+            btn.style.borderColor = "var(--kn-success-fg, #10B981)";
+
+            setTimeout(function () {
+                btn.innerHTML = originalText;
+                btn.style.color = originalColor;
+                btn.style.borderColor = originalBorder;
+            }, 2000);
+        }).catch(function (err) {
+            console.error("Failed to copy: ", err);
+        });
+    });
+})();
+
 // --- Screen reader announcer for HTMX form success (IMPROVE-9) ---
 // When an HTMX POST succeeds, announce "Saved" to screen readers via #sr-announcer
 (function () {

@@ -47,9 +47,12 @@
             </td>
             <td>
                 {% if invite.is_valid %}
-                <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}/auth/join/{{ invite.code }}/"
-                       style="font-size: 0.8em; padding: 0.25em;" aria-label="{% trans 'Invite link' %}"
-                       onclick="this.select()">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="invite-link-{{ invite.pk }}" readonly value="{{ request.scheme }}://{{ request.get_host }}/auth/join/{{ invite.code }}/"
+                           style="font-size: 0.8em; padding: 0.25em; margin-bottom: 0;" aria-label="{% trans 'Invite link' %}"
+                           onclick="this.select()">
+                    <button type="button" class="outline secondary copy-btn" data-clipboard-target="#invite-link-{{ invite.pk }}" aria-label="{% trans 'Copy invite link' %}" style="padding: 0.25em 0.5em; font-size: 0.8em; margin-bottom: 0;">{% trans "Copy" %}</button>
+                </div>
                 {% else %}
                     —
                 {% endif %}
