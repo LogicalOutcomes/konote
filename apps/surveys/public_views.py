@@ -7,7 +7,7 @@ import logging
 
 from django.db import transaction
 from django_ratelimit.decorators import ratelimit
-from django.http import Http404, HttpResponseGone, HttpResponseServerError
+from django.http import Http404, HttpResponse, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.utils import timezone
@@ -26,6 +26,17 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _survey_rate_limited_response():
+    """Return a 429 response for rate-limited survey requests."""
+    resp = HttpResponse(
+        _("Too many requests. Please wait a few minutes before trying again."),
+        content_type="text/plain",
+    )
+    resp.status_code = 429
+    resp["Retry-After"] = "300"
+    return resp
 
 
 def _redact_token(token):
@@ -53,10 +64,13 @@ def _consent_session_key(link_pk):
     return f"consent_given_{link_pk}"
 
 
-@ratelimit(key="ip", rate="120/h", method="GET", block=True)
-@ratelimit(key="ip", rate="30/h", method="POST", block=True)
+@ratelimit(key="ip", rate="120/h", method="GET", block=False)
+@ratelimit(key="ip", rate="30/h", method="POST", block=False)
 def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
+    if getattr(request, "limited", False):
+        return _survey_rate_limited_response()
+
     try:
         link = get_object_or_404(SurveyLink, token=token)
     except Http404:
@@ -181,6 +195,8 @@ def public_survey_form(request, token):
                 "errors": errors,
             })
 
+        # Anonymity enforcement layer 3 of 3 (submission). Also enforced
+        # in models.py (save) and views.py (link creation).
         respondent_name = ""
         if link.collect_name and not survey.is_anonymous:
             respondent_name = request.POST.get("respondent_name", "").strip()
@@ -268,9 +284,12 @@ def public_survey_form(request, token):
     })
 
 
-@ratelimit(key="ip", rate="120/h", method="GET", block=True)
+@ratelimit(key="ip", rate="120/h", method="GET", block=False)
 def public_survey_thank_you(request, token):
     """Thank-you page after public survey submission."""
+    if getattr(request, "limited", False):
+        return _survey_rate_limited_response()
+
     try:
         link = get_object_or_404(SurveyLink, token=token)
     except Http404:

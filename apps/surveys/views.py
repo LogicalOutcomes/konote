@@ -751,6 +751,12 @@ def survey_links(request, survey_id):
         if action == "create":
             expires_days = request.POST.get("expires_days", "")
             expires_at = None
+            # Anonymity enforcement layer 2 of 3 (link creation view).
+            # Also enforced in models.py (save) and public_views.py (submission).
+            collect_name = (
+                request.POST.get("collect_name") == "on"
+                and not survey.is_anonymous
+            )
             if expires_days:
                 try:
                     expires_at = timezone.now() + timezone.timedelta(
@@ -761,7 +767,7 @@ def survey_links(request, survey_id):
             SurveyLink.objects.create(
                 survey=survey,
                 created_by=request.user,
-                collect_name=request.POST.get("collect_name") == "on",
+                collect_name=collect_name,
                 single_response=request.POST.get("single_response") == "on",
                 expires_at=expires_at,
             )

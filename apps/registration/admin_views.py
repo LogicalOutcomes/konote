@@ -10,14 +10,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.audit.models import AuditLog
-from konote.utils import get_client_ip
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import requires_permission
 from apps.clients.models import ClientFile, CustomFieldDefinition
 from apps.clients.views import get_client_queryset
 from apps.programs.models import UserProgramRole
 
+from .audit import log_registration_event
 from .forms import RegistrationLinkForm
 from .models import RegistrationLink, RegistrationSubmission
 from .utils import approve_submission, find_duplicate_clients, merge_with_existing
@@ -55,26 +54,6 @@ def _get_embed_code(request, link, height=600):
     return embed_code
 
 
-def _log_registration_review(request, submission, action, *, old_status=None, metadata=None):
-    """Write a minimal immutable audit row for a registration review decision."""
-    AuditLog.objects.using("audit").create(
-        event_timestamp=timezone.now(),
-        user_id=request.user.pk,
-        user_display=str(request.user),
-        ip_address=get_client_ip(request),
-        action=action,
-        resource_type="registration",
-        resource_id=submission.pk,
-        program_id=submission.registration_link.program_id,
-        old_values={"status": old_status} if old_status else {},
-        new_values={
-            "status": submission.status,
-            "client_file_id": submission.client_file_id,
-            "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
-        },
-        metadata=metadata or {},
-        is_demo_context=getattr(request.user, "is_demo", False),
-    )
 
 
 # --- Registration Link Management ---
@@ -300,11 +279,16 @@ def submission_approve(request, pk):
 
         old_status = submission.status
         client = approve_submission(submission, reviewed_by=request.user)
-        _log_registration_review(
-            request,
+        log_registration_event(
             submission,
             "update",
+            request=request,
             old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
             metadata={
                 "review_type": "approve",
                 "reference_number": submission.reference_number,
@@ -349,11 +333,16 @@ def submission_reject(request, pk):
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
-        _log_registration_review(
-            request,
+        log_registration_event(
             submission,
             "update",
+            request=request,
             old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
             metadata={
                 "review_type": "reject",
                 "reference_number": submission.reference_number,
@@ -387,11 +376,16 @@ def submission_waitlist(request, pk):
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
-        _log_registration_review(
-            request,
+        log_registration_event(
             submission,
             "update",
+            request=request,
             old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
             metadata={
                 "review_type": "waitlist",
                 "reference_number": submission.reference_number,
@@ -433,11 +427,16 @@ def submission_merge(request, pk):
 
         old_status = submission.status
         client = merge_with_existing(submission, existing_client, request.user)
-        _log_registration_review(
-            request,
+        log_registration_event(
             submission,
             "update",
+            request=request,
             old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
             metadata={
                 "review_type": "merge",
                 "reference_number": submission.reference_number,

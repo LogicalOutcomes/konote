@@ -2,6 +2,7 @@
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
+from django.core.cache import cache
 from django.test import TestCase, Client, override_settings
 
 from apps.admin_settings.models import FeatureToggle
@@ -93,6 +94,7 @@ class FocusedAnalysisViewTest(TestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
 
         self.user = User.objects.create_user(
@@ -130,6 +132,7 @@ class FocusedAnalysisViewTest(TestCase):
             )
 
     def tearDown(self):
+        cache.clear()
         enc_module._fernet = None
 
     def test_unauthenticated_redirected(self):
@@ -202,6 +205,9 @@ class FocusedAnalysisViewTest(TestCase):
         self.assertContains(resp, "evening sessions")
         self.assertContains(resp, "Schedule Flexibility")
         self.assertContains(resp, "Create Theme from This")
+        call_args = mock_ai.call_args[0]
+        assert "PM User" not in call_args[0]
+        assert "[NAME]" in call_args[1][0]["text"] or call_args[1][0]["text"]
 
     @patch("apps.notes.suggestion_views.generate_focused_analysis")
     def test_ai_failure_returns_error(self, mock_ai):
@@ -233,8 +239,8 @@ class FocusedAnalysisViewTest(TestCase):
             "question": "test",
             "program_id": self.program.pk,
         })
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Rate limit")
+        self.assertEqual(resp.status_code, 429)
+        self.assertEqual(resp["Retry-After"], "300")
 
     @patch("apps.notes.suggestion_views.generate_focused_analysis")
     def test_audit_log_created(self, mock_ai):
@@ -258,6 +264,31 @@ class FocusedAnalysisViewTest(TestCase):
         self.assertIsNotNone(log)
         self.assertEqual(log.new_values["question"], "opening hours")
         self.assertEqual(log.program_id, self.program.pk)
+
+    @patch("apps.notes.suggestion_views.generate_focused_analysis")
+    def test_audit_log_scrubs_question(self, mock_ai):
+        mock_ai.return_value = {
+            "relevant_count": 0,
+            "total_count": 0,
+            "summary": "Nothing found.",
+            "sub_themes": [],
+            "suggestion": "",
+        }
+        enrolment = ClientProgramEnrolment.objects.filter(program=self.program).first()
+        enrolment.client_file.preferred_name = "Jane"
+        enrolment.client_file.save()
+
+        self.http.login(username="pm", password="pass")
+        self.http.post(FOCUSED_URL, {
+            "question": "What did Jane say on 2026-03-06 about Record ID KNR-2048?",
+            "program_id": self.program.pk,
+        })
+
+        from apps.audit.models import AuditLog
+        log = AuditLog.objects.using("audit").filter(action="focused_analysis").latest("event_timestamp")
+        self.assertNotIn("Jane", log.new_values["question"])
+        self.assertIn("[DATE]", log.new_values["question"])
+        self.assertIn("[RECORD ID]", log.new_values["question"])
 
     def test_inaccessible_program_returns_403(self):
         other_program = Program.objects.create(name="Secret")

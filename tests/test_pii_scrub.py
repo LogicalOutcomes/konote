@@ -128,6 +128,33 @@ class PiiScrubAddressTest(SimpleTestCase):
         self.assertIn("[ADDRESS]", result)
 
 
+class PiiScrubDateAndIdTest(SimpleTestCase):
+    """Test dates and internal record references are scrubbed."""
+
+    def test_iso_date(self):
+        result = scrub_pii("Review date is 2026-03-06.")
+        self.assertEqual(result, "Review date is [DATE].")
+
+    def test_slashed_date(self):
+        result = scrub_pii("Appointment was on 03/06/2026.")
+        self.assertEqual(result, "Appointment was on [DATE].")
+
+    def test_textual_date(self):
+        result = scrub_pii("Meeting happened on March 6 2026.")
+        self.assertEqual(result, "Meeting happened on [DATE].")
+
+    def test_record_id_label(self):
+        result = scrub_pii("Record ID: ABC-1234 was reviewed.")
+        self.assertEqual(result, "[RECORD ID] was reviewed.")
+
+    def test_unlabelled_id_not_scrubbed(self):
+        """Unlabelled codes like PHQ-9, SMART-10, COVID-19 must not be mangled."""
+        result = scrub_pii("Complete the SMART-10 assessment for COVID-19 recovery.")
+        self.assertNotIn("[RECORD ID]", result)
+        self.assertIn("SMART-10", result)
+        self.assertIn("COVID-19", result)
+
+
 class PiiScrubCombinedTest(SimpleTestCase):
     """Test multiple PII types in one text."""
 

@@ -2,6 +2,7 @@
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
+from django.core.cache import cache
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 
 from apps.admin_settings.models import FeatureToggle
@@ -16,7 +17,7 @@ from apps.auth_app.constants import ROLE_STAFF
 TEST_KEY = Fernet.generate_key().decode()
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, OPENROUTER_API_KEY="test-key-123")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, OPENROUTER_API_KEY="test-key-123", RATELIMIT_ENABLE=True)
 class AIEndpointBaseTest(TestCase):
     """Base class with shared setUp for AI endpoint tests."""
 
@@ -24,6 +25,7 @@ class AIEndpointBaseTest(TestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
 
         self.user = User.objects.create_user(
@@ -38,6 +40,7 @@ class AIEndpointBaseTest(TestCase):
         FeatureToggle.objects.create(feature_key="ai_assist_tools_only", is_enabled=True)
 
     def tearDown(self):
+        cache.clear()
         enc_module._fernet = None
 
 
@@ -68,6 +71,19 @@ class SuggestMetricsViewTest(AIEndpointBaseTest):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {"target_description": "Find housing"})
         self.assertEqual(resp.status_code, 403)
+
+    @patch("konote.ai.suggest_metrics")
+    def test_rate_limit_returns_429_with_retry_after(self, mock_suggest):
+        mock_suggest.return_value = []
+        self.http.login(username="staff", password="pass")
+
+        for _ in range(20):
+            resp = self.http.post(self.url, {"target_description": "Find housing"})
+            self.assertNotEqual(resp.status_code, 429)
+
+        resp = self.http.post(self.url, {"target_description": "Find housing"})
+        self.assertEqual(resp.status_code, 429)
+        self.assertEqual(resp["Retry-After"], "300")
 
     @override_settings(OPENROUTER_API_KEY="")
     def test_no_api_key_returns_403(self):
@@ -243,6 +259,25 @@ class SuggestNoteStructureViewTest(AIEndpointBaseTest):
         call_args = mock_suggest.call_args[0]
         self.assertEqual(call_args[0], "Find Housing")
         self.assertEqual(call_args[1], "Stable housing within 3 months")
+
+    @patch("konote.ai.suggest_note_structure")
+    def test_target_data_scrubbed_before_ai_call(self, mock_suggest):
+        self.target.name = "Jane housing goal"
+        self.target.description = "Jane will attend review on 2026-03-06 for Record ID KNR-2048"
+        self.target.save()
+        mock_suggest.return_value = [
+            {"section": "Observation", "prompt": "Describe what you observed."},
+        ]
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {"target_id": self.target.pk})
+        self.assertEqual(resp.status_code, 200)
+
+        call_args = mock_suggest.call_args[0]
+        self.assertNotIn("Jane", call_args[0])
+        self.assertIn("[NAME]", call_args[0])
+        self.assertIn("[DATE]", call_args[1])
+        self.assertIn("[RECORD ID]", call_args[1])
 
     @patch("konote.ai.suggest_note_structure")
     def test_ai_failure_returns_error_message(self, mock_suggest):

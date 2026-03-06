@@ -333,9 +333,10 @@ class SurveyResponse(models.Model):
         related_name="survey_responses",
     )
     channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
-    respondent_name_display = models.CharField(
-        max_length=255, blank=True, default="",
-        help_text=_("Optional name for link responses. Not encrypted (non-PII)."),
+    _respondent_name_encrypted = models.BinaryField(
+        default=b"",
+        blank=True,
+        help_text=_("Optional encrypted respondent name for identified link responses."),
     )
     consent_given_at = models.DateTimeField(
         null=True, blank=True,
@@ -355,6 +356,19 @@ class SurveyResponse(models.Model):
 
     def __str__(self):
         return f"Response to {self.survey.name} ({self.get_channel_display()})"
+
+    @property
+    def respondent_name_display(self):
+        if not self._respondent_name_encrypted:
+            return ""
+        try:
+            return decrypt_field(self._respondent_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
+
+    @respondent_name_display.setter
+    def respondent_name_display(self, val):
+        self._respondent_name_encrypted = encrypt_field(val)
 
 
 class SurveyAnswer(models.Model):
@@ -403,7 +417,7 @@ class SurveyLink(models.Model):
     expires_at = models.DateTimeField(null=True, blank=True)
     collect_name = models.BooleanField(
         default=False,
-        help_text=_("If true, ask respondent for their name (optional, not encrypted)."),
+        help_text=_("If true, ask respondent for their name on identified link responses only."),
     )
     single_response = models.BooleanField(
         default=False,
@@ -427,6 +441,10 @@ class SurveyLink(models.Model):
     def save(self, *args, **kwargs):
         if not self.token:
             self.token = secrets.token_urlsafe(32)
+        # Anonymity enforcement layer 1 of 3 (model). Also enforced in
+        # views.py (link creation) and public_views.py (form submission).
+        if self.collect_name and self.survey_id and self.survey.is_anonymous:
+            self.collect_name = False
         super().save(*args, **kwargs)
 
     @property
