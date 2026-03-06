@@ -643,9 +643,6 @@ msgstr "Filtrer l'historique"
 msgid "View in Notes"
 msgstr "Voir dans Notes"
 
-msgid "Log a contact or brief update"
-msgstr "Enregistrer un contact ou une brève mise à jour"
-
 msgid "Document a session with outcomes"
 msgstr "Documenter une séance avec les résultats"
 
@@ -734,10 +731,6 @@ msgstr "Modifier le dossier du participant"
 
 msgid "Transfer between programs"
 msgstr "Transférer entre les programmes"
-
-msgid "Use the Actions menu to add a Quick Note or Detailed Note."
-msgstr ""
-"Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
 msgid "Use the Actions menu to Log Contact or add a Detailed Note."
 msgstr ""
@@ -14825,9 +14818,6 @@ msgstr "Aller à Créer un rapport"
 msgid "Listen"
 msgstr "Écouter"
 
-msgid "Log Communication"
-msgstr "Consigner une communication"
-
 msgid "Manage Report Templates"
 msgstr "Gérer les modèles de rapports"
 
@@ -14842,9 +14832,6 @@ msgstr "Aucun message pour le moment."
 
 msgid "Percentage of sessions attended"
 msgstr "Pourcentage de séances auxquelles la personne a participé"
-
-msgid "Record a phone call, visit, or message"
-msgstr "Consigner un appel, une visite ou un message"
 
 msgid "Shape the goal"
 msgstr "Formuler l’objectif"

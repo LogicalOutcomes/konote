@@ -5574,3 +5574,41 @@ article[aria-label="notification"].fading-out {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 }
+
+/* ---- Pill navigation (shared by help + privacy pages) ---- */
+.pill-nav {
+    background: var(--pico-card-background-color, #f5f5f5);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.pill-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pill-nav li {
+    margin: 0;
+}
+
+.pill-nav a {
+    display: block;
+    padding: 0.4rem 0.9rem;
+    background: var(--pico-primary-background, #3176aa);
+    color: var(--pico-primary-inverse, #fff);
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+}
+
+.pill-nav a:hover,
+.pill-nav a:focus {
+    opacity: 0.85;
+}
