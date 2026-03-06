@@ -749,93 +749,96 @@ def goal_create_from_suggestion(request, client_id):
     )
     program = enrolment.program if enrolment else None
 
-    # --- Section resolution priority chain (R2) ---
-    section = None
-    suggested_section = (suggestion.get("suggested_section") or "").strip()
+    # --- Wrap all DB writes in a transaction so failures don't leave orphans ---
+    with transaction.atomic():
+        # --- Section resolution priority chain (R2) ---
+        section = None
+        suggested_section = (suggestion.get("suggested_section") or "").strip()
 
-    if suggested_section:
-        # Priority 1: Match existing section on THIS participant (case-insensitive)
-        section = PlanSection.objects.filter(
-            client_file=client, status="default",
-            name__iexact=suggested_section,
-        ).first()
+        if suggested_section:
+            # Priority 1: Match existing section on THIS participant (case-insensitive)
+            section = PlanSection.objects.filter(
+                client_file=client, status="default",
+                name__iexact=suggested_section,
+            ).first()
 
-        # Priority 2: Match section used by OTHER participants in same program
-        if section is None and program:
-            program_section_name = (
-                PlanSection.objects.filter(program=program)
-                .filter(name__iexact=suggested_section)
-                .values_list("name", flat=True)
-                .first()
-            )
-            if program_section_name:
-                # Use the canonical name from the program (preserve existing casing)
+            # Priority 2: Match section used by OTHER participants in same program
+            if section is None and program:
+                program_section_name = (
+                    PlanSection.objects.filter(
+                        program=program, status="default",
+                    )
+                    .filter(name__iexact=suggested_section)
+                    .values_list("name", flat=True)
+                    .first()
+                )
+                if program_section_name:
+                    section = PlanSection.objects.create(
+                        client_file=client,
+                        name=program_section_name,
+                        program=program,
+                    )
+
+            # Priority 3: Create new section with AI's suggested name
+            if section is None:
                 section = PlanSection.objects.create(
                     client_file=client,
-                    name=program_section_name,
+                    name=suggested_section,
                     program=program,
                 )
 
-        # Priority 3: Create new section with AI's suggested name
+        # Priority 4: Fall back to "General"
         if section is None:
             section = PlanSection.objects.create(
                 client_file=client,
-                name=suggested_section,
+                name="General",
                 program=program,
             )
 
-    # Priority 4: Fall back to "General"
-    if section is None:
-        section = PlanSection.objects.create(
-            client_file=client,
-            name="General",
-            program=program,
-        )
+        # --- Resolve metrics (single query instead of N+1) ---
+        requested_metric_ids = [
+            m["metric_id"] for m in suggestion.get("metrics", [])
+            if m.get("metric_id")
+        ]
+        metric_ids = list(
+            MetricDefinition.objects.filter(
+                pk__in=requested_metric_ids, is_enabled=True, status="active",
+            ).values_list("pk", flat=True)
+        ) if requested_metric_ids else []
 
-    # --- Resolve metrics ---
-    metric_ids = []
-    for m in suggestion.get("metrics", []):
-        mid = m.get("metric_id")
-        if mid:
-            exists = MetricDefinition.objects.filter(
-                pk=mid, is_enabled=True, status="active",
-            ).exists()
-            if exists:
-                metric_ids.append(mid)
+        # --- Custom metric (R5: included by default) ---
+        skip_custom = request.POST.get("skip_custom_metric") == "true"
+        custom = suggestion.get("custom_metric")
+        if custom and not skip_custom:
+            custom_metric = MetricDefinition.objects.create(
+                name=custom.get("name", "Custom metric")[:255],
+                definition=custom.get("definition", ""),
+                min_value=custom.get("min_value", 1),
+                max_value=custom.get("max_value", 5),
+                unit=custom.get("unit", "score"),
+                is_library=False,
+                owning_program=program,
+                category="custom",
+            )
+            metric_ids.append(custom_metric.pk)
 
-    # --- Custom metric (R5: included by default) ---
-    skip_custom = request.POST.get("skip_custom_metric") == "true"
-    custom = suggestion.get("custom_metric")
-    if custom and not skip_custom:
-        custom_metric = MetricDefinition.objects.create(
-            name=custom.get("name", "Custom metric")[:255],
-            definition=custom.get("definition", ""),
-            min_value=custom.get("min_value", 1),
-            max_value=custom.get("max_value", 5),
-            unit=custom.get("unit", "score"),
-            is_library=False,
-            owning_program=program,
-            category="custom",
-        )
-        metric_ids.append(custom_metric.pk)
-
-    # --- Create goal ---
-    try:
-        target = _create_goal(
-            client_file=client,
-            user=request.user,
-            name=suggestion.get("name", ""),
-            description=suggestion.get("description", ""),
-            client_goal=suggestion.get("client_goal", ""),
-            section=section,
-            program=program,
-            metric_ids=metric_ids,
-        )
-    except ValueError as e:
-        return render(request, "plans/_goal_save_error.html", {
-            "error": str(e),
-            "client": client,
-        })
+        # --- Create goal ---
+        try:
+            target = _create_goal(
+                client_file=client,
+                user=request.user,
+                name=suggestion.get("name", ""),
+                description=suggestion.get("description", ""),
+                client_goal=suggestion.get("client_goal", ""),
+                section=section,
+                program=program,
+                metric_ids=metric_ids,
+            )
+        except ValueError as e:
+            return render(request, "plans/_goal_save_error.html", {
+                "error": str(e),
+                "client": client,
+            })
 
     # --- Success message (R5: include metric names) ---
     goal_name = suggestion.get("name", "Goal")

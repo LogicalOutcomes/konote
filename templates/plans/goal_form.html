@@ -852,15 +852,22 @@
     // ────────────────────────────────────────
     // AI loading text rotation (T-5)
     // ────────────────────────────────────────
+    var loadingTextTimer = null;
     document.addEventListener("htmx:beforeRequest", function(evt) {
         if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target") {
             var loadingEl = document.querySelector("#ai-loading small");
             if (loadingEl) {
                 loadingEl.textContent = "{% trans 'Working on a suggestion…' %}";
-                setTimeout(function() {
+                loadingTextTimer = setTimeout(function() {
                     if (loadingEl) loadingEl.textContent = "{% trans 'Almost there…' %}";
                 }, 4000);
             }
+        }
+    });
+    document.addEventListener("htmx:afterRequest", function(evt) {
+        if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target" && loadingTextTimer) {
+            clearTimeout(loadingTextTimer);
+            loadingTextTimer = null;
         }
     });
 
