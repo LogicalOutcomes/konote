@@ -367,10 +367,10 @@ def client_list(request):
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
-    # Bulk operation permission flags (UX17)
-    can_bulk_status = PERMISSIONS.get(user_role, {}).get("client.edit", DENY) != DENY
-    can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
-    show_bulk = can_bulk_status or can_bulk_transfer
+    # Bulk operation permission flags (UX17) — disabled until UX is reworked
+    can_bulk_status = False
+    can_bulk_transfer = False
+    show_bulk = False
 
     # Base context shared by both single and split views
     context = {
