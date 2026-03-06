@@ -9,6 +9,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from cryptography.fernet import Fernet
 
+from apps.auth_app.constants import ROLE_STAFF
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.groups.models import (
@@ -336,6 +337,24 @@ class CrossProgramConsentTest(TestCase):
         _, restricted_note = self._get_viewing_and_restricted_notes()
         resp = self.client.get(f"/notes/{restricted_note.pk}/")
         self.assertEqual(resp.status_code, 403)
+
+    def test_check_note_date_hides_restricted_program_note_metadata(self):
+        """Duplicate-date warnings must not reveal note metadata from a restricted program."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        allowed_note, restricted_note = self._get_viewing_and_restricted_notes()
+
+        resp = self.client.get(
+            f"/notes/participant/{self.shared_client.pk}/check-date/",
+            {"session_date": timezone.localdate().isoformat()},
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Heads up")
+        existing_ids = {note.pk for note in resp.context["existing_notes"]}
+        self.assertIn(allowed_note.pk, existing_ids)
+        self.assertNotIn(restricted_note.pk, existing_ids)
 
     def test_direct_url_allowed_note_returns_200(self):
         """Direct URL to a note from viewing program when restricted -> 200."""

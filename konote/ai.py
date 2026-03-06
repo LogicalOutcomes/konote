@@ -108,7 +108,7 @@ def generate_metric_rationale(name, definition, category, metric_type, scale_ran
         if isinstance(parsed, dict) and "note" in parsed:
             return parsed
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric rationale: %s", result[:200])
+        logger.warning("Could not parse metric rationale response")
     return None
 
 
@@ -165,7 +165,7 @@ def suggest_metrics(target_description, metric_catalogue):
     try:
         return json.loads(result)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric suggestions: %s", result[:200])
+        logger.warning("Could not parse metric suggestions response")
         return None
 
 
@@ -420,12 +420,11 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         url = f"{insights_base.rstrip('/')}/chat/completions"
         parsed = urlparse(url)
         if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
-            logger.warning(
-                "INSIGHTS_API_BASE uses HTTP for remote host %s — "
-                "de-identified data will transit unencrypted. "
-                "Use HTTPS for production deployments.",
+            logger.error(
+                "INSIGHTS_API_BASE uses insecure HTTP for remote host %s; refusing participant-data AI call",
                 parsed.hostname,
             )
+            return None
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -581,7 +580,7 @@ def generate_outcome_insights(
     try:
         parsed = json.loads(text)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse outcome insights response: %s", text[:300])
+        logger.warning("Could not parse outcome insights response")
         return None
 
     # Validate response structure
@@ -629,7 +628,7 @@ def validate_insights_response(response, original_quotes):
                     cq["note_id"] = matching_orig["note_id"]
                 verified_quotes.append(cq)
             else:
-                logger.info("AI quote not verbatim, skipping: %s", cq["text"][:80])
+                logger.info("AI quote not verbatim, skipping")
         response["cited_quotes"] = verified_quotes
 
     # Ensure themes is a list
@@ -659,7 +658,7 @@ def validate_insights_response(response, original_quotes):
                         sq.pop("note_id", None)
                         verified_sq.append(sq)
                     else:
-                        logger.info("Feedback quote not verbatim, skipping: %s", sq.get("text", "")[:80])
+                        logger.info("Feedback quote not verbatim, skipping")
                 item["supporting_quotes"] = verified_sq
             else:
                 item["supporting_quotes"] = []
@@ -805,7 +804,7 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
     try:
         parsed = json.loads(text)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse goal builder response: %s", text[:300])
+        logger.warning("Could not parse goal builder response")
         return None
 
     return _validate_goal_chat_response(parsed, metric_catalogue)
@@ -899,7 +898,7 @@ def suggest_note_structure(target_name, target_description, metric_names):
     try:
         return json.loads(result)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse note structure: %s", result[:200])
+        logger.warning("Could not parse note structure response")
         return None
 
 
@@ -970,7 +969,7 @@ def generate_focused_analysis(question, suggestions, program_name):
     try:
         parsed = json.loads(text)
     except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse focused analysis response: %s", text[:300])
+        logger.warning("Could not parse focused analysis response")
         return None
 
     return _validate_focused_analysis(parsed, len(suggestions))

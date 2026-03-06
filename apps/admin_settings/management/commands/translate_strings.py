@@ -66,9 +66,9 @@ Return ONLY the JSON object — no markdown fences, no explanation.\
 class Command(BaseCommand):
     help = "Extract translatable strings, add missing entries to .po, compile .mo."
 
-    # Regex for {% trans "string" %} and {% trans 'string' %}
+    # Regex for {% trans "string" %} with optional context.
     TEMPLATE_PATTERN = re.compile(
-        r"""\{%[-\s]*trans\s+['"](.+?)['"]\s*[-]?%\}"""
+        r'''\{%[-\s]*trans\s+["\'](?P<msgid>.+?)["\'](?:\s+context\s+["\'](?P<context>.+?)["\'])?\s*[-]?%\}'''
     )
 
     # Regex for _("string"), gettext("string"), gettext_lazy("string")
@@ -168,7 +168,11 @@ class Command(BaseCommand):
             sys.exit(1)
 
         po = polib.pofile(str(po_path))
-        existing_msgids = {entry.msgid for entry in po}
+        existing_msgids = {
+            (entry.msgctxt or "", entry.msgid)
+            for entry in po
+            if entry.msgid
+        }
 
         translated_count = sum(
             1 for entry in po
@@ -186,7 +190,7 @@ class Command(BaseCommand):
         )
 
         new_strings = sorted(all_strings - existing_msgids)
-        stale_strings = sorted(existing_msgids - all_strings - {""})
+        stale_strings = sorted(existing_msgids - all_strings)
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -225,15 +229,21 @@ class Command(BaseCommand):
         msgid_counts = {}
         for entry in po:
             if entry.msgid:
-                msgid_counts[entry.msgid] = msgid_counts.get(entry.msgid, 0) + 1
+                key = (entry.msgctxt or "", entry.msgid, entry.msgid_plural or "")
+                msgid_counts[key] = msgid_counts.get(key, 0) + 1
         duplicates = {k: v for k, v in msgid_counts.items() if v > 1}
         if duplicates:
             self.stderr.write(self.style.ERROR(
                 f"\n  ERROR: {len(duplicates)} duplicate msgid(s) in .po file:"
             ))
-            for msgid, count in sorted(duplicates.items()):
+            for (msgctxt, msgid, msgid_plural), count in sorted(duplicates.items()):
+                label = f'"{msgid}"'
+                if msgctxt:
+                    label += f" (context: {msgctxt})"
+                if msgid_plural:
+                    label += " [pluralized]"
                 self.stderr.write(
-                    self.style.ERROR(f"    - \"{msgid}\" appears {count} times")
+                    self.style.ERROR(f"    - {label} appears {count} times")
                 )
             self.stderr.write(self.style.ERROR(
                 "  Fix duplicates before running translate_strings.\n"
@@ -246,8 +256,10 @@ class Command(BaseCommand):
             ))
             if new_strings:
                 self.stdout.write("\n  New strings that would be added:")
-                for s in new_strings[:20]:
-                    self.stdout.write(f"    + \"{s}\"")
+                for msgctxt, msgid in new_strings[:20]:
+                    self.stdout.write(
+                        f"    + {self._format_entry_label(msgid, msgctxt)}"
+                    )
                 if len(new_strings) > 20:
                     self.stdout.write(
                         f"    ... and {len(new_strings) - 20} more"
@@ -273,8 +285,8 @@ class Command(BaseCommand):
 
         # Add new strings to .po
         if new_strings:
-            for msgid in new_strings:
-                entry = polib.POEntry(msgid=msgid, msgstr="")
+            for msgctxt, msgid in new_strings:
+                entry = polib.POEntry(msgctxt=msgctxt or None, msgid=msgid, msgstr="")
                 po.append(entry)
             self._save_po(po, po_path)
             self.stdout.write(self.style.SUCCESS(
@@ -526,6 +538,12 @@ class Command(BaseCommand):
         r"""\{%[-\s]*blocktrans[\s%]"""
     )
 
+    def _format_entry_label(self, msgid, msgctxt=""):
+        label = f'"{msgid}"'
+        if msgctxt:
+            label += f" (context: {msgctxt})"
+        return label
+
     def _extract_templates(self, base_dir):
         """Scan templates/**/*.html for {% trans %} strings and count blocktrans blocks.
 
@@ -567,7 +585,10 @@ class Command(BaseCommand):
 
                 content = comment_pattern.sub("", content)
 
-                matches = self.TEMPLATE_PATTERN.findall(content)
+                matches = {
+                    ((match.group("context") or ""), match.group("msgid"))
+                    for match in self.TEMPLATE_PATTERN.finditer(content)
+                }
                 bt_matches = self.BLOCKTRANS_PATTERN.findall(content)
                 if matches or bt_matches:
                     strings.update(matches)
@@ -599,7 +620,7 @@ class Command(BaseCommand):
 
             matches = self.PYTHON_PATTERN.findall(content)
             if matches:
-                strings.update(matches)
+                strings.update(("", match) for match in matches)
                 file_count += 1
 
         return strings, file_count

@@ -5,6 +5,12 @@
 # Environment and secrets
 .env
 .env.*
+konote-credentials-*.txt
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
 
 # Python
 __pycache__
@@ -16,11 +22,25 @@ venv/
 # IDE
 .vscode/
 .idea/
+.obsidian/
+.Jules/
+.jules/
+.worktrees/
 
 # Documentation and tasks (not needed in production)
 docs/
 tasks/
 *.md
+reviews/
+monitoring/
+deployment/
+incidents/
+
+# Local artifacts
+Pasted image*.png
+*.sqlite3
+backups/
+qa/
 
 # Tests (not needed in production)
 tests/

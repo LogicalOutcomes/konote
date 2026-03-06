@@ -8,6 +8,7 @@ from apps.auth_app.models import User
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
 import konote.encryption as enc_module
+from apps.audit.models import AuditLog
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -16,6 +17,8 @@ TEST_KEY = Fernet.generate_key().decode()
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class PublicRegistrationFormViewTest(TestCase):
     """Tests for the public registration form view."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -156,6 +159,60 @@ class PublicRegistrationFormViewTest(TestCase):
         self.assertIsNotNone(submission)
         self.assertEqual(submission.status, "approved")
 
+    def test_public_submission_writes_audit_log_without_pii(self):
+        url = reverse(
+            "registration:public_registration_form",
+            kwargs={"slug": self.registration_link.slug}
+        )
+
+        response = self.client.post(url, {
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@example.com",
+            "phone": "613-555-1212",
+            "consent": "on",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        submission = RegistrationSubmission.objects.get(registration_link=self.registration_link)
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="registration",
+            resource_id=submission.pk,
+            action="post",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.new_values["status"], "pending")
+        metadata_text = str(log.metadata)
+        self.assertNotIn("John", metadata_text)
+        self.assertNotIn("Doe", metadata_text)
+        self.assertNotIn("john.doe@example.com", metadata_text)
+
+    def test_auto_approve_writes_review_audit_log_without_pii(self):
+        self.registration_link.auto_approve = True
+        self.registration_link.save()
+        url = reverse(
+            "registration:public_registration_form",
+            kwargs={"slug": self.registration_link.slug}
+        )
+
+        self.client.post(url, {
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "email": "jane.smith@example.com",
+            "consent": "on",
+        })
+
+        submission = RegistrationSubmission.objects.get(registration_link=self.registration_link)
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="registration",
+            resource_id=submission.pk,
+            action="patch",
+            metadata__review_type="auto_approve",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.new_values["status"], "approved")
+        self.assertNotIn("jane.smith@example.com", str(log.metadata))
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class RegistrationCapacityTest(TestCase):
@@ -281,6 +338,8 @@ class RegistrationDeadlineTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class RegistrationSubmittedViewTest(TestCase):
     """Tests for the registration submitted confirmation view."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -827,6 +886,8 @@ class IframeEmbedSecurityTest(TestCase):
     - Admin pages cannot be framed
     - Client data pages cannot be framed
     """
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

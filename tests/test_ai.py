@@ -1,10 +1,10 @@
 """Tests for konote.ai module — prompt content and validation."""
 import json
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from konote.ai import _validate_suggest_target_response
+from konote.ai import _call_insights_api, _validate_suggest_target_response
 
 
 @pytest.mark.django_db
@@ -64,3 +64,33 @@ def test_validate_suggest_target_preserves_valid_section():
     response = _make_valid_response(suggested_section="Employment")
     result = _validate_suggest_target_response(response, [])
     assert result["suggested_section"] == "Employment"
+
+
+@pytest.mark.django_db
+def test_call_insights_api_rejects_remote_http_provider(settings):
+    settings.OPENROUTER_API_KEY = "test-key"
+    settings.INSIGHTS_API_BASE = "http://example.com/v1"
+
+    with patch("konote.ai.requests.post") as mock_post:
+        result = _call_insights_api("system", "user")
+
+    assert result is None
+    mock_post.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_call_insights_api_allows_local_http_provider(settings):
+    settings.OPENROUTER_API_KEY = "test-key"
+    settings.INSIGHTS_API_BASE = "http://localhost:11434/v1"
+
+    mock_response = Mock()
+    mock_response.raise_for_status.return_value = None
+    mock_response.json.return_value = {
+        "choices": [{"message": {"content": "ok"}}],
+    }
+
+    with patch("konote.ai.requests.post", return_value=mock_response) as mock_post:
+        result = _call_insights_api("system", "user")
+
+    assert result == "ok"
+    mock_post.assert_called_once()
