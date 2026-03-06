@@ -13,13 +13,15 @@ KoNote's current AI integration routes participant data (scrubbed quotes, sugges
 
 Beyond KoNote, LogicalOutcomes needs a general-purpose LLM inference endpoint for:
 
-1. **KoNote suggestion theme tagging** — nightly batch processing of participant suggestions across all agencies
+1. **KoNote suggestion theme tagging** — nightly batch processing of participant suggestions across all agencies; this is the assumed production path for open-ended suggestion categorisation
 2. **KoNote outcome insights** — on-demand qualitative analysis of scrubbed participant quotes
 3. **OpenWebUI connections** — external OpenWebUI instances at multiple organisations connect to this central model server
 4. **Survey qualitative analysis** — two-stage pipeline: PII stripping and data cleanup (self-hosted), then deep thematic analysis (frontier LLM API)
 5. **General analytical work** — document analysis, report drafting, data interpretation
 
 This is a **lean shared inference endpoint** — one VPS running Ollama + Caddy, serving multiple KoNote deployments, external OpenWebUI instances, and analytical workloads. OpenWebUI is deployed separately by each organisation, not on this server.
+
+For operator documentation and privacy planning, treat this shared Canadian-hosted server as the default execution path for AI categorisation of open-ended participant suggestions.
 
 ## Decision: Shared Ollama VPS on OVHcloud Beauharnois
 
