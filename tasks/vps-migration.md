@@ -1,12 +1,13 @@
 # VPS Migration: Swiss Server to Canadian Server
 
-**Status:** Ready to execute
+**Status:** Complete
 **Created:** 2026-03-06
+**Completed:** 2026-03-06
 **Task ID:** OPS-MIGRATE1
 
 ## Context
 
-Moving the current KoNote deployment from the OVHcloud VPS in Switzerland (141.227.151.7) to a new OVHcloud VPS hosted in Canada. The new VPS is currently being configured by OVH.
+Migrated the KoNote deployment from an OVHcloud VPS in Switzerland to a new OVHcloud VPS hosted in Canada (Beauharnois, QC). Both production and dev instances are running on the new server.
 
 **Why:** Canadian data residency for PHIPA compliance. The Swiss VPS was the original deployment; the Canadian server aligns with the data residency policy in `tasks/design-rationale/data-access-residency-policy.md`.
 
