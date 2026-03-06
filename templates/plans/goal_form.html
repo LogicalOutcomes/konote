@@ -56,10 +56,11 @@
 <div id="suggestion-container" aria-live="polite"></div>
 {% endif %}
 
-{# ====== UNIFIED FORM (T-4) ====== #}
-{# Single form for both AI and non-AI paths. Hidden when AI enabled until
-   "Let me review first" / manual entry / quick pick reveals it.
-   Non-AI path uses phase 1 (listen) + phase 2 (shape) progressive disclosure. #}
+{% comment %}
+    UNIFIED FORM (T-4): Single form for both AI and non-AI paths.
+    Hidden when AI enabled until "Let me review first" / manual entry / quick pick reveals it.
+    Non-AI path uses phase 1 (listen) + phase 2 (shape) progressive disclosure.
+{% endcomment %}
 <form method="post" id="goal-form" novalidate {% if ai_enabled and not form.errors %}hidden{% endif %}>
     {% csrf_token %}
 
