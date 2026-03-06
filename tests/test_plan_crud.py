@@ -576,17 +576,19 @@ class GoalCreateTest(PlanCRUDBaseTest):
         self.assertEqual(target.name, "Manage anxiety")
         self.assertEqual(PlanTargetMetric.objects.filter(plan_target=target).count(), 0)
 
-    def test_new_section_requires_name(self):
-        """If 'Create new section' is selected, a name must be provided."""
+    def test_new_section_defaults_to_general(self):
+        """If 'Create new section' is selected with no name, defaults to 'General'."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:goal_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
             "name": "Some goal",
             "section_choice": "new",
-            "new_section_name": "",  # empty
+            "new_section_name": "",  # empty — should default to "General"
         })
-        self.assertEqual(resp.status_code, 200)  # form redisplayed with error
-        self.assertEqual(PlanTarget.objects.count(), 0)
+        self.assertEqual(resp.status_code, 302)  # redirect on success
+        self.assertEqual(PlanTarget.objects.count(), 1)
+        section = PlanSection.objects.get(name="General")
+        self.assertEqual(PlanTarget.objects.first().plan_section, section)
 
     def test_manager_cannot_create_goal(self):
         """Program manager has plan.edit: DENY — cannot create goals."""
