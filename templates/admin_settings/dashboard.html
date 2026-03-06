@@ -9,6 +9,15 @@
     <p>{% trans "Manage your instance configuration." %}</p>
 </div>
 
+<aside class="settings-guide-callout" role="note">
+    <svg class="settings-guide-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <div>
+        <strong>{% trans "Settings Guide" %}</strong>
+        <p>{% trans "What each setting does, when you'd change it, and what's safe to experiment with." %}</p>
+        <a href="{% url 'help' %}#admin-settings-guide">{% trans "Read the Settings Guide" %}</a>
+    </div>
+</aside>
+
 <div class="settings-grid">
 
     {# ---- Data & Measurement ---- #}
@@ -222,10 +231,51 @@
     </article>
 
 </div>
+
+<nav class="settings-guide-footer" aria-label="{% trans 'Settings help' %}">
+    <p>{% trans "Need help with a setting?" %} <a href="{% url 'help' %}#admin-settings-guide">{% trans "Read the Settings Guide" %} &rarr;</a></p>
+</nav>
 {% endblock %}
 
 {% block extra_head %}
 <style>
+    .settings-guide-callout {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background: var(--kn-primary-subtle, #e8f0fe);
+        border-left: 4px solid var(--kn-primary, #3176aa);
+        border-radius: var(--kn-radius, 4px);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .settings-guide-icon {
+        flex-shrink: 0;
+        color: var(--kn-primary, #3176aa);
+        margin-top: 0.125rem;
+    }
+    .settings-guide-callout p {
+        font-size: 0.875rem;
+        color: var(--kn-text-secondary, #555);
+        margin-bottom: 0.5rem;
+    }
+    .settings-guide-callout strong {
+        font-size: 1rem;
+    }
+    .settings-guide-callout a {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .settings-guide-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--kn-border-light, #e0e0e0);
+    }
+    .settings-guide-footer p {
+        color: var(--kn-text-secondary, #555);
+        font-size: 0.875rem;
+    }
     .settings-indicator {
         font-size: 0.8125rem;
         color: var(--kn-text-secondary);

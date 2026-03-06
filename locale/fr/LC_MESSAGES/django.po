@@ -19783,3 +19783,208 @@ msgstr "Pourquoi ces mesures?"
 #, python-format
 msgid "What did %(client)s say about this?"
 msgstr "Qu'a dit %(client)s à ce sujet?"
+
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Settings Guide"
+msgstr "Guide des paramètres"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "What each setting does, when you'd change it, and what's safe to experiment with."
+msgstr "Ce que fait chaque paramètre, quand le modifier et ce que vous pouvez essayer sans risque."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Read the Settings Guide"
+msgstr "Lire le guide des paramètres"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Settings help"
+msgstr "Aide sur les paramètres"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Need help with a setting?"
+msgstr "Besoin d'aide avec un paramètre?"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "This guide explains what each area of the Settings page does, when you'd change it, and what's safe to experiment with. Nothing here can break your data — you can always change settings back."
+msgstr "Ce guide explique ce que fait chaque section de la page Paramètres, quand la modifier et ce que vous pouvez essayer sans risque. Rien ici ne peut endommager vos données — vous pouvez toujours revenir en arrière."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Safe to experiment?"
+msgstr "Peut-on essayer sans risque?"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When to change it:"
+msgstr "Quand le modifier :"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When to review it:"
+msgstr "Quand le consulter :"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Important:"
+msgstr "Important :"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "General Tips"
+msgstr "Conseils généraux"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "For detailed guidance on each setting, see the Settings Guide below."
+msgstr "Pour des conseils détaillés sur chaque paramètre, consultez le Guide des paramètres ci-dessous."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Create a custom metric"
+msgstr "Créer une mesure personnalisée"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Enable or disable a metric"
+msgstr "Activer ou désactiver une mesure"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When the built-in scales don't capture what your programme measures"
+msgstr "Quand les échelles intégrées ne correspondent pas à ce que votre programme mesure"
+
+#: templates/pages/help.html — Admin settings guide
+msgid "If staff report too many false warnings (values that are correct but keep getting flagged), loosen the thresholds. If implausible values are slipping through unnoticed, tighten them."
+msgstr "Si le personnel signale trop de faux avertissements (des valeurs correctes mais constamment signalées), assouplissez les seuils. Si des valeurs peu plausibles passent inaperçues, resserrez-les."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Threshold changes only affect future warnings, not existing data."
+msgstr "Oui. Les changements de seuils n'affectent que les avertissements futurs, pas les données existantes."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When you want to add a new note type (e.g. for a new programme) or adjust the prompts staff see when writing notes."
+msgstr "Quand vous voulez ajouter un nouveau type de note (par exemple pour un nouveau programme) ou ajuster les consignes que le personnel voit en rédigeant des notes."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Changing a template affects future notes only. Existing notes keep the structure they were written with."
+msgstr "Oui. Modifier un modèle n'affecte que les notes futures. Les notes existantes conservent la structure avec laquelle elles ont été rédigées."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Create new user accounts, change someone's role, assign them to programmes, or deactivate accounts when people leave. Each user needs a role (Front Desk, Staff, Program Manager, or Administrator) and at least one programme assignment to see participant data."
+msgstr "Créer de nouveaux comptes, changer le rôle de quelqu'un, assigner à des programmes ou désactiver des comptes lors de départs. Chaque utilisateur a besoin d'un rôle (Accueil, Personnel, Gestionnaire de programme ou Administrateur) et d'au moins une affectation de programme pour voir les données des participants."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When someone joins, leaves, or changes role. Also when someone needs access to a different programme."
+msgstr "Quand quelqu'un arrive, part ou change de rôle. Aussi quand quelqu'un a besoin d'accéder à un autre programme."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Be careful with role changes — giving someone Administrator access lets them change all settings. Deactivating a user locks them out immediately. Neither action deletes data."
+msgstr "Soyez prudent avec les changements de rôle — donner à quelqu'un l'accès Administrateur lui permet de modifier tous les paramètres. La désactivation d'un utilisateur le verrouille immédiatement. Aucune de ces actions ne supprime de données."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When Front Desk staff need to see (or should not see) certain fields — for example, showing phone number but hiding clinical notes."
+msgstr "Quand le personnel d'accueil doit voir (ou ne doit pas voir) certains champs — par exemple, afficher le numéro de téléphone mais masquer les notes cliniques."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Changes take effect immediately but can be reverted just as quickly. There's also a 'Reset to defaults' button."
+msgstr "Oui. Les modifications prennent effet immédiatement mais peuvent être annulées tout aussi rapidement. Il y a aussi un bouton « Rétablir les valeurs par défaut »."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When a Programme Manager requests access to clinical note content, they must provide a documented justification. This page shows all active grants so you can review who has access and why."
+msgstr "Quand un gestionnaire de programme demande l'accès au contenu des notes cliniques, il doit fournir une justification documentée. Cette page affiche toutes les autorisations actives pour que vous puissiez vérifier qui a accès et pourquoi."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Periodically (e.g. quarterly) to confirm that access justifications are still valid, or when a concern is raised about data access."
+msgstr "Périodiquement (par exemple chaque trimestre) pour confirmer que les justifications d'accès sont toujours valides, ou quand une préoccupation est soulevée concernant l'accès aux données."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Your organisation's display name, support email, logo, date format, and session timeout. These affect what everyone sees in the header, footer, and login page."
+msgstr "Le nom affiché de votre organisation, l'adresse courriel de soutien, le logo, le format de date et le délai d'expiration de session. Cela affecte ce que tout le monde voit dans l'en-tête, le pied de page et la page de connexion."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "During initial setup, or when your organisation rebrands or changes contact details."
+msgstr "Lors de la configuration initiale, ou quand votre organisation change d'image de marque ou de coordonnées."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. All changes are cosmetic and can be reverted."
+msgstr "Oui. Toutes les modifications sont cosmétiques et peuvent être annulées."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Terminology lets you rename the words used throughout KoNote. For example, you can change \"Participant\" to \"Client\" or \"Youth,\" or rename \"Progress Note\" to \"Session Note.\" Changes appear everywhere instantly for all users."
+msgstr "La terminologie vous permet de renommer les mots utilisés dans KoNote. Par exemple, vous pouvez changer « Participant » en « Client » ou « Jeune », ou renommer « Note de progrès » en « Note de session ». Les changements apparaissent partout instantanément pour tous les utilisateurs."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "During initial setup to match your organisation's language, or if your terminology changes."
+msgstr "Lors de la configuration initiale pour correspondre au vocabulaire de votre organisation, ou si votre terminologie change."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Changes are purely cosmetic — renaming a term does not move or delete any data. You can change terms back at any time."
+msgstr "Oui. Les changements sont purement cosmétiques — renommer un terme ne déplace ni ne supprime aucune donnée. Vous pouvez revenir aux termes originaux à tout moment."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Feature toggles let you turn whole modules on or off. For example, if your organisation doesn't use Circles (family networks), you can hide them so staff don't see a feature they won't use."
+msgstr "Les bascules de fonctionnalités vous permettent d'activer ou de désactiver des modules entiers. Par exemple, si votre organisation n'utilise pas les Cercles (réseaux familiaux), vous pouvez les masquer pour que le personnel ne voie pas une fonctionnalité qu'il n'utilisera pas."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "During initial setup, or when you're ready to introduce a new feature to your team."
+msgstr "Lors de la configuration initiale, ou quand vous êtes prêt à présenter une nouvelle fonctionnalité à votre équipe."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Disabling a feature hides it from all users but preserves existing data. Re-enabling it brings everything back. A confirmation dialog warns you about any dependencies before you commit."
+msgstr "Oui. Désactiver une fonctionnalité la masque pour tous les utilisateurs mais préserve les données existantes. La réactiver ramène tout. Un dialogue de confirmation vous avertit des dépendances avant de valider."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Your organisation's legal name, address, sector codes, and backup reminders. Used in reports and compliance records."
+msgstr "Le nom légal de votre organisation, l'adresse, les codes de secteur et les rappels de sauvegarde. Utilisés dans les rapports et les documents de conformité."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "During initial setup, or when your legal details change."
+msgstr "Lors de la configuration initiale, ou quand vos informations légales changent."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. All fields can be updated at any time."
+msgstr "Oui. Tous les champs peuvent être mis à jour à tout moment."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "During initial setup to choose your messaging approach, or when you want to adjust reminder timing or message wording."
+msgstr "Lors de la configuration initiale pour choisir votre approche de messagerie, ou quand vous voulez ajuster le moment des rappels ou la formulation des messages."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Be thoughtful with messaging settings — enabling outbound messages means participants may receive real emails or texts. Use Safety-First mode if in doubt."
+msgstr "Soyez attentif aux paramètres de messagerie — activer les messages sortants signifie que les participants pourraient recevoir de vrais courriels ou textos. Utilisez le mode Sécurité d'abord en cas de doute."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Partners are the organisations you report to — funders, networks, boards. Each partner can have report templates that define what data gets included when you generate a report for them."
+msgstr "Les partenaires sont les organisations auxquelles vous rendez des comptes — bailleurs de fonds, réseaux, conseils d'administration. Chaque partenaire peut avoir des modèles de rapport qui définissent quelles données sont incluses quand vous générez un rapport."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "When you get a new funder, when reporting requirements change, or when you want to set up templates for recurring reports."
+msgstr "Quand vous avez un nouveau bailleur de fonds, quand les exigences de rapport changent, ou quand vous voulez configurer des modèles pour des rapports récurrents."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Adding or editing partners and templates does not affect participant data."
+msgstr "Oui. Ajouter ou modifier des partenaires et des modèles n'affecte pas les données des participants."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "A read-only, printable summary of all your current settings in one place. Useful for onboarding new administrators or for annual reviews."
+msgstr "Un résumé en lecture seule et imprimable de tous vos paramètres actuels en un seul endroit. Utile pour l'intégration de nouveaux administrateurs ou pour les revues annuelles."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Generates configuration files for new KoNote deployments. You likely won't need this unless you're setting up a new instance — your technical support team would use it."
+msgstr "Génère des fichiers de configuration pour les nouveaux déploiements KoNote. Vous n'en aurez probablement pas besoin, sauf si vous configurez une nouvelle instance — votre équipe de soutien technique l'utiliserait."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "View and manage demo users and participants. You can impersonate demo users to see what KoNote looks like from their perspective — useful for training and onboarding."
+msgstr "Consulter et gérer les utilisateurs et participants de démonstration. Vous pouvez vous faire passer pour un utilisateur de démonstration pour voir KoNote de leur point de vue — utile pour la formation et l'intégration."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Yes. Demo data is completely separate from real data."
+msgstr "Oui. Les données de démonstration sont complètement séparées des données réelles."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "Most settings take effect immediately — you don't need to restart or redeploy anything."
+msgstr "La plupart des paramètres prennent effet immédiatement — vous n'avez pas besoin de redémarrer ou de redéployer quoi que ce soit."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "No setting deletes data. Disabling a feature or metric hides it but keeps all existing records safe."
+msgstr "Aucun paramètre ne supprime de données. Désactiver une fonctionnalité ou une mesure la masque mais garde toutes les données existantes en sécurité."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "If you're unsure about a change, try it on a demo account first (Admin → Demo Accounts → Impersonate)."
+msgstr "Si vous n'êtes pas sûr d'un changement, essayez-le d'abord sur un compte de démonstration (Admin → Comptes de démonstration → Se faire passer pour)."
+
+#: templates/pages/help.html — Admin settings guide
+msgid "The Configuration Overview page is a good way to review everything before and after making changes."
+msgstr "La page Vue d'ensemble de la configuration est un bon moyen de tout vérifier avant et après les modifications."
