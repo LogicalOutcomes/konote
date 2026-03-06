@@ -55,8 +55,10 @@
                 hx-swap="innerHTML"
                 hx-indicator="#ai-loading"
                 hx-include="#participant-words, #hidden-client-id"
-                hx-disabled-elt="this">
-            {% trans "Shape this target" %}
+                hx-disabled-elt="this"
+                hx-sync="this:abort">
+            <svg class="btn-sparkle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z"/></svg>
+            {% trans "Suggest a goal" %}
         </button>
         <input type="hidden" id="hidden-client-id"
                name="client_id" value="{{ client.pk }}">
@@ -563,7 +565,7 @@
     </div>
 
     {# ── Screen reader announcement region ── #}
-    <div aria-live="polite" class="sr-only" id="form-announce"></div>
+    <div aria-live="assertive" class="sr-only" id="form-announce"></div>
     {% endif %}
 </form>
 {% endblock %}
@@ -748,6 +750,8 @@
             if (card) {
                 card.scrollIntoView({ behavior: "smooth" });
                 card.focus();
+                // R7: Hide entry points after suggestion loads
+                if (entryPoints) entryPoints.hidden = true;
             }
             // If error partial was loaded, wire up its button
             var showFormBtn = document.getElementById("btn-show-manual-form");
@@ -768,41 +772,8 @@
             var btn = e.target.closest("button");
             if (!btn) return;
 
-            if (btn.id === "btn-use-suggestion") {
-                var suggestion;
-                try { suggestion = JSON.parse(btn.dataset.suggestion); }
-                catch (_) { suggestion = null; }
-                if (!suggestion) {
-                    // Malformed AI response — fall back to manual entry
-                    suggestionContainer.innerHTML = "";
-                    revealForm();
-                    return;
-                }
-                populateForm(suggestion, btn.dataset.sectionPk, btn.dataset.newSection);
-                suggestionContainer.innerHTML = "";
-                revealForm();
-
-                // Verify required fields before auto-submitting.
-                // If section is "new" with no name, show form for review.
-                var announce = document.getElementById("form-announce");
-                var sc = goalForm.querySelector("[name=section_choice]");
-                var nsn = goalForm.querySelector("[name=new_section_name]");
-                if (sc && sc.value === "new" && (!nsn || !nsn.value.trim())) {
-                    if (announce) announce.textContent = "{% trans 'Please enter a section name before saving.' %}";
-                    if (nsn) nsn.focus();
-                    return;
-                }
-                if (!nameInput || !nameInput.value.trim()) {
-                    if (announce) announce.textContent = "{% trans 'Please enter a goal name before saving.' %}";
-                    if (nameInput) nameInput.focus();
-                    return;
-                }
-
-                // Note: form.submit() bypasses the submit event — any future
-                // submit listeners (analytics, spinners) won't fire on this path.
-                goalForm.submit();
-                return;
-            }
+            // "Use this suggestion" is now handled by HTMX (hx-post on the button).
+            // No client-side JS needed for btn-use-suggestion.
 
             if (btn.id === "btn-edit-suggestion") {
                 var editSuggestion;
@@ -833,19 +804,32 @@
     }
 
     // ────────────────────────────────────────
-    // Custom metric accept/skip buttons
+    // Screen reader announcement on save (R17)
     // ────────────────────────────────────────
-
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.btn-accept-metric')) {
-            document.getElementById('custom-metric-accepted').value = 'true';
-            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">\u2713 {% trans "Included" %}</small>';
+    document.addEventListener("htmx:beforeRequest", function(evt) {
+        if (evt.detail.elt && evt.detail.elt.id === "btn-use-suggestion") {
+            var announce = document.getElementById("save-announce");
+            if (announce) announce.textContent = "{% trans 'Saving your goal…' %}";
         }
-        if (e.target.closest('.btn-skip-metric')) {
-            document.getElementById('custom-metric-accepted').value = '';
-            document.getElementById('custom-metric-name').value = '';
-            document.getElementById('custom-metric-definition').value = '';
-            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">{% trans "Skipped" %}</small>';
+    });
+
+    // ────────────────────────────────────────
+    // Custom metric remove link (R5)
+    // ────────────────────────────────────────
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#btn-remove-custom-metric')) {
+            e.preventDefault();
+            var preview = e.target.closest('.custom-metric-preview');
+            if (preview) preview.innerHTML = '<small class="secondary">✕ ' + "{% trans 'Custom scale removed.' %}" + '</small>';
+            // Add hidden field to skip custom metric on save
+            var actions = document.querySelector('.suggestion-actions');
+            if (actions) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'skip_custom_metric';
+                input.value = 'true';
+                actions.appendChild(input);
+            }
         }
     });
 
@@ -864,6 +848,21 @@
             revealForm();
         });
     }
+
+    // ────────────────────────────────────────
+    // AI loading text rotation (T-5)
+    // ────────────────────────────────────────
+    document.addEventListener("htmx:beforeRequest", function(evt) {
+        if (evt.detail.elt && evt.detail.elt.id === "btn-shape-target") {
+            var loadingEl = document.querySelector("#ai-loading small");
+            if (loadingEl) {
+                loadingEl.textContent = "{% trans 'Working on a suggestion…' %}";
+                setTimeout(function() {
+                    if (loadingEl) loadingEl.textContent = "{% trans 'Almost there…' %}";
+                }, 4000);
+            }
+        }
+    });
 
     // ────────────────────────────────────────
     // Quick pick cards (entry point version — AI mode)

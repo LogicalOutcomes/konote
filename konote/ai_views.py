@@ -276,9 +276,16 @@ def suggest_target_view(request):
         # Serialise suggestion for embedding as data attribute
         suggestion_json = json.dumps(result)
 
+        # Store suggestion in session for one-click save (R1)
+        from uuid import uuid4
+        suggestion_key = f"goal_suggestion_{client_id}_{uuid4().hex[:8]}"
+        request.session[suggestion_key] = result
+        request.session.modified = True
+
         return render(request, "plans/_ai_suggestion.html", {
             "suggestion": result,
             "suggestion_json": suggestion_json,
+            "suggestion_key": suggestion_key,
             "client": client_file,
             "participant_words": participant_words,
             "sections": section_choices,

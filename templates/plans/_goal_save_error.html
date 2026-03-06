@@ -1,0 +1,14 @@
+{% load i18n %}
+{# Error partial for goal-from-suggestion save failures — HTMX partial #}
+<div class="ai-suggest-error" role="alert">
+    <p>{{ error }}</p>
+    <div role="group">
+        <button type="button" id="btn-retry-suggestion" class="outline"
+                onclick="history.back()">
+            {% trans "Try again" %}
+        </button>
+        <button type="button" id="btn-show-manual-form" class="outline secondary">
+            {% trans "Fill in the form manually" %}
+        </button>
+    </div>
+</div>

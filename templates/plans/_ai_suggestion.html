@@ -2,7 +2,7 @@
 {# AI suggestion card — HTMX partial returned by suggest_target_view #}
 <div class="ai-suggestion-card"
      id="ai-suggestion"
-     aria-label="{% trans 'AI-suggested target' %}"
+     aria-label="{% trans 'AI-suggested goal' %}"
      role="region"
      tabindex="-1">
 
@@ -11,7 +11,7 @@
     </p>
 
     <dl class="suggestion-details">
-        <dt>{% trans "Target name" %}</dt>
+        <dt>{% trans "Goal name" %}</dt>
         <dd class="suggestion-name">{{ suggestion.name }}</dd>
 
         <dt>{% trans "Description" %}</dt>
@@ -19,9 +19,6 @@
 
         <dt>{% trans "In their words" %}</dt>
         <dd><em>{{ suggestion.client_goal }}</em></dd>
-
-        <dt>{% trans "Suggested area" %}</dt>
-        <dd>{{ suggestion.suggested_section }}</dd>
 
         {% if suggestion.metrics %}
         <dt>{% trans "Recommended metrics" %}</dt>
@@ -38,32 +35,40 @@
         {% endif %}
 
         {% if custom_metric %}
-        <dt>{% trans "Suggested target-specific metric" %}</dt>
+        <dt>{% trans "Custom scale" %}</dt>
         <dd>
             <div class="custom-metric-preview">
                 <strong>{{ custom_metric.name }}</strong>
-                <pre class="metric-levels">{{ custom_metric.definition }}</pre>
-                <div role="group" class="custom-metric-actions">
-                    <button type="button" class="btn-accept-metric outline"
-                            aria-label="{% blocktrans with name=custom_metric.name %}Include {{ name }}{% endblocktrans %}">
-                        {% trans "Include this metric" %}
-                    </button>
-                    <button type="button" class="btn-skip-metric outline secondary"
-                            aria-label="{% blocktrans with name=custom_metric.name %}Skip {{ name }}{% endblocktrans %}">
-                        {% trans "Skip" %}
-                    </button>
+                <pre class="metric-levels" aria-label="{% blocktrans with name=custom_metric.name %}Scale definition for {{ name }}{% endblocktrans %}">{{ custom_metric.definition }}</pre>
+                <small class="secondary">{% trans "This custom scale will be added to the goal." %}</small>
+                <div class="custom-metric-opt-out">
+                    <a href="#" id="btn-remove-custom-metric" class="secondary">
+                        <small>{% trans "Remove this scale" %}</small>
+                    </a>
                 </div>
             </div>
         </dd>
         {% endif %}
     </dl>
 
+    {# R4: Demoted "Suggested area" to secondary line #}
+    {% if suggestion.suggested_section %}
+    <small class="secondary suggestion-area">
+        {% trans "Area:" %} {{ suggestion.suggested_section }}
+    </small>
+    {% endif %}
+
+    {# Action buttons #}
     <div role="group" class="suggestion-actions">
+        {% csrf_token %}
+        <input type="hidden" name="suggestion_key" value="{{ suggestion_key }}">
         <button type="button"
                 id="btn-use-suggestion"
-                data-suggestion="{{ suggestion_json }}"
-                data-section-pk="{{ matched_section_pk|default:'' }}"
-                data-new-section="{{ suggestion.suggested_section }}">
+                hx-post="{% url 'plans:goal_save_suggestion' client_id=client.pk %}"
+                hx-include="closest .suggestion-actions"
+                hx-target="#suggestion-container"
+                hx-swap="innerHTML"
+                hx-disabled-elt="this">
             {% trans "Use this suggestion" %}
         </button>
         <button type="button"
@@ -72,7 +77,7 @@
                 data-suggestion="{{ suggestion_json }}"
                 data-section-pk="{{ matched_section_pk|default:'' }}"
                 data-new-section="{{ suggestion.suggested_section }}">
-            {% trans "Let me edit it" %}
+            {% trans "Let me review first" %}
         </button>
         <button type="button"
                 id="btn-start-over"
@@ -80,6 +85,14 @@
             {% trans "Start over" %}
         </button>
     </div>
+
+    {# Save loading indicator #}
+    <div id="save-loading" class="htmx-indicator save-loading-state">
+        <small>{% trans "Saving your goal…" %}</small>
+    </div>
+
+    {# Screen reader save announcement #}
+    <div aria-live="assertive" class="sr-only" id="save-announce"></div>
 
     <small class="secondary">
         {% trans "AI suggestions are a starting point. Always review before saving." %}
