@@ -39,6 +39,7 @@ from apps.events.models import Alert, Event, Meeting
 from apps.groups.models import Group
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import ALL_PROGRAM_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -160,7 +161,7 @@ PERMISSION_URL_MAP = {
     "circle.edit": {"url": "/circles/{circle_id}/edit/"},
 }
 
-ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]
+ALL_ROLES = sorted(ALL_PROGRAM_ROLES, key=lambda r: ROLE_RANK.get(r, 0))
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -211,7 +212,7 @@ class PermissionEnforcementTest(TestCase):
         self.alert = Alert.objects.create(
             client_file=self.client_file,
             content="Test safety alert.",
-            author=self.users["staff"],
+            author=self.users[ROLE_STAFF],
             author_program=self.program,
         )
 
@@ -219,7 +220,7 @@ class PermissionEnforcementTest(TestCase):
         self.note = ProgressNote.objects.create(
             client_file=self.client_file,
             note_type="quick",
-            author=self.users["staff"],
+            author=self.users[ROLE_STAFF],
             author_program=self.program,
             notes_text="Test progress note.",
         )
@@ -243,7 +244,7 @@ class PermissionEnforcementTest(TestCase):
         # Circle with the client as a member
         from apps.circles.models import Circle, CircleMembership
         self.circle = Circle.objects.create(
-            created_by=self.users["staff"],
+            created_by=self.users[ROLE_STAFF],
         )
         self.circle.name = "Test Family"
         self.circle.save()
@@ -396,7 +397,7 @@ class AdminPermissionTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.admin, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Non-admin users

@@ -2,6 +2,13 @@
 from django.core.cache import cache
 from django.utils.translation import get_language
 
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_RANK,
+)
+
 
 def nav_active(request):
     """Auto-detect which nav item to highlight based on the URL path.
@@ -121,7 +128,6 @@ def user_roles(request):
             "user_permissions": {},
         }
 
-    from apps.auth_app.constants import ROLE_RANK
     from apps.auth_app.permissions import DENY, PERMISSIONS
     from apps.programs.models import UserProgramRole
 
@@ -133,12 +139,12 @@ def user_roles(request):
     # Export access: admins, program managers, and executives can create reports
     has_export_access = (
         request.user.is_admin
-        or "program_manager" in roles
-        or "executive" in roles
+        or ROLE_PROGRAM_MANAGER in roles
+        or ROLE_EXECUTIVE in roles
     )
 
     # Front desk only: user has program roles but all of them are front desk
-    is_receptionist_only = has_roles and roles == {"receptionist"}
+    is_receptionist_only = has_roles and roles == {ROLE_RECEPTIONIST}
 
     # Build user_permissions dict using the user's highest role.
     # Keys use underscores so templates can access e.g. user_permissions.note_view
@@ -203,7 +209,7 @@ def pending_erasures(request):
     from apps.programs.models import UserProgramRole
 
     is_pm = UserProgramRole.objects.filter(
-        user=request.user, role="program_manager", status="active",
+        user=request.user, role=ROLE_PROGRAM_MANAGER, status="active",
     ).exists()
 
     if not request.user.is_admin and not is_pm:
@@ -221,7 +227,7 @@ def pending_erasures(request):
             # Filters in Python — works on all DB backends (SQLite + PostgreSQL)
             pm_program_ids = list(
                 UserProgramRole.objects.filter(
-                    user=request.user, role="program_manager", status="active",
+                    user=request.user, role=ROLE_PROGRAM_MANAGER, status="active",
                 ).values_list("program_id", flat=True)
             )
             pids_set = set(pm_program_ids)
@@ -466,8 +472,7 @@ def active_program_context(request):
         # For "all standard", show the user's highest role across standard programs
         from apps.programs.context import get_user_program_tiers
         tiers = get_user_program_tiers(request.user)
-        from apps.auth_app.constants import ROLE_RANK
-
+    
         best = None
         for prog in tiers["standard"]:
             if best is None or ROLE_RANK.get(prog["role"], 0) > ROLE_RANK.get(

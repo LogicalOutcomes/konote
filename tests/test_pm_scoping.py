@@ -12,6 +12,12 @@ from apps.events.models import EventType
 from apps.plans.models import MetricDefinition, PlanTemplate
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -40,7 +46,7 @@ class TestPMScopingEnforcement(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.pm_a, program=self.program_a,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Staff user in Program B only
@@ -50,7 +56,7 @@ class TestPMScopingEnforcement(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff_b, program=self.program_b,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Staff user in Program A (PM can manage this one)
@@ -60,7 +66,7 @@ class TestPMScopingEnforcement(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.staff_a, program=self.program_a,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
 
         # Admin user
@@ -184,14 +190,14 @@ class TestPMScopingEnforcement(TestCase):
         self._login_pm()
         response = self.client.post(
             f"/manage/users/{self.staff_a.pk}/roles/add/",
-            {"program": self.program_a.pk, "role": "program_manager"},
+            {"program": self.program_a.pk, "role": ROLE_PROGRAM_MANAGER},
         )
         # Should get an error message and redirect, not succeed
         self.assertIn(response.status_code, (302, 200))
         # Verify no PM role was actually created
         self.assertFalse(
             UserProgramRole.objects.filter(
-                user=self.staff_a, role="program_manager",
+                user=self.staff_a, role=ROLE_PROGRAM_MANAGER,
             ).exists(),
             "PM should not be able to assign program_manager role",
         )
@@ -201,12 +207,12 @@ class TestPMScopingEnforcement(TestCase):
         self._login_pm()
         response = self.client.post(
             f"/manage/users/{self.staff_a.pk}/roles/add/",
-            {"program": self.program_a.pk, "role": "executive"},
+            {"program": self.program_a.pk, "role": ROLE_EXECUTIVE},
         )
         self.assertIn(response.status_code, (302, 200))
         self.assertFalse(
             UserProgramRole.objects.filter(
-                user=self.staff_a, role="executive",
+                user=self.staff_a, role=ROLE_EXECUTIVE,
             ).exists(),
             "PM should not be able to assign executive role",
         )
@@ -221,7 +227,7 @@ class TestPMScopingEnforcement(TestCase):
         # Give them a receptionist role in Program A so PM can see them
         UserProgramRole.objects.create(
             user=new_user, program=self.program_a,
-            role="receptionist", status="active",
+            role=ROLE_RECEPTIONIST, status="active",
         )
         self._login_pm()
         # Note: user already has receptionist in program_a, so we'd need
@@ -281,7 +287,7 @@ class TestPMScopingEnforcement(TestCase):
         # Give admin a role in Program A so PM can see them
         UserProgramRole.objects.create(
             user=self.admin, program=self.program_a,
-            role="staff", status="active",
+            role=ROLE_STAFF, status="active",
         )
         self._login_pm()
         self.client.post(
@@ -337,7 +343,7 @@ class TestPMScopingEnforcement(TestCase):
         self._login_pm()
         response = self.client.post(
             f"/manage/users/{self.staff_a.pk}/roles/add/",
-            {"program": self.program_b.pk, "role": "staff"},
+            {"program": self.program_b.pk, "role": ROLE_STAFF},
         )
         # Should be blocked — verify no role was created in Program B
         self.assertFalse(

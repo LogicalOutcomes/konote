@@ -16,6 +16,7 @@
 </header>
 
 <!-- First-time onboarding banner (QA-W19) — dismissed permanently via localStorage -->
+{% if not is_executive %}
 <article class="onboarding-banner" id="onboarding-banner" role="complementary" aria-label="{% trans 'Welcome banner' %}" hidden>
     <header>
         <strong>{% trans "Welcome to KoNote! Need help getting started?" %}</strong>
@@ -28,7 +29,9 @@
     </ul>
     <p class="onboarding-help-link"><a href="{% url 'help' %}">{% trans "View help guide" %} &rarr;</a></p>
 </article>
+{% endif %}
 
+{% if not is_executive %}
 <!-- Search and actions bar -->
 <div class="search-bar">
     <form id="search-filters">
@@ -120,6 +123,7 @@
 <div id="search-results" aria-live="polite">
     {% include "clients/_search_results.html" %}
 </div>
+{% endif %}
 
 {% if is_executive %}
   {% include "clients/_dashboard_executive_summary.html" %}
@@ -173,6 +177,7 @@
 {% endif %}
 
 <!-- Quick links — moved up for faster access (UX-TASKDASH1) -->
+{% if not is_executive %}
 {% if features.programs or user.is_admin %}
 <nav class="quick-links" aria-label="{% trans 'Quick links' %}">
     <span class="quick-links-label">{% trans "Quick links:" %}</span>
@@ -185,6 +190,7 @@
     {% endif %}
 </nav>
 {% endif %}
+{% endif %}{# not is_executive #}
 
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">
@@ -197,6 +203,7 @@
             <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
         </header>
+        <p class="priority-hint">{% trans "Hiding an item removes it from your view until tomorrow. It does not resolve it." %}</p>
         {% if active_alerts %}
         <div class="priority-section">
             <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
@@ -208,7 +215,7 @@
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -225,7 +232,7 @@
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -239,7 +246,7 @@
                 <li class="priority-item dismissable-item" data-dismiss-key="attention-{{ item.client.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>
                     <span class="priority-detail secondary">{% trans "30+ days without notes" %}</span>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -251,6 +258,7 @@
     </article>
     {% endif %}
 
+    {% if not is_executive %}
     <!-- Recent activity -->
     <article>
         <header class="card-header">
@@ -271,6 +279,7 @@
             <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"participants" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
         </footer>
     </article>
+    {% endif %}
 </div>
 
 {% endblock %}

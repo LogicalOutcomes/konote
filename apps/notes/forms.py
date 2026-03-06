@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from apps.plans.models import SELF_EFFICACY_METRIC_NAME
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.programs.models import Program, UserProgramRole
 
 from .models import (
@@ -445,7 +446,7 @@ class NoteTemplateForm(forms.ModelForm):
         if requesting_user and not requesting_user.is_admin:
             pm_program_ids = set(
                 UserProgramRole.objects.filter(
-                    user=requesting_user, role="program_manager", status="active",
+                    user=requesting_user, role=ROLE_PROGRAM_MANAGER, status="active",
                 ).values_list("program_id", flat=True)
             )
             self.fields["owning_program"].queryset = Program.objects.filter(
@@ -546,6 +547,16 @@ class SuggestionThemeForm(forms.ModelForm):
                     % {"name": name}
                 )
         return cleaned
+
+
+class FocusedAnalysisForm(forms.Form):
+    """Validate the question for focused theme analysis."""
+    question = forms.CharField(
+        max_length=500,
+        strip=True,
+        label=_("Question"),
+    )
+    program_id = forms.IntegerField()
 
 
 class SuggestionThemeStatusForm(forms.ModelForm):

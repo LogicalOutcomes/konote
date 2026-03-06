@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django.template.exceptions import TemplateDoesNotExist
 
 from apps.auth_app.decorators import requires_permission_global
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.events.models import Alert
 from apps.programs.models import UserProgramRole
 
@@ -37,7 +38,7 @@ def _user_is_pm_or_admin(user):
     if user.is_admin:
         return True
     return UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active",
+        user=user, role=ROLE_PROGRAM_MANAGER, status="active",
     ).exists()
 
 
@@ -45,7 +46,7 @@ def _get_user_pm_program_ids(user):
     """Get program IDs where user is an active program manager."""
     return list(
         UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active",
+            user=user, role=ROLE_PROGRAM_MANAGER, status="active",
         ).values_list("program_id", flat=True)
     )
 
@@ -498,7 +499,7 @@ def _notify_pms_erasure_request(erasure_request, request):
     pm_users = (
         UserProgramRole.objects.filter(
             program_id__in=erasure_request.programs_required,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
             status="active",
         )
         .exclude(user=erasure_request.requested_by)

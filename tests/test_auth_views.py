@@ -8,6 +8,12 @@ from django.utils import timezone
 from apps.auth_app.models import Invite, User
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_ADMIN,
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_STAFF,
+)
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -160,7 +166,7 @@ class InviteAcceptViewTest(TestCase):
         )
         self.program = Program.objects.create(name="Test Program")
         self.invite = Invite.objects.create(
-            role="staff",
+            role=ROLE_STAFF,
             created_by=self.admin,
             expires_at=timezone.now() + timedelta(days=7),
         )
@@ -186,7 +192,7 @@ class InviteAcceptViewTest(TestCase):
         self.assertEqual(user.display_name, "New User")
         self.assertFalse(user.is_admin)
         role = UserProgramRole.objects.get(user=user)
-        self.assertEqual(role.role, "staff")
+        self.assertEqual(role.role, ROLE_STAFF)
         self.assertEqual(role.program, self.program)
         # Verify invite is marked as used
         self.invite.refresh_from_db()
@@ -236,7 +242,7 @@ class InviteAcceptViewTest(TestCase):
 
     def test_admin_invite_creates_admin_user(self):
         admin_invite = Invite.objects.create(
-            role="admin",
+            role=ROLE_ADMIN,
             created_by=self.admin,
             expires_at=timezone.now() + timedelta(days=7),
         )
@@ -273,8 +279,8 @@ class AdminRoutePermissionTest(TestCase):
             username="pm", password="pass", display_name="Program Manager"
         )
         self.program = Program.objects.create(name="Test")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
     def tearDown(self):
         enc_module._fernet = None
@@ -688,13 +694,13 @@ class ExecutiveLoginRedirectTest(TestCase):
         })
 
     def test_executive_only_redirects_to_executive_dashboard(self):
-        self._create_user("exec_user", ["executive"])
+        self._create_user("exec_user", [ROLE_EXECUTIVE])
         resp = self._login("exec_user")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, "/participants/executive/")
 
     def test_staff_redirects_to_home(self):
-        self._create_user("staff_user", ["staff"])
+        self._create_user("staff_user", [ROLE_STAFF])
         resp = self._login("staff_user")
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, "/")
@@ -706,10 +712,10 @@ class ExecutiveLoginRedirectTest(TestCase):
         )
         prog2 = Program.objects.create(name="Program 2")
         UserProgramRole.objects.create(
-            user=user, program=self.program, role="executive", status="active"
+            user=user, program=self.program, role=ROLE_EXECUTIVE, status="active"
         )
         UserProgramRole.objects.create(
-            user=user, program=prog2, role="staff", status="active"
+            user=user, program=prog2, role=ROLE_STAFF, status="active"
         )
         resp = self._login("dual_user")
         self.assertEqual(resp.status_code, 302)

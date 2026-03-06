@@ -3,6 +3,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import CLIENT_ACCESS_ROLES, ROLE_EXECUTIVE
+
 
 class Program(models.Model):
     """An organisational unit (e.g., housing, employment, youth services)."""
@@ -113,7 +115,7 @@ class UserProgramRole(models.Model):
         unique_together = ["user", "program"]
 
     # Roles that grant access to individual client records
-    CLIENT_ACCESS_ROLES = {"receptionist", "staff", "program_manager"}
+    CLIENT_ACCESS_ROLES = CLIENT_ACCESS_ROLES  # alias for apps.auth_app.constants.CLIENT_ACCESS_ROLES
 
     def __str__(self):
         return f"{self.user} → {self.program} ({self.role})"
@@ -135,6 +137,6 @@ class UserProgramRole(models.Model):
             )
         if not roles:
             return False
-        if "executive" in roles:
+        if ROLE_EXECUTIVE in roles:
             return not bool(roles & cls.CLIENT_ACCESS_ROLES)
         return False

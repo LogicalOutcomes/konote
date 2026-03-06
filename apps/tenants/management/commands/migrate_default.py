@@ -136,6 +136,11 @@ class Command(DjangoMigrateCommand):
                             except Exception:
                                 continue
 
+                            # M2M fields don't have a column on the source
+                            # table — they use a through table instead.
+                            if col_name is None:
+                                continue
+
                             cursor.execute(
                                 """
                                 SELECT 1
@@ -159,11 +164,19 @@ class Command(DjangoMigrateCommand):
                                 break
 
                         elif isinstance(op, CreateModel):
+                            # Skip swappable models (e.g. auth.User when
+                            # AUTH_USER_MODEL points to a custom model) —
+                            # the table legitimately doesn't exist.
+                            if getattr(op, 'options', {}).get('swappable'):
+                                continue
+
                             try:
                                 model = django_apps.get_model(app_label, op.name)
                                 table_name = model._meta.db_table
                             except LookupError:
-                                table_name = f"{app_label}_{op.name.lower()}"
+                                # Model was removed from the codebase — its
+                                # table not existing is intentional, not a ghost.
+                                continue
 
                             cursor.execute(
                                 """
@@ -355,7 +368,7 @@ class Command(DjangoMigrateCommand):
             connection = connections[db_name]
             recorder = MigrationRecorder(connection)
 
-            for _attempt in range(50):  # safety limit
+            for _attempt in range(500):  # safety limit
                 try:
                     super().handle(*args, **options)
                     break

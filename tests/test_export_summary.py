@@ -159,7 +159,7 @@ class SendExportSummaryTests(TestCase):
         _create_export(self.staff, export_type="client_data")
         _create_export(self.staff, export_type="client_data", is_elevated=True)
         _create_export(self.staff, export_type="metrics", download_count=3)
-        _create_export(self.staff, export_type="funder_report", revoked=True)
+        _create_export(self.staff, export_type="standard_report", revoked=True)
         out = StringIO()
         call_command("send_export_summary", "--dry-run", stdout=out)
         output = out.getvalue()

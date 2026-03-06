@@ -69,7 +69,7 @@
                         <li><a href="{% url 'registration:registration_link_edit' pk=link.pk %}">{% trans "Edit" %}</a></li>
                         <li><a href="{{ link.get_absolute_url }}" target="_blank">{% trans "View Form" %}</a></li>
                         <li><a href="{% url 'registration:registration_link_embed' pk=link.pk %}"><strong>{% trans "Get Embed Code" %}</strong></a></li>
-                        <li><a href="#" onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}'); return false;">{% trans "Copy Direct Link" %}</a></li>
+                        <li><a href="#" class="copy-btn" data-clipboard-text="{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}">{% trans "Copy Direct Link" %}</a></li>
                         <li><a href="{% url 'registration:submission_list' %}?link={{ link.pk }}">{% trans "View Submissions" %}</a></li>
                         <li><a href="{% url 'registration:registration_link_delete' pk=link.pk %}" class="secondary">{% trans "Delete" %}</a></li>
                     </ul>
@@ -89,13 +89,4 @@
 
 <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back to Settings" %}</a>
 
-<script>
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        alert('{% trans "Link copied to clipboard!" %}');
-    }, function() {
-        prompt('{% trans "Copy this link:" %}', text);
-    });
-}
-</script>
 {% endblock %}

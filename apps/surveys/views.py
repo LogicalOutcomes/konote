@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.auth_app.decorators import admin_required, requires_permission
+from apps.portal.survey_helpers import filter_visible_sections
 from apps.programs.access import get_client_or_403
 
 from .engine import is_surveys_enabled
@@ -557,11 +558,11 @@ def staff_data_entry(request, client_id, survey_id):
         is_active=True,
     ).prefetch_related("questions").select_related("condition_question").order_by("sort_order")
 
-    if request.method == "POST":
-        from apps.portal.survey_helpers import filter_visible_sections
+    # Materialise queryset once to avoid duplicate DB hits
+    sections_list = list(sections)
+    visible_sections = filter_visible_sections(sections_list, {}, is_identified=True)
 
-        # Materialise queryset once to avoid duplicate DB hits
-        sections_list = list(sections)
+    if request.method == "POST":
 
         # 1. Collect all submitted answers
         all_answers = {}
@@ -577,7 +578,7 @@ def staff_data_entry(request, client_id, survey_id):
                     all_answers[question.pk] = raw_value
 
         # 2. Determine which sections are visible based on answers
-        visible_sections = filter_visible_sections(sections_list, all_answers)
+        visible_sections = filter_visible_sections(sections_list, all_answers, is_identified=True)
         visible_section_pks = {s.pk for s in visible_sections}
 
         # 3. Validate required fields only in visible sections
@@ -601,7 +602,7 @@ def staff_data_entry(request, client_id, survey_id):
             return render(request, "surveys/staff_data_entry.html", {
                 "client": client,
                 "survey": survey,
-                "sections": sections,
+                "sections": visible_sections,
                 "posted": request.POST,
                 "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
             })
@@ -637,7 +638,7 @@ def staff_data_entry(request, client_id, survey_id):
     return render(request, "surveys/staff_data_entry.html", {
         "client": client,
         "survey": survey,
-        "sections": sections,
+        "sections": visible_sections,
         "posted": {},
         "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
     })

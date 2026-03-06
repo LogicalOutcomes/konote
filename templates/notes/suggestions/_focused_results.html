@@ -1,0 +1,50 @@
+{% load i18n %}
+{# HTMX partial: focused theme analysis results #}
+
+{% if error %}
+<article class="focused-analysis-error" role="alert">
+    <p>{{ error }}</p>
+</article>
+{% elif result %}
+<article class="focused-analysis-results">
+    <header>
+        <strong>{% trans "Analysis Results" %}</strong>
+        <small class="muted">
+            {% blocktrans with relevant=result.relevant_count total=result.total_count %}{{ relevant }} of {{ total }} suggestions relate to this topic{% endblocktrans %}
+        </small>
+    </header>
+
+    <p>{{ result.summary }}</p>
+
+    {% if result.sub_themes %}
+    <h4>{% trans "Sub-themes" %}</h4>
+    <ul>
+        {% for st in result.sub_themes %}
+        <li>
+            <strong>{{ st.name }}</strong> ({{ st.count }})
+            {% if st.description %}<br><small class="muted">{{ st.description }}</small>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if result.suggestion %}
+    <footer style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--pico-muted-border-color);">
+        <p class="muted" style="font-size:0.9rem;">
+            <strong>{% trans "Suggested theme:" %}</strong> {{ result.suggestion }}
+        </p>
+        <form method="get" action="{% url 'suggestion_themes:theme_create' %}">
+            <input type="hidden" name="prefill_name" value="{{ result.suggestion }}">
+            <input type="hidden" name="prefill_description" value="{{ result.summary|truncatewords:50 }}">
+            <input type="hidden" name="prefill_source" value="ai_generated">
+            {% if program %}
+            <input type="hidden" name="prefill_program" value="{{ program.pk }}">
+            {% endif %}
+            <button type="submit" class="secondary" style="font-size:0.9rem;">
+                {% trans "Create Theme from This" %}
+            </button>
+        </form>
+    </footer>
+    {% endif %}
+</article>
+{% endif %}

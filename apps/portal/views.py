@@ -255,7 +255,7 @@ def portal_login(request):
                 is_active=True, mfa_method="exempt",
             )
             .select_related("client_file")
-            .order_by("client_file__record_id")
+            .order_by("client_file__record_id")[:2]
         )
 
     return render(request, "portal/login.html", {
@@ -830,6 +830,7 @@ def password_change(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="3/h", method="POST", block=True)
 def password_reset_request(request):
     """Request a password reset code via email.
 
@@ -1549,10 +1550,27 @@ def message_create(request):
         .order_by("-created_at")[:10]
     )
 
+    # Get assigned worker name(s) from active service episodes.
+    # The portal is client-scoped (not program-scoped), so we show workers
+    # from all active programmes — the participant already knows their own
+    # enrolments, and this lets them reach any worker supporting them.
+    from apps.clients.models import ServiceEpisode
+
+    worker_names = list(
+        ServiceEpisode.objects.filter(
+            client_file=client_file,
+            status="active",
+            primary_worker__isnull=False,
+        )
+        .values_list("primary_worker__display_name", flat=True)
+        .distinct()
+    )
+
     return render(request, "portal/message_to_worker.html", {
         "form": form,
         "success": success,
         "recent_messages": recent_messages,
+        "worker_names": worker_names,
     })
 
 
@@ -1687,7 +1705,7 @@ def portal_survey_fill(request, assignment_id):
         .order_by("sort_order")
     )
     partial_answers = get_partial_answers_dict(assignment)
-    visible_sections = filter_visible_sections(all_sections, partial_answers)
+    visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
     pages = group_sections_into_pages(visible_sections)
     is_multi_page = len(pages) > 1
 
@@ -1729,7 +1747,7 @@ def portal_survey_fill(request, assignment_id):
                 })
             # Refresh partial answers and page structure after save
             partial_answers = get_partial_answers_dict(assignment)
-            visible_sections = filter_visible_sections(all_sections, partial_answers)
+            visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
             pages = group_sections_into_pages(visible_sections)
             next_page = min(page_num + 1, len(pages))
             return redirect(f"{request.path}?page={next_page}")
@@ -1759,7 +1777,7 @@ def portal_survey_fill(request, assignment_id):
 
         # Refresh and validate ALL required questions across all pages
         partial_answers = get_partial_answers_dict(assignment)
-        visible_sections = filter_visible_sections(all_sections, partial_answers)
+        visible_sections = filter_visible_sections(all_sections, partial_answers, is_identified=True)
         all_errors = []
         for section in visible_sections:
             for question in section.questions.all().order_by("sort_order"):
@@ -1981,7 +1999,7 @@ def portal_survey_review(request, assignment_id):
         .prefetch_related("questions")
         .order_by("sort_order")
     )
-    visible_sections = filter_visible_sections(all_sections, answers_dict)
+    visible_sections = filter_visible_sections(all_sections, answers_dict, is_identified=True)
 
     # Calculate scores if configured
     scores = []
@@ -2034,7 +2052,7 @@ def portal_survey_thank_you(request, assignment_id):
                 .prefetch_related("questions")
                 .order_by("sort_order")
             )
-            visible = filter_visible_sections(all_sections, answers_dict)
+            visible = filter_visible_sections(all_sections, answers_dict, is_identified=True)
             scores = calculate_section_scores(visible, answers_dict)
 
     return render(request, "portal/survey_thank_you.html", {

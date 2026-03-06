@@ -51,6 +51,12 @@ from apps.reports.utils import (
 from apps.reports.forms import MetricExportForm
 from apps.reports.models import ReportMetric, SecureExportLink
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 
 def create_test_partner(name="Test Partner", partner_type="funder", **kwargs):
@@ -1883,12 +1889,94 @@ class FunderReportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
+    def test_funder_report_all_programs_html_export(self):
+        """All-programs mode with HTML format produces styled HTML, not CSV."""
+        self.client.login(username="admin", password="testpass123")
+        self._submit_funder_report_through_approval(
+            {
+                "program": "__all__",
+                "fiscal_year": "2025",
+                "format": "html",
+                "recipient": "self",
+                "recipient_reason": "Test export",
+            },
+        )
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client.get(f"/reports/download/{link.id}/")
+        content = self._get_download_content(download_resp)
+        # Verify styled HTML output, not CSV
+        self.assertIn("stat-box", content)
+        self.assertIn("Organisation Summary", content)
+        self.assertNotIn("# All Programs", content)  # CSV header marker
+        self.assertIn(".html", download_resp["Content-Disposition"])
+
+    def test_funder_report_all_programs_pdf_rejected(self):
+        """All-programs mode with PDF format should be rejected by form validation."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/reports/funder-report/", {
+            "program": "__all__",
+            "fiscal_year": "2025",
+            "format": "pdf",
+            "recipient": "self",
+            "recipient_reason": "Test export",
+        })
+        # Should return the form with an error, not redirect to preview
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "PDF export is not available for All Programs")
+
     def test_legacy_funder_url_redirects(self):
         """QA-R8-UX11: /reports/funder/ should 301 redirect to /reports/funder-report/."""
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/funder/")
         self.assertEqual(resp.status_code, 301)
         self.assertEqual(resp["Location"], "/reports/funder-report/")
+
+
+
+class AggregateAllProgramsTotalsTest(TestCase):
+    """Tests for aggregate_all_programs_totals() utility."""
+
+    def test_sums_integer_values(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        from unittest.mock import Mock
+        p1 = Mock(name='Program A')
+        p1.name = 'Program A'
+        p2 = Mock(name='Program B')
+        p2.name = 'Program B'
+        data = [
+            (p1, {'total_individuals_served': 10, 'new_clients_this_period': 3, 'total_contacts': 20}),
+            (p2, {'total_individuals_served': 5, 'new_clients_this_period': 2, 'total_contacts': 8}),
+        ]
+        result = aggregate_all_programs_totals(data)
+        self.assertEqual(result['total_served'], 15)
+        self.assertEqual(result['total_new_clients'], 5)
+        self.assertEqual(result['total_contacts'], 28)
+        self.assertEqual(len(result['programs']), 2)
+        self.assertEqual(result['programs'][0]['name'], 'Program A')
+
+    def test_skips_suppressed_string_values(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        from unittest.mock import Mock
+        p1 = Mock(name='Program A')
+        p1.name = 'Program A'
+        p2 = Mock(name='Program B')
+        p2.name = 'Program B'
+        data = [
+            (p1, {'total_individuals_served': '< 5', 'new_clients_this_period': 3, 'total_contacts': 10}),
+            (p2, {'total_individuals_served': 7, 'new_clients_this_period': '< 5', 'total_contacts': 5}),
+        ]
+        result = aggregate_all_programs_totals(data)
+        self.assertEqual(result['total_served'], 7)  # skips suppressed '< 5'
+        self.assertEqual(result['total_new_clients'], 3)  # skips suppressed '< 5'
+        self.assertEqual(result['total_contacts'], 15)
+
+    def test_empty_input(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        result = aggregate_all_programs_totals([])
+        self.assertEqual(result['total_served'], 0)
+        self.assertEqual(result['total_new_clients'], 0)
+        self.assertEqual(result['total_contacts'], 0)
+        self.assertEqual(result['programs'], [])
 
 
 # =============================================================================
@@ -2067,7 +2155,7 @@ class TemplateExportFormTest(TestCase):
         # Staff user with access to only Youth Services
         staff = User.objects.create_user(username="pm", password="testpass123")
         UserProgramRole.objects.create(
-            user=staff, program=self.program, role="program_manager", status="active",
+            user=staff, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active",
         )
         form = TemplateExportForm(user=staff)
         qs = form.fields["report_template"].queryset
@@ -2133,7 +2221,7 @@ class GenerateReportViewTest(TestCase):
         self.client_http.login(username="admin", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Generate Report")
+        self.assertContains(resp, "Standard Report")
 
     def test_unauthenticated_redirects_to_login(self):
         """Unauthenticated users should be redirected to login."""
@@ -2209,19 +2297,19 @@ class GenerateReportCustomExportContextTest(TestCase):
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_program_manager_gets_can_custom_export(self):
-        self._make_user("pm", role="program_manager")
+        self._make_user("pm", role=ROLE_PROGRAM_MANAGER)
         self.client_http.login(username="pm", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_executive_gets_can_custom_export(self):
-        self._make_user("exec", role="executive")
+        self._make_user("exec", role=ROLE_EXECUTIVE)
         self.client_http.login(username="exec", password="testpass123")
         resp = self.client_http.get("/reports/generate/")
         self.assertTrue(resp.context["can_custom_export"])
 
     def test_staff_does_not_get_can_custom_export(self):
-        self._make_user("staff", role="staff")
+        self._make_user("staff", role=ROLE_STAFF)
         self.client_http.login(username="staff", password="testpass123")
         # Staff with report.funder_report=DENY gets 403, so they
         # cannot even reach the page — verify that.
@@ -2309,6 +2397,64 @@ class TemplatePeriodOptionsViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b"")
 
+    def test_include_all_metrics_shows_reassuring_text(self):
+        """Template with include_all_metrics=True and no explicit metrics shows all-outcomes message."""
+        from apps.reports.models import ReportTemplate, Partner
+        partner = Partner.objects.create(name="Board", partner_type="board")
+        partner.programs.add(self.program)
+        all_metrics_tmpl = ReportTemplate.objects.create(
+            name="Org-Wide Summary",
+            partner=partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            include_all_metrics=True,
+            is_active=True,
+        )
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": all_metrics_tmpl.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("all recorded outcomes", content)
+        self.assertNotIn("No specific metrics", content)
+
+    def test_no_metrics_shows_warning(self):
+        """Template with no metrics and include_all_metrics=False shows warning."""
+        from apps.reports.models import ReportTemplate, Partner
+        partner = Partner.objects.create(name="Misc Funder", partner_type="funder")
+        partner.programs.add(self.program)
+        empty_tmpl = ReportTemplate.objects.create(
+            name="Empty Template",
+            partner=partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            include_all_metrics=False,
+            is_active=True,
+        )
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": empty_tmpl.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("No specific metrics", content)
+        self.assertNotIn("all recorded outcomes", content)
+
+    def test_explicit_metrics_shows_list(self):
+        """Template with explicit ReportMetric objects shows 'This report includes:' list."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"report_template": self.template.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("Employment Outcome", content)
+        self.assertNotIn("all recorded outcomes", content)
+        self.assertNotIn("No specific metrics", content)
+
 
 # =============================================================================
 # Security Tests: Demo/Real Data Separation in Exports (EXP0d)
@@ -2359,10 +2505,10 @@ class DemoRealExportSeparationTests(TestCase):
 
         # Give admin users PM roles so they get individual (not aggregate) export data
         UserProgramRole.objects.create(
-            user=self.demo_admin, program=self.program, role="program_manager"
+            user=self.demo_admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.real_admin, program=self.program, role="program_manager"
+            user=self.real_admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create DEMO client
@@ -2618,7 +2764,7 @@ class ExportWarningDialogTests(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         # Admin needs PM role to see PII warning (non-aggregate mode)
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program, role="program_manager"
+            user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
@@ -2775,7 +2921,7 @@ class IndividualClientExportViewTests(TestCase):
             username="staff", password="testpass123", display_name="Staff User"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create receptionist user
@@ -2783,7 +2929,7 @@ class IndividualClientExportViewTests(TestCase):
             username="receptionist", password="testpass123", display_name="Receptionist"
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program, role="receptionist"
+            user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST
         )
 
         # Create a client enrolled in the program
@@ -2975,7 +3121,7 @@ class IndividualClientExportViewTests(TestCase):
             is_demo=True,
         )
         UserProgramRole.objects.create(
-            user=demo_user, program=self.program, role="staff",
+            user=demo_user, program=self.program, role=ROLE_STAFF,
         )
         self.client.login(username="demo", password="testpass123")
         resp = self.client.get(self.export_url)
@@ -3130,7 +3276,7 @@ class CsvInjectionIntegrationTests(TestCase):
             username="csvtest", password="testpass123", display_name="CSV Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create client with a malicious-looking first name
@@ -3192,7 +3338,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
             username="fntest", password="testpass123", display_name="Filename Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="program_manager"
+            user=self.staff_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create client with special characters in record_id

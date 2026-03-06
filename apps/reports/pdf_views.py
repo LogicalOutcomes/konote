@@ -154,12 +154,13 @@ def generate_outcome_report_pdf(
     grouping_type="none", grouping_label=None, achievement_summary=None,
     total_clients_display=None, total_data_points_display=None,
     is_aggregate=False, aggregate_rows=None, demographic_aggregate_rows=None,
+    program_display_name=None, output_format="pdf",
 ):
-    """Generate a PDF program outcome report. Called from export_form view.
+    """Generate a PDF or HTML program outcome report. Called from export_form view.
 
     Args:
         request: The HTTP request.
-        program: The Program object.
+        program: The Program object (None for All Programs mode).
         selected_metrics: List of MetricDefinition objects.
         date_from: Start date for the report.
         date_to: End date for the report.
@@ -173,8 +174,10 @@ def generate_outcome_report_pdf(
         is_aggregate: If True, show aggregate summary instead of individual rows.
         aggregate_rows: List of aggregate row dicts (metric stats).
         demographic_aggregate_rows: List of demographic breakdown row dicts.
+        program_display_name: Override label for program name (used in All Programs mode).
+        output_format: "pdf" or "html".
     """
-    if not is_pdf_available():
+    if output_format == "pdf" and not is_pdf_available():
         return _pdf_unavailable_response(request)
 
     # Group rows by demographic if grouping is enabled (individual path only)
@@ -194,6 +197,7 @@ def generate_outcome_report_pdf(
 
     context = {
         "program": program,
+        "program_display_name": program_display_name or (program.name if program else ""),
         "metrics": selected_metrics,
         "date_from": date_from,
         "date_to": date_to,
@@ -211,17 +215,18 @@ def generate_outcome_report_pdf(
         "demographic_aggregate_rows": demographic_aggregate_rows or [],
     }
 
-    safe_prog_name = sanitise_filename(program.name.replace(" ", "_"))
+    display_name = program_display_name or (program.name if program else "All_Programs")
+    safe_prog_name = sanitise_filename(str(display_name).replace(" ", "_"))
     filename = f"outcome_report_{safe_prog_name}_{date_from}_{date_to}.pdf"
 
     audit_metadata = {
-        "program": program.name,
+        "program": str(display_name),
         "metrics": [m.name for m in selected_metrics],
         "date_from": str(date_from),
         "date_to": str(date_to),
         "total_clients": len(unique_clients),
         "total_data_points": len(rows),
-        "format": "pdf",
+        "format": output_format,
     }
     if grouping_type != "none":
         audit_metadata["grouped_by"] = grouping_label
@@ -231,6 +236,10 @@ def generate_outcome_report_pdf(
 
     audit_pdf_export(request, "export", "outcome_report_pdf", audit_metadata)
 
+    if output_format == "html":
+        from .pdf_utils import render_html
+        html_filename = filename.replace(".pdf", ".html")
+        return render_html("reports/html_outcome_report.html", context, html_filename)
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 
 

@@ -34,6 +34,8 @@
     <p style="margin-bottom: 0;">
         {% if is_pdf %}
         {% trans "Your PDF report is ready to download." %}
+        {% elif is_html %}
+        {% trans "Your HTML report is ready to download. You can open it in any web browser or share it directly." %}
         {% else %}
         {% trans "Your CSV file is ready to download. You can open it in Excel or Google Sheets." %}
         {% endif %}
@@ -44,6 +46,8 @@
 <a href="{{ download_path }}" role="button" id="download-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; padding: 0.75rem 2rem; margin-bottom: 0.5rem;">
     {% if is_pdf %}
     <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF Report" %}
+    {% elif is_html %}
+    <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download HTML Report" %}
     {% else %}
     <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV File" %}
     {% endif %}

@@ -32,6 +32,7 @@ from apps.notes.models import (
     ProgressNote,
     ProgressNoteTarget,
     ProgressNoteTemplateMetric,
+    SuggestionLink,
     SuggestionTheme,
 )
 from apps.plans.models import (
@@ -41,6 +42,12 @@ from apps.plans.models import (
     PlanTargetMetric,
     PlanTargetRevision,
     PlanTemplate,
+)
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
 )
 from apps.programs.models import Program, UserProgramRole
 
@@ -515,8 +522,13 @@ class DemoDataEngine:
 
     # ----- Demo user creation -----
 
-    def create_demo_users(self, programs):
-        """Create 6 demo users with roles distributed across programs.
+    def create_demo_users(self, programs, profile=None):
+        """Create demo users with roles distributed across programs.
+
+        If the profile defines a ``users`` list, those specs are used instead
+        of the hardcoded defaults.  A profile-level ``demo_group`` is set on
+        every user so the login page can separate instance-specific demo users
+        from the generic defaults.
 
         Returns a dict of {username: User}.
         """
@@ -530,14 +542,23 @@ class DemoDataEngine:
                 return f"{local}+{username}@{domain}"
             return f"{username}@example.com"
 
-        user_specs = [
-            ("demo-frontdesk", "Dana Front Desk", False),
-            ("demo-worker-1", "Casey Worker", False),
-            ("demo-worker-2", "Noor Worker", False),
-            ("demo-manager", "Morgan Manager", False),
-            ("demo-executive", "Eva Executive", False),
-            ("demo-admin", "Alex Admin", True),
-        ]
+        demo_group = (profile or {}).get("demo_group", "")
+        profile_users = (profile or {}).get("users", [])
+
+        if profile_users:
+            user_specs = [
+                (u["username"], u["display_name"], u.get("is_admin", False))
+                for u in profile_users
+            ]
+        else:
+            user_specs = [
+                ("demo-frontdesk", "Dana Front Desk", False),
+                ("demo-worker-1", "Casey Worker", False),
+                ("demo-worker-2", "Noor Worker", False),
+                ("demo-manager", "Morgan Manager", False),
+                ("demo-executive", "Eva Executive", False),
+                ("demo-admin", "Alex Admin", True),
+            ]
 
         users = {}
         for username, display_name, is_admin in user_specs:
@@ -547,6 +568,7 @@ class DemoDataEngine:
                     "display_name": display_name,
                     "is_admin": is_admin,
                     "is_demo": True,
+                    "demo_group": demo_group,
                     "email": demo_email(username),
                     "preferred_language": "en",
                 },
@@ -555,32 +577,43 @@ class DemoDataEngine:
                 user.set_password("demo1234")
                 user.save()
             else:
-                # Ensure existing users have is_demo=True and is_active=True
+                # Ensure existing users have correct demo fields
+                changed = False
                 if not user.is_demo or not user.is_active:
                     user.is_demo = True
                     user.is_active = True
+                    changed = True
+                if demo_group and user.demo_group != demo_group:
+                    user.demo_group = demo_group
+                    changed = True
+                if user.display_name != display_name:
+                    user.display_name = display_name
+                    changed = True
+                if changed:
                     user.save()
             users[username] = user
 
-        # Assign roles across programs
-        front_desk = users["demo-frontdesk"]
-        worker1 = users["demo-worker-1"]
-        worker2 = users["demo-worker-2"]
-        manager = users["demo-manager"]
-        executive = users["demo-executive"]
+        # Assign roles across programs (positional: 0=frontdesk, 1=worker1,
+        # 2=worker2, 3=manager, 4=executive, 5=admin)
+        usernames = [spec[0] for spec in user_specs]
+        front_desk = users[usernames[0]]
+        worker1 = users[usernames[1]]
+        worker2 = users[usernames[2]]
+        manager = users[usernames[3]]
+        executive = users[usernames[4]]
 
         # Front desk: receptionist on all programs
         for prog in programs:
             UserProgramRole.objects.get_or_create(
                 user=front_desk, program=prog,
-                defaults={"role": "receptionist"},
+                defaults={"role": ROLE_RECEPTIONIST},
             )
 
         # Executive: executive on all programs
         for prog in programs:
             UserProgramRole.objects.get_or_create(
                 user=executive, program=prog,
-                defaults={"role": "executive"},
+                defaults={"role": ROLE_EXECUTIVE},
             )
 
         # Distribute workers and manager across programs
@@ -589,26 +622,26 @@ class DemoDataEngine:
             for worker in (worker1, worker2):
                 UserProgramRole.objects.get_or_create(
                     user=worker, program=programs[0],
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             UserProgramRole.objects.get_or_create(
                 user=manager, program=programs[0],
-                defaults={"role": "program_manager"},
+                defaults={"role": ROLE_PROGRAM_MANAGER},
             )
         elif len(programs) == 2:
             # Two programs: split workers
             UserProgramRole.objects.get_or_create(
                 user=worker1, program=programs[0],
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
             UserProgramRole.objects.get_or_create(
                 user=worker2, program=programs[1],
-                defaults={"role": "staff"},
+                defaults={"role": ROLE_STAFF},
             )
             for prog in programs:
                 UserProgramRole.objects.get_or_create(
                     user=manager, program=prog,
-                    defaults={"role": "program_manager"},
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
                 )
         else:
             # 3+ programs: split workers, manager on first half
@@ -616,25 +649,42 @@ class DemoDataEngine:
             for prog in programs[:mid]:
                 UserProgramRole.objects.get_or_create(
                     user=worker1, program=prog,
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             for prog in programs[mid:]:
                 UserProgramRole.objects.get_or_create(
                     user=worker2, program=prog,
-                    defaults={"role": "staff"},
+                    defaults={"role": ROLE_STAFF},
                 )
             # Worker1 also gets program_manager on first program
             role = UserProgramRole.objects.filter(
                 user=worker1, program=programs[0],
             ).first()
             if role:
-                role.role = "program_manager"
+                role.role = ROLE_PROGRAM_MANAGER
                 role.save(update_fields=["role"])
             # Manager on first half of programs
             for prog in programs[:mid + 1]:
                 UserProgramRole.objects.get_or_create(
                     user=manager, program=prog,
-                    defaults={"role": "program_manager"},
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
+                )
+
+        # If profile defines specific programs, ensure workers and manager
+        # are assigned to those programs (the generic distribution above may
+        # have placed them only on other programs).
+        if profile and "programs" in profile:
+            profile_prog_names = set(profile["programs"].keys())
+            profile_progs = [p for p in programs if p.name in profile_prog_names]
+            for prog in profile_progs:
+                for worker in (worker1, worker2):
+                    UserProgramRole.objects.get_or_create(
+                        user=worker, program=prog,
+                        defaults={"role": ROLE_STAFF},
+                    )
+                UserProgramRole.objects.get_or_create(
+                    user=manager, program=prog,
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
                 )
 
         self.log(f"  Created {len(user_specs)} demo users with roles across {len(programs)} programs.")
@@ -652,18 +702,20 @@ class DemoDataEngine:
         used_names = set()
         client_num = 1
 
-        # Determine which worker handles which program
+        # Determine which worker handles which program.
+        # Workers are the 2nd and 3rd users in the spec (index 1 and 2).
+        usernames = list(users.keys())
+        worker_usernames = usernames[1:3] if len(usernames) >= 3 else usernames[:1]
         program_workers = {}
         for prog in programs:
-            # Check which worker has a role on this program
-            for username in ("demo-worker-1", "demo-worker-2"):
+            for uname in worker_usernames:
                 if UserProgramRole.objects.filter(
-                    user=users[username], program=prog,
+                    user=users[uname], program=prog,
                 ).exists():
-                    program_workers[prog.pk] = users[username]
+                    program_workers[prog.pk] = users[uname]
                     break
             else:
-                program_workers[prog.pk] = users["demo-worker-1"]
+                program_workers[prog.pk] = users[worker_usernames[0]]
 
         for prog in programs:
             prog_profile = profile_programs.get(prog.name, {})
@@ -1037,7 +1089,9 @@ class DemoDataEngine:
     def generate_suggestion_themes(self, programs, users, profile):
         """Create suggestion themes for each program."""
         profile_programs = profile.get("programs", {})
-        creator = users.get("demo-worker-1") or users.get("demo-admin")
+        # Use the first worker (index 1) or fall back to any available user
+        usernames = list(users.keys())
+        creator = users.get(usernames[1]) if len(usernames) > 1 else next(iter(users.values()), None)
         if not creator:
             return
 
@@ -1070,6 +1124,57 @@ class DemoDataEngine:
                         "created_by": creator,
                     },
                 )
+
+                # Link 2-4 demo suggestions to each theme
+                if created:
+                    available_notes = (
+                        ProgressNote.objects.filter(
+                            author_program=prog,
+                            client_file__is_demo=True,
+                        )
+                        .exclude(suggestion_priority="")
+                        .exclude(
+                            pk__in=SuggestionLink.objects.filter(
+                                theme__program=prog
+                            ).values_list("progress_note_id", flat=True)
+                        )
+                        .order_by("?")[:random.randint(2, 4)]
+                    )
+                    for note in available_notes:
+                        SuggestionLink.objects.get_or_create(
+                            theme=theme,
+                            progress_note=note,
+                            defaults={
+                                "auto_linked": False,
+                                "linked_by": creator,
+                            },
+                        )
+
+    def create_demo_portal_accounts(self, client_assignments):
+        """Create ParticipantUser portal accounts for demo clients.
+
+        This allows demo participants to appear on the portal login page
+        so staff and stakeholders can explore the participant portal.
+        """
+        from apps.portal.models import ParticipantUser
+
+        created = 0
+        for client, program, trend, worker, goal in client_assignments:
+            if hasattr(client, "portal_account"):
+                continue
+            email = f"demo-{client.record_id.lower()}@example.com"
+            display_name = f"{client.first_name} {client.last_name}"
+            pu = ParticipantUser.objects.create_participant(
+                email=email,
+                client_file=client,
+                display_name=display_name,
+                password="demo1234",
+            )
+            pu.mfa_method = "exempt"
+            pu.save(update_fields=["mfa_method"])
+            created += 1
+
+        self.log(f"  Created {created} demo portal accounts.")
 
     # ----- Main orchestrator -----
 
@@ -1112,7 +1217,7 @@ class DemoDataEngine:
             return False
 
         # 2. Create demo users
-        users = self.create_demo_users(programs)
+        users = self.create_demo_users(programs, profile)
 
         # 3. Create demo clients
         client_assignments = self.create_demo_clients(
@@ -1148,6 +1253,9 @@ class DemoDataEngine:
 
         # 6. Create suggestion themes
         self.generate_suggestion_themes(programs, users, profile)
+
+        # 7. Create portal accounts for demo participants
+        self.create_demo_portal_accounts(client_assignments)
 
         # Warn about profile program names that didn't match any active program
         if profile and "programs" in profile:

@@ -1,0 +1,22 @@
+{% load i18n %}
+{# Shared pagination nav for client list templates. #}
+{# Include with: {% include "clients/_client_pagination.html" with page=your_page_obj %} #}
+{% if page.has_other_pages %}
+<nav class="pagination" aria-label="{% trans 'Pagination' %}">
+    {% if page.has_previous %}
+    <a href="?page={{ page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+       hx-get="{% url 'clients:client_list' %}?page={{ page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+       hx-target="#client-list-container"
+       hx-indicator="#loading-bar"
+       hx-push-url="true">{% trans "Previous" %}</a>
+    {% endif %}
+    {% blocktrans with current=page.number total=page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
+    {% if page.has_next %}
+    <a href="?page={{ page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+       hx-get="{% url 'clients:client_list' %}?page={{ page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+       hx-target="#client-list-container"
+       hx-indicator="#loading-bar"
+       hx-push-url="true">{% trans "Next" %}</a>
+    {% endif %}
+</nav>
+{% endif %}

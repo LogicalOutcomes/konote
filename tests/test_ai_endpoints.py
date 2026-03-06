@@ -10,6 +10,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -30,7 +31,7 @@ class AIEndpointBaseTest(TestCase):
         )
         self.program = Program.objects.create(name="Housing")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active"
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
         )
 
         # Enable the AI feature toggle

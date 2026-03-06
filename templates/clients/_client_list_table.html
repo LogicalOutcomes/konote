@@ -2,103 +2,16 @@
 {% if page.object_list %}
 <figure class="client-table-wrap" data-total-clients="{{ page.paginator.count }}">
 <table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Participants' %}{{ clients }} list{% endblocktrans %}">
-    <thead>
-        <tr>
-            {% if show_bulk %}
-            <th scope="col" class="bulk-col">
-                <label class="visually-hidden" for="bulk-select-all">{% trans "Select all" %}</label>
-                <input type="checkbox" id="bulk-select-all" aria-label="{% trans 'Select all visible rows' %}">
-            </th>
-            {% endif %}
-            <th scope="col">
-                {% if sort_by == "name" or not sort_by %}
-                    <strong>{% trans "Name" %}</strong>
-                {% else %}
-                    <a href="?sort=name{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-                       hx-get="{% url 'clients:client_list' %}?sort=name{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-                       hx-target="#client-list-container"
-                       hx-indicator="#loading-bar"
-                       hx-push-url="true">{% trans "Name" %}</a>
-                {% endif %}
-            </th>
-            <th scope="col">{% trans "Record ID" %}</th>
-            <th scope="col">{% trans "Status" %}</th>
-            <th scope="col">{{ term.program_plural|default:"Programs" }}</th>
-            <th scope="col">
-                {% if sort_by == "last_contact" %}
-                    <strong>{% trans "Last Contact" %}</strong>
-                {% else %}
-                    <a href="?sort=last_contact{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-                       hx-get="{% url 'clients:client_list' %}?sort=last_contact{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-                       hx-target="#client-list-container"
-                       hx-indicator="#loading-bar"
-                       hx-push-url="true">{% trans "Last Contact" %}</a>
-                {% endif %}
-            </th>
-        </tr>
-    </thead>
+    {% include "clients/_client_thead.html" %}
     <tbody>
         {% for item in page %}
-        <tr>
-            {% if show_bulk %}
-            <td class="bulk-col">
-                <label class="visually-hidden" for="bulk-cb-{{ item.client.pk }}">{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}</label>
-                <input type="checkbox"
-                       class="bulk-select-row"
-                       id="bulk-cb-{{ item.client.pk }}"
-                       value="{{ item.client.pk }}"
-                       aria-label="{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}">
-            </td>
-            {% endif %}
-            <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>{% if item.can_edit_plan %} <span class="badge badge-edit-plan" title="{% trans 'You can edit plans for this participant' %}" aria-hidden="true">&#9998;</span><span class="sr-only">{% trans "Editable plan" %}</span>{% endif %}</td>
-            <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"&mdash;" }}</td>
-            <td data-label="{% trans 'Status' %}">
-                {% if item.client.status == "active" %}
-                    <span class="badge badge-success"><span aria-hidden="true">&#x25CF;</span> {% trans "Active" %}</span>
-                {% elif item.client.status == "inactive" %}
-                    <span class="badge badge-warning"><span aria-hidden="true">&#x25CB;</span> {% trans "Inactive" %}</span>
-                {% else %}
-                    <span class="badge badge-neutral"><span aria-hidden="true">&#x2014;</span> {% trans "Discharged" %}</span>
-                {% endif %}
-            </td>
-            <td data-label="{{ term.program_plural|default:'Programs' }}">
-                {% for prog in item.programs %}
-                <span class="program-dot" style="background-color: {{ prog.colour_hex }}" aria-hidden="true"></span>{{ prog.translated_name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            </td>
-            <td data-label="{% trans 'Last Contact' %}">
-                {% if item.last_contact %}
-                    {{ item.last_contact|date:"M j" }}
-                    <br><small style="color: var(--muted-color);">{{ item.last_contact|timesince }} {% trans "ago" %}</small>
-                {% else %}
-                    <span style="color: var(--muted-color);">{% trans "Never" %}</span>
-                {% endif %}
-            </td>
-        </tr>
+        {% include "clients/_client_row.html" %}
         {% endfor %}
     </tbody>
 </table>
 </figure>
 
-{% if page.has_other_pages %}
-<nav class="pagination" aria-label="{% trans 'Pagination' %}">
-    {% if page.has_previous %}
-    <a href="?page={{ page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-       hx-get="{% url 'clients:client_list' %}?page={{ page.previous_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-       hx-target="#client-list-container"
-       hx-indicator="#loading-bar"
-       hx-push-url="true">{% trans "Previous" %}</a>
-    {% endif %}
-    {% blocktrans with current=page.number total=page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
-    {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-       hx-get="{% url 'clients:client_list' %}?page={{ page.next_page_number }}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if program_filter %}&program={{ program_filter }}{% endif %}{% if editable_filter %}&editable={{ editable_filter }}{% endif %}"
-       hx-target="#client-list-container"
-       hx-indicator="#loading-bar"
-       hx-push-url="true">{% trans "Next" %}</a>
-    {% endif %}
-</nav>
-{% endif %}
+{% include "clients/_client_pagination.html" %}
 
 {% else %}
 <div class="empty-state">

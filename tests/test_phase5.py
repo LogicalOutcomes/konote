@@ -11,6 +11,7 @@ from apps.audit.models import AuditLog
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
 from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -76,7 +77,7 @@ class EventCRUDTest(TestCase):
         self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
 
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -235,10 +236,10 @@ class CrossProgramPermissionTest(TestCase):
         self.prog_pm = Program.objects.create(name="Employment", colour_hex="#3B82F6")
         self.prog_staff = Program.objects.create(name="Kitchen", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.user, program=self.prog_pm, role="program_manager"
+            user=self.user, program=self.prog_pm, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.prog_staff, role="staff"
+            user=self.user, program=self.prog_staff, role=ROLE_STAFF
         )
 
         # Client enrolled in BOTH programs
@@ -316,11 +317,11 @@ class AlertCRUDTest(TestCase):
         self.pm = User.objects.create_user(username="pm", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
         # Admin needs a PM role to cancel alerts (admin alone is not a program role)
-        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -469,7 +470,7 @@ class AnalysisChartTest(TestCase):
         self.http = Client()
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"

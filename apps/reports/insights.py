@@ -29,6 +29,11 @@ logger = logging.getLogger(__name__)
 # Below this threshold, individual quotes risk re-identification.
 MIN_PARTICIPANTS_FOR_QUOTES = 15
 
+# Minimum participants for AI theme processing (self-hosted LLM only).
+# Between 5–14, AI can analyse suggestions but verbatim text is suppressed.
+# See DRRs: self-hosted-llm-infrastructure.md, ai-feature-toggles.md
+MIN_PARTICIPANTS_FOR_THEME_PROCESSING = 5
+
 
 def get_structured_insights(program=None, client_file=None, date_from=None, date_to=None):
     """Aggregate descriptor and engagement data from plaintext fields via SQL.

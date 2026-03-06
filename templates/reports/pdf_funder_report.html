@@ -1,16 +1,16 @@
 {% extends "reports/pdf_base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with name=program.translated_name %}Program Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
+{% block title %}{% blocktrans with name=program_display_name|default:program.translated_name %}Program Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <!-- Report Header (merged title + summary) -->
 <div class="pdf-header">
     <h1>{% trans "Program Outcome Report" %}</h1>
-    <div class="subtitle">{{ program.translated_name }}</div>
+    <div class="subtitle">{{ program_display_name|default:program.translated_name }}</div>
     <dl class="meta-grid">
         <dt>{% trans "Program" %}</dt>
-        <dd>{{ program.translated_name }}</dd>
+        <dd>{{ program_display_name|default:program.translated_name }}</dd>
         <dt>{% trans "Date Range" %}</dt>
         <dd>{% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}</dd>
         <dt>{% trans "Metrics" %}</dt>

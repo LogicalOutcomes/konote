@@ -11,6 +11,7 @@ from apps.auth_app.models import Invite, User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.models import Program, UserProgramRole
 from konote.middleware.program_access import ProgramAccessMiddleware
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 import konote.encryption as enc_module
 
 
@@ -37,19 +38,19 @@ class RoleHierarchyTest(TestCase):
             username="receptionist", password="testpass123", display_name="Front Desk"
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program, role="receptionist"
+            user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST
         )
         self.counsellor = User.objects.create_user(
             username="counsellor", password="testpass123", display_name="Direct Service"
         )
         UserProgramRole.objects.create(
-            user=self.counsellor, program=self.program, role="staff"
+            user=self.counsellor, program=self.program, role=ROLE_STAFF
         )
         self.manager = User.objects.create_user(
             username="manager", password="testpass123", display_name="Manager"
         )
         UserProgramRole.objects.create(
-            user=self.manager, program=self.program, role="program_manager"
+            user=self.manager, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create client in program
@@ -70,7 +71,7 @@ class RoleHierarchyTest(TestCase):
         request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(request.user_program_role, "receptionist")
+        self.assertEqual(request.user_program_role, ROLE_RECEPTIONIST)
 
     def test_counsellor_gets_staff_role(self):
         request = self.factory.get(f"/participants/{self.client.pk}/")
@@ -78,7 +79,7 @@ class RoleHierarchyTest(TestCase):
         request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(request.user_program_role, "staff")
+        self.assertEqual(request.user_program_role, ROLE_STAFF)
 
     def test_manager_gets_program_manager_role(self):
         request = self.factory.get(f"/participants/{self.client.pk}/")
@@ -86,39 +87,39 @@ class RoleHierarchyTest(TestCase):
         request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(request.user_program_role, "program_manager")
+        self.assertEqual(request.user_program_role, ROLE_PROGRAM_MANAGER)
 
     def test_minimum_role_blocks_receptionist_from_staff_view(self):
         """minimum_role('staff') should block front desk staff."""
-        @minimum_role("staff")
+        @minimum_role(ROLE_STAFF)
         def staff_view(request):
             from django.http import HttpResponse
             return HttpResponse("OK")
 
         request = self.factory.get("/test/")
-        request.user_program_role = "receptionist"
+        request.user_program_role = ROLE_RECEPTIONIST
         response = staff_view(request)
         self.assertEqual(response.status_code, 403)
 
     def test_minimum_role_allows_staff(self):
-        @minimum_role("staff")
+        @minimum_role(ROLE_STAFF)
         def staff_view(request):
             from django.http import HttpResponse
             return HttpResponse("OK")
 
         request = self.factory.get("/test/")
-        request.user_program_role = "staff"
+        request.user_program_role = ROLE_STAFF
         response = staff_view(request)
         self.assertEqual(response.status_code, 200)
 
     def test_minimum_role_allows_manager_for_staff_view(self):
-        @minimum_role("staff")
+        @minimum_role(ROLE_STAFF)
         def staff_view(request):
             from django.http import HttpResponse
             return HttpResponse("OK")
 
         request = self.factory.get("/test/")
-        request.user_program_role = "program_manager"
+        request.user_program_role = ROLE_PROGRAM_MANAGER
         response = staff_view(request)
         self.assertEqual(response.status_code, 200)
 
@@ -138,7 +139,7 @@ class InviteModelTest(TestCase):
 
     def test_valid_invite(self):
         invite = Invite.objects.create(
-            role="staff",
+            role=ROLE_STAFF,
             created_by=self.admin,
             expires_at=timezone.now() + timedelta(days=7),
         )
@@ -148,7 +149,7 @@ class InviteModelTest(TestCase):
 
     def test_expired_invite(self):
         invite = Invite.objects.create(
-            role="staff",
+            role=ROLE_STAFF,
             created_by=self.admin,
             expires_at=timezone.now() - timedelta(days=1),
         )
@@ -160,7 +161,7 @@ class InviteModelTest(TestCase):
             username="newuser", password="testpass123", display_name="New User"
         )
         invite = Invite.objects.create(
-            role="staff",
+            role=ROLE_STAFF,
             created_by=self.admin,
             expires_at=timezone.now() + timedelta(days=7),
             used_by=user,

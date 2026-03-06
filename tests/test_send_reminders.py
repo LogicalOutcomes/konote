@@ -25,6 +25,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Event, EventType, Meeting
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -38,7 +39,7 @@ def _setup_fixtures(tc):
         display_name="Staff User",
     )
     UserProgramRole.objects.create(
-        user=tc.staff, program=tc.program, role="staff", status="active",
+        user=tc.staff, program=tc.program, role=ROLE_STAFF, status="active",
     )
     tc.client_file = ClientFile()
     tc.client_file.first_name = "Reminder"

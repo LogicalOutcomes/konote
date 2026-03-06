@@ -22,6 +22,7 @@
             <li><a href="#plans">{{ term.plan }}s</a></li>
             <li><a href="#reports">{% trans "Analysis and Reports" %}</a></li>
             <li><a href="#insights">{% trans "Outcome Insights" %}</a></li>
+            <li><a href="#groups-circles">{% trans "Groups, Projects, and Circles" %}</a></li>
             <li><a href="#roles">{% trans "Roles" %}</a></li>
             <li><a href="#shortcuts">{% trans "Keyboard Shortcuts" %}</a></li>
             <li><a href="#troubleshooting">{% trans "Troubleshooting" %}</a></li>
@@ -352,6 +353,57 @@
         <p>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}You can also see insights for an individual {{ client }}. Open their {{ file }}, go to the Analysis tab, and scroll down to Qualitative Insights.{% endblocktrans %}</p>
     </section>
 
+    <!-- Groups, Projects, and Circles -->
+    <section id="groups-circles">
+        <h2>{% trans "Groups, Projects, and Circles" %}</h2>
+
+        <p>{% trans "KoNote gives you three ways to work with multiple people:" %}</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    <th scope="col">{% blocktrans with group=term.group|default:"Group" %}{{ group }}{% endblocktrans %}</th>
+                    <th scope="col">{% trans "Project" %}</th>
+                    <th scope="col">{% blocktrans with circle=term.circle|default:"Circle" %}{{ circle }}{% endblocktrans %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>{% trans "Use when" %}</strong></td>
+                    <td>{% trans "You meet regularly as a group" %}</td>
+                    <td>{% trans "You're working toward a goal with a deadline" %}</td>
+                    <td>{% trans "People are connected by family or caregiving" %}</td>
+                </tr>
+                <tr>
+                    <td><strong>{% trans "Examples" %}</strong></td>
+                    <td>{% trans "Parenting class, peer support group, drop-in program" %}</td>
+                    <td>{% trans "Community garden, fundraiser, advocacy campaign" %}</td>
+                    <td>{% trans "The Garcia family, a child's care team" %}</td>
+                </tr>
+                <tr>
+                    <td><strong>{% trans "You'll track" %}</strong></td>
+                    <td>{% trans "Attendance, session notes, individual highlights" %}</td>
+                    <td>{% trans "Milestones, deadlines, outcomes with evidence" %}</td>
+                    <td>{% trans "Relationships and who to contact first" %}</td>
+                </tr>
+                <tr>
+                    <td><strong>{% trans "How to create" %}</strong></td>
+                    <td>{% blocktrans with groups=term.group_plural|default:"Groups" %}{{ groups }} → Add → choose "A recurring group"{% endblocktrans %}</td>
+                    <td>{% blocktrans with groups=term.group_plural|default:"Groups" %}{{ groups }} → Add → choose "A project"{% endblocktrans %}</td>
+                    <td>{% blocktrans with circles=term.circle_plural|default:"Circles" circle=term.circle|default:"Circle" %}{{ circles }} → New {{ circle }}{% endblocktrans %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>{% trans "Still not sure?" %}</h3>
+        <ul>
+            <li>{% trans "<em>\"Do we meet as a group?\"</em> → Create a Group" %}</li>
+            <li>{% trans "<em>\"Are we working toward a specific result?\"</em> → Create a Project" %}</li>
+            <li>{% blocktrans with circle=term.circle|default:"Circle" %}<em>"Are these people connected to each other outside our agency?"</em> → Create a {{ circle }}{% endblocktrans %}</li>
+        </ul>
+    </section>
+
     <!-- Keyboard Shortcuts -->
     <section id="shortcuts">
         <h2>{% trans "Keyboard Shortcuts" %}</h2>
@@ -649,14 +701,33 @@
 }
 
 .help-nav ul {
-    columns: 2;
-    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-@media (max-width: 600px) {
-    .help-nav ul {
-        columns: 1;
-    }
+.help-nav li {
+    margin: 0;
+}
+
+.help-nav a {
+    display: block;
+    padding: 0.4rem 0.9rem;
+    background: var(--pico-primary-background, #3176aa);
+    color: var(--pico-primary-inverse, #fff);
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+}
+
+.help-nav a:hover,
+.help-nav a:focus {
+    opacity: 0.85;
 }
 
 .help-page section {

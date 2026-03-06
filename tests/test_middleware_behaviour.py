@@ -13,6 +13,7 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -30,7 +31,7 @@ def _setup_staff_with_client(test_case):
     )
     program = Program.objects.create(name="Test Program", status="active")
     UserProgramRole.objects.create(
-        user=user, program=program, role="staff", status="active",
+        user=user, program=program, role=ROLE_STAFF, status="active",
     )
     client_file = ClientFile.objects.create(is_demo=False)
     client_file.first_name = "Test"
@@ -100,7 +101,7 @@ class AuditMiddlewareBehaviourTest(TestCase):
         # Give outsider a role in a DIFFERENT program so they are authenticated but cannot access
         other_program = Program.objects.create(name="Other Program", status="active")
         UserProgramRole.objects.create(
-            user=outsider, program=other_program, role="staff", status="active",
+            user=outsider, program=other_program, role=ROLE_STAFF, status="active",
         )
         self.http.login(username="outsider", password="testpass123")
         url = f"/participants/{self.client_file.pk}/"

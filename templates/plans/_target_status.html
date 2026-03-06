@@ -1,5 +1,5 @@
 {% load i18n %}
-<td colspan="4">
+<div class="goal-card-row">
     <form method="post"
           hx-post="{% url 'plans:target_status' target_id=target.pk %}"
           hx-target="#target-{{ target.pk }}"
@@ -32,4 +32,4 @@
                     hx-vals='{"cancel": "1"}'>{% trans "Cancel" %}</button>
         </footer>
     </form>
-</td>
+</div>

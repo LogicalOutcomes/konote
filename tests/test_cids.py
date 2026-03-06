@@ -18,6 +18,7 @@ from apps.plans.models import MetricDefinition, PlanTarget, PlanSection, PlanTar
 from apps.plans.achievement import compute_achievement_status, update_achievement_status
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -860,7 +861,7 @@ class DischargeViewTest(TestCase):
         self.program = Program.objects.create(name="Test Program")
         from apps.programs.models import UserProgramRole
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="program_manager",
+            user=self.user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.client_file = ClientFile.objects.create()
         self.client_file.first_name = "Test"
@@ -919,7 +920,7 @@ class OnHoldResumeViewTest(TestCase):
         self.program = Program.objects.create(name="Test Program")
         from apps.programs.models import UserProgramRole
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="program_manager",
+            user=self.user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.client_file = ClientFile.objects.create()
         self.client_file.first_name = "Test"
@@ -1289,7 +1290,7 @@ class AuthorRoleAutoFillTest(TestCase):
         self.user = User.objects.create_user(username="staff", password="test123")
         self.program = Program.objects.create(name="Test Program")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff",
+            user=self.user, program=self.program, role=ROLE_STAFF,
         )
         self.client_file = ClientFile.objects.create()
         self.client_file.first_name = "Test"
@@ -1305,13 +1306,13 @@ class AuthorRoleAutoFillTest(TestCase):
         )
         note.notes_text = "Test"
         note.save()
-        self.assertEqual(note.author_role, "staff")
+        self.assertEqual(note.author_role, ROLE_STAFF)
 
     def test_correct_role_lookup(self):
         """Uses the role from the specific program, not just any role."""
         other_program = Program.objects.create(name="Other Program")
         UserProgramRole.objects.create(
-            user=self.user, program=other_program, role="program_manager",
+            user=self.user, program=other_program, role=ROLE_PROGRAM_MANAGER,
         )
         note = ProgressNote(
             client_file=self.client_file,
@@ -1321,7 +1322,7 @@ class AuthorRoleAutoFillTest(TestCase):
         )
         note.notes_text = "Test"
         note.save()
-        self.assertEqual(note.author_role, "program_manager")
+        self.assertEqual(note.author_role, ROLE_PROGRAM_MANAGER)
 
     def test_missing_role_handled_gracefully(self):
         """No UserProgramRole → author_role stays blank."""

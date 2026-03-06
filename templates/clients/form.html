@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n client_tags %}
 
 {% block title %}{% if editing %}{% blocktrans with client=term.client|default:"Participant" %}Edit {{ client }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
@@ -90,6 +90,10 @@
         </div>
         <div></div>
     </div>
+
+    {% if custom_groups %}
+        {% include "clients/_custom_fields_create.html" %}
+    {% endif %}
 
     {% if form.programs.field.queryset.exists %}
     <fieldset>

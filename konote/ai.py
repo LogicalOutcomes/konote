@@ -901,3 +901,114 @@ def suggest_note_structure(target_name, target_description, metric_names):
     except (json.JSONDecodeError, TypeError):
         logger.warning("Could not parse note structure: %s", result[:200])
         return None
+
+
+def generate_focused_analysis(question, suggestions, program_name):
+    """Run a focused theme analysis on suggestions for a manager's question.
+
+    Args:
+        question: str — the manager's question (max 500 chars)
+        suggestions: list of dicts — PII-scrubbed suggestions with text, priority
+        program_name: str
+
+    Returns:
+        dict {relevant_count, total_count, summary, sub_themes, suggestion}
+        or None on failure.
+    """
+    system = (
+        "You are an outcome-tracking assistant for a Canadian nonprofit. "
+        "A program manager has a question about participant suggestions. "
+        "You will receive the question and a list of PII-scrubbed participant "
+        "suggestions. Analyse them and respond.\n\n"
+        "RULES:\n"
+        "- Search the suggestions for content relevant to the question\n"
+        "- Group relevant suggestions into sub-themes if distinct patterns exist\n"
+        "- Provide a synthesised summary — NEVER return verbatim quotes\n"
+        "- Report how many suggestions are relevant out of total\n"
+        "- If nothing relevant is found, say so clearly\n"
+        "- Use Canadian English spelling (colour, centre)\n\n"
+        "Return a JSON object:\n"
+        "{\n"
+        '  "relevant_count": <int>,\n'
+        '  "total_count": <int>,\n'
+        '  "summary": "<synthesised summary paragraph>",\n'
+        '  "sub_themes": [\n'
+        '    {"name": "<short label>", "description": "<1 sentence>", "count": <int>}\n'
+        "  ],\n"
+        '  "suggestion": "<optional: suggest a theme name if pattern is worth tracking>"\n'
+        "}\n\n"
+        "Return ONLY the JSON object, no other text."
+    )
+
+    suggestion_texts = []
+    for s in suggestions:
+        text = s.get("text", "")
+        priority = s.get("priority", "")
+        if priority:
+            suggestion_texts.append(f"[{priority}] {text}")
+        else:
+            suggestion_texts.append(text)
+
+    user_msg = (
+        f"Program: {program_name}\n"
+        f"Question: {question}\n\n"
+        f"Participant suggestions ({len(suggestions)} total, PII-scrubbed):\n"
+        + "\n".join(f"- {t}" for t in suggestion_texts)
+    )
+
+    result = _call_insights_api(system, user_msg, max_tokens=1024)
+    if result is None:
+        return None
+
+    # Strip markdown fences if present
+    text = result.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [ln for ln in lines if not ln.strip().startswith("```")]
+        text = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse focused analysis response: %s", text[:300])
+        return None
+
+    return _validate_focused_analysis(parsed, len(suggestions))
+
+
+def _validate_focused_analysis(response, total_suggestions):
+    """Validate the focused analysis AI response structure."""
+    if not isinstance(response, dict):
+        logger.warning("Focused analysis response is not a dict")
+        return None
+
+    if not isinstance(response.get("summary"), str) or not response["summary"].strip():
+        logger.warning("Focused analysis response missing summary")
+        return None
+
+    # Ensure counts are reasonable
+    response["total_count"] = total_suggestions
+    rc = response.get("relevant_count", 0)
+    if not isinstance(rc, int) or rc < 0:
+        response["relevant_count"] = 0
+    if response["relevant_count"] > total_suggestions:
+        response["relevant_count"] = total_suggestions
+
+    # Validate sub_themes
+    if isinstance(response.get("sub_themes"), list):
+        valid_themes = []
+        for st in response["sub_themes"]:
+            if isinstance(st, dict) and isinstance(st.get("name"), str):
+                if not isinstance(st.get("description"), str):
+                    st["description"] = ""
+                if not isinstance(st.get("count"), int):
+                    st["count"] = 0
+                valid_themes.append(st)
+        response["sub_themes"] = valid_themes
+    else:
+        response["sub_themes"] = []
+
+    if not isinstance(response.get("suggestion"), str):
+        response["suggestion"] = ""
+
+    return response

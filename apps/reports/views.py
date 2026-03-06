@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
 from apps.auth_app.decorators import admin_required, requires_permission
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
@@ -172,7 +173,7 @@ def _save_export_and_create_link(request, content, filename, export_type,
         request: The HTTP request (for user info).
         content: File content — str for CSV, bytes for PDF.
         filename: Display filename for downloads (e.g., "export_2026-02-05.csv").
-        export_type: One of "metrics", "funder_report".
+        export_type: One of "metrics", "standard_report".
         client_count: Number of clients in the export.
         includes_notes: Whether clinical note content is included.
         recipient: Who is receiving the data (from ExportRecipientMixin).
@@ -205,7 +206,7 @@ def _save_export_and_create_link(request, content, filename, export_type,
     from apps.programs.models import UserProgramRole
 
     creator_is_pm = UserProgramRole.objects.filter(
-        user=request.user, role="program_manager", status="active"
+        user=request.user, role=ROLE_PROGRAM_MANAGER, status="active"
     ).exists()
     is_elevated = (
         client_count >= 100
@@ -724,7 +725,7 @@ def export_form(request):
 
         safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
-        if export_format == "pdf":
+        if export_format in ("pdf", "html"):
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
                 request, program, selected_metrics,
@@ -741,8 +742,10 @@ def export_form(request):
                 aggregate_rows=aggregate_rows,
                 demographic_aggregate_rows=demographic_aggregate_rows or None,
                 program_display_name=str(program_display_name),
+                output_format=export_format,
             )
-            filename = f"outcome_report_{safe_display}_{date_from}_{date_to}.pdf"
+            ext = "pdf" if export_format == "pdf" else "html"
+            filename = f"outcome_report_{safe_display}_{date_from}_{date_to}.{ext}"
             content = pdf_response.content
         else:
             # Aggregate CSV — summary statistics only
@@ -861,7 +864,7 @@ def export_form(request):
 
         safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
-        if export_format == "pdf":
+        if export_format in ("pdf", "html"):
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
                 request, program, selected_metrics,
@@ -872,8 +875,10 @@ def export_form(request):
                 total_clients_display=total_clients_display,
                 total_data_points_display=total_data_points_display,
                 program_display_name=str(program_display_name),
+                output_format=export_format,
             )
-            filename = f"outcome_report_{safe_display_indiv}_{date_from}_{date_to}.pdf"
+            ext = "pdf" if export_format == "pdf" else "html"
+            filename = f"outcome_report_{safe_display_indiv}_{date_from}_{date_to}.{ext}"
             content = pdf_response.content
         else:
             # Build CSV in memory buffer (not directly into HttpResponse)
@@ -949,36 +954,39 @@ def export_form(request):
         })
 
     # Audit log with recipient tracking
-    audit_metadata = {
-        "program": str(program_display_name),
-        "all_programs": all_programs_mode,
-        "metrics": [m.name for m in selected_metrics],
-        "date_from": str(date_from),
-        "date_to": str(date_to),
-        "total_clients": (
-            "suppressed" if _has_confidential_program else len(unique_clients)
-        ),
-        "total_data_points": total_data_points_count if is_aggregate else len(rows),
-        "export_mode": "aggregate" if is_aggregate else "individual",
-        "recipient": recipient,
-        "secure_link_id": str(link.id),
-    }
-    if grouping_type != "none":
-        audit_metadata["grouped_by"] = grouping_label
-    if achievement_summary:
-        audit_metadata["include_achievement_rate"] = True
-        audit_metadata["achievement_rate"] = achievement_summary.get("overall_rate")
+    try:
+        audit_metadata = {
+            "program": str(program_display_name),
+            "all_programs": all_programs_mode,
+            "metrics": [m.name for m in selected_metrics],
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+            "total_clients": (
+                "suppressed" if _has_confidential_program else len(unique_clients)
+            ),
+            "total_data_points": total_data_points_count if is_aggregate else len(rows),
+            "export_mode": "aggregate" if is_aggregate else "individual",
+            "recipient": recipient,
+            "secure_link_id": str(link.id),
+        }
+        if grouping_type != "none":
+            audit_metadata["grouped_by"] = grouping_label
+        if achievement_summary:
+            audit_metadata["include_achievement_rate"] = True
+            audit_metadata["achievement_rate"] = achievement_summary.get("overall_rate")
 
-    AuditLog.objects.using("audit").create(
-        event_timestamp=timezone.now(),
-        user_id=request.user.pk,
-        user_display=request.user.display_name,
-        action="export",
-        resource_type="metric_report",
-        ip_address=_get_client_ip(request),
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata=audit_metadata,
-    )
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            action="export",
+            resource_type="metric_report",
+            ip_address=_get_client_ip(request),
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata=audit_metadata,
+        )
+    except Exception:
+        logger.exception("Failed to create audit log for metric export")
 
     download_url = request.build_absolute_uri(
         reverse("reports:download_export", args=[link.id])
@@ -990,6 +998,7 @@ def export_form(request):
         "download_path": download_path,
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
     })
 
 
@@ -1214,10 +1223,10 @@ def funder_report_form(request):
     all_programs_mode = form.is_all_programs
 
     if all_programs_mode:
-        if not can_create_export(request.user, "funder_report"):
+        if not can_create_export(request.user, "standard_report"):
             return HttpResponseForbidden("You do not have permission to export data.")
     else:
-        if not can_create_export(request.user, "funder_report", program=program):
+        if not can_create_export(request.user, "standard_report", program=program):
             return HttpResponseForbidden("You do not have permission to export data for this program.")
 
     date_from = form.cleaned_data["date_from"]
@@ -1347,27 +1356,20 @@ def funder_report_preview(request):
     # Build preview summary for the template
     if all_programs_mode:
         # Summarise across programs
-        total_served = sum(
-            rd.get("total_individuals_served", 0)
-            for _, rd in data_or_sections
-            if isinstance(rd.get("total_individuals_served"), int)
-        )
-        total_contacts = sum(
-            rd.get("total_contacts", 0) for _, rd in data_or_sections
-        )
-        program_summaries = [
-            {
-                "name": ap.name,
-                "individuals_served": rd.get("total_individuals_served", 0),
-                "total_contacts": rd.get("total_contacts", 0),
-            }
-            for ap, rd in data_or_sections
-        ]
+        from .utils import aggregate_all_programs_totals
+        totals = aggregate_all_programs_totals(data_or_sections)
         preview_context = {
             "is_all_programs": True,
-            "total_served": total_served,
-            "total_contacts": total_contacts,
-            "program_summaries": program_summaries,
+            "total_served": totals["total_served"],
+            "total_contacts": totals["total_contacts"],
+            "program_summaries": [
+                {
+                    "name": prog["name"],
+                    "individuals_served": prog["report_data"].get("total_individuals_served", 0),
+                    "total_contacts": prog["report_data"].get("total_contacts", 0),
+                }
+                for prog in totals["programs"]
+            ],
             "program_count": len(data_or_sections),
         }
     else:
@@ -1441,7 +1443,26 @@ def funder_report_approve(request):
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
     try:
-        if all_programs_mode:
+        if all_programs_mode and export_format == "html":
+            from .pdf_utils import render_html_string
+            from .utils import aggregate_all_programs_totals
+            totals = aggregate_all_programs_totals(data_or_sections)
+            html_context = {
+                "organisation_name": str(program_display_name),
+                "fiscal_year_label": fiscal_year_label,
+                "date_from": date_from,
+                "date_to": date_to,
+                "generated_at": timezone.now().strftime("%Y-%m-%d"),
+                "generated_by": request.user.display_name,
+                "agency_notes": agency_notes,
+                **totals,
+            }
+            content = render_html_string(
+                "reports/html_report_all_programs.html", html_context,
+            )
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
+        elif all_programs_mode and export_format == "csv":
+            # All-programs CSV
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Agency notes header
@@ -1467,12 +1488,26 @@ def funder_report_approve(request):
                 writer.writerow([])
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
             content = csv_buffer.getvalue()
+        elif all_programs_mode:
+            # Unsupported format for all-programs (form should block this)
+            raise ValueError(f"Unsupported export format for All Programs: {export_format}")
         elif export_format == "pdf":
             from .pdf_views import generate_funder_report_pdf
             report_data = data_or_sections
             pdf_response = generate_funder_report_pdf(request, report_data)
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
             content = pdf_response.content
+        elif export_format == "html":
+            from .pdf_utils import render_html_string
+            report_data = data_or_sections
+            from .suppression import SMALL_CELL_THRESHOLD
+            html_context = {
+                "report_data": report_data,
+                "generated_by": request.user.display_name,
+                "suppression_threshold": SMALL_CELL_THRESHOLD,
+            }
+            content = render_html_string("reports/html_report.html", html_context)
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
         else:
             report_data = data_or_sections
             csv_buffer = io.StringIO()
@@ -1498,7 +1533,7 @@ def funder_report_approve(request):
         request=request,
         content=content,
         filename=filename,
-        export_type="funder_report",
+        export_type="standard_report",
         client_count=raw_client_count,
         includes_notes=False,
         recipient=recipient,
@@ -1529,7 +1564,7 @@ def funder_report_approve(request):
         user_id=request.user.pk,
         user_display=request.user.display_name,
         action="report_approved",
-        resource_type="funder_report",
+        resource_type="standard_report",
         ip_address=_get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={
@@ -1571,6 +1606,7 @@ def funder_report_approve(request):
         "download_path": download_path,
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
         "agency_notes": agency_notes,
     })
 
@@ -1633,7 +1669,7 @@ def generate_report_form(request):
         from django.contrib import messages as msg
         msg.warning(
             request,
-            _("This report template covers multiple programs but currently "
+            _("This report covers multiple programs but currently "
               "only includes data from %(program)s. Multi-program reports "
               "are coming soon.")
             % {"program": template_programs[0].name},
@@ -1666,7 +1702,7 @@ def generate_report_form(request):
         request=request,
         content=content,
         filename=filename,
-        export_type="funder_report",
+        export_type="standard_report",
         client_count=client_count,
         includes_notes=False,
         recipient=recipient,
@@ -1710,6 +1746,7 @@ def generate_report_form(request):
         "download_path": download_path,
         "program_name": template.partner.translated_name,
         "is_pdf": export_format == "pdf",
+        "is_html": export_format == "html",
     })
 
 
@@ -1955,7 +1992,6 @@ def team_meeting_view(request):
     from django.db.models import Count, Max, Q
 
     from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.constants import ROLE_RANK
     from apps.programs.models import UserProgramRole, Program
     from apps.programs.access import get_user_program_ids
     from apps.notes.models import ProgressNote
@@ -1964,7 +2000,7 @@ def team_meeting_view(request):
 
     # Check PM/admin permission
     role = _get_user_highest_role(request.user)
-    if ROLE_RANK.get(role, 0) < ROLE_RANK.get("program_manager", 99):
+    if ROLE_RANK.get(role, 0) < ROLE_RANK.get(ROLE_PROGRAM_MANAGER, 99):
         if not getattr(request.user, "is_admin", False):
             return HttpResponseForbidden(_("This view is for program managers only."))
 
@@ -1997,7 +2033,7 @@ def team_meeting_view(request):
     # Get staff members in filtered programs (exclude demo users)
     staff_roles = UserProgramRole.objects.filter(
         program_id__in=filter_program_ids,
-        role__in=["staff", "program_manager"],
+        role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER],
         status="active",
         user__is_demo=False,
     ).select_related("user", "program").order_by("user__display_name")

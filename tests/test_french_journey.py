@@ -24,6 +24,7 @@ from apps.plans.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -61,8 +62,8 @@ class FrenchJourneyBaseTest(TestCase):
 
         # Program
         self.program = Program.objects.create(name="Programme de soutien", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF)
 
         # Enable features that affect navigation
         FeatureToggle.objects.create(feature_key="programs", is_enabled=True)
@@ -550,7 +551,7 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         resp = self.http.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Rapport sur les r\u00e9sultats du programme")
-        self.assertContains(resp, "G\u00e9n\u00e9rer le rapport")  # "Generate Report"
+        self.assertContains(resp, "Cr\u00e9er un rapport")  # "Build a Report" button
 
     def test_funder_report_form_in_french(self):
         """Funder report form renders in French."""

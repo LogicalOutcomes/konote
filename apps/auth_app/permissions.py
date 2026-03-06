@@ -9,7 +9,14 @@ Enforcement layers:
 - @admin_required is a SEPARATE system — admin keys here are documentation only
 """
 
-from apps.auth_app.constants import ROLE_RANK
+from apps.auth_app.constants import (
+    ALL_PROGRAM_ROLES,
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RANK,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 # Permission levels
 DENY = "deny"          # Never allowed
@@ -21,7 +28,7 @@ PER_FIELD = "per_field"  # Check field-level configuration
 # --- Permissions matrix (single source of truth) ---
 
 PERMISSIONS = {
-    "receptionist": {
+    ROLE_RECEPTIONIST: {
         # Tier 1: Operational only — can check people in, see names, safety info only
         "client.view_name": ALLOW,  # Enforced by get_visible_fields() via can_access()
         "client.view_contact": ALLOW,  # Enforced by get_visible_fields() via can_access()
@@ -127,7 +134,7 @@ PERMISSIONS = {
         "circle.edit": DENY,
     },
 
-    "staff": {
+    ROLE_STAFF: {
         # Tier 2: Clinical access — scoped to assigned groups/clients (Phase 2)
         # Phase 1: scoped to program (existing behaviour preserved)
         "client.view_name": ALLOW,
@@ -236,7 +243,7 @@ PERMISSIONS = {
         "circle.edit": PROGRAM,    # Edit circles and manage members in their program
     },
 
-    "program_manager": {
+    ROLE_PROGRAM_MANAGER: {
         # Tier 3: Administrative + aggregate data
         # Phase 1: same as staff (existing behaviour)
         # Phase 3: aggregate-only default with gated individual access
@@ -353,7 +360,7 @@ PERMISSIONS = {
         "circle.edit": ALLOW,     # Edit circles and manage members
     },
 
-    "executive": {
+    ROLE_EXECUTIVE: {
         # Tier 4: Org-wide aggregate only — no individual client data
         "client.view_name": DENY,
         "client.view_contact": DENY,
@@ -505,7 +512,7 @@ def validate_permissions():
         all_keys.update(role_perms.keys())
 
     # Check each role has all keys
-    for role in ["receptionist", "staff", "program_manager", "executive"]:
+    for role in sorted(ALL_PROGRAM_ROLES, key=lambda r: ROLE_RANK.get(r, 0)):
         if role not in PERMISSIONS:
             errors.append(f"Role '{role}' missing from PERMISSIONS")
             continue

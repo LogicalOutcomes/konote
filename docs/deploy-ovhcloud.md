@@ -971,6 +971,23 @@ Save that commit hash (e.g., `a1b2c3d`). You'll need it if you want to undo the 
 
 ### Apply the Update
 
+**Recommended: Use the deploy script** (updates, rebuilds, and health-checks in one command):
+
+```bash
+# Production only
+/opt/konote/deploy.sh
+
+# Dev only
+/opt/konote/deploy.sh --dev
+
+# Both production and dev
+/opt/konote/deploy.sh --all
+```
+
+The deploy script (`scripts/deploy.sh`) pulls `develop`, rebuilds the web container, restarts, and waits for the health check. For the dev instance, it also **auto-resets the database** if migrations fail — this is safe because the dev instance only has demo data (`DEMO_MODE=true`).
+
+**Manual alternative** (if the deploy script is not installed yet):
+
 ```bash
 cd /opt/konote
 
@@ -1008,12 +1025,30 @@ If the broken update ran database migrations (new tables or columns), you may al
 
 For detailed procedures, see the [Update and Rollback Guide](update-and-rollback.md).
 
-### Update the dev instance too
+### Dev Instance: Automatic Database Reset on Migration Failure
+
+The dev instance uses `DEMO_MODE=true` and only contains demo data. When the deploy script detects a migration failure on the dev instance (e.g., because the dev database was created from an older branch), it automatically:
+
+1. Stops the web container
+2. Drops and recreates both databases (main + audit)
+3. Restarts the web container (which auto-migrates and re-seeds demo data)
+
+This means the dev instance **always comes back to a working state** after a deploy, even if the database schema is completely out of sync. Production never auto-resets — it fails loudly so you can investigate.
+
+If you need to manually reset the dev database:
 
 ```bash
 cd /opt/konote-dev
-sudo git pull origin main
-sudo docker compose up -d --build
+docker compose stop web
+docker compose exec -T db psql -U konote_dev -d postgres \
+    -c "DROP DATABASE IF EXISTS konote_dev;" \
+    -c "CREATE DATABASE konote_dev OWNER konote_dev;"
+docker compose exec -T audit_db psql -U audit_dev -d postgres \
+    -c "DROP DATABASE IF EXISTS konote_dev_audit;" \
+    -c "CREATE DATABASE konote_dev_audit OWNER audit_dev;"
+docker compose up -d web
+# Wait ~60s for migrations + seed to complete, then check health
+docker compose ps
 ```
 
 ---

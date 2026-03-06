@@ -12,6 +12,7 @@ import json
 import os
 import shutil
 import tempfile
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
@@ -119,7 +120,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
             name="Test Program", colour_hex="#10B981",
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="program_manager",
+            user=self.user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
 
     def _login(self):

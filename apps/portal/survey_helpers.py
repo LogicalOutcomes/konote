@@ -17,18 +17,22 @@ def group_sections_into_pages(sections):
     return pages
 
 
-def filter_visible_sections(sections, partial_answers):
+def filter_visible_sections(sections, partial_answers, is_identified=False):
     """Filter sections based on conditional visibility.
 
     Args:
         sections: list of SurveySection objects (ordered by sort_order)
         partial_answers: dict of {question_pk: value_string} from PartialAnswer
+        is_identified: if True, hide sections flagged skip_for_identified
+            (portal and staff-entered surveys for known participants)
 
     Returns:
         list of visible SurveySection objects
     """
     visible = []
     for section in sections:
+        if is_identified and section.skip_for_identified:
+            continue
         if section.condition_question_id is None:
             visible.append(section)
         else:

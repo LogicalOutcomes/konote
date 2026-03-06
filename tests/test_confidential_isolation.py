@@ -17,6 +17,7 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.suppression import suppress_small_cell
 
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -53,13 +54,13 @@ class ConfidentialIsolationTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.standard_staff, program=self.standard_prog, role="staff",
+            user=self.standard_staff, program=self.standard_prog, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.confidential_staff, program=self.confidential_prog, role="staff",
+            user=self.confidential_staff, program=self.confidential_prog, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.admin, program=self.standard_prog, role="program_manager",
+            user=self.admin, program=self.standard_prog, role=ROLE_PROGRAM_MANAGER,
         )
 
         # Client in standard program only
@@ -231,7 +232,7 @@ class DuplicateMatchingTest(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.staff, program=self.standard_prog, role="staff",
+            user=self.staff, program=self.standard_prog, role=ROLE_STAFF,
         )
 
         # Existing client in standard program with phone and DOB
@@ -304,7 +305,7 @@ class DuplicateMatchingTest(TestCase):
             username="demo_staff", password="testpass123", is_demo=True,
         )
         UserProgramRole.objects.create(
-            user=demo_staff, program=self.standard_prog, role="staff",
+            user=demo_staff, program=self.standard_prog, role=ROLE_STAFF,
         )
         self.http.login(username="demo_staff", password="testpass123")
         resp = self.http.get(
@@ -433,7 +434,7 @@ class DuplicateMatchingTest(TestCase):
             username="demo_staff2", password="testpass123", is_demo=True,
         )
         UserProgramRole.objects.create(
-            user=demo_staff, program=self.standard_prog, role="staff",
+            user=demo_staff, program=self.standard_prog, role=ROLE_STAFF,
         )
         self.http.login(username="demo_staff2", password="testpass123")
         resp = self.http.get(
@@ -475,7 +476,7 @@ class RegistrationLinkConfidentialTest(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.admin, program=self.standard_prog, role="program_manager",
+            user=self.admin, program=self.standard_prog, role=ROLE_PROGRAM_MANAGER,
         )
 
     def test_confidential_program_excluded_from_registration_form(self):
@@ -508,10 +509,10 @@ class GroupAccessTest(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.staff_a, program=self.prog_a, role="staff",
+            user=self.staff_a, program=self.prog_a, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.staff_b, program=self.prog_b, role="staff",
+            user=self.staff_b, program=self.prog_b, role=ROLE_STAFF,
         )
 
         # Create groups
@@ -557,7 +558,7 @@ class PhoneFieldTest(TestCase):
         )
         self.prog = Program.objects.create(name="Sports", colour_hex="#10B981")
         UserProgramRole.objects.create(
-            user=self.staff, program=self.prog, role="staff",
+            user=self.staff, program=self.prog, role=ROLE_STAFF,
         )
 
     def test_phone_saved_and_retrieved_encrypted(self):
@@ -643,11 +644,11 @@ class DjangoAdminConfidentialTest(TestCase):
         # Roles
         UserProgramRole.objects.create(
             user=self.admin_standard, program=self.standard_prog,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
             user=self.admin_confidential, program=self.confidential_prog,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
 
         # Clients
@@ -798,10 +799,10 @@ class AuditConfidentialTaggingTest(TestCase):
         )
 
         UserProgramRole.objects.create(
-            user=self.staff, program=self.standard_prog, role="staff",
+            user=self.staff, program=self.standard_prog, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.conf_prog, role="staff",
+            user=self.staff, program=self.conf_prog, role=ROLE_STAFF,
         )
 
         self.standard_client = ClientFile()
@@ -848,7 +849,7 @@ class AuditConfidentialTaggingTest(TestCase):
             username="outsider", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=outsider, program=self.standard_prog, role="staff",
+            user=outsider, program=self.standard_prog, role=ROLE_STAFF,
         )
         self.http.login(username="outsider", password="testpass123")
         resp = self.http.get(f"/participants/{self.conf_client.pk}/")
@@ -866,7 +867,7 @@ class AuditConfidentialTaggingTest(TestCase):
             username="pm_audit", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=pm, program=self.conf_prog, role="program_manager",
+            user=pm, program=self.conf_prog, role=ROLE_PROGRAM_MANAGER,
         )
         self.http.login(username="pm_audit", password="testpass123")
         resp = self.http.get(f"/audit/program/{self.conf_prog.pk}/")
