@@ -1,6 +1,7 @@
 """Views for Outcome Insights — program-level and client-level qualitative analysis."""
 import json
 import logging
+from collections import defaultdict
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
@@ -14,9 +15,10 @@ from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_client_or_403
 from apps.programs.models import UserProgramRole
 from apps.notes.models import (
-    ProgressNote, SuggestionLink, SuggestionTheme,
+    ProgressNote, ProgressNoteTarget, SuggestionLink, SuggestionTheme,
     THEME_PRIORITY_RANK, deduplicate_themes,
 )
+from apps.plans.models import PlanTarget
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
 from .interpretations import (
@@ -421,23 +423,30 @@ def client_insights_partial(request, client_id):
 
     data_tier = _get_data_tier(structured["note_count"], structured["month_count"])
 
-    # Per-goal current status for "How they're doing" section
-    from apps.plans.models import PlanTarget
-    from apps.notes.models import ProgressNoteTarget
-
+    # Per-goal current status for "How they're doing" section (2 queries)
     descriptor_labels = dict(ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES)
-    active_targets = PlanTarget.objects.filter(
-        client_file=client, status="default",
-    ).order_by("plan_section__name", "pk")
+    active_targets = list(
+        PlanTarget.objects.filter(client_file=client, status="default")
+        .order_by("plan_section__name", "pk")
+    )
+
+    # Bulk-fetch all descriptor entries for these targets in one query
+    all_entries = (
+        ProgressNoteTarget.objects
+        .filter(plan_target__in=active_targets, progress_descriptor__gt="")
+        .select_related("progress_note")
+        .order_by("plan_target_id", "-progress_note__created_at")
+    )
+    # Group by target, keep only the 2 most recent per target
+    by_target = defaultdict(list)
+    for entry in all_entries:
+        lst = by_target[entry.plan_target_id]
+        if len(lst) < 2:
+            lst.append(entry)
 
     goal_statuses = []
     for target in active_targets:
-        recent = list(
-            ProgressNoteTarget.objects
-            .filter(plan_target=target, progress_descriptor__gt="")
-            .select_related("progress_note")
-            .order_by("-progress_note__created_at")[:2]
-        )
+        recent = by_target.get(target.pk, [])
         if not recent:
             continue
 
@@ -459,11 +468,11 @@ def client_insights_partial(request, client_id):
             "is_first": previous is None,
         })
 
-    all_same_descriptor = (
-        len(goal_statuses) > 1
-        and len(set(g["descriptor_key"] for g in goal_statuses)) == 1
-    )
-    summary_line = goal_statuses[0]["descriptor_label"] if all_same_descriptor else ""
+    summary_line = ""
+    if len(goal_statuses) > 1:
+        descriptors = set(g["descriptor_key"] for g in goal_statuses)
+        if len(descriptors) == 1:
+            summary_line = goal_statuses[0]["descriptor_label"]
 
     # Client-level: no participant threshold, dates included
     quotes = collect_quotes(
@@ -512,7 +521,6 @@ def client_insights_partial(request, client_id):
         "quotes": other_quotes,
         "suggestions": suggestions,
         "goal_statuses": goal_statuses,
-        "all_same_descriptor": all_same_descriptor,
         "summary_line": summary_line,
         "data_tier": data_tier,
         "chart_data_json": structured["descriptor_trend"],
