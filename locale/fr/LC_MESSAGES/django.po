@@ -11967,6 +11967,18 @@ msgstr "Veuillez corriger les éléments suivants :"
 msgid "Please select a section or create a new one."
 msgstr "Veuillez sélectionner une section ou en créer une nouvelle."
 
+msgid "Almost there — a few things need your attention:"
+msgstr "Presque terminé — quelques éléments nécessitent votre attention :"
+
+msgid "You chose to create a new section — please give it a name."
+msgstr "Vous avez choisi de créer une nouvelle section — veuillez lui donner un nom."
+
+msgid "Please choose which area of the plan this goal belongs to."
+msgstr "Veuillez choisir à quelle section du plan cet objectif appartient."
+
+msgid "Please give this goal a short name."
+msgstr "Veuillez donner un nom court à cet objectif."
+
 msgid "Prefer to fill in the form yourself? Go to manual form"
 msgstr ""
 "Vous préférez remplir le formulaire vous-même? Aller au formulaire manuel"

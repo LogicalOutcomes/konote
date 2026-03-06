@@ -3461,6 +3461,20 @@ article[aria-label="notification"].fading-out {
         flex-direction: column;
         align-items: flex-start;
     }
+    /* Keep goal-card dropdown menu within viewport on mobile */
+    .goal-card-actions .actions-dropdown {
+        position: static;
+    }
+    .goal-card-actions .actions-dropdown-menu {
+        position: relative;
+        left: auto;
+        right: auto;
+        min-width: 0;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid var(--kn-border-light);
+        margin-top: var(--kn-space-xs);
+    }
 }
 
 /* ---- Priority items mobile ---- */
@@ -4691,6 +4705,18 @@ article[aria-label="notification"].fading-out {
 }
 .error-summary ul { margin-bottom: 0; }
 .error-summary a { color: var(--kn-danger-fg); text-decoration: underline; }
+
+/* Softer form validation notice (amber instead of red) */
+.form-notice {
+    background: #fef9e7;
+    color: #6c5a1e;
+    border: 1px solid #f0d668;
+    border-radius: var(--pico-border-radius);
+    padding: var(--kn-space-sm) var(--kn-space-md);
+    margin-bottom: var(--kn-space-md);
+}
+.form-notice ul { margin-bottom: 0; }
+.form-notice a { color: #6c5a1e; text-decoration: underline; }
 
 /* Common goal cards — tappable quick-pick tiles */
 .goal-card-grid {

@@ -296,6 +296,7 @@ class GoalForm(forms.Form):
     )
     name = forms.CharField(
         max_length=255,
+        error_messages={"required": _("Please give this goal a short name.")},
         widget=forms.TextInput(attrs={
             "placeholder": _("e.g., Find stable housing"),
             "autocomplete": "off",
@@ -370,11 +371,11 @@ class GoalForm(forms.Form):
         if section_choice == "new" and not new_name:
             self.add_error(
                 "new_section_name",
-                _("Please enter a name for the new section."),
+                _("You chose to create a new section — please give it a name."),
             )
         elif not section_choice:
             raise forms.ValidationError(
-                _("Please select a section or create a new one.")
+                _("Please choose which area of the plan this goal belongs to.")
             )
 
         return cleaned
