@@ -3218,8 +3218,8 @@ article[aria-label="notification"].fading-out {
     }
 }
 
-/* ---- Client table card view on mobile ---- */
-@media (max-width: 600px) {
+/* ---- Client table card view on narrow screens ---- */
+@media (max-width: 768px) {
     .client-table thead {
         display: none;
     }
