@@ -1170,6 +1170,7 @@ output.form-output {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     padding: 0.5rem 1rem;
     border: 2px solid var(--kn-border-light, #ccc);
     border-radius: 999px;
