@@ -255,7 +255,7 @@ def portal_login(request):
                 is_active=True, mfa_method="exempt",
             )
             .select_related("client_file")
-            .order_by("client_file__record_id")[:6]
+            .order_by("client_file__record_id")[:2]
         )
 
     return render(request, "portal/login.html", {
