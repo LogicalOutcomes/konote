@@ -8,7 +8,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import requires_permission
@@ -431,6 +431,10 @@ def client_insights_partial(request, client_id):
     )
     active_targets = list(
         PlanTarget.objects.filter(client_file=client, status="default")
+        .filter(
+            Q(plan_section__program_id__isnull=True)
+            | Q(plan_section__program_id__in=user_program_ids)
+        )
         .select_related("plan_section")
         .order_by("plan_section__name", "pk")
     )
@@ -486,11 +490,13 @@ def client_insights_partial(request, client_id):
             summary_line = goal_statuses[0]["descriptor_label"]
 
     # Client-level: no participant threshold, dates included
+    # Restrict quotes to programs the user has access to
     quotes = collect_quotes(
         client_file=client,
         date_from=date_from,
         date_to=date_to,
         include_dates=True,
+        program_ids=user_program_ids,
     )
 
     # Check AI availability

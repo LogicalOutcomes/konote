@@ -192,7 +192,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
 
 
 def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
-                   max_quotes=50, include_dates=True):
+                   max_quotes=50, include_dates=True, program_ids=None):
     """Decrypt text fields and surface notable quotes.
 
     Args:
@@ -202,6 +202,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
         date_to: End date.
         max_quotes: Maximum quotes to return.
         include_dates: Whether to include dates (False for program-level privacy).
+        program_ids: Optional set/list of program IDs to restrict quotes to.
 
     Returns:
         list of dicts with keys: text, target_name, note_id, date (if include_dates).
@@ -238,6 +239,10 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
 
     if client_file:
         targets_qs = targets_qs.filter(progress_note__client_file=client_file)
+    if program_ids is not None:
+        targets_qs = targets_qs.filter(
+            plan_target__plan_section__program_id__in=program_ids,
+        )
     if program:
         targets_qs = targets_qs.filter(
             progress_note__client_file__enrolments__program=program,

@@ -741,6 +741,8 @@ def goal_create_from_suggestion(request, client_id):
         raise PermissionDenied(_("You don't have permission to edit this plan."))
 
     suggestion_key = request.POST.get("suggestion_key", "")
+    if suggestion_key and not suggestion_key.startswith("goal_suggestion_"):
+        suggestion_key = ""
     suggestion = request.session.pop(suggestion_key, None) if suggestion_key else None
 
     if not suggestion:
