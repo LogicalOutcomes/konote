@@ -2,7 +2,6 @@
 
 ## Flagged
 
-- [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -28,6 +27,46 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
 
 ## Coming Up
+
+### Phase: Goal Workflow Redesign (see tasks/goal-workflow-redesign.md)
+
+**Phase A — Fix the blockers**
+- [ ] Create dedicated `goal_create_from_suggestion` save endpoint (HTMX POST, no client-side form) with error handling (soft failure returns form, hard failure returns error card) — (GW-R1)
+- [ ] Auto-create sections silently using priority chain: match existing > match program-wide > AI suggestion > "General" — (GW-R2)
+- [ ] Rename "Shape this target" button to "Suggest a goal" with sparkle icon — (GW-R3)
+
+**Phase B — Suggestion card polish**
+- [ ] Demote "Suggested area" to secondary line on card — (GW-R4)
+- [ ] Default custom metric to included; remove Include/Skip from card; show in success message — (GW-R5)
+- [ ] Rename "Let me edit it" to "Let me review first" — (GW-R6)
+- [ ] Hide entry points after suggestion loads; "Start over" restores them — (GW-R7)
+- [ ] Store suggestion in server-side session, pass reference token to client — (GW-R19)
+- [ ] Animated loading bar with text rotation for AI wait — (GW-T5)
+
+**Phase C — Form improvements ("Let me review first" path)**
+- [ ] Reorder form: participant words > goal name > description (collapsible) > metrics > section (last) — (GW-R8)
+- [ ] Section picker: pre-select most recent; pre-fill AI suggestion; auto-create if empty — (GW-R9)
+- [ ] Add reassurance near submit: "You can revise this goal later" — (GW-R10)
+- [ ] Unify AI/non-AI form HTML into single form, remove SYNC duplication — (GW-T4)
+
+**Phase D — Entry point tuning**
+- [ ] Conditional layout: quick pick first if 3+ common goals, AI first otherwise — (GW-R11)
+- [ ] Increase textarea to rows=3 with CSS min-height — (GW-R12)
+- [ ] Move onboarding hint to contextual help icon on entry point — (GW-R13)
+- [ ] Persistent participant-words blockquote throughout flow — (GW-R21)
+- [ ] Quick pick prompts for participant's words after selection — (GW-R22)
+- [ ] Relabel metric tiers with clinical language — (GW-R23)
+- [ ] Add "Why this suggestion" collapsible with AI reasoning — (GW-R24)
+
+**Phase E — Accessibility fixes**
+- [ ] Fix aria-label: "AI-suggested goal" not "target" — (GW-R14)
+- [ ] Add aria-label to custom metric pre block — (GW-R15)
+- [ ] Change #form-announce to aria-live="assertive" — (GW-R16)
+- [ ] Add "Saving your goal..." screen reader announcement — (GW-R17)
+- [ ] Add hx-sync="this:abort" to shape button — (GW-R18)
+
+**Phase F — Program setup (longer-term)** — GK reviews domain section templates
+- [ ] Pre-seed programs with domain section templates at program setup — (GW-R20)
 
 ### Phase: Session 7 Prep — Admin UX & Configuration
 
