@@ -61,9 +61,6 @@ _RECORD_ID_RE = re.compile(
     r"\b(?:record\s*id|client\s*id|participant\s*id|note\s*id|file\s*id)\s*[:#-]?\s*[A-Za-z0-9-]{2,}\b",
     re.IGNORECASE,
 )
-_GENERIC_ID_RE = re.compile(
-    r"\b[A-Z]{2,10}-\d{2,}\b"
-)
 
 
 def scrub_pii(text, known_names=None):
@@ -94,7 +91,6 @@ def scrub_pii(text, known_names=None):
     result = _DATE_SLASH_RE.sub("[DATE]", result)
     result = _DATE_TEXTUAL_RE.sub("[DATE]", result)
     result = _RECORD_ID_RE.sub("[RECORD ID]", result)
-    result = _GENERIC_ID_RE.sub("[RECORD ID]", result)
 
     # Pass 2: Replace known names (longest first to avoid partial matches)
     if known_names:
