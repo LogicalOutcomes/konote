@@ -708,6 +708,13 @@ class CustomFieldGroup(models.Model):
 
     title = models.CharField(max_length=255)
     sort_order = models.IntegerField(default=0)
+    collapsed_by_default = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, this group is collapsed on the participant info tab. "
+            "Use for sensitive demographics that aren't needed for daily service delivery."
+        ),
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],
