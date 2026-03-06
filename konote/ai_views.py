@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
 from apps.admin_settings.models import FeatureToggle
+from apps.reports.pii_scrub import scrub_pii
 from konote import ai
 from konote.forms import (
     GenerateNarrativeForm,
@@ -26,6 +27,46 @@ from konote.forms import (
 )
 
 logger = logging.getLogger(__name__)
+
+AI_RATE_LIMIT_RETRY_AFTER = 300
+
+
+def ai_rate_limited_response(request, template_name="ai/_error.html"):
+    """Return a standardized HTMX-friendly 429 response for AI endpoints."""
+    response = render(request, template_name, {
+        "message": _("Too many requests. Please wait a few minutes before trying again."),
+    })
+    response.status_code = 429
+    response["Retry-After"] = str(AI_RATE_LIMIT_RETRY_AFTER)
+    return response
+
+
+def _get_active_staff_names():
+    """Collect display names of all active staff for PII scrubbing."""
+    from apps.auth_app.models import User
+    names = set()
+    for display in User.objects.filter(is_active=True).values_list("display_name", flat=True):
+        if display and len(display) >= 2:
+            names.add(display)
+    return names
+
+
+def get_program_known_names(program):
+    """Collect staff and participant names for a program-level scrub pass."""
+    from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+    known_names = set()
+    client_ids = (
+        ClientProgramEnrolment.objects.filter(program=program, status="active")
+        .values_list("client_file_id", flat=True)
+    )
+    for client in ClientFile.objects.filter(pk__in=client_ids):
+        for name in [client.first_name, client.last_name, client.preferred_name]:
+            if name and len(name) >= 2:
+                known_names.add(name)
+
+    known_names.update(_get_active_staff_names())
+    return known_names
 
 
 def _ai_tools_enabled():
@@ -47,16 +88,20 @@ def _ai_participant_data_enabled():
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def suggest_metrics_view(request):
     """Suggest metrics for a plan target description."""
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request)
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     form = SuggestMetricsForm(request.POST)
     if not form.is_valid():
         return render(request, "ai/_error.html", {"message": "Please enter a target description first."})
-    target_description = form.cleaned_data["target_description"]
+
+    target_description = scrub_pii(form.cleaned_data["target_description"])
 
     # Build catalogue from non-PII metric data
     from apps.plans.models import MetricDefinition
@@ -76,16 +121,20 @@ def suggest_metrics_view(request):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def improve_outcome_view(request):
     """Improve a draft outcome statement."""
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request)
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     form = ImproveOutcomeForm(request.POST)
     if not form.is_valid():
         return render(request, "ai/_error.html", {"message": "Please enter a draft outcome first."})
-    draft_text = form.cleaned_data["draft_text"]
+
+    draft_text = scrub_pii(form.cleaned_data["draft_text"])
 
     improved = ai.improve_outcome(draft_text)
     if improved is None:
@@ -96,9 +145,12 @@ def improve_outcome_view(request):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def generate_narrative_view(request):
     """Generate an outcome narrative from aggregate metrics."""
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request)
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
@@ -174,9 +226,12 @@ def generate_narrative_view(request):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def suggest_note_structure_view(request):
     """Suggest a progress note structure for a plan target."""
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request)
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
@@ -205,7 +260,16 @@ def suggest_note_structure_view(request):
 
     metric_names = list(target.metrics.filter(status="active").values_list("name", flat=True))
 
-    sections = ai.suggest_note_structure(target.name, target.description, metric_names)
+    client_file = target.client_file
+    known_names = _get_known_names_for_client(client_file) if client_file else set()
+    scrubbed_target_name = scrub_pii(target.name, known_names)
+    scrubbed_target_description = scrub_pii(target.description, known_names)
+
+    sections = ai.suggest_note_structure(
+        scrubbed_target_name,
+        scrubbed_target_description,
+        metric_names,
+    )
     if sections is None:
         return render(request, "ai/_error.html", {"message": "AI suggestion unavailable. Please try again later."})
 
@@ -214,13 +278,16 @@ def suggest_note_structure_view(request):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def suggest_target_view(request):
     """Suggest a structured target from participant words. HTMX POST.
 
     Takes the participant's own words and returns an AI-generated suggestion
     card with target name, SMART description, section, and recommended metrics.
     """
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request, template_name="plans/_ai_suggest_error.html")
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
@@ -237,7 +304,6 @@ def suggest_target_view(request):
     from apps.plans.models import PlanSection
     from apps.plans.views import _can_edit_plan
     from apps.programs.access import get_client_or_403
-    from apps.reports.pii_scrub import scrub_pii
 
     client_file = get_client_or_403(request, client_id)
     if client_file is None:
@@ -302,7 +368,7 @@ def suggest_target_view(request):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="10/h", method="POST", block=True)
+@ratelimit(key="user", rate="10/h", method="POST", block=False)
 def outcome_insights_view(request):
     """Generate AI narrative draft from qualitative outcome data. HTMX POST.
 
@@ -313,12 +379,15 @@ def outcome_insights_view(request):
     Gated by ai_assist_participant_data (not just tools_only) because this
     endpoint sends de-identified participant quotes to an external AI service.
     """
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request, template_name="reports/_insights_ai.html")
+
     if not _ai_participant_data_enabled():
         return HttpResponseForbidden("AI participant data features are not enabled.")
 
     from apps.programs.models import Program, UserProgramRole
     from apps.reports.insights import get_structured_insights, collect_quotes
-    from apps.reports.pii_scrub import scrub_pii
+
     from apps.reports.models import InsightSummary
 
     program_id = request.POST.get("program_id")
@@ -379,24 +448,7 @@ def outcome_insights_view(request):
             })
 
         # PII-scrub quotes before sending to AI
-        # Collect known names from clients in this program
-        from apps.clients.models import ClientFile, ClientProgramEnrolment
-        client_ids = (
-            ClientProgramEnrolment.objects.filter(program=program, status="active")
-            .values_list("client_file_id", flat=True)
-        )
-        known_names = set()
-        for client in ClientFile.objects.filter(pk__in=client_ids):
-            for name in [client.first_name, client.last_name, client.preferred_name]:
-                if name and len(name) >= 2:
-                    known_names.add(name)
-
-        # Also scrub staff names
-        from apps.auth_app.models import User
-        for user in User.objects.filter(is_active=True):
-            display = getattr(user, "display_name", "")
-            if display and len(display) >= 2:
-                known_names.add(display)
+        known_names = get_program_known_names(program)
 
         scrubbed_quotes = []
         # Build ephemeral quote_source_map: scrubbed_text → note_id.
@@ -469,22 +521,13 @@ def outcome_insights_view(request):
 
 
 def _get_known_names_for_client(client_file):
-    """Collect known names for PII scrubbing: client + enrolled peers + staff."""
-    from apps.auth_app.models import User
-    from apps.clients.models import ClientFile, ClientProgramEnrolment
-
+    """Collect known names for PII scrubbing: client + staff."""
     known_names = set()
-    # This client's names
     for name in [client_file.first_name, client_file.last_name, client_file.preferred_name]:
         if name and len(name) >= 2:
             known_names.add(name)
 
-    # Active staff names
-    for user in User.objects.filter(is_active=True):
-        display = getattr(user, "display_name", "")
-        if display and len(display) >= 2:
-            known_names.add(display)
-
+    known_names.update(_get_active_staff_names())
     return known_names
 
 
@@ -559,15 +602,17 @@ def goal_builder_start(request, client_id):
 
 @login_required
 @require_POST
-@ratelimit(key="user", rate="20/h", method="POST", block=True)
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def goal_builder_chat(request, client_id):
     """Process a chat message in the Goal Builder — POST returns updated panel."""
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request, template_name="plans/_goal_builder.html")
+
     if not _ai_tools_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.clients.models import ClientFile
     from apps.plans.views import _can_edit_plan
-    from apps.reports.pii_scrub import scrub_pii
 
     client_file = get_object_or_404(ClientFile, pk=client_id)
     if not _can_edit_plan(request.user, client_file):

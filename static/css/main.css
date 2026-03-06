@@ -435,6 +435,10 @@ nav.breadcrumb [aria-current="page"] {
     border-radius: var(--kn-radius-card);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+/* Override Pico's "ul li { list-style: square }" which targets li directly */
+.actions-dropdown-menu li {
+    list-style: none;
+}
 .actions-dropdown-menu[hidden] {
     display: none;
 }
