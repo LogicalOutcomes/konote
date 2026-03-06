@@ -19743,3 +19743,19 @@ msgstr "Lorsque coché, ce groupe est réduit dans l’onglet d’information du
 msgid "Collapsed by default (display only — does not restrict access)"
 msgstr "Réduit par défaut (affichage seulement — ne restreint pas l’accès)"
 
+#: templates/reports/_insights_client.html
+msgid "How they’re doing"
+msgstr "Comment ça va"
+
+#: templates/reports/_insights_client.html
+msgid "All goals: %(desc)s"
+msgstr "Tous les objectifs : %(desc)s"
+
+#: templates/reports/_insights_client.html
+msgid "was:"
+msgstr "était :"
+
+#: templates/reports/_insights_client.html
+msgid "first assessment"
+msgstr "première évaluation"
+
