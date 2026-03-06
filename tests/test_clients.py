@@ -948,6 +948,37 @@ class MultiSelectFieldTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Black, South Asian")
 
+    def test_collapsed_group_renders_without_open(self):
+        """Groups with collapsed_by_default=True render <details> without open attribute."""
+        self.group.collapsed_by_default = True
+        self.group.save()
+        cdv = ClientDetailValue.objects.create(
+            client_file=self.cf, field_def=self.racial_field, value="White"
+        )
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/display/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # Collapsed group should have <details> without open
+        self.assertIn("<details>", content)
+        self.assertNotIn("<details open>", content)
+
+    def test_open_group_renders_with_open(self):
+        """Groups with collapsed_by_default=False render <details open>."""
+        self.group.collapsed_by_default = False
+        self.group.save()
+        cdv = ClientDetailValue.objects.create(
+            client_file=self.cf, field_def=self.racial_field, value="White"
+        )
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/display/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "<details open>")
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ConsentRecordingTest(TestCase):
