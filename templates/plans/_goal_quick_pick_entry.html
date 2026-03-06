@@ -1,0 +1,31 @@
+{% load i18n %}
+{# Quick pick entry point — included by goal_form.html #}
+{% if common_goals %}
+<fieldset id="quick-pick-entry">
+    <legend>{% trans "Quick pick from existing goals" %}</legend>
+    <div class="goal-card-grid" role="group" aria-label="{% trans 'Common goals in this program' %}">
+        {% for goal in common_goals %}
+        <button type="button"
+                class="goal-card outline"
+                data-goal-name="{{ goal.name }}"
+                data-metric-id="{{ goal.metric_id|default:'' }}"
+                aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
+            <strong>{{ goal.name }}</strong>
+            {% if goal.metric_name %}
+            <small>{{ goal.metric_name }}</small>
+            {% endif %}
+            <small class="secondary">
+                {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
+            </small>
+        </button>
+        {% endfor %}
+    </div>
+</fieldset>
+
+{# R22: Quick pick words prompt (hidden until a card is clicked) #}
+<div id="quick-pick-words" hidden>
+    <label>{% blocktrans with client=term.client|default:"participant" %}What did the {{ client }} say about this?{% endblocktrans %}</label>
+    <textarea name="quick_pick_words" rows="2" placeholder="{% trans 'Optional — in their own words…' %}"></textarea>
+    <button type="button" id="btn-continue-quick-pick">{% trans "Continue" %}</button>
+</div>
+{% endif %}
