@@ -696,7 +696,15 @@ def goal_create(request, client_id):
 
     # Check if AI Goal Builder is available
     from konote.ai_views import _ai_tools_enabled
+    from konote.ai import is_ai_available
     ai_enabled = _can_edit_plan(request.user, client) and _ai_tools_enabled()
+
+    # Nudge admins when AI could be enabled but isn't configured
+    ai_nudge_admin = (
+        not ai_enabled
+        and request.user.is_admin
+        and not is_ai_available()
+    )
 
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
@@ -718,6 +726,7 @@ def goal_create(request, client_id):
         "common_goals": common_goals,
         "selected_metric_ids": selected_metric_ids,
         "ai_enabled": ai_enabled,
+        "ai_nudge_admin": ai_nudge_admin,
         "participant_words": request.POST.get("participant_words", ""),
         "quick_pick_first": quick_pick_first,
     }
