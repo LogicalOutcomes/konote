@@ -16,7 +16,7 @@ Usage:
 """
 import os
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 
 def _pick_domain_from_allowed_hosts():
@@ -75,13 +75,10 @@ class Command(BaseCommand):
         schema_name = "public"  # always target the existing public schema
 
         if not domain:
-            self.stderr.write(
-                self.style.ERROR(
-                    "No domain specified and ALLOWED_HOSTS is not set. "
-                    "Re-run with --domain <your-domain>."
-                )
+            raise CommandError(
+                "No domain specified and ALLOWED_HOSTS is not set. "
+                "Re-run with --domain <your-domain>."
             )
-            return
 
         # Idempotent: skip if this domain is already registered.
         if AgencyDomain.objects.filter(domain=domain).exists():

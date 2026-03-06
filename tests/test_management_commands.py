@@ -437,6 +437,26 @@ class RotateTenantKeyCommandTest(TestCase):
         self.assertIn("strand existing encrypted data", message)
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SetupPublicTenantCommandTest(TestCase):
+    """Tests for the setup_public_tenant command fail-closed behavior."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_missing_domain_raises_command_error(self):
+        """Missing domain must fail closed so production startup stops."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command("setup_public_tenant", domain="")
+
+        self.assertIn("No domain specified", str(ctx.exception))
+
+
 # =========================================================================
 # Security Commands
 # =========================================================================
