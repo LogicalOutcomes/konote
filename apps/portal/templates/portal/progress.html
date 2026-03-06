@@ -21,7 +21,7 @@
 {% block extra_scripts %}
 {% if chart_data %}
 {{ chart_data|json_script:"chart-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var allData = JSON.parse(document.getElementById('chart-data').textContent);
     var container = document.getElementById('portal-charts');
@@ -227,3 +227,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

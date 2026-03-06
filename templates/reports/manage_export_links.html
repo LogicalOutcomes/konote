@@ -78,10 +78,9 @@
             </td>
             <td>
                 {% if link.status_display == "Active" or link.status_display == "Pending" %}
-                <form method="post" action="{% url 'reports:revoke_export_link' link.id %}" style="margin: 0;">
+                <form method="post" action="{% url 'reports:revoke_export_link' link.id %}" style="margin: 0;" data-confirm="{% trans 'Revoke this export link? The file will be deleted and the link will stop working.' %}">
                     {% csrf_token %}
-                    <button type="submit" class="{% if link.status_display == 'Pending' %}contrast{% else %}secondary outline{% endif %}" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;"
-                            onclick="return confirm('{% trans "Revoke this export link? The file will be deleted and the link will stop working." %}')">
+                    <button type="submit" class="{% if link.status_display == 'Pending' %}contrast{% else %}secondary outline{% endif %}" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
                         {% trans "Revoke" %}
                     </button>
                 </form>

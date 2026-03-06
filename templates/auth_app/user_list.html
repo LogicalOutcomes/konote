@@ -55,9 +55,9 @@
                 {% if item.user.is_active and item.user != request.user %}
                 <form method="post" action="{% url 'admin_users:user_deactivate' user_id=item.user.pk %}" style="display:inline">
                     {% csrf_token %}
-                    <button type="submit" class="outline secondary"
+                        <button type="submit" class="outline secondary"
                             style="padding: 0.25rem 0.5rem; margin: 0;"
-                            onclick="return confirm('{% blocktrans with name=item.user.display_name %}Deactivate {{ name }}?{% endblocktrans %}')">
+                            data-confirm="{% blocktrans with name=item.user.display_name %}Deactivate {{ name }}?{% endblocktrans %}">
                         {% trans "Deactivate" %}
                     </button>
                 </form>

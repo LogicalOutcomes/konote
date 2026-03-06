@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 
 import dj_database_url
+from csp.constants import NONCE
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
@@ -243,30 +244,35 @@ EMBED_ALLOWED_ORIGINS = [o.strip() for o in _embed_origins_raw.split(",") if o.s
 # ─────────────────────────────────────────────────────────────────────
 # Controls which resources the browser is allowed to load.
 #
-#   default-src 'self'         — fallback: only same-origin resources
-#   script-src  unpkg.com      — HTMX is loaded from unpkg CDN
-#               jsdelivr.net   — Chart.js is loaded from jsDelivr CDN
-#               'unsafe-inline' — required for inline chart init scripts
-#   style-src   jsdelivr.net   — Pico CSS is loaded from jsDelivr CDN
+#   default-src 'self'          — fallback: only same-origin resources
+#   script-src  unpkg.com       — HTMX is loaded from unpkg CDN
+#               jsdelivr.net    — Chart.js is loaded from jsDelivr CDN
+#               NONCE           — allows reviewed inline scripts without opening
+#                                  all inline JavaScript execution
+#   style-src   jsdelivr.net    — Pico CSS is loaded from jsDelivr CDN
 #               'unsafe-inline' — required by Pico CSS (see production.py note)
-#   img-src     data:          — allows inline data-URI images (e.g. Chart.js)
-#   connect-src 'self'         — HTMX fetch/XHR requests to same origin only
-#   font-src    'self'         — no external font CDNs
-#   frame-src   'none'         — no iframes allowed
-#   object-src  'none'         — no plugins (Flash, Java, etc.)
-#   base-uri    'self'         — prevents <base> tag injection attacks
-#   form-action 'self'         — forms can only submit to same origin
+#   img-src     data:           — allows inline data-URI images (e.g. Chart.js)
+#   connect-src 'self'          — HTMX fetch/XHR requests to same origin only
+#   font-src    'self'          — no external font CDNs
+#   frame-src   'none'          — no iframes allowed
+#   object-src  'none'          — no plugins (Flash, Java, etc.)
+#   base-uri    'self'          — prevents <base> tag injection attacks
+#   form-action 'self'          — forms can only submit to same origin
 # ─────────────────────────────────────────────────────────────────────
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "https://unpkg.com", "https://cdn.jsdelivr.net", "'unsafe-inline'")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net")
-CSP_IMG_SRC = ("'self'", "data:")
-CSP_CONNECT_SRC = ("'self'",)
-CSP_FONT_SRC = ("'self'",)
-CSP_FRAME_SRC = ("'none'",)
-CSP_OBJECT_SRC = ("'none'",)
-CSP_BASE_URI = ("'self'",)
-CSP_FORM_ACTION = ("'self'",)
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "https://unpkg.com", "https://cdn.jsdelivr.net", NONCE],
+        "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+        "img-src": ["'self'", "data:"],
+        "connect-src": ["'self'"],
+        "font-src": ["'self'"],
+        "frame-src": ["'none'"],
+        "object-src": ["'none'"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"],
+    }
+}
 
 # Internationalization
 LANGUAGE_CODE = "en"
@@ -392,6 +398,17 @@ AZURE_REDIRECT_URI = os.environ.get("AZURE_REDIRECT_URI", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514")
 OPENROUTER_SITE_URL = os.environ.get("OPENROUTER_SITE_URL", "https://konote.app")
+
+# Participant-data insights provider (optional).
+# If unset, de-identified outcome insights fall back to OpenRouter.
+INSIGHTS_API_BASE = os.environ.get("INSIGHTS_API_BASE", "")
+INSIGHTS_API_KEY = os.environ.get("INSIGHTS_API_KEY", "")
+INSIGHTS_MODEL = os.environ.get("INSIGHTS_MODEL", "llama3")
+INSIGHTS_ALLOWED_HOSTS = [
+    host.strip().lower()
+    for host in os.environ.get("INSIGHTS_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
 # Logging — errors to stderr so they appear in Docker / container logs
 LOGGING = {

@@ -46,10 +46,10 @@
 {% if is_consortium_lead %}
 <div class="view-toggle">
     <fieldset role="group">
-        <button id="btn-network" class="outline" aria-pressed="true" onclick="toggleView('network')">
+        <button id="btn-network" class="outline" aria-pressed="true" data-call-function="toggleView" data-call-args='["network"]'>
             {% trans "Network View" %}
         </button>
-        <button id="btn-agency" class="outline secondary" aria-pressed="false" onclick="toggleView('agency')">
+        <button id="btn-agency" class="outline secondary" aria-pressed="false" data-call-function="toggleView" data-call-args='["agency"]'>
             {% trans "Agency View" %}
         </button>
     </fieldset>
@@ -178,7 +178,7 @@
 
 {% block extra_scripts %}
 {% if rollup %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 // Colourblind-safe palette — expert panel item #6
 const PALETTE = ['#0077BB','#33BBEE','#009988','#EE7733','#CC3311','#EE3377','#BBBBBB','#AA4499'];
 
@@ -272,3 +272,4 @@ function toggleView(view) {
 </script>
 {% endif %}
 {% endblock %}
+

@@ -351,7 +351,7 @@
     <!-- Chart.js — for analysis charts (loaded globally for HTMX compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <!-- Translated strings for app.js (I18N-4) -->
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     window.KN = {
         dismissMessage: "{% trans 'Dismiss message' %}",
         errorGeneric: "{% trans 'Something went wrong. Please try again.' %}",
@@ -393,7 +393,7 @@
     <script src="{% static 'js/followup-picker.js' %}"></script>
 
     <!-- Service worker — shows offline page when navigation fails (BUG-6) -->
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/sw.js", { scope: "/" })
             .catch(function() { /* Service worker not critical */ });
@@ -403,3 +403,4 @@
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
+

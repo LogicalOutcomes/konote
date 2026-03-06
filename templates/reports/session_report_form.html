@@ -110,7 +110,7 @@
     <button type="submit">{% trans "Generate Session Report" %}</button>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function() {
     var fiscalYearSelect = document.getElementById('id_fiscal_year');
     var customRange = document.getElementById('custom-date-range');
@@ -128,3 +128,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

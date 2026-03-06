@@ -81,7 +81,7 @@
 {% block extra_scripts %}
 {% if scoring_bands_json %}
 {{ scoring_bands_json|json_script:"scoring-bands-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var bandsData = JSON.parse(document.getElementById("scoring-bands-data").textContent);
     var bandDisplay = document.getElementById("severity-band-display");
@@ -140,3 +140,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

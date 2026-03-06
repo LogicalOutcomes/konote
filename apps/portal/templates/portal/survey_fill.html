@@ -117,7 +117,7 @@
                 <label>
                     <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
                            {% if opt.value|in_multi_value:saved_multi %}checked{% endif %}
-                           onchange="htmxSaveCheckboxGroup(this)"
+                           data-checkbox-autosave="true"
                            data-save-url="{% url 'portal:survey_autosave' assignment_id=assignment.pk %}"
                            data-question-id="{{ question.pk }}">
                     {% with fr=opt.label_fr %}{{ opt.label|bilingual:fr }}{% endwith %}
@@ -157,7 +157,7 @@
 
     <div class="survey-nav">
         {% if is_multi_page and page_num > 1 %}
-        <a href="?page={{ page_num|add:"-1" }}" class="outline" role="button">&larr; {% trans "Back" %}</a>
+        <a href="?page={{ page_num|add:"-1" }}" class="outline">&larr; {% trans "Back" %}</a>
         {% endif %}
 
         {% if is_multi_page and not is_last_page %}
@@ -190,7 +190,7 @@
 }
 </style>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 /* Auto-save for multiple_choice checkboxes — collects all checked values */
 function htmxSaveCheckboxGroup(el) {
     var name = el.name;
@@ -227,6 +227,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+document.addEventListener('change', function(event) {
+    if (event.target.matches('[data-checkbox-autosave]')) {
+        htmxSaveCheckboxGroup(event.target);
+    }
+});
 </script>
 {% endblock %}
+
 

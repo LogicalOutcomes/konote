@@ -29,11 +29,10 @@
                 <span class="badge badge-{{ match.confidence }}">{{ match.confidence }}</span>
             </span>
             {% if submission.status == "pending" %}
-            <form method="post" action="{% url 'registration:submission_merge' pk=submission.pk %}" style="margin: 0;">
+            <form method="post" action="{% url 'registration:submission_merge' pk=submission.pk %}" style="margin: 0;" data-confirm="{% trans 'Merge this registration with the existing client? The registrant will be enrolled in the program.' %}">
                 {% csrf_token %}
                 <input type="hidden" name="client_id" value="{{ match.client.pk }}">
-                <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
-                        onclick="return confirm('{% trans "Merge this registration with the existing client? The registrant will be enrolled in the program." %}')">
+                <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
                     {% trans "Merge" %}
                 </button>
             </form>
@@ -122,9 +121,9 @@
         {% if submission.status == "pending" %}
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <!-- Approve button -->
-            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}">
+            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}" data-confirm="{% trans 'Approve this registration and create a client record?' %}">
                 {% csrf_token %}
-                <button type="submit" onclick="return confirm('{% trans "Approve this registration and create a client record?" %}')">
+                <button type="submit">
                     {% trans "Approve" %}
                 </button>
             </form>
@@ -149,10 +148,10 @@
         {% elif submission.status == "waitlist" %}
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
             <!-- Approve from waitlist -->
-            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}">
+            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}" data-confirm="{% trans 'Approve this registration and create a client record?' %}">
                 {% csrf_token %}
                 <input type="hidden" name="from_waitlist" value="1">
-                <button type="submit" onclick="return confirm('{% trans "Approve this registration and create a client record?" %}')">
+                <button type="submit">
                     {% trans "Approve" %}
                 </button>
             </form>

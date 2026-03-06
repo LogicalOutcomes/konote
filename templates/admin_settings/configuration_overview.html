@@ -9,7 +9,7 @@
     <p>{% trans "Read-only summary of all active settings. Designed for printing." %}</p>
     <p>
         <a href="{% url 'admin_settings:dashboard' %}">← {% trans "Back to Settings" %}</a>
-        <button class="outline" onclick="window.print()" style="margin-left: 1rem;">{% trans "Print" %}</button>
+        <button type="button" class="outline" data-print-page="true" style="margin-left: 1rem;">{% trans "Print" %}</button>
     </p>
 </div>
 

@@ -201,7 +201,7 @@
         {% trans "Print this guide" %}
     </button>
 </div>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.getElementById("guide-print-btn").addEventListener("click", function() { window.print(); });
 </script>
 
@@ -281,3 +281,4 @@ document.getElementById("guide-print-btn").addEventListener("click", function() 
 
 </article>
 {% endblock %}
+

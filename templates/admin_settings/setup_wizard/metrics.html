@@ -9,8 +9,8 @@
     {% csrf_token %}
 
     <div style="margin-bottom: 1rem;">
-        <button type="button" class="outline" onclick="toggleAll(true)">{% trans "Select All" %}</button>
-        <button type="button" class="outline" onclick="toggleAll(false)">{% trans "Deselect All" %}</button>
+        <button type="button" class="outline" data-call-function="toggleAll" data-call-args='[true]'>{% trans "Select All" %}</button>
+        <button type="button" class="outline" data-call-function="toggleAll" data-call-args='[false]'>{% trans "Deselect All" %}</button>
     </div>
 
     <figure>
@@ -50,7 +50,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 function toggleAll(state) {
     var checkboxes = document.querySelectorAll("table input[type=checkbox]");
     for (var i = 0; i < checkboxes.length; i++) {
@@ -59,3 +59,4 @@ function toggleAll(state) {
 }
 </script>
 {% endblock %}
+

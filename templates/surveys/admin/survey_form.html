@@ -92,7 +92,7 @@
 </form>
 
 {% if editing %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     // Build base URL using Django's url tag with a dummy question_id=0, then strip
     // the trailing "/0/" so we can append the real question PK at runtime.
@@ -121,3 +121,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

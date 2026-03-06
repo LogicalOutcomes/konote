@@ -224,7 +224,7 @@
 </details>
 
 {% if form.report_template %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function() {
     var templateSelect = document.getElementById('id_report_template');
     if (!templateSelect) return;
@@ -246,3 +246,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endif %}
 {% endblock %}
+

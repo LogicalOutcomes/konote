@@ -38,9 +38,9 @@
 <article aria-label="{% trans 'Scheduled erasure notice' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
     <strong>{% trans "Scheduled for Permanent Erasure" %}</strong>
     <p>{% blocktrans with scheduled=er.scheduled_execution_at|date:"Y-m-d H:i" %}This participant's data is scheduled for permanent erasure on {{ scheduled }}. During this 24-hour safety window, any program manager or admin can cancel.{% endblocktrans %}</p>
-    <form method="post" action="{% url 'erasure_cancel_scheduled' pk=er.pk %}">
+    <form method="post" action="{% url 'erasure_cancel_scheduled' pk=er.pk %}" data-confirm="{% trans 'Cancel this scheduled erasure? The participant data will be preserved.' %}">
         {% csrf_token %}
-        <button type="submit" class="outline secondary" onclick="return confirm('{% trans "Cancel this scheduled erasure? The participant data will be preserved." %}')">{% trans "Cancel Scheduled Erasure" %}</button>
+        <button type="submit" class="outline secondary">{% trans "Cancel Scheduled Erasure" %}</button>
     </form>
 </article>
 {% endif %}
@@ -176,18 +176,18 @@
             {% if ps.approved %}
             <span class="badge badge-success" aria-label="{% trans 'Approved' %}">&#10003; {% trans "Approved" %}</span>
             {% elif ps.can_approve %}
-            <form method="post" action="{% url 'erasure_approve' pk=er.pk %}" style="display: inline;" aria-label="{% blocktrans with name=ps.name %}Approve erasure for {{ name }}{% endblocktrans %}">
+            <form method="post" action="{% url 'erasure_approve' pk=er.pk %}" style="display: inline;" aria-label="{% blocktrans with name=ps.name %}Approve erasure for {{ name }}{% endblocktrans %}" data-confirm="{% trans 'Are you sure you want to approve this erasure? This cannot be undone.' %}">
                 {% csrf_token %}
                 <input type="hidden" name="program_id" value="{{ ps.pk }}">
                 {{ approval_form.review_notes }}
-                <button type="submit" style="background-color: var(--kn-danger-fg); padding: 0.25rem 0.75rem; font-size: 0.875rem;" {% trans "Are you sure you want to approve this erasure? This cannot be undone." as approve_msg %}onclick="return confirm('{{ approve_msg|escapejs }}')">{% trans "Approve" %}</button>
+                <button type="submit" style="background-color: var(--kn-danger-fg); padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Approve" %}</button>
             </form>
             {% elif admin_can_approve %}
-            <form method="post" action="{% url 'erasure_approve' pk=er.pk %}" style="display: inline;" aria-label="{% blocktrans with name=ps.name %}Admin fallback approval for {{ name }}{% endblocktrans %}">
+            <form method="post" action="{% url 'erasure_approve' pk=er.pk %}" style="display: inline;" aria-label="{% blocktrans with name=ps.name %}Admin fallback approval for {{ name }}{% endblocktrans %}" data-confirm="{% trans 'Admin fallback: Are you sure? The requester is the only PM for this program.' %}">
                 {% csrf_token %}
                 <input type="hidden" name="program_id" value="{{ ps.pk }}">
                 {{ approval_form.review_notes }}
-                <button type="submit" class="outline" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" {% trans "Admin fallback: Are you sure? The requester is the only PM for this program." as admin_msg %}onclick="return confirm('{{ admin_msg|escapejs }}')">{% trans "Approve (Admin Fallback)" %}</button>
+                <button type="submit" class="outline" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Approve (Admin Fallback)" %}</button>
             </form>
             {% else %}
             <span class="badge badge-secondary">{% trans "Awaiting" %}</span>
@@ -203,21 +203,21 @@
     {# Reject button — expandable form #}
     <details style="flex: 1; min-width: 250px;">
         <summary role="button" class="outline secondary">{% trans "Reject Request" %}</summary>
-        <form method="post" action="{% url 'erasure_reject' pk=er.pk %}" style="margin-top: 0.5rem;" aria-label="{% trans 'Reject erasure request' %}">
+        <form method="post" action="{% url 'erasure_reject' pk=er.pk %}" style="margin-top: 0.5rem;" aria-label="{% trans 'Reject erasure request' %}" data-confirm="{% trans 'Are you sure you want to reject this erasure request?' %}">
             {% csrf_token %}
             <label for="id_reject_notes">{{ reject_form.review_notes.label }}</label>
             {{ reject_form.review_notes }}
             {% if reject_form.review_notes.help_text %}
             <small>{{ reject_form.review_notes.help_text }}</small>
             {% endif %}
-            <button type="submit" class="secondary" {% trans "Are you sure you want to reject this erasure request?" as reject_msg %}onclick="return confirm('{{ reject_msg|escapejs }}')">{% trans "Reject" %}</button>
+            <button type="submit" class="secondary">{% trans "Reject" %}</button>
         </form>
     </details>
 
     {# Cancel button — only for requester or PM #}
-    <form method="post" action="{% url 'erasure_cancel' pk=er.pk %}" style="display: inline;" aria-label="{% trans 'Cancel erasure request' %}">
+    <form method="post" action="{% url 'erasure_cancel' pk=er.pk %}" style="display: inline;" aria-label="{% trans 'Cancel erasure request' %}" data-confirm="{% trans 'Are you sure you want to cancel this erasure request?' %}">
         {% csrf_token %}
-        <button type="submit" class="outline secondary" {% trans "Are you sure you want to cancel this erasure request?" as cancel_msg %}onclick="return confirm('{{ cancel_msg|escapejs }}')">{% trans "Cancel Request" %}</button>
+        <button type="submit" class="outline secondary">{% trans "Cancel Request" %}</button>
     </form>
 </div>
 {% endif %}

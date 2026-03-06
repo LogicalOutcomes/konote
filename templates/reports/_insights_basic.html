@@ -464,7 +464,7 @@
 {# Chart.js for descriptor trend #}
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"descriptor-trend-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 {# Labels use escapejs to safely handle apostrophes in translated strings #}
 {% trans "Harder right now" as lbl_harder %}
 {% trans "Holding steady" as lbl_holding %}
@@ -555,7 +555,7 @@
 {# Chart.js for distribution trend charts #}
 {% if metric_trends_json %}
 {{ metric_trends_json|json_script:"metric-trends-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 {% trans "More support needed" as lbl_band_low %}
 {% trans "Goals within reach" as lbl_band_high %}
 (function() {
@@ -622,3 +622,4 @@
 })();
 </script>
 {% endif %}
+

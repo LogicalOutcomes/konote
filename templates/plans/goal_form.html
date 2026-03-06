@@ -370,7 +370,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     "use strict";
 
@@ -919,3 +919,4 @@
 })();
 </script>
 {% endblock %}
+

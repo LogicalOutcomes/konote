@@ -133,7 +133,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var cb = document.getElementById('show-advanced-cols');
     if (!cb) return;
@@ -146,3 +146,4 @@
 })();
 </script>
 {% endblock %}
+

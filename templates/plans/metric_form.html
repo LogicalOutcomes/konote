@@ -70,7 +70,7 @@
 {% include "plans/includes/metric_rationale.html" with metric=metric %}
 {% endif %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var metricTypeSelect = document.getElementById('id_metric_type');
     if (!metricTypeSelect) return;
@@ -95,3 +95,4 @@
 })();
 </script>
 {% endblock %}
+

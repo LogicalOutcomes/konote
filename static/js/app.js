@@ -7,6 +7,27 @@ function t(key, fallback) {
     return KN[key] || fallback;
 }
 
+function _knParseCallArgs(raw, el) {
+    if (!raw) return [];
+    try {
+        var parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(function (item) {
+            return item === "$el" ? el : item;
+        });
+    } catch (err) {
+        console.warn("Invalid data-call-args JSON", err);
+        return [];
+    }
+}
+
+function _knCallFunction(name, el, rawArgs) {
+    if (!name || typeof window[name] !== "function") return false;
+    var args = _knParseCallArgs(rawArgs, el);
+    window[name].apply(window, args);
+    return true;
+}
+
 // Enable script execution in HTMX 2.0 swapped content (needed for Chart.js in Analysis tab)
 // This must be set before any HTMX swaps occur
 htmx.config.allowScriptTags = true;
@@ -216,6 +237,14 @@ document.body.addEventListener("htmx:configRequest", function (event) {
                     : targetEl.textContent;
             }
         }
+        // 3. Read from the closest ancestor matching a selector
+        else if (btn.hasAttribute("data-clipboard-closest")) {
+            var closestSelector = btn.getAttribute("data-clipboard-closest");
+            var sourceEl = btn.closest(closestSelector);
+            if (sourceEl) {
+                textToCopy = sourceEl.innerText || sourceEl.textContent || "";
+            }
+        }
 
         if (!textToCopy) return;
 
@@ -240,6 +269,121 @@ document.body.addEventListener("htmx:configRequest", function (event) {
         }).catch(function (err) {
             console.error("Failed to copy: ", err);
         });
+    });
+})();
+
+// --- Generic delegated UI helpers for CSP-safe templates ---
+(function () {
+    document.addEventListener("click", function (event) {
+        var target = event.target.closest(
+            "[data-reload-page],[data-print-page],[data-select-on-click],[data-confirm],[data-call-function],[data-dismiss-closest],[data-set-value-target]"
+        );
+        if (!target) return;
+
+        if (target.hasAttribute("data-confirm")) {
+            var message = target.getAttribute("data-confirm") || "";
+            if (!window.confirm(message)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+        }
+
+        if (target.hasAttribute("data-reload-page")) {
+            event.preventDefault();
+            window.location.reload();
+            return;
+        }
+
+        if (target.hasAttribute("data-print-page")) {
+            event.preventDefault();
+            window.print();
+            return;
+        }
+
+        if (target.hasAttribute("data-select-on-click")) {
+            if (typeof target.select === "function") {
+                target.select();
+            }
+            return;
+        }
+
+        if (target.hasAttribute("data-dismiss-closest")) {
+            event.preventDefault();
+            var selector = target.getAttribute("data-dismiss-closest");
+            var mode = target.getAttribute("data-dismiss-mode") || "remove";
+            var dismissTarget = target.closest(selector);
+            if (dismissTarget) {
+                if (mode === "clear") dismissTarget.innerHTML = "";
+                else dismissTarget.remove();
+            }
+            return;
+        }
+
+        if (target.hasAttribute("data-call-function")) {
+            var prevent = target.getAttribute("data-prevent-default");
+            if (prevent !== "false") {
+                event.preventDefault();
+            }
+            _knCallFunction(
+                target.getAttribute("data-call-function"),
+                target,
+                target.getAttribute("data-call-args")
+            );
+            return;
+        }
+
+        if (target.hasAttribute("data-set-value-target")) {
+            var clickValueTargetSelector = target.getAttribute("data-set-value-target");
+            if (!clickValueTargetSelector.startsWith("#") && !clickValueTargetSelector.startsWith(".")) {
+                clickValueTargetSelector = "#" + clickValueTargetSelector;
+            }
+            var clickValueTarget = document.querySelector(clickValueTargetSelector);
+            if (clickValueTarget) {
+                clickValueTarget.value = target.getAttribute("data-set-value") || "";
+            }
+        }
+    });
+
+    document.addEventListener("change", function (event) {
+        var target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target.matches("[data-submit-on-change]")) {
+            if (target.form) target.form.submit();
+        }
+
+        if (target.matches("[data-toggle-display-target]")) {
+            var toggleTarget = document.getElementById(target.getAttribute("data-toggle-display-target"));
+            var expectedValue = target.getAttribute("data-toggle-display-value") || "";
+            if (toggleTarget) {
+                toggleTarget.style.display = target.value === expectedValue ? "" : "none";
+            }
+        }
+
+        if (target.matches("[data-set-value-target]")) {
+            var valueTarget = document.querySelector(target.getAttribute("data-set-value-target"));
+            if (valueTarget) {
+                valueTarget.value = target.value;
+            }
+        }
+
+        if (target.matches("[data-call-function-on-change]")) {
+            _knCallFunction(
+                target.getAttribute("data-call-function-on-change"),
+                target,
+                target.getAttribute("data-call-args")
+            );
+        }
+    });
+
+    document.addEventListener("submit", function (event) {
+        var form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        var message = form.getAttribute("data-confirm");
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+        }
     });
 })();
 

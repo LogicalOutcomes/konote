@@ -102,9 +102,9 @@
             <button
                 type="button"
                 id="copy-link-btn"
-                onclick="copyExportLink()"
                 style="max-width: 10rem;"
-                class="secondary"
+                class="secondary copy-btn"
+                data-clipboard-target="export-link"
             >
                 <span aria-hidden="true">&#x1F4CB;</span> {% trans "Copy Link" %}
             </button>
@@ -146,51 +146,5 @@
     <span aria-hidden="true">&larr;</span> {% trans "Generate Another Report" %}
 </a>
 
-<script>
-/**
- * Copy the secure download link to the clipboard.
- * Falls back to legacy execCommand for older browsers.
- */
-function copyExportLink() {
-    var linkInput = document.getElementById('export-link');
-    var feedback = document.getElementById('copy-feedback');
-    var btn = document.getElementById('copy-link-btn');
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(linkInput.value).then(function() {
-            showCopyFeedback(feedback, btn);
-        }, function() {
-            fallbackCopy(linkInput, feedback, btn);
-        });
-    } else {
-        fallbackCopy(linkInput, feedback, btn);
-    }
-}
-
-/**
- * Fallback copy method using select + execCommand.
- */
-function fallbackCopy(input, feedback, btn) {
-    input.select();
-    input.setSelectionRange(0, 99999);
-    try {
-        document.execCommand('copy');
-        showCopyFeedback(feedback, btn);
-    } catch (err) {
-        // If copy fails, the text is already selected so the user can copy manually
-    }
-}
-
-/**
- * Show a brief "copied" confirmation message.
- */
-function showCopyFeedback(feedback, btn) {
-    feedback.style.display = 'block';
-    btn.textContent = '\u2714 ' + '{% trans "Copied!" %}';
-    setTimeout(function() {
-        feedback.style.display = 'none';
-        btn.innerHTML = '<span aria-hidden="true">&#x1F4CB;</span> ' + '{% trans "Copy Link" %}';
-    }, 3000);
-}
-</script>
 {% endblock %}
+

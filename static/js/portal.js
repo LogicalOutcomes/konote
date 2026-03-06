@@ -30,6 +30,17 @@ function dismissBanner() {
     }
 }
 
+document.addEventListener('click', function(event) {
+    if (event.target.closest('[data-dismiss-banner]')) {
+        dismissBanner();
+        return;
+    }
+
+    if (event.target.closest('#quick-exit')) {
+        quickExit();
+    }
+});
+
 // Session timeout warning using native <dialog> element
 (function() {
     var WARN_AT = 25 * 60 * 1000;  // 25 minutes in ms
@@ -121,3 +132,12 @@ function dismissBanner() {
     // Start the timer
     window.resetSessionTimer();
 })();
+
+document.addEventListener('DOMContentLoaded', function() {
+    var stayButton = document.getElementById('timeout-stay-btn');
+    if (stayButton) {
+        stayButton.addEventListener('click', function() {
+            window.resetSessionTimer(true);
+        });
+    }
+});

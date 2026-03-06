@@ -41,9 +41,9 @@
             <td><a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|truncatechars:40 }}</a></td>
             <td>{{ resource.created_at|date:"N j, Y" }}</td>
             <td>
-                <form method="post" action="{% url 'clients:client_resource_deactivate' client_id=client_file.pk resource_id=resource.pk %}" style="display:inline">
+                <form method="post" action="{% url 'clients:client_resource_deactivate' client_id=client_file.pk resource_id=resource.pk %}" style="display:inline" data-confirm="{% trans 'Remove this resource?' %}">
                     {% csrf_token %}
-                    <button type="submit" class="secondary outline" onclick="return confirm('{% trans "Remove this resource?" %}')">{% trans "Remove" %}</button>
+                    <button type="submit" class="secondary outline">{% trans "Remove" %}</button>
                 </form>
             </td>
         </tr>

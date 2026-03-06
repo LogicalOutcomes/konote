@@ -121,7 +121,7 @@
     {% endif %}
 
 {{ chart_data|json_script:"chart-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 {# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 (function() {
     function initAnalysisCharts() {
@@ -200,3 +200,4 @@
      hx-swap="innerHTML"
      hx-indicator="#loading-bar">
 </div>
+

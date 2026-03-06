@@ -47,7 +47,7 @@
             {% csrf_token %}
             <button type="submit" class="outline">{% trans "Generate Login Link" %}</button>
         </form>
-        <form method="post" action="{% url 'clients:portal_revoke' client_id=client_file.pk %}" style="display: inline;" onsubmit="return confirm('{% trans "Are you sure you want to revoke portal access? The participant will be logged out immediately." %}');">
+        <form method="post" action="{% url 'clients:portal_revoke' client_id=client_file.pk %}" style="display: inline;" data-confirm="{% trans 'Are you sure you want to revoke portal access? The participant will be logged out immediately.' %}">
             {% csrf_token %}
             <button type="submit" class="outline" style="color: var(--pico-del-color); border-color: var(--pico-del-color);">{% trans "Revoke Access" %}</button>
         </form>

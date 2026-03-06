@@ -32,7 +32,7 @@
     </form>
 </article>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 // Hide program selection when "admin" role is chosen
 document.addEventListener("DOMContentLoaded", function() {
     var roleSelect = document.getElementById("id_role");
@@ -45,3 +45,4 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
+

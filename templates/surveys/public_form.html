@@ -144,7 +144,7 @@
 </form>
 
 </main>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function() {
     /* --- Conditional section visibility --- */
     var conditionals = document.querySelectorAll('[data-condition-question]');
@@ -305,3 +305,4 @@ if (window.parent !== window) {
 </script>
 </body>
 </html>
+

@@ -31,6 +31,30 @@ def is_ai_available():
     return bool(getattr(settings, "OPENROUTER_API_KEY", ""))
 
 
+def _insights_host_is_allowed(hostname, allowed_hosts):
+    """Return True when the insights host matches the configured allowlist."""
+    if not hostname:
+        return False
+
+    hostname = hostname.lower().rstrip(".")
+    for entry in allowed_hosts:
+        candidate = entry.lower().strip().rstrip(".")
+        if not candidate:
+            continue
+        if candidate.startswith("*."):
+            suffix = candidate[1:]
+            if hostname.endswith(suffix):
+                return True
+            continue
+        if candidate.startswith("."):
+            if hostname.endswith(candidate):
+                return True
+            continue
+        if hostname == candidate:
+            return True
+    return False
+
+
 def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages=None):
     """
     Low-level POST to OpenRouter.  Returns the response text, or None on
@@ -419,11 +443,31 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         model = getattr(settings, "INSIGHTS_MODEL", "llama3")
         url = f"{insights_base.rstrip('/')}/chat/completions"
         parsed = urlparse(url)
-        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
-            logger.warning(
-                "INSIGHTS_API_BASE uses HTTP for remote host %s; de-identified data will transit unencrypted. Use HTTPS for production deployments.",
-                parsed.hostname,
+        hostname = (parsed.hostname or "").lower()
+        is_local = hostname in ("localhost", "127.0.0.1", "::1")
+
+        if parsed.scheme not in ("http", "https"):
+            logger.error(
+                "INSIGHTS_API_BASE must use http or https, got scheme %s",
+                parsed.scheme or "<missing>",
             )
+            return None
+
+        if parsed.scheme == "http" and not is_local:
+            logger.error(
+                "INSIGHTS_API_BASE must use HTTPS for remote host %s.",
+                hostname or "<missing>",
+            )
+            return None
+
+        allowed_hosts = getattr(settings, "INSIGHTS_ALLOWED_HOSTS", [])
+        if allowed_hosts and not is_local and not _insights_host_is_allowed(hostname, allowed_hosts):
+            logger.error(
+                "INSIGHTS_API_BASE host %s is not in INSIGHTS_ALLOWED_HOSTS.",
+                hostname or "<missing>",
+            )
+            return None
+
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"

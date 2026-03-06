@@ -114,7 +114,7 @@
 {# Chart.js for client descriptor trend #}
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"client-trend-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 {# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 {# Labels use escapejs to safely handle apostrophes in translated strings #}
 {% trans "Harder right now" as lbl_harder %}
@@ -155,3 +155,4 @@
 })();
 </script>
 {% endif %}
+

@@ -40,7 +40,7 @@
 </form>
 
 </main>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 /* Report height to parent for iframe embed resizing */
 if (window.parent !== window) {
     new ResizeObserver(function() {
@@ -53,3 +53,4 @@ if (window.parent !== window) {
 </script>
 </body>
 </html>
+

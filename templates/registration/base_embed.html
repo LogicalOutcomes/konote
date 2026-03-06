@@ -109,7 +109,7 @@
     <script src="{% static 'js/app.js' %}"></script>
 
     <!-- Auto-resize: tell parent page our height so iframe has no scrollbar -->
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     (function() {
         function reportHeight() {
             var height = document.documentElement.scrollHeight;
@@ -131,3 +131,4 @@
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
+

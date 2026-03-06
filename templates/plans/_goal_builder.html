@@ -59,8 +59,9 @@
 
             {# Section selection #}
             <label for="gb-section">{{ term.section|default:"Section" }}</label>
-            <select id="gb-section" name="section_id"
-                    onchange="document.getElementById('gb-new-section-row').style.display = this.value === '' ? 'block' : 'none';">
+                <select id="gb-section" name="section_id"
+                    data-toggle-display-target="gb-new-section-row"
+                    data-toggle-display-value="">
                 {% for s in sections %}
                 <option value="{{ s.pk }}" {% if draft.suggested_section == s.name %}selected{% endif %}>{{ s.name }}</option>
                 {% endfor %}

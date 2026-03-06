@@ -4,11 +4,12 @@
     <p class="secondary" style="font-size: 0.875rem;">
         <strong>{% trans "Cannot send reminder" %}:</strong> {{ reason }}
     </p>
-    <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+        <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
             hx-get="{% url 'communications:send_reminder_preview' client_id=client.pk event_id=meeting.event_id %}"
             hx-target="#send-reminder-{{ meeting.pk }}"
             hx-swap="innerHTML"
-            onclick="this.parentElement.innerHTML = '';">
+            data-dismiss-closest=".send-reminder-preview"
+            data-dismiss-mode="clear">
         {% trans "Dismiss" %}
     </button>
 {% else %}
@@ -39,8 +40,9 @@
             <button type="submit" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
                 {% trans "Send Reminder" %}
             </button>
-            <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
-                    onclick="this.closest('.send-reminder-preview').innerHTML = '';">
+                <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+                    data-dismiss-closest=".send-reminder-preview"
+                    data-dismiss-mode="clear">
                 {% trans "Cancel" %}
             </button>
         </div>
