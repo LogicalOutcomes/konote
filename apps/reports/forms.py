@@ -139,7 +139,7 @@ class ProgramSelectionMixin:
         if cleaned.get("program") is None and cleaned.get("format") == "pdf":
             self.add_error(
                 "format",
-                _("PDF export is not available for All Programs. Please select CSV."),
+                _("PDF export is not available for All Programs. Please select CSV or HTML."),
             )
 
 
@@ -270,6 +270,7 @@ class MetricExportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
     FORMAT_CHOICES = [
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
+        ("html", _("HTML (shareable web page)")),
     ]
 
     format = forms.ChoiceField(
@@ -398,6 +399,7 @@ class FunderReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
     FORMAT_CHOICES = [
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
+        ("html", _("HTML (shareable web page)")),
     ]
 
     format = forms.ChoiceField(
@@ -897,6 +899,7 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
     FORMAT_CHOICES = [
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
+        ("html", _("HTML (shareable web page)")),
     ]
 
     format = forms.ChoiceField(

@@ -15,6 +15,7 @@ from apps.auth_app.models import User
 from apps.auth_app.decorators import program_role_required
 from apps.programs.models import Program, UserProgramRole
 from apps.groups.models import Group
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -43,7 +44,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
         UserProgramRole.objects.create(
             user=self.user,
             program=self.program_a,
-            role="receptionist",
+            role=ROLE_RECEPTIONIST,
             status="active",
         )
 
@@ -51,7 +52,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
         UserProgramRole.objects.create(
             user=self.user,
             program=self.program_b,
-            role="staff",
+            role=ROLE_STAFF,
             status="active",
         )
 
@@ -72,7 +73,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
     def test_allows_access_when_user_has_required_role_in_program(self):
         """User with staff role in Program B can access Program B resource."""
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -86,7 +87,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
     def test_denies_access_when_user_lacks_required_role_in_program(self):
         """User with receptionist role in Program A cannot access staff-only resource in Program A."""
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -106,7 +107,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
             group_type="activity",
         )
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -125,7 +126,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
         This is the security hole that program_role_required fixes.
         """
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -140,7 +141,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
     def test_attaches_user_program_role_to_request(self):
         """Decorator attaches the user's role in this program to request object."""
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse(f"Role: {request.user_program_role}")
 
@@ -157,7 +158,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
         def bad_program_getter(request, group_id):
             raise ValueError("Cannot determine program")
 
-        @program_role_required("staff", bad_program_getter)
+        @program_role_required(ROLE_STAFF, bad_program_getter)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -171,7 +172,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
     def test_role_hierarchy_receptionist_less_than_staff(self):
         """Receptionist role is lower rank than staff."""
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -185,7 +186,7 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
     def test_role_hierarchy_staff_meets_staff_requirement(self):
         """Staff role meets staff requirement."""
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 
@@ -198,9 +199,9 @@ class ProgramRoleRequiredDecoratorTest(TestCase):
 
     def test_role_hierarchy_program_manager_exceeds_staff_requirement(self):
         """Program manager role exceeds staff requirement."""
-        UserProgramRole.objects.filter(user=self.user, program=self.program_a).update(role="program_manager")
+        UserProgramRole.objects.filter(user=self.user, program=self.program_a).update(role=ROLE_PROGRAM_MANAGER)
 
-        @program_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
+        @program_role_required(ROLE_STAFF, lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
         def test_view(request, group_id):
             return HttpResponse("OK")
 

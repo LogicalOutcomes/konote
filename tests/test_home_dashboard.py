@@ -7,6 +7,12 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Alert
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 User = get_user_model()
 
@@ -28,10 +34,10 @@ class HomeDashboardPermissionsTest(TestCase):
 
         # Assign roles
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program, role="receptionist"
+            user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff"
+            user=self.staff, program=self.program, role=ROLE_STAFF
         )
 
         # Create a client
@@ -147,7 +153,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             username="pm", password="testpass123", is_demo=False
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
         # Executive user — executive on program A
@@ -155,7 +161,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             username="exec", password="testpass123", is_demo=False
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
         # Executive-only user — executive on program B, no other roles
@@ -163,7 +169,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             username="exec_only", password="testpass123", is_demo=False
         )
         UserProgramRole.objects.create(
-            user=self.exec_only_user, program=self.program_b, role="executive"
+            user=self.exec_only_user, program=self.program_b, role=ROLE_EXECUTIVE
         )
 
         # Staff user
@@ -171,7 +177,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             username="staff2", password="testpass123", is_demo=False
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
 
         # Receptionist user
@@ -179,7 +185,7 @@ class HomeDashboardRoleBasedTest(TestCase):
             username="frontdesk2", password="testpass123", is_demo=False
         )
         UserProgramRole.objects.create(
-            user=self.receptionist_user, program=self.program_a, role="receptionist"
+            user=self.receptionist_user, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
         # Create a client enrolled in program A

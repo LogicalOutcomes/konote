@@ -9,6 +9,7 @@ from apps.admin_settings.models import InstanceSetting
 from apps.auth_app.models import AccessGrant, AccessGrantReason, User
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -131,7 +132,7 @@ class GatedDecoratorTest(TestCase):
         )
         self.program = Program.objects.create(name="Test Program")
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager",
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.reason = _create_reason()
 
@@ -286,7 +287,7 @@ class GatedDecoratorTest(TestCase):
             username="staff_user", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=staff, program=self.program, role="staff",
+            user=staff, program=self.program, role=ROLE_STAFF,
         )
         self.http_client.login(username="staff_user", password="testpass123")
 
@@ -317,7 +318,7 @@ class AccessGrantFormTest(TestCase):
         )
         self.program = Program.objects.create(name="Test Program")
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager",
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.reason = _create_reason()
         _setup_tier3()
@@ -412,7 +413,7 @@ class AccessGrantListViewTest(TestCase):
         )
         self.program = Program.objects.create(name="Test Program")
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager",
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.reason = _create_reason()
 
@@ -515,7 +516,7 @@ class AccessGrantAdminViewTest(TestCase):
     def test_non_admin_cannot_access_admin_views(self):
         """Non-admin users get 403 on admin grant views."""
         UserProgramRole.objects.create(
-            user=self.pm, program=self.program, role="program_manager",
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get("/admin/settings/access-grants/")

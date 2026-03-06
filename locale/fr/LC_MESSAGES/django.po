@@ -743,6 +743,11 @@ msgstr ""
 msgid "None"
 msgstr "Aucun"
 
+#: templates/plans/_target.html
+#, python-format
+msgid "No %(metrics)s assigned"
+msgstr "Aucune %(metrics)s attribuée"
+
 msgid "History"
 msgstr "Historique"
 
@@ -3503,6 +3508,77 @@ msgstr ""
 "d'inactivité. Reconnectez-vous pour continuer. Votre travail non enregistré "
 "pourrait être perdu."
 
+#: templates/pages/help.html — Groups, Projects, and Circles section
+msgid "Groups, Projects, and Circles"
+msgstr "Groupes, projets et cercles"
+
+msgid "KoNote gives you three ways to work with multiple people:"
+msgstr "KoNote vous offre trois façons de travailler avec plusieurs personnes :"
+
+msgid "Use when"
+msgstr "À utiliser quand"
+
+msgid "Examples"
+msgstr "Exemples"
+
+msgid "You'll track"
+msgstr "Vous suivrez"
+
+msgid "How to create"
+msgstr "Comment créer"
+
+msgid "You meet regularly as a group"
+msgstr "Vous vous réunissez régulièrement en groupe"
+
+msgid "You're working toward a goal with a deadline"
+msgstr "Vous travaillez vers un objectif avec une échéance"
+
+msgid "People are connected by family or caregiving"
+msgstr "Les personnes sont liées par la famille ou les soins"
+
+msgid "Parenting class, peer support group, drop-in program"
+msgstr "Cours de parentalité, groupe de soutien par les pairs, programme sans rendez-vous"
+
+msgid "Community garden, fundraiser, advocacy campaign"
+msgstr "Jardin communautaire, collecte de fonds, campagne de plaidoyer"
+
+msgid "The Garcia family, a child's care team"
+msgstr "La famille Garcia, l'équipe de soins d'un enfant"
+
+msgid "Attendance, session notes, individual highlights"
+msgstr "Présence, notes de séance, faits saillants individuels"
+
+msgid "Milestones, deadlines, outcomes with evidence"
+msgstr "Jalons, échéances, résultats avec preuves"
+
+msgid "Relationships and who to contact first"
+msgstr "Relations et qui contacter en premier"
+
+msgid "%(groups)s → Add → choose \"A recurring group\""
+msgstr "%(groups)s → Ajouter → choisir « Un groupe récurrent »"
+
+msgid "%(groups)s → Add → choose \"A project\""
+msgstr "%(groups)s → Ajouter → choisir « Un projet »"
+
+msgid "%(circles)s → New %(circle)s"
+msgstr "%(circles)s → Nouveau %(circle)s"
+
+msgid "Still not sure?"
+msgstr "Vous hésitez encore?"
+
+msgid "<em>\"Do we meet as a group?\"</em> → Create a Group"
+msgstr "<em>« Est-ce qu'on se réunit en groupe? »</em> → Créer un groupe"
+
+msgid "<em>\"Are we working toward a specific result?\"</em> → Create a Project"
+msgstr "<em>« Est-ce qu'on travaille vers un résultat précis? »</em> → Créer un projet"
+
+msgid ""
+"<em>\"Are these people connected to each other outside our agency?\"</em> → "
+"Create a %(circle)s"
+msgstr ""
+"<em>« Est-ce que ces personnes sont liées entre elles en dehors de notre "
+"organisme? »</em> → Créer un %(circle)s"
+
 #: templates/pages/help.html — Getting More Help and Quick Reference
 msgid "Getting More Help"
 msgstr "Obtenir plus d'aide"
@@ -3747,14 +3823,29 @@ msgid "Project"
 msgstr "Projet"
 
 # groups/group_form.html — Group type selection
-msgid "What type of group is this?"
-msgstr "Quel type de groupe est-ce?"
+msgid "What are you setting up?"
+msgstr "Que souhaitez-vous créer?"
 
-msgid "Attendance tracking and session notes."
-msgstr "Suivi de présence et notes de séance."
+msgid "A recurring group"
+msgstr "Un groupe récurrent"
 
-msgid "Milestones, outcomes, and deadlines."
-msgstr "Jalons, résultats et échéances."
+msgid "For regular meetings — like a support group, workshop series, or drop-in program. You'll track attendance and record what happens each session."
+msgstr "Pour des rencontres régulières — comme un groupe de soutien, une série d'ateliers ou un programme sans rendez-vous. Vous ferez le suivi de la présence et noterez ce qui se passe à chaque séance."
+
+msgid "A project"
+msgstr "Un projet"
+
+msgid "For goal-oriented work with a deadline — like a community event, fundraiser, or advocacy initiative. You'll track milestones and progress toward outcomes."
+msgstr "Pour un travail axé sur un objectif avec une échéance — comme un événement communautaire, une collecte de fonds ou une initiative de plaidoyer. Vous ferez le suivi des jalons et des progrès vers les résultats."
+
+msgid "Tracking a family or care team?"
+msgstr "Vous suivez une famille ou une équipe de soins?"
+
+msgid "instead — for people connected by relationships, not a shared activity."
+msgstr "plutôt — pour des personnes liées par des relations, pas par une activité commune."
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Member"
 msgstr "Membre"
@@ -3833,6 +3924,11 @@ msgstr "Plus difficile en ce moment"
 msgid "Holding steady"
 msgstr "Se maintient"
 
+#: apps/portal/templates/portal/progress.html — trend indicator (pgettext)
+msgctxt "progress trend"
+msgid "Holding steady"
+msgstr "Stable"
+
 msgid "Something's shifting"
 msgstr "Quelque chose bouge"
 
@@ -3853,8 +3949,8 @@ msgstr "Données du participant"
 msgid "Metric Report"
 msgstr "Rapport de mesures"
 
-msgid "Funder Report"
-msgstr "Rapport pour bailleur de fonds"
+msgid "Standard Report"
+msgstr "Rapport standard"
 
 msgid "%(name)s added."
 msgstr "%(name)s ajouté(e)."
@@ -4816,6 +4912,9 @@ msgstr "En retard — Date limite de 30 jours LPRPDE"
 msgid "PDF (printable report)"
 msgstr "PDF (rapport imprimable)"
 
+msgid "HTML (shareable web page)"
+msgstr "HTML (page web partageable)"
+
 msgid "PDF generation is not available on this server."
 msgstr "La génération de PDF n'est pas disponible sur ce serveur."
 
@@ -5484,6 +5583,13 @@ msgid "Your PDF report is ready to download."
 msgstr "Votre rapport PDF est prêt à télécharger."
 
 msgid ""
+"Your HTML report is ready to download. You can open it in any web browser or"
+" share it directly."
+msgstr ""
+"Votre rapport HTML est prêt à télécharger. Vous pouvez l'ouvrir dans "
+"n'importe quel navigateur web ou le partager directement."
+
+msgid ""
 "Your CSV file is ready to download. You can open it in Excel or Google "
 "Sheets."
 msgstr ""
@@ -5492,6 +5598,9 @@ msgstr ""
 
 msgid "Download PDF Report"
 msgstr "Télécharger le rapport PDF"
+
+msgid "Download HTML Report"
+msgstr "Télécharger le rapport HTML"
 
 msgid "Download CSV File"
 msgstr "Télécharger le fichier CSV"
@@ -6657,6 +6766,27 @@ msgstr "Taux de réussite global"
 
 msgid "Overall Summary"
 msgstr "Résumé général"
+
+msgid "Overall achievement rate"
+msgstr "Taux de réussite global"
+
+msgid "Contents"
+msgstr "Table des matières"
+
+msgid "Report sections"
+msgstr "Sections du rapport"
+
+msgid "Increased"
+msgstr "En hausse"
+
+msgid "Decreased"
+msgstr "En baisse"
+
+msgid "from"
+msgstr "par rapport à"
+
+msgid "previous period"
+msgstr "la période précédente"
 
 msgid "PLAN SECTIONS & TARGETS"
 msgstr "SECTIONS DU PLAN ET CIBLES"
@@ -14439,6 +14569,18 @@ msgstr "%(count)d objectif(s) mis à jour"
 msgid "Dismiss for today"
 msgstr "Masquer pour aujourd'hui"
 
+msgid "Hide"
+msgstr "Masquer"
+
+msgid "Hide until tomorrow"
+msgstr "Masquer jusqu'à demain"
+
+msgid "Hiding an alert removes it from your view until tomorrow. It does not resolve the alert."
+msgstr "Masquer une alerte la retire de votre affichage jusqu'à demain. Cela ne résout pas l'alerte."
+
+msgid "Hiding an item removes it from your view until tomorrow. It does not resolve it."
+msgstr "Masquer un élément le retire de votre affichage jusqu'à demain. Cela ne le résout pas."
+
 msgid "Heads up:"
 msgstr "Attention :"
 
@@ -14498,8 +14640,20 @@ msgstr "(total)"
 msgid "All Participants"
 msgstr "Tous les participants"
 
-msgid "All metrics with data will be included."
-msgstr "Tous les indicateurs avec des données seront inclus."
+msgid "This report includes all recorded outcomes for each program."
+msgstr "Ce rapport inclut tous les résultats enregistrés pour chaque programme."
+
+msgid "Metrics are shown per program — only outcomes with data in the selected period will appear."
+msgstr "Les indicateurs sont affichés par programme — seuls les résultats avec des données dans la période sélectionnée apparaîtront."
+
+msgid "No specific metrics have been configured for this template."
+msgstr "Aucun indicateur spécifique n'a été configuré pour ce modèle."
+
+msgid "All outcomes with recorded data will be included by default."
+msgstr "Tous les résultats avec des données enregistrées seront inclus par défaut."
+
+msgid "To specify which metrics appear, ask your administrator to edit this template."
+msgstr "Pour préciser quels indicateurs apparaissent, demandez à votre administrateur de modifier ce modèle."
 
 msgid "Chart visualisation is not yet available in PDF reports."
 msgstr ""
@@ -15732,6 +15886,9 @@ msgstr ""
 
 msgid "Generated by"
 msgstr "Généré par"
+
+msgid "Generated by KoNote"
+msgstr "Généré par KoNote"
 
 msgid "How the session was delivered."
 msgstr "Comment la séance a été effectuée."
@@ -17657,6 +17814,9 @@ msgstr "Votre rapport CSV est prêt à télécharger."
 msgid "Your PDF report is ready for download."
 msgstr "Votre rapport PDF est prêt à télécharger."
 
+msgid "Your HTML report is ready for download."
+msgstr "Votre rapport HTML est prêt à télécharger."
+
 msgid ""
 "e.g., Q1 debt figures include a large legal settlement for one participant. "
 "This is accurate, not a data entry error."
@@ -19287,4 +19447,174 @@ msgstr "À la création"
 
 msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
+
+#: apps/portal/templates/portal/progress.html — progress page redesign
+msgid "Moving up"
+msgstr "En hausse"
+
+msgid "Moving down"
+msgstr "En baisse"
+
+msgid "Scale"
+msgstr "Échelle"
+
+msgid "data table"
+msgstr "tableau de données"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Score"
+msgstr "Score"
+
+#: apps/portal/templates/portal/message_to_worker.html
+msgid "To:"
+msgstr "À :"
+
+#: templates/clients/_client_list_sections.html (role-based grouped view)
+msgid "Your caseload"
+msgstr "Votre charge de travail"
+
+msgid "Programs you manage"
+msgstr "Programmes que vous gérez"
+
+#, python-format
+msgid ""
+"Your caseload — %(programs)s (%(total)s)"
+msgstr ""
+"Votre charge de travail — %(programs)s (%(total)s)"
+
+#, python-format
+msgid ""
+"Programs you manage — %(programs)s (%(total)s)"
+msgstr ""
+"Programmes que vous gérez — %(programs)s (%(total)s)"
+
+#, python-format
+msgid "Staff in %(staff)s \u00b7 Manager for %(pm)s"
+msgstr "Personnel pour %(staff)s \u00b7 Gestionnaire pour %(pm)s"
+
+msgid "No participants in your caseload match the current filters."
+msgstr "Aucun participant de votre charge de travail ne correspond aux filtres sélectionnés."
+
+msgid "No participants in managed programs match the current filters."
+msgstr "Aucun participant des programmes que vous gérez ne correspond aux filtres sélectionnés."
+
+msgid "Select all in caseload"
+msgstr "Tout sélectionner dans la charge de travail"
+
+msgid "Select all in managed programs"
+msgstr "Tout sélectionner dans les programmes gérés"
+
+#. blocktrans from reports/html_report.html and html_report_all_programs.html
+#, python-format
+msgid "%(achieved)s of %(measured)s"
+msgstr "%(achieved)s sur %(measured)s"
+
+#, python-format
+msgid "Data reflects client outcomes recorded during the %(period)s reporting period."
+msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(period)s."
+
+#, python-format
+msgid "Data reflects client outcomes recorded during the %(fy)s reporting period."
+msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(fy)s."
+
+#, python-format
+msgid "Includes data from %(count)s program(s)."
+msgstr "Comprend les données de %(count)s programme(s)."
+
+msgid "PDF export is not available for All Programs. Please select CSV or HTML."
+msgstr "L’exportation PDF n’est pas disponible pour Tous les programmes. Veuillez sélectionner CSV ou HTML."
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Suggestion content is not shown for programs with fewer than 15 participants to protect privacy. Suggestion count and priority are shown below."
+msgstr "Le contenu des suggestions n’est pas affiché pour les programmes de moins de 15 participants afin de protéger la vie privée. Le nombre et la priorité des suggestions sont indiqués ci-dessous."
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Content not shown for small programs"
+msgstr "Contenu non affiché pour les petits programmes"
+
+#: templates/notes/suggestions/_linked_list.html
+msgid "Remove suggestion"
+msgstr "Retirer la suggestion"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Ask a Question"
+msgstr "Poser une question"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Search suggestions for a specific topic"
+msgstr "Rechercher des suggestions sur un sujet précis"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "e.g., Are there any themes about scheduling or opening hours?"
+msgstr "p. ex., Y a-t-il des thèmes liés aux horaires ou aux heures d’ouverture?"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Analyse"
+msgstr "Analyser"
+
+#: templates/notes/suggestions/theme_list.html
+msgid "Analysing..."
+msgstr "Analyse en cours..."
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Analysis Results"
+msgstr "Résultats de l’analyse"
+
+#, python-format
+msgid "%(relevant)s of %(total)s suggestions relate to this topic"
+msgstr "%(relevant)s des %(total)s suggestions concernent ce sujet"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Sub-themes"
+msgstr "Sous-thèmes"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Suggested theme:"
+msgstr "Thème suggéré :"
+
+#: templates/notes/suggestions/_focused_results.html
+msgid "Create Theme from This"
+msgstr "Créer un thème à partir de ceci"
+
+#: apps/notes/suggestion_views.py
+msgid "AI participant data features are not enabled."
+msgstr "Les fonctionnalités IA pour les données des participants ne sont pas activées."
+
+#: apps/notes/suggestion_views.py
+msgid "Please enter a question (max 500 characters)."
+msgstr "Veuillez saisir une question (max. 500 caractères)."
+
+#, python-format
+msgid "This program has %(count)d participants. A minimum of 5 is required for AI analysis."
+msgstr "Ce programme compte %(count)d participants. Un minimum de 5 est requis pour l’analyse par IA."
+
+#: apps/notes/suggestion_views.py
+msgid "Rate limit reached (10 per hour). Please try again later."
+msgstr "Limite atteinte (10 par heure). Veuillez réessayer plus tard."
+
+#: apps/notes/suggestion_views.py
+msgid "No suggestions found for this program."
+msgstr "Aucune suggestion trouvée pour ce programme."
+
+#: apps/notes/suggestion_views.py
+msgid "AI analysis could not be completed. Please try again."
+msgstr "L’analyse par IA n’a pu être complétée. Veuillez réessayer."
+
+#: templates/admin_settings/features.html
+msgid "AI Processing"
+msgstr "Traitement IA"
+
+#: templates/admin_settings/features.html
+msgid "AI requests are sent to <strong>OpenRouter</strong> (external API) using model: <code>%(model)s</code>."
+msgstr "Les demandes d’IA sont envoyées à <strong>OpenRouter</strong> (API externe) en utilisant le modèle : <code>%(model)s</code>."
+
+#: templates/admin_settings/features.html
+msgid "Data sent depends on which AI features are enabled below. Tools-only AI sends program metadata only (no personal information). Participant-data AI sends de-identified quotes."
+msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-dessous. L’IA outils uniquement envoie seulement les métadonnées du programme (aucune information personnelle). L’IA données des participants envoie des citations dé-identifiées."
+
+#: templates/admin_settings/features.html
+msgid "No AI API key is configured. AI features are unavailable even if enabled below."
+msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
 

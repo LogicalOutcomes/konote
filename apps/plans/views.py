@@ -17,6 +17,7 @@ from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required, program_role_required, requires_permission
+from apps.auth_app.constants import ALL_PROGRAM_ROLES, ROLE_PROGRAM_MANAGER
 from apps.auth_app.permissions import DENY, can_access
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
@@ -95,7 +96,7 @@ def _can_edit_plan(user, client_file):
         status="active",
     ).exclude(
         role__in=[
-            r for r in ["receptionist", "staff", "program_manager", "executive"]
+            r for r in ALL_PROGRAM_ROLES
             if can_access(r, "plan.edit") == DENY
         ]
     ).exists()
@@ -811,7 +812,7 @@ def _get_pm_program_ids_for_metrics(user):
     """Return set of program IDs where the user is an active PM."""
     return set(
         UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active",
+            user=user, role=ROLE_PROGRAM_MANAGER, status="active",
         ).values_list("program_id", flat=True)
     )
 

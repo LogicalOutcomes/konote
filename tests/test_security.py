@@ -19,6 +19,7 @@ from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -186,10 +187,10 @@ class RBACBypassTest(TestCase):
 
         # Assign users to programs
         UserProgramRole.objects.create(
-            user=self.user_a, program=self.program_a, role="staff"
+            user=self.user_a, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.user_b, program=self.program_b, role="staff"
+            user=self.user_b, program=self.program_b, role=ROLE_STAFF
         )
 
         # Create client in Program A only
@@ -276,7 +277,7 @@ class AuditCoverageTest(TestCase):
             username="auditor", password="testpass123", display_name="Auditor"
         )
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff"
+            user=self.user, program=self.program, role=ROLE_STAFF
         )
 
         # Create a client

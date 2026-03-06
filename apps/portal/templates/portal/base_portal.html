@@ -142,7 +142,8 @@
     <!-- Session timeout warning -->
     {% include "portal/_session_timeout_warning.html" %}
 
-    <!-- Portal JavaScript -->
+    <!-- Shared DOM helper + Portal JavaScript -->
+    <script src="{% static 'js/dom-helper.js' %}"></script>
     <script src="{% static 'js/portal.js' %}"></script>
 
     {% block extra_scripts %}{% endblock %}

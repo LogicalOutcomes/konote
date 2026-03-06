@@ -14,6 +14,7 @@ from apps.clients.models import ClientFile
 from apps.events.models import Event, Meeting
 from apps.programs.access import get_author_program, get_client_or_403, get_program_from_client
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 from apps.auth_app.decorators import requires_permission, requires_permission_global
 
 from django.db import models as db_models
@@ -331,7 +332,7 @@ def leave_message(request, client_id):
 
     staff_user_ids = UserProgramRole.objects.filter(
         program_id__in=shared_program_ids,
-        role__in=["staff", "program_manager"],
+        role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER],
         status="active",
     ).values_list("user_id", flat=True).distinct()
 

@@ -19,6 +19,12 @@ from apps.clients.models import ClientAccessBlock, ClientFile, ClientProgramEnro
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -184,7 +190,7 @@ class CircleViewPermissionTest(TestCase):
         FeatureToggle.objects.update_or_create(
             feature_key="circles", defaults={"is_enabled": False},
         )
-        staff = self._make_user("staff1", "staff")
+        staff = self._make_user("staff1", ROLE_STAFF)
         self.http.login(username="staff1", password="testpass123")
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 404)
@@ -192,7 +198,7 @@ class CircleViewPermissionTest(TestCase):
     def test_feature_toggle_on_staff_can_list(self):
         """Staff with circle.view can access the list."""
         _enable_circles()
-        staff = self._make_user("staff1", "staff")
+        staff = self._make_user("staff1", ROLE_STAFF)
         self.http.login(username="staff1", password="testpass123")
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 200)
@@ -200,7 +206,7 @@ class CircleViewPermissionTest(TestCase):
     def test_receptionist_denied(self):
         """Receptionists should be denied access (circle.view = DENY)."""
         _enable_circles()
-        receptionist = self._make_user("rec1", "receptionist")
+        receptionist = self._make_user("rec1", ROLE_RECEPTIONIST)
         self.http.login(username="rec1", password="testpass123")
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 403)
@@ -208,7 +214,7 @@ class CircleViewPermissionTest(TestCase):
     def test_executive_denied(self):
         """Executives should be denied access (circle.view = DENY)."""
         _enable_circles()
-        executive = self._make_user("exec1", "executive")
+        executive = self._make_user("exec1", ROLE_EXECUTIVE)
         self.http.login(username="exec1", password="testpass123")
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 403)
@@ -216,7 +222,7 @@ class CircleViewPermissionTest(TestCase):
     def test_program_manager_can_access(self):
         """Program managers should have full access."""
         _enable_circles()
-        pm = self._make_user("pm1", "program_manager")
+        pm = self._make_user("pm1", ROLE_PROGRAM_MANAGER)
         self.http.login(username="pm1", password="testpass123")
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 200)
@@ -235,7 +241,7 @@ class CircleCRUDTest(TestCase):
             username="staff1", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff",
+            user=self.staff, program=self.program, role=ROLE_STAFF,
         )
         # Create a client enrolled in the program
         self.client_file = ClientFile(is_demo=False)
@@ -361,7 +367,7 @@ class CirclePrivacyTest(TestCase):
             username="staff1", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program1, role="staff",
+            user=self.staff, program=self.program1, role=ROLE_STAFF,
         )
         # Client A in program1 (accessible)
         self.client_a = ClientFile(is_demo=False)
@@ -500,7 +506,7 @@ class CircleIntakeTest(TestCase):
             username="staff1", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff",
+            user=self.staff, program=self.program, role=ROLE_STAFF,
         )
         # Pre-existing circle
         self.circle = Circle(is_demo=False, created_by=self.staff)
@@ -594,7 +600,7 @@ class CircleNoteFormTest(TestCase):
             username="staff1", password="testpass123",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff",
+            user=self.staff, program=self.program, role=ROLE_STAFF,
         )
         self.client_file = ClientFile(is_demo=False)
         self.client_file.first_name = "Jane"

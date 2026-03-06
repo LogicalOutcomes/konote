@@ -37,7 +37,7 @@ The executive does NOT choose a program. The template already knows its programs
 **Form fields (in order):**
 1. **Which report?** — dropdown of available templates, labelled by partner + report name (e.g., "United Way — Quarterly Outcome Report", "Board of Directors — Annual Report"). Only shows templates linked to programs the user can access.
 2. **Which period?** — dropdown populated from template's `period_type` and `period_alignment` (e.g., "Q3 FY2025-26"). Raw date inputs only for `period_type=custom`.
-3. **Export format** — CSV/PDF, constrained by `template.output_format` if not "mixed". Hidden if template only supports one format.
+3. **Export format** — CSV/PDF/HTML, constrained by `template.output_format` if not "mixed". Hidden if template only supports one format.
 4. **Recipient details** — who and why (audit requirement).
 5. **Generate** button.
 
@@ -139,6 +139,16 @@ Structured by `ReportSection` (ordered by `sort_order`):
 - `narrative`: Placeholder for agency notes ("[To be added during review]")
 - `chart`: Trend visualisation over last 4 periods
 - `demographic_summary`: Demographic breakdown tables
+
+### HTML output (all paths)
+
+**Added March 2026.** HTML is the third export format alongside CSV and PDF. It produces a self-contained `.html` file that can be opened in any browser, emailed, or shared with funders who don't have PDF viewers or spreadsheet software.
+
+**How it works:** The PDF pipeline already renders HTML via Django templates → WeasyPrint. HTML export uses the same templates but skips the WeasyPrint conversion step, returning the styled HTML directly. The default template (`reports/html_report.html`) is responsive, has inline CSS, and includes print styles.
+
+**Per-partner custom templates:** `ReportTemplate.html_template_name` (optional CharField) allows a custom Django template path for specific partners. When blank, the default template is used. When set (e.g., `reports/html_united_way.html`), that template receives the same context as the PDF and can apply partner-specific branding, layout, or styling. This allows funders with specific visual requirements to get reports that match their brand without affecting other partners.
+
+**Anti-pattern:** Do not create HTML templates that require JavaScript or external resources. HTML exports must be fully self-contained (inline CSS, embedded chart images as data URIs) so they work when opened from a local file or attached to an email.
 
 ### Ad-hoc CSV output
 

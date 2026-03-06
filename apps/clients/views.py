@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
@@ -253,18 +254,33 @@ def client_list(request):
 
     clients = _get_accessible_clients(request.user, active_program_ids=search_active_ids)
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
-    user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
-
-    # Compute program IDs where user can edit plans.
-    # Uses PERMISSIONS.keys() so any future roles are automatically included.
-    plan_edit_program_ids = set(
-        UserProgramRole.objects.filter(user=request.user, status="active")
-        .exclude(role__in=[
-            r for r in PERMISSIONS.keys()
-            if can_access(r, "plan.edit") == DENY
-        ])
-        .values_list("program_id", flat=True)
+    # Single query for user's program roles — used for plan-edit check,
+    # role-based grouping, and user_program_ids.  Respects CONF9 active
+    # program context so the section split collapses when the user narrows
+    # to one program.
+    _role_filter = {"user": request.user, "status": "active"}
+    if active_ids:
+        _role_filter["program_id__in"] = active_ids
+    _user_roles = list(
+        UserProgramRole.objects.filter(**_role_filter)
+        .select_related("program")
     )
+    user_program_ids = {upr.program_id for upr in _user_roles}
+
+    # Derive plan-edit programs from the role query (replaces separate query).
+    _plan_edit_deny_roles = {
+        r for r in PERMISSIONS.keys() if can_access(r, "plan.edit") == DENY
+    }
+    plan_edit_program_ids = {
+        upr.program_id for upr in _user_roles
+        if upr.role not in _plan_edit_deny_roles
+    }
+
+    # Role-to-program mappings for grouped display.
+    staff_programs = [upr.program for upr in _user_roles if upr.role == ROLE_STAFF]
+    pm_programs = [upr.program for upr in _user_roles if upr.role == ROLE_PROGRAM_MANAGER]
+    staff_program_ids = {p.pk for p in staff_programs}
+    has_mixed_roles = bool(staff_program_ids) and bool(pm_programs)
 
     # Get filter values from query params
     status_filter = request.GET.get("status", "")
@@ -337,19 +353,16 @@ def client_list(request):
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])
 
-    # Sort by name or last contact
+    # Sort helper — reused for both single and split lists
     if sort_by == "last_contact":
         from datetime import datetime as dt
         epoch = dt(2000, 1, 1, 0, 0)
         min_dt = timezone.make_aware(epoch) if timezone.is_aware(timezone.now()) else epoch
-        client_data.sort(
-            key=lambda c: c["last_contact"] or min_dt,
-            reverse=True,
-        )
+        _sort_fn = lambda c: c["last_contact"] or min_dt  # noqa: E731
+        _sort_reverse = True
     else:
-        client_data.sort(key=lambda c: c["name"].lower())
-    paginator = Paginator(client_data, 25)
-    page = paginator.get_page(request.GET.get("page"))
+        _sort_fn = lambda c: c["name"].lower()  # noqa: E731
+        _sort_reverse = False
 
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
@@ -359,8 +372,9 @@ def client_list(request):
     can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
     show_bulk = can_bulk_status or can_bulk_transfer
 
+    # Base context shared by both single and split views
     context = {
-        "page": page,
+        "has_mixed_roles": has_mixed_roles,
         "accessible_programs": accessible_programs,
         "status_filter": status_filter,
         "program_filter": program_filter,
@@ -374,8 +388,53 @@ def client_list(request):
         "can_bulk_transfer": can_bulk_transfer,
     }
 
-    # HTMX request — return only the table partial
+    # Build section-specific context
+    if has_mixed_roles:
+        # Split participants: caseload (staff programs) vs oversight (PM programs).
+        # A participant in BOTH a staff and PM program goes to caseload only.
+        caseload_data = []
+        oversight_data = []
+        for item in client_data:
+            if any(p.pk in staff_program_ids for p in item["programs"]):
+                caseload_data.append(item)
+            else:
+                oversight_data.append(item)
+
+        # Sort each section independently
+        caseload_data.sort(key=_sort_fn, reverse=_sort_reverse)
+        oversight_data.sort(key=_sort_fn, reverse=_sort_reverse)
+
+        # Caseload: show all (typically small). Oversight: paginate at 25.
+        oversight_paginator = Paginator(oversight_data, 25)
+        oversight_page = oversight_paginator.get_page(request.GET.get("page"))
+
+        # Role subtitle: "Staff in X · Manager for Y"
+        staff_label = ", ".join(
+            p.translated_name for p in sorted(staff_programs, key=lambda p: p.name)
+        )
+        pm_label = ", ".join(
+            p.translated_name for p in sorted(pm_programs, key=lambda p: p.name)
+        )
+        context.update({
+            "caseload_data": caseload_data,
+            "oversight_page": oversight_page,
+            "staff_program_label": staff_label,
+            "pm_program_label": pm_label,
+            "role_subtitle": _("Staff in %(staff)s \u00b7 Manager for %(pm)s") % {
+                "staff": staff_label, "pm": pm_label,
+            },
+            "page": None,
+        })
+    else:
+        # Single-role user: keep existing flat list with pagination
+        client_data.sort(key=_sort_fn, reverse=_sort_reverse)
+        paginator = Paginator(client_data, 25)
+        context["page"] = paginator.get_page(request.GET.get("page"))
+
+    # HTMX request — return only the appropriate partial
     if request.headers.get("HX-Request"):
+        if has_mixed_roles:
+            return render(request, "clients/_client_list_sections.html", context)
         return render(request, "clients/_client_list_table.html", context)
 
     return render(request, "clients/list.html", context)
@@ -389,7 +448,7 @@ def _get_create_field_defs(user):
         show_on_create=True,
     ).select_related("group").order_by("group__sort_order", "sort_order")
     user_role = getattr(user, "_program_role", None) or _get_user_highest_role(user)
-    if user_role == "receptionist":
+    if user_role == ROLE_RECEPTIONIST:
         qs = qs.filter(front_desk_access="edit")
     return list(qs)
 
@@ -1040,7 +1099,7 @@ def client_detail(request, client_id):
     request.session["recent_clients"] = recent[:10]
 
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
 
     # Only show enrolments in programs the user has access to.
     # Prevents leaking confidential program names.
@@ -1075,7 +1134,7 @@ def client_detail(request, client_id):
         client_file=client, status="pending",
     ).exists()
 
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     # Circles sidebar (only when feature toggle is on and user is not front desk)
     client_circles = []
@@ -1122,7 +1181,7 @@ def client_detail(request, client_id):
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
     effective_role = user_role or _get_user_highest_role(request.user)
-    visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
+    visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields(ROLE_RECEPTIONIST)
 
     # Compute effective sharing state for the note sharing toggle (QA-R7-PRIVACY2).
     # Binary: ON if field is "consent", or "default" with agency toggle on.
@@ -1221,7 +1280,7 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
     of their front_desk_access setting. Fail closed: if is_dv_safe cannot be
     read, assume True for receptionists.
     """
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
     # DV-safe: determine whether to hide DV-sensitive fields from front desk
     dv_hide = False
     if is_receptionist:
@@ -1335,7 +1394,7 @@ def client_save_custom_fields(request, client_id):
         return redirect("clients:client_detail", client_id=client.pk)
 
     user_role = getattr(request, "user_program_role", None)
-    is_receptionist = user_role == "receptionist"
+    is_receptionist = user_role == ROLE_RECEPTIONIST
 
     if request.method == "POST":
         groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
@@ -1424,7 +1483,7 @@ def client_consent_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
     return render(request, "clients/_consent_display.html", {
         "client": client,
         "is_pm_or_admin": is_pm_or_admin,
@@ -1466,7 +1525,7 @@ def client_consent_save(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         form = ConsentRecordForm(request.POST)
@@ -1556,7 +1615,7 @@ def client_consent_withdraw_form(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if not client.consent_given_at:
         messages.info(request, _("No active consent to withdraw."))
@@ -1588,7 +1647,7 @@ def client_consent_withdraw(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
 
     if request.method != "POST":
         return redirect("clients:client_detail", client_id=client.pk)

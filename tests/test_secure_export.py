@@ -177,9 +177,9 @@ class SecureExportLinkModelTest(TestCase):
 
     def test_str_representation(self):
         """__str__ should include export type and status."""
-        link = _create_link(self.admin, self.export_dir, export_type="funder_report")
+        link = _create_link(self.admin, self.export_dir, export_type="standard_report")
         result = str(link)
-        self.assertIn("funder_report", result)
+        self.assertIn("standard_report", result)
         self.assertIn("Active", result)
 
 

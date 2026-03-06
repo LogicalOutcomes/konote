@@ -21,6 +21,7 @@ from apps.reports.session_report import generate_session_report
 from apps.reports.session_csv import generate_session_report_csv
 
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -114,7 +115,7 @@ class SessionReportAggregationTest(TestCase):
         enc_module._fernet = None
         self.user = User.objects.create_user(username="pm", password="pass")
         self.program = Program.objects.create(name="Coaching Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.user, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.user, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
         # Create two clients
         self.client_a = ClientFile()
@@ -412,18 +413,18 @@ class SessionReportPermissionTest(TestCase):
 
         # Program manager (should have access)
         self.pm = User.objects.create_user(username="pm", password="pass")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
         # Admin (should have access)
         self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
 
         # Executive (aggregate-only, should NOT have access)
         self.exec_user = User.objects.create_user(username="exec", password="pass")
-        UserProgramRole.objects.create(user=self.exec_user, program=self.program, role="executive")
+        UserProgramRole.objects.create(user=self.exec_user, program=self.program, role=ROLE_EXECUTIVE)
 
         # Staff (should NOT have access — no report.program_report permission)
         self.staff = User.objects.create_user(username="staff", password="pass")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF)
 
     def tearDown(self):
         enc_module._fernet = None
@@ -472,8 +473,8 @@ class SessionReportCrossProgramTest(TestCase):
         # Two programs
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#EF4444")
-        UserProgramRole.objects.create(user=self.user, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.user, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.user, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.user, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
 
         # Client enrolled in program A only
         self.client_a = ClientFile()
@@ -540,7 +541,7 @@ class SessionReportAuditLogTest(TestCase):
         self.http = HttpClient()
         self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
         self.pm = User.objects.create_user(username="pm", password="pass")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"

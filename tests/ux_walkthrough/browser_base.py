@@ -24,6 +24,12 @@ import konote.encryption as enc_module
 
 from .checker import Severity, UxIssue
 from .conftest import get_report
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 # Lazy import — lets the module load even if Playwright isn't installed
 # (tests skip gracefully via pytest.importorskip in test_browser.py)
@@ -212,22 +218,22 @@ class BrowserTestBase(StaticLiveServerTestCase):
         # Role assignments
         UserProgramRole.objects.create(
             user=self.receptionist_user, program=self.program_a,
-            role="receptionist",
+            role=ROLE_RECEPTIONIST,
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff",
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF,
         )
         UserProgramRole.objects.create(
             user=self.manager_user, program=self.program_a,
-            role="program_manager",
+            role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
             user=self.executive_user, program=self.program_a,
-            role="executive",
+            role=ROLE_EXECUTIVE,
         )
         UserProgramRole.objects.create(
             user=self.executive_user, program=self.program_b,
-            role="executive",
+            role=ROLE_EXECUTIVE,
         )
 
         # Clients

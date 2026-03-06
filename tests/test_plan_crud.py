@@ -16,6 +16,7 @@ from apps.plans.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -51,13 +52,13 @@ class PlanCRUDBaseTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.manager, program=self.program, role="program_manager", status="active"
+            user=self.manager, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.counsellor, program=self.program, role="staff", status="active"
+            user=self.counsellor, program=self.program, role=ROLE_STAFF, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.other_manager, program=self.other_program, role="program_manager", status="active"
+            user=self.other_manager, program=self.other_program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
 
         # Client enrolled in program

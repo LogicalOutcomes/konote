@@ -32,6 +32,7 @@ from apps.notes.models import ProgressNote
 from apps.plans.models import PlanSection
 from apps.programs.models import Program, UserProgramRole
 from konote import encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 
 
 @override_settings(FIELD_ENCRYPTION_KEY="ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=")
@@ -216,9 +217,9 @@ class MultiProgramApprovalTests(TestCase):
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6", status="active")
 
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role="staff")
-        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -292,8 +293,8 @@ class RejectionTests(TestCase):
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6", status="active")
 
-        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -340,7 +341,7 @@ class ExecuteErasureTests(TestCase):
         self.pm = User.objects.create_user(username="pm", password="testpass123")
 
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Jane"
@@ -453,7 +454,7 @@ class DeadlockTests(TestCase):
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
 
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -479,7 +480,7 @@ class DeadlockTests(TestCase):
 
     def test_not_deadlocked_when_other_pm_exists(self):
         other_pm = User.objects.create_user(username="other_pm", password="testpass123")
-        UserProgramRole.objects.create(user=other_pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=other_pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
         self.assertFalse(is_deadlocked(self.er))
 
     def test_admin_can_approve_in_deadlock(self):
@@ -491,7 +492,7 @@ class DeadlockTests(TestCase):
 
     def test_requester_cannot_self_approve_without_deadlock(self):
         other_pm = User.objects.create_user(username="other_pm", password="testpass123")
-        UserProgramRole.objects.create(user=other_pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=other_pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
         with self.assertRaises(ValueError):
             record_approval(self.er, self.pm, self.prog, "127.0.0.1")
 
@@ -511,9 +512,9 @@ class ErasureViewPermissionTests(TestCase):
 
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
 
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role=ROLE_RECEPTIONIST)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -573,8 +574,8 @@ class ErasureViewWorkflowTests(TestCase):
 
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
 
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -658,7 +659,7 @@ class ErasureViewWorkflowTests(TestCase):
 
         # Create a second PM so the first PM isn't approving their own request
         pm2 = User.objects.create_user(username="pm2", password="testpass123")
-        UserProgramRole.objects.create(user=pm2, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=pm2, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.client.login(username="pm", password="testpass123")
         self.client.post(f"/participants/{self.cf.pk}/erase/", {
@@ -687,7 +688,7 @@ class ErasureViewWorkflowTests(TestCase):
     def test_approve_anonymise_via_post(self, mock_notify):
         """Anonymise tier: approval anonymises but keeps client record."""
         pm2 = User.objects.create_user(username="pm2", password="testpass123")
-        UserProgramRole.objects.create(user=pm2, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=pm2, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.client.login(username="pm", password="testpass123")
         self.client.post(f"/participants/{self.cf.pk}/erase/", {
@@ -809,7 +810,7 @@ class ErasureViewWorkflowTests(TestCase):
     def test_cancel_by_unrelated_staff_forbidden(self):
         other_staff = User.objects.create_user(username="other_staff", password="testpass123")
         other_prog = Program.objects.create(name="Other Prog", colour_hex="#000000", status="active")
-        UserProgramRole.objects.create(user=other_staff, program=other_prog, role="staff")
+        UserProgramRole.objects.create(user=other_staff, program=other_prog, role=ROLE_STAFF)
 
         er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -844,10 +845,10 @@ class ErasureViewWorkflowTests(TestCase):
 
     def test_requester_cannot_approve_own_request(self):
         # Upgrade staff's existing role to PM for this test
-        UserProgramRole.objects.filter(user=self.staff, program=self.prog).update(role="program_manager")
+        UserProgramRole.objects.filter(user=self.staff, program=self.prog).update(role=ROLE_PROGRAM_MANAGER)
         # Also add another PM so it's not deadlocked
         other_pm = User.objects.create_user(username="other_pm", password="testpass123")
-        UserProgramRole.objects.create(user=other_pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=other_pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -874,7 +875,7 @@ class ErasureViewWorkflowTests(TestCase):
         """PM not involved in the request's programs cannot download the PDF receipt."""
         other_pm = User.objects.create_user(username="other_pm", password="testpass123")
         other_prog = Program.objects.create(name="Other Prog", colour_hex="#000000", status="active")
-        UserProgramRole.objects.create(user=other_pm, program=other_prog, role="program_manager")
+        UserProgramRole.objects.create(user=other_pm, program=other_prog, role=ROLE_PROGRAM_MANAGER)
 
         er = ErasureRequest.objects.create(
             client_file=self.cf,
@@ -963,8 +964,8 @@ class DemoDataSeparationTests(TestCase):
         self.real_staff = User.objects.create_user(username="real_staff", password="testpass123", is_demo=False)
 
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.demo_staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.real_staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.demo_staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.real_staff, program=self.prog, role=ROLE_STAFF)
 
         self.demo_client = ClientFile(is_demo=True)
         self.demo_client.first_name = "Demo"
@@ -1009,9 +1010,9 @@ class ContextProcessorTests(TestCase):
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6", status="active")
 
-        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role="program_manager")
-        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role="program_manager")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role="staff")
+        UserProgramRole.objects.create(user=self.pm_a, program=self.prog_a, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.pm_b, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role=ROLE_STAFF)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -1088,7 +1089,7 @@ class StuckRequestTests(TestCase):
         enc_module._fernet = None
         self.staff = User.objects.create_user(username="staff", password="testpass123")
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -1170,7 +1171,7 @@ class Tier1AnonymiseTests(TestCase):
         self.staff = User.objects.create_user(username="staff", password="testpass123")
         self.pm = User.objects.create_user(username="pm", password="testpass123")
         self.prog = Program.objects.create(name="Program A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER)
 
         self.cf = ClientFile()
         self.cf.first_name = "Jane"
@@ -1429,7 +1430,7 @@ class EmailNotificationWarningTests(TestCase):
             username="pm", password="testpass123", email="pm@example.com",
         )
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981", status="active")
-        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role=ROLE_PROGRAM_MANAGER, status="active")
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -1484,7 +1485,7 @@ class EmailNotificationWarningTests(TestCase):
         self.admin.save()
         UserProgramRole.objects.create(
             user=self.admin, program=self.prog,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         resp = self.client.post(
             f"/participants/{self.cf.pk}/erase/",
@@ -1523,8 +1524,8 @@ class SQLFilteredVisibilityTests(TestCase):
         self.prog_a = Program.objects.create(name="Prog A", colour_hex="#10B981", status="active")
         self.prog_b = Program.objects.create(name="Prog B", colour_hex="#3B82F6", status="active")
 
-        UserProgramRole.objects.create(user=self.pm1, program=self.prog_a, role="program_manager", status="active")
-        UserProgramRole.objects.create(user=self.pm2, program=self.prog_b, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=self.pm1, program=self.prog_a, role=ROLE_PROGRAM_MANAGER, status="active")
+        UserProgramRole.objects.create(user=self.pm2, program=self.prog_b, role=ROLE_PROGRAM_MANAGER, status="active")
 
         self.cf = ClientFile()
         self.cf.first_name = "Test"
@@ -1584,7 +1585,7 @@ class PIPEDAAgingTests(TestCase):
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981", status="active")
         UserProgramRole.objects.create(
             user=self.admin, program=self.prog,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.cf = ClientFile()
         self.cf.first_name = "Test"

@@ -10,6 +10,7 @@ from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_RECEPTIONIST, ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -40,9 +41,9 @@ class Error403ResponseTest(TestCase):
         self.program_b = Program.objects.create(name="Program B")
 
         # Assign users to programs
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program_a, role="receptionist")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program_a, role="staff")
-        UserProgramRole.objects.create(user=self.other_staff, program=self.program_b, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program_a, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.other_staff, program=self.program_b, role=ROLE_STAFF)
 
         # Create client in Program A only
         self.client_file = ClientFile.objects.create()
@@ -102,7 +103,7 @@ class FormValidationErrorTest(TestCase):
             username="staff", password="testpass123", display_name="Staff"
         )
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
         # Create client for testing
         self.client_file = ClientFile.objects.create()
@@ -155,7 +156,7 @@ class HTMXPartialResponseTest(TestCase):
             username="staff", password="testpass123", display_name="Staff"
         )
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
         self.client_file = ClientFile.objects.create()
         self.client_file.first_name = "Test"
@@ -237,8 +238,8 @@ class CustomFieldEditHTMXTest(TestCase):
         )
 
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
 
         self.client_file = ClientFile.objects.create()
         self.client_file.first_name = "Test"
@@ -315,7 +316,7 @@ class AdminRouteErrorTest(TestCase):
             username="staff", password="testpass123", display_name="Staff"
         )
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
     def tearDown(self):
         enc_module._fernet = None

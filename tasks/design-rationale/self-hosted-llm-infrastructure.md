@@ -793,3 +793,19 @@ The [OVHcloud DRR](ovhcloud-deployment.md) lists this as an anti-pattern for hig
 - [ ] Confirm VPS-4 sizing is appropriate for expected workload — deferred to deployment, will be confirmed via testing
 - [ ] Review whether survey analysis outputs need the same privacy controls as KoNote insights — deferred to deployment assessment
 - [ ] Choose subdomain on logicaloutcomes.net — use a non-obvious, hard-to-guess subdomain (not `llm.`). Decided during deployment.
+
+---
+
+## Graduated Privacy Threshold (Added 2026-03-05, AI-FOCUSED-THEME1)
+
+The N=5 privacy threshold for AI theme processing **only applies when `INSIGHTS_API_BASE` is configured** (self-hosted LLM). If an agency routes through OpenRouter (no `INSIGHTS_API_BASE`), the N=15 threshold still applies.
+
+| Participant Count | Self-hosted (`INSIGHTS_API_BASE` set) | External (OpenRouter) |
+|---|---|---|
+| < 5 | No AI theme processing | No AI theme processing |
+| 5–14 | AI processing allowed; verbatim text suppressed in UI | No AI theme processing |
+| 15+ | Full processing + verbatim display | Full processing + verbatim display |
+
+**Rationale:** Self-hosted processing keeps de-identified data within Canadian infrastructure, reducing re-identification risk enough to lower the threshold from 15 to 5. The verbatim text suppression for 5–14 provides an additional privacy layer.
+
+**Deployment note:** This threshold difference must be documented in ops deployment instructions. Agencies expecting the N=5 threshold must have `INSIGHTS_API_BASE` configured.

@@ -9,6 +9,7 @@ from django.utils import timezone
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.communications.models import Communication
 from apps.notes.models import ProgressNote, ProgressNoteTemplate
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
@@ -25,21 +26,21 @@ class TeamMeetingViewPermissionTests(TestCase):
 
     def test_pm_can_access(self):
         pm = User.objects.create_user(username="pm", password="pass")
-        UserProgramRole.objects.create(user=pm, program=self.program, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active")
         self.test_client.login(username="pm", password="pass")
         response = self.test_client.get(reverse("reports:team_meeting_view"))
         self.assertEqual(response.status_code, 200)
 
     def test_staff_cannot_access(self):
         staff = User.objects.create_user(username="staff", password="pass")
-        UserProgramRole.objects.create(user=staff, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=staff, program=self.program, role=ROLE_STAFF, status="active")
         self.test_client.login(username="staff", password="pass")
         response = self.test_client.get(reverse("reports:team_meeting_view"))
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_cannot_access(self):
         recep = User.objects.create_user(username="recep", password="pass")
-        UserProgramRole.objects.create(user=recep, program=self.program, role="receptionist", status="active")
+        UserProgramRole.objects.create(user=recep, program=self.program, role=ROLE_RECEPTIONIST, status="active")
         self.test_client.login(username="recep", password="pass")
         response = self.test_client.get(reverse("reports:team_meeting_view"))
         self.assertEqual(response.status_code, 403)
@@ -48,7 +49,7 @@ class TeamMeetingViewPermissionTests(TestCase):
         admin = User.objects.create_user(username="admin", password="pass")
         admin.is_admin = True
         admin.save()
-        UserProgramRole.objects.create(user=admin, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=admin, program=self.program, role=ROLE_STAFF, status="active")
         self.test_client.login(username="admin", password="pass")
         response = self.test_client.get(reverse("reports:team_meeting_view"))
         self.assertEqual(response.status_code, 200)
@@ -62,13 +63,13 @@ class TeamMeetingViewContentTests(TestCase):
     def setUp(self):
         self.program = Program.objects.create(name="Youth Services")
         self.pm = User.objects.create_user(username="pm", password="pass", display_name="Program Manager")
-        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active")
 
         self.staff1 = User.objects.create_user(username="staff1", password="pass", display_name="Alice Smith")
-        UserProgramRole.objects.create(user=self.staff1, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff1, program=self.program, role=ROLE_STAFF, status="active")
 
         self.staff2 = User.objects.create_user(username="staff2", password="pass", display_name="Bob Jones")
-        UserProgramRole.objects.create(user=self.staff2, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff2, program=self.program, role=ROLE_STAFF, status="active")
 
         self.client_file = ClientFile.objects.create(first_name="Test", last_name="Client")
         ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.program, status="active")
@@ -161,9 +162,9 @@ class TeamMeetingViewContentTests(TestCase):
         """Program filter limits to selected program."""
         other_program = Program.objects.create(name="Other Program")
         other_staff = User.objects.create_user(username="other", password="pass", display_name="Other Staff")
-        UserProgramRole.objects.create(user=other_staff, program=other_program, role="staff", status="active")
+        UserProgramRole.objects.create(user=other_staff, program=other_program, role=ROLE_STAFF, status="active")
         # PM also has access to other program
-        UserProgramRole.objects.create(user=self.pm, program=other_program, role="program_manager", status="active")
+        UserProgramRole.objects.create(user=self.pm, program=other_program, role=ROLE_PROGRAM_MANAGER, status="active")
 
         # Filter to main program only
         response = self.test_client.get(

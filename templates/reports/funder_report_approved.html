@@ -7,7 +7,7 @@
 <nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
         <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
-        <li><a href="{% url 'reports:funder_report' %}">{% trans "Funder Report" %}</a></li>
+        <li><a href="{% url 'reports:funder_report' %}">{% trans "Standard Report" %}</a></li>
         <li aria-current="page">{% trans "Approved" %}</li>
     </ul>
 </nav>
@@ -44,6 +44,8 @@
     <p>
         {% if is_pdf %}
         {% trans "Your PDF report is ready for download." %}
+        {% elif is_html %}
+        {% trans "Your HTML report is ready for download." %}
         {% else %}
         {% trans "Your CSV report is ready for download." %}
         {% endif %}

@@ -24,6 +24,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import SecureExportLink
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -46,7 +47,7 @@ class IndividualClientExportTestBase(TestCase):
             username="pm_user", password="testpass123", display_name="PM User"
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager"
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
 
         # Staff user — does NOT have report.data_extract permission
@@ -54,7 +55,7 @@ class IndividualClientExportTestBase(TestCase):
             username="staff_user", password="testpass123", display_name="Staff User"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff"
+            user=self.staff_user, program=self.program, role=ROLE_STAFF
         )
 
         # Client

@@ -12,6 +12,7 @@ from apps.clients.models import (
     FieldAccessConfig,
 )
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -90,38 +91,38 @@ class GetVisibleFieldsTest(TestCase):
 
     def test_receptionist_sees_always_visible_fields(self):
         """Receptionist always sees identity fields regardless of config."""
-        visible = self.cf.get_visible_fields("receptionist")
+        visible = self.cf.get_visible_fields(ROLE_RECEPTIONIST)
         for field in FieldAccessConfig.ALWAYS_VISIBLE:
             self.assertTrue(visible.get(field), f"{field} should be visible")
 
     def test_receptionist_sees_phone_by_default(self):
         """Receptionist sees phone (safe default is 'edit')."""
-        visible = self.cf.get_visible_fields("receptionist")
+        visible = self.cf.get_visible_fields(ROLE_RECEPTIONIST)
         self.assertTrue(visible.get("phone"))
         self.assertTrue(visible.get("phone_editable"))
 
     def test_receptionist_birth_date_hidden_by_default(self):
         """Receptionist cannot see birth_date by default (safe default is 'none')."""
-        visible = self.cf.get_visible_fields("receptionist")
+        visible = self.cf.get_visible_fields(ROLE_RECEPTIONIST)
         self.assertFalse(visible.get("birth_date"))
 
     def test_receptionist_sees_birth_date_when_configured(self):
         """Receptionist sees birth_date when config is set to 'view'."""
         FieldAccessConfig.objects.create(field_name="birth_date", front_desk_access="view")
-        visible = self.cf.get_visible_fields("receptionist")
+        visible = self.cf.get_visible_fields(ROLE_RECEPTIONIST)
         self.assertTrue(visible.get("birth_date"))
         self.assertFalse(visible.get("birth_date_editable"))
 
     def test_staff_sees_all_fields(self):
         """Staff role sees all fields as visible and editable."""
-        visible = self.cf.get_visible_fields("staff")
+        visible = self.cf.get_visible_fields(ROLE_STAFF)
         for field in ("first_name", "last_name", "phone", "email"):
             self.assertTrue(visible.get(field), f"{field} should be visible for staff")
             self.assertTrue(visible.get(f"{field}_editable"), f"{field} should be editable for staff")
 
     def test_program_manager_sees_all_fields(self):
         """Program manager sees all fields as visible and editable."""
-        visible = self.cf.get_visible_fields("program_manager")
+        visible = self.cf.get_visible_fields(ROLE_PROGRAM_MANAGER)
         self.assertTrue(visible.get("phone"))
         self.assertTrue(visible.get("email"))
 
@@ -142,8 +143,8 @@ class FieldAccessAdminViewTest(TestCase):
             username="staff", password="testpass123", is_admin=False,
         )
         self.prog = Program.objects.create(name="Test Program", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.prog, role=ROLE_STAFF)
 
         # Set tier to 2 so the page is accessible
         InstanceSetting.objects.create(setting_key="access_tier", setting_value="2")

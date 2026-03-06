@@ -19,6 +19,7 @@ from apps.notes.models import ProgressNote
 from apps.plans.models import PlanSection, PlanTarget
 from apps.programs.models import Program, UserProgramRole
 from konote import encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -45,7 +46,7 @@ class ProgramFilteringTestBase(TestCase):
             username="worker_a", password="pass", display_name="Worker A"
         )
         UserProgramRole.objects.create(
-            user=self.worker_a, program=self.prog_a, role="staff", status="active"
+            user=self.worker_a, program=self.prog_a, role=ROLE_STAFF, status="active"
         )
 
         # Worker in Program B only
@@ -53,7 +54,7 @@ class ProgramFilteringTestBase(TestCase):
             username="worker_b", password="pass", display_name="Worker B"
         )
         UserProgramRole.objects.create(
-            user=self.worker_b, program=self.prog_b, role="staff", status="active"
+            user=self.worker_b, program=self.prog_b, role=ROLE_STAFF, status="active"
         )
 
         # Multi-program worker (both A and B)
@@ -61,10 +62,10 @@ class ProgramFilteringTestBase(TestCase):
             username="worker_ab", password="pass", display_name="Worker AB"
         )
         UserProgramRole.objects.create(
-            user=self.worker_ab, program=self.prog_a, role="staff", status="active"
+            user=self.worker_ab, program=self.prog_a, role=ROLE_STAFF, status="active"
         )
         UserProgramRole.objects.create(
-            user=self.worker_ab, program=self.prog_b, role="staff", status="active"
+            user=self.worker_ab, program=self.prog_b, role=ROLE_STAFF, status="active"
         )
 
         # Client enrolled in both programs

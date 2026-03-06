@@ -41,15 +41,24 @@ def _extract_content_words(text):
 def _check_privacy_gate(program):
     """Return True if theme operations are allowed for this program.
 
-    Mirrors the privacy gate in collect_quotes() — programs with fewer
-    than 15 enrolled participants don't get auto-themes to prevent
-    re-identification risk.
+    Graduated threshold:
+    - Self-hosted LLM (INSIGHTS_API_BASE set): N >= 5
+    - External provider (OpenRouter): N >= 15
     """
     if getattr(settings, "DEMO_MODE", False):
         return True
 
     from apps.clients.models import ClientProgramEnrolment
-    from apps.reports.insights import MIN_PARTICIPANTS_FOR_QUOTES
+    from apps.reports.insights import (
+        MIN_PARTICIPANTS_FOR_QUOTES,
+        MIN_PARTICIPANTS_FOR_THEME_PROCESSING,
+    )
+
+    is_self_hosted = bool(getattr(settings, "INSIGHTS_API_BASE", ""))
+    threshold = (
+        MIN_PARTICIPANTS_FOR_THEME_PROCESSING if is_self_hosted
+        else MIN_PARTICIPANTS_FOR_QUOTES
+    )
 
     participant_count = (
         ClientProgramEnrolment.objects.filter(
@@ -59,13 +68,26 @@ def _check_privacy_gate(program):
         .distinct()
         .count()
     )
-    if participant_count < MIN_PARTICIPANTS_FOR_QUOTES:
+    if participant_count < threshold:
         logger.info(
-            "Theme privacy gate: program %s has %d participants (minimum %d)",
-            program.name, participant_count, MIN_PARTICIPANTS_FOR_QUOTES,
+            "Theme privacy gate: program %s has %d participants (minimum %d, self_hosted=%s)",
+            program.name, participant_count, threshold, is_self_hosted,
         )
         return False
     return True
+
+
+def get_participant_count(program):
+    """Return the distinct active participant count for a program."""
+    from apps.clients.models import ClientProgramEnrolment
+    return (
+        ClientProgramEnrolment.objects.filter(
+            program=program, status="active",
+        )
+        .values("client_file_id")
+        .distinct()
+        .count()
+    )
 
 
 # ── Tier 1: Lightweight auto-link on note save ─────────────────────

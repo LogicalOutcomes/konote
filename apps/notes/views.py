@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Q
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RANK, ROLE_STAFF
 from apps.auth_app.decorators import program_role_required, requires_permission
 from apps.clients.models import ClientFile
 from apps.plans.models import PlanTarget, PlanTargetMetric
@@ -623,11 +624,10 @@ def template_preview(request, template_id):
 
     Requires at least staff-level role (receptionists cannot preview templates).
     """
-    from apps.auth_app.constants import ROLE_RANK
     from apps.auth_app.decorators import _get_user_highest_role
 
     user_role = _get_user_highest_role(request.user)
-    if ROLE_RANK.get(user_role, 0) < ROLE_RANK.get("staff", 0):
+    if ROLE_RANK.get(user_role, 0) < ROLE_RANK.get(ROLE_STAFF, 0):
         raise PermissionDenied(_("Access restricted to clinical staff."))
 
     template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
@@ -829,7 +829,7 @@ def note_create(request, client_id):
             # Contextual toast when a suggestion was recorded
             if form.cleaned_data.get("suggestion_priority"):
                 is_pm = UserProgramRole.objects.filter(
-                    user=request.user, role="program_manager", status="active",
+                    user=request.user, role=ROLE_PROGRAM_MANAGER, status="active",
                 ).exists()
                 if is_pm or getattr(request.user, "is_admin", False):
                     messages.info(
@@ -1016,7 +1016,7 @@ def note_cancel(request, note_id):
     user = request.user
     # Permission check — program managers can cancel any note in their programs
     user_role = getattr(request, "user_program_role", None)
-    if user_role != "program_manager":
+    if user_role != ROLE_PROGRAM_MANAGER:
         if note.author_id != user.pk:
             raise PermissionDenied(_("You can only cancel your own notes."))
         age = timezone.now() - note.created_at

@@ -8,6 +8,15 @@ Usage:
 """
 from django.core.management.base import BaseCommand
 
+from apps.auth_app.constants import (
+    ALL_PROGRAM_ROLES,
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RANK,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
+
 from apps.auth_app.permissions import (
     ALLOW,
     DENY,
@@ -24,43 +33,43 @@ from apps.auth_app.permissions import (
 # validation.  Format: username → list of (program_name, role).
 EXPECTED_DEMO_ROLES = {
     "demo-frontdesk": [
-        ("Supported Employment", "receptionist"),
-        ("Housing Stability", "receptionist"),
-        ("Youth Drop-In", "receptionist"),
-        ("Newcomer Connections", "receptionist"),
-        ("Community Kitchen", "receptionist"),
+        ("Supported Employment", ROLE_RECEPTIONIST),
+        ("Housing Stability", ROLE_RECEPTIONIST),
+        ("Youth Drop-In", ROLE_RECEPTIONIST),
+        ("Newcomer Connections", ROLE_RECEPTIONIST),
+        ("Community Kitchen", ROLE_RECEPTIONIST),
     ],
     "demo-worker-1": [
-        ("Supported Employment", "program_manager"),
-        ("Housing Stability", "staff"),
-        ("Community Kitchen", "staff"),
+        ("Supported Employment", ROLE_PROGRAM_MANAGER),
+        ("Housing Stability", ROLE_STAFF),
+        ("Community Kitchen", ROLE_STAFF),
     ],
     "demo-worker-2": [
-        ("Youth Drop-In", "staff"),
-        ("Newcomer Connections", "staff"),
-        ("Community Kitchen", "staff"),
+        ("Youth Drop-In", ROLE_STAFF),
+        ("Newcomer Connections", ROLE_STAFF),
+        ("Community Kitchen", ROLE_STAFF),
     ],
     "demo-manager": [
-        ("Supported Employment", "program_manager"),
-        ("Housing Stability", "program_manager"),
-        ("Community Kitchen", "program_manager"),
+        ("Supported Employment", ROLE_PROGRAM_MANAGER),
+        ("Housing Stability", ROLE_PROGRAM_MANAGER),
+        ("Community Kitchen", ROLE_PROGRAM_MANAGER),
     ],
     "demo-executive": [
-        ("Supported Employment", "executive"),
-        ("Housing Stability", "executive"),
-        ("Youth Drop-In", "executive"),
-        ("Newcomer Connections", "executive"),
-        ("Community Kitchen", "executive"),
+        ("Supported Employment", ROLE_EXECUTIVE),
+        ("Housing Stability", ROLE_EXECUTIVE),
+        ("Youth Drop-In", ROLE_EXECUTIVE),
+        ("Newcomer Connections", ROLE_EXECUTIVE),
+        ("Community Kitchen", ROLE_EXECUTIVE),
     ],
 }
 
 
 # Role display names for output
 ROLE_DISPLAY = {
-    "receptionist": "Front Desk",
-    "staff": "Direct Service",
-    "program_manager": "Program Manager",
-    "executive": "Executive",
+    ROLE_RECEPTIONIST: "Front Desk",
+    ROLE_STAFF: "Direct Service",
+    ROLE_PROGRAM_MANAGER: "Program Manager",
+    ROLE_EXECUTIVE: "Executive",
 }
 
 # Permission level display
@@ -137,7 +146,7 @@ class Command(BaseCommand):
             )
 
             # Print summary counts
-            for role in ["receptionist", "staff", "program_manager", "executive"]:
+            for role in sorted(ALL_PROGRAM_ROLES, key=lambda r: ROLE_RANK.get(r, 0)):
                 role_perms = PERMISSIONS[role]
                 counts = {}
                 for v in role_perms.values():
@@ -289,7 +298,6 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write("  Key restrictions (across all programs):")
         # Use the user's highest role for a summary of denials
-        from apps.auth_app.constants import ROLE_RANK
         all_roles = set(r.role for r in roles)
         highest = max(all_roles, key=lambda r: ROLE_RANK.get(r, 0))
         highest_perms = PERMISSIONS.get(highest, {})
