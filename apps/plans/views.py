@@ -489,6 +489,9 @@ def _create_goal(*, client_file, user, name, description="", client_goal="",
         if section is None:
             raise ValueError("A section or new_section_name is required.")
 
+        if not name or not name.strip():
+            raise ValueError("A goal name is required.")
+
         # 2. Create PlanTarget with encrypted fields
         target = PlanTarget(
             plan_section=section,
@@ -719,6 +722,7 @@ def goal_create(request, client_id):
 
 @login_required
 @require_POST
+@requires_permission("plan.edit", _get_program_from_client)
 def goal_create_from_suggestion(request, client_id):
     """Save a goal directly from an AI suggestion — HTMX POST endpoint.
 
@@ -793,44 +797,41 @@ def goal_create_from_suggestion(request, client_id):
         )
 
     # --- Resolve metrics ---
-    metric_ids = []
-    for m in suggestion.get("metrics", []):
-        mid = m.get("metric_id")
-        if mid:
-            exists = MetricDefinition.objects.filter(
-                pk=mid, is_enabled=True, status="active",
-            ).exists()
-            if exists:
-                metric_ids.append(mid)
+    raw_ids = [m.get("metric_id") for m in suggestion.get("metrics", []) if m.get("metric_id")]
+    metric_ids = list(
+        MetricDefinition.objects.filter(
+            pk__in=raw_ids, is_enabled=True, status="active",
+        ).values_list("pk", flat=True)
+    ) if raw_ids else []
 
-    # --- Custom metric (R5: included by default) ---
+    # --- Custom metric + goal creation in single transaction (R5) ---
     skip_custom = request.POST.get("skip_custom_metric") == "true"
     custom = suggestion.get("custom_metric")
-    if custom and not skip_custom:
-        custom_metric = MetricDefinition.objects.create(
-            name=custom.get("name", "Custom metric")[:255],
-            definition=custom.get("definition", ""),
-            min_value=custom.get("min_value", 1),
-            max_value=custom.get("max_value", 5),
-            unit=custom.get("unit", "score"),
-            is_library=False,
-            owning_program=program,
-            category="custom",
-        )
-        metric_ids.append(custom_metric.pk)
-
-    # --- Create goal ---
     try:
-        target = _create_goal(
-            client_file=client,
-            user=request.user,
-            name=suggestion.get("name", ""),
-            description=suggestion.get("description", ""),
-            client_goal=suggestion.get("client_goal", ""),
-            section=section,
-            program=program,
-            metric_ids=metric_ids,
-        )
+        with transaction.atomic():
+            if custom and not skip_custom:
+                custom_metric = MetricDefinition.objects.create(
+                    name=custom.get("name", "Custom metric")[:255],
+                    definition=custom.get("definition", ""),
+                    min_value=custom.get("min_value", 1),
+                    max_value=custom.get("max_value", 5),
+                    unit=custom.get("unit", "score"),
+                    is_library=False,
+                    owning_program=program,
+                    category="custom",
+                )
+                metric_ids.append(custom_metric.pk)
+
+            target = _create_goal(
+                client_file=client,
+                user=request.user,
+                name=suggestion.get("name", ""),
+                description=suggestion.get("description", ""),
+                client_goal=suggestion.get("client_goal", ""),
+                section=section,
+                program=program,
+                metric_ids=metric_ids,
+            )
     except ValueError as e:
         return render(request, "plans/_goal_save_error.html", {
             "error": str(e),
