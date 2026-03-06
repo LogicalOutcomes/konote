@@ -13,7 +13,7 @@ The deploy script automates 9 of 15 steps below — from securing the OS through
 
 ```bash
 ./scripts/deploy-konote-vps.sh \
-  --host 141.227.151.7 \
+  --host YOUR_VPS_IP \
   --domain konote.youragency.ca \
   --admin-email admin@youragency.ca \
   --org-name "Your Agency Name"
@@ -78,12 +78,12 @@ Open **PowerShell** or **Windows Terminal** and type:
 ssh ubuntu@YOUR_VPS_IP
 ```
 
-Replace `YOUR_VPS_IP` with the IP address from your OVHcloud email (e.g., `141.227.151.7`).
+Replace `YOUR_VPS_IP` with the IP address from your OVHcloud email.
 
 The first time you connect, you will see a message like:
 
 ```
-The authenticity of host '141.227.151.7' can't be established.
+The authenticity of host 'YOUR_VPS_IP' can't be established.
 ED25519 key fingerprint is SHA256:abc123...
 Are you sure you want to continue connecting (yes/no)?
 ```
@@ -114,21 +114,33 @@ Use your new password this time.
 
 ### Set Up SSH Key (Recommended)
 
-Using an SSH key means you will not need to type your password every time. On your **local Windows machine** (not the VPS):
+Using an SSH key means you will not need to type your password every time.
+
+> **Important:** Complete the password change above **before** setting up the SSH key. The piped command below will fail if the password is still expired.
+
+> **Note:** `ssh-copy-id` is not available on Windows. Use the manual method below.
+
+**Step 1 — Generate a key** (on your local Windows machine, not the VPS):
 
 ```powershell
-# Generate a key with a descriptive name
 ssh-keygen -t ed25519 -f $env:USERPROFILE\.ssh\ovh_konote
-
-# Copy the public key to the VPS
-type $env:USERPROFILE\.ssh\ovh_konote.pub | ssh ubuntu@YOUR_VPS_IP "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
-After this, connect without a password:
+**Step 2 — Copy the public key to the VPS:**
 
-```bash
-ssh -i ~/.ssh/ovh_konote ubuntu@YOUR_VPS_IP
+```powershell
+type $env:USERPROFILE\.ssh\ovh_konote.pub | ssh ubuntu@YOUR_VPS_IP "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
 ```
+
+Enter your **new** password (the one you set in the previous step) when prompted.
+
+**Step 3 — Test key-based login:**
+
+```powershell
+ssh -i $env:USERPROFILE\.ssh\ovh_konote ubuntu@YOUR_VPS_IP
+```
+
+This should connect **without asking for a password**.
 
 > **Tip:** Add this to your SSH config (`~/.ssh/config`) for convenience:
 > ```
@@ -347,7 +359,7 @@ You need to create a DNS **A record** that points your domain to the VPS IP addr
 4. Add a new record:
    - **Type:** A
    - **Name:** `konote` (or whatever subdomain you want, e.g., `konote` for `konote.yourdomain.ca`)
-   - **Value:** Your VPS IP address (e.g., `141.227.151.7`)
+   - **Value:** Your VPS IP address (e.g., `YOUR_VPS_IP`)
    - **TTL:** 300 (5 minutes) or Auto
 5. If using Cloudflare: set the **proxy status to DNS only** (grey cloud, not orange). Caddy handles HTTPS directly -- Cloudflare's proxy would interfere with Let's Encrypt certificate issuance.
 

@@ -8,7 +8,7 @@
 #
 # Usage:
 #   ./scripts/deploy-konote-vps.sh \
-#     --host 141.227.151.7 \
+#     --host YOUR_VPS_IP \
 #     --domain konote.agency.ca \
 #     --admin-email admin@agency.ca \
 #     --org-name "My Nonprofit"
@@ -83,16 +83,16 @@ Optional:
 
 Examples:
   # Basic deployment
-  $(basename "$0") --host 141.227.151.7 --domain konote.example.ca \\
+  $(basename "$0") --host YOUR_VPS_IP --domain konote.example.ca \\
     --admin-email admin@example.ca --org-name "Example Nonprofit"
 
   # With SSH key and custom branch
-  $(basename "$0") --host 141.227.151.7 --domain konote.example.ca \\
+  $(basename "$0") --host YOUR_VPS_IP --domain konote.example.ca \\
     --admin-email admin@example.ca --org-name "Example Nonprofit" \\
     --ssh-key ~/.ssh/ovh_konote --branch develop
 
   # Dry run (preview commands)
-  $(basename "$0") --host 141.227.151.7 --domain konote.example.ca \\
+  $(basename "$0") --host YOUR_VPS_IP --domain konote.example.ca \\
     --admin-email admin@example.ca --org-name "Example Nonprofit" --dry-run
 EOF
     exit 0
@@ -139,18 +139,23 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
 fi
 
 # ==============================================================================
-# SSH setup (ControlMaster for connection reuse)
+# SSH setup (ControlMaster for connection reuse — disabled on Windows/MSYS2)
 # ==============================================================================
-SSH_CONTROL_DIR=$(mktemp -d)
-SSH_CONTROL_PATH="${SSH_CONTROL_DIR}/konote-%r@%h:%p"
-
 SSH_OPTS=(
     -o "StrictHostKeyChecking=accept-new"
-    -o "ControlMaster=auto"
-    -o "ControlPath=${SSH_CONTROL_PATH}"
-    -o "ControlPersist=300"
     -o "ConnectTimeout=15"
 )
+
+# ControlMaster uses Unix domain sockets which don't work on Windows/MSYS2/Git Bash
+if [[ "$(uname -s)" != MINGW* && "$(uname -s)" != MSYS* && "$(uname -s)" != CYGWIN* ]]; then
+    SSH_CONTROL_DIR=$(mktemp -d)
+    SSH_CONTROL_PATH="${SSH_CONTROL_DIR}/konote-%r@%h:%p"
+    SSH_OPTS+=(
+        -o "ControlMaster=auto"
+        -o "ControlPath=${SSH_CONTROL_PATH}"
+        -o "ControlPersist=300"
+    )
+fi
 
 if [[ -n "$SSH_KEY" ]]; then
     SSH_OPTS+=(-i "$SSH_KEY")
@@ -172,10 +177,12 @@ run_remote_sudo() {
     run_remote "sudo bash -c '$*'"
 }
 
-# Cleanup: close SSH ControlMaster on exit
+# Cleanup: close SSH ControlMaster on exit (only if enabled)
 cleanup() {
-    ssh "${SSH_OPTS[@]}" -O exit "${SSH_TARGET}" 2>/dev/null || true
-    rm -rf "${SSH_CONTROL_DIR}" 2>/dev/null || true
+    if [[ -n "${SSH_CONTROL_DIR:-}" ]]; then
+        ssh "${SSH_OPTS[@]}" -O exit "${SSH_TARGET}" 2>/dev/null || true
+        rm -rf "${SSH_CONTROL_DIR}" 2>/dev/null || true
+    fi
 }
 trap cleanup EXIT
 
