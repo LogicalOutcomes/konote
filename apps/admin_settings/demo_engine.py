@@ -670,6 +670,23 @@ class DemoDataEngine:
                     defaults={"role": ROLE_PROGRAM_MANAGER},
                 )
 
+        # If profile defines specific programs, ensure workers and manager
+        # are assigned to those programs (the generic distribution above may
+        # have placed them only on other programs).
+        if profile and "programs" in profile:
+            profile_prog_names = set(profile["programs"].keys())
+            profile_progs = [p for p in programs if p.name in profile_prog_names]
+            for prog in profile_progs:
+                for worker in (worker1, worker2):
+                    UserProgramRole.objects.get_or_create(
+                        user=worker, program=prog,
+                        defaults={"role": ROLE_STAFF},
+                    )
+                UserProgramRole.objects.get_or_create(
+                    user=manager, program=prog,
+                    defaults={"role": ROLE_PROGRAM_MANAGER},
+                )
+
         self.log(f"  Created {len(user_specs)} demo users with roles across {len(programs)} programs.")
         return users
 
