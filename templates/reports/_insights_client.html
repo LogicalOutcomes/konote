@@ -24,7 +24,7 @@
     <dd>
         {{ goal.descriptor_label }}
         {% if goal.prev_label %}
-        <span class="goal-was">{% trans "was:" %} {{ goal.prev_label }}{% if goal.prev_date %} ({{ goal.prev_date }}){% endif %}</span>
+        <span class="goal-was">{% trans "was:" %} {{ goal.prev_label }}{% if goal.prev_date %} ({{ goal.prev_date|date:"M j" }}){% endif %}</span>
         {% elif goal.is_first %}
         <span class="goal-was">({% trans "first assessment" %})</span>
         {% endif %}
