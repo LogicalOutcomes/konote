@@ -84,14 +84,9 @@
     white-space: nowrap;
     border: 0;
 }
-/* Skip-link target: suppress ALL focus outlines on <main>.
-   WCAG 2.4.11 applies to interactive UI components, not landmark targets.
-   The scroll-to-content action is sufficient visual confirmation.
-   Previous attempts to show outline only for keyboard users kept breaking
-   because Chromium treats programmatic .focus() on tabindex="-1" as
-   :focus-visible, and there are many code paths that can focus <main>. */
 #main-content:focus {
-    outline: none;
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 4px;
 }
 
 /* ---- Demo mode banner ---- */
@@ -4766,8 +4761,8 @@ article[aria-label="notification"].fading-out {
 .goal-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--kn-space-sm);
-    margin: var(--kn-space-sm) 0;
+    gap: var(--kn-space-xs);
+    margin: var(--kn-space-xs) 0;
 }
 .goal-card {
     display: flex;
@@ -4865,7 +4860,7 @@ article[aria-label="notification"].fading-out {
     display: flex;
     align-items: center;
     gap: var(--kn-space-base);
-    margin: var(--kn-space-lg) 0;
+    margin: var(--kn-space-sm) 0;
     color: var(--pico-muted-color);
     font-size: 0.9em;
 }
@@ -4893,13 +4888,11 @@ article[aria-label="notification"].fading-out {
     margin: var(--kn-space-xs) 0 0;
 }
 .phase-action {
-    text-align: center;
-    margin: var(--kn-space-lg) 0;
+    margin: var(--kn-space-sm) 0;
 }
 .show-all-link {
     display: block;
-    text-align: center;
-    margin-top: var(--kn-space-lg);
+    margin-top: var(--kn-space-sm);
     font-size: 0.875rem;
     color: var(--kn-text-muted);
 }
