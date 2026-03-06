@@ -739,6 +739,11 @@ msgid "Use the Actions menu to add a Quick Note or Detailed Note."
 msgstr ""
 "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
+msgid "Use the Actions menu to Log Contact or add a Detailed Note."
+msgstr ""
+"Utilisez le menu Actions pour enregistrer un contact ou ajouter une note "
+"détaillée."
+
 #: templates/plans/_target.html
 msgid "None"
 msgstr "Aucun"
@@ -10513,6 +10518,9 @@ msgstr ""
 
 msgid "Log Contact"
 msgstr "Enregistrer un contact"
+
+msgid "Log a phone call, visit, or message"
+msgstr "Consigner un appel, une visite ou un message"
 
 msgid "Log a contact"
 msgstr "Enregistrer un contact"
