@@ -11,6 +11,7 @@ from django.utils.translation import gettext as _
 
 from apps.programs.models import UserProgramRole
 
+from apps.auth_app.constants import ROLE_ADMIN
 from .decorators import admin_required
 from .forms import InviteAcceptForm, InviteCreateForm
 from .models import Invite
@@ -38,7 +39,7 @@ def invite_create(request):
             )
             invite.save()
             # Add program assignments (M2M requires save first)
-            if form.cleaned_data["role"] != "admin":
+            if form.cleaned_data["role"] != ROLE_ADMIN:
                 invite.programs.set(form.cleaned_data["programs"])
             from django.urls import reverse
             invite_url = request.build_absolute_uri(
@@ -72,14 +73,14 @@ def invite_accept(request, code):
                 username=form.cleaned_data["username"],
                 password=form.cleaned_data["password"],
                 display_name=form.cleaned_data["display_name"],
-                is_admin=(invite.role == "admin"),
+                is_admin=(invite.role == ROLE_ADMIN),
             )
             if form.cleaned_data.get("email"):
                 user.email = form.cleaned_data["email"]
                 user.save(update_fields=["_email_encrypted"])
 
             # Assign program roles (non-admin roles)
-            if invite.role != "admin":
+            if invite.role != ROLE_ADMIN:
                 UserProgramRole.objects.bulk_create([
                     UserProgramRole(user=user, program=program, role=invite.role)
                     for program in invite.programs.all()

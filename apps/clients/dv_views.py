@@ -18,6 +18,7 @@ from django.utils.translation import gettext as _
 from apps.admin_settings.models import get_access_tier
 from apps.audit.models import AuditLog
 from apps.programs.models import UserProgramRole
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 from .models import ClientFile, DvFlagRemovalRequest
 from .views import get_client_queryset
@@ -29,7 +30,7 @@ def _is_staff_or_above(user):
         return True
     return UserProgramRole.objects.filter(
         user=user,
-        role__in=["staff", "program_manager", "executive"],
+        role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER, ROLE_EXECUTIVE],
     ).exists()
 
 
@@ -39,7 +40,7 @@ def _is_pm_or_above(user):
         return True
     return UserProgramRole.objects.filter(
         user=user,
-        role__in=["program_manager", "executive"],
+        role__in=list(MANAGEMENT_ROLES),
     ).exists()
 
 

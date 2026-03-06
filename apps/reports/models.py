@@ -200,6 +200,23 @@ class ReportTemplate(models.Model):
             "De-Identification Guidelines."
         ),
     )
+    html_template_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Optional custom Django template path for HTML export "
+            "(e.g., 'reports/html_united_way.html'). "
+            "When blank, the default HTML report template is used."
+        ),
+    )
+    include_all_metrics = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, the report includes every metric with recorded "
+            "data in the selected period. Use for org-wide or board reports. "
+            "Leave unchecked for funder reports that require specific metrics."
+        ),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -433,7 +450,7 @@ class SecureExportLink(models.Model):
     EXPORT_TYPE_CHOICES = [
         ("client_data", _("Participant Data")),
         ("metrics", _("Metric Report")),
-        ("funder_report", _("Funder Report")),
+        ("standard_report", _("Standard Report")),
         ("individual_client", _("Individual Client Export")),
     ]
 
@@ -506,6 +523,19 @@ class SecureExportLink(models.Model):
         related_name="approved_exports",
     )
     approved_at = models.DateTimeField(null=True, blank=True)
+
+    def clean(self):
+        valid_types = {choice[0] for choice in self.EXPORT_TYPE_CHOICES}
+        if self.export_type and self.export_type not in valid_types:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                {"export_type": f"Unknown export type '{self.export_type}'. "
+                 f"Valid choices: {', '.join(sorted(valid_types))}"}
+            )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def is_valid(self):
         """Check if link is still usable (no I/O — checks DB state only)."""
@@ -694,7 +724,7 @@ class ReportSchedule(models.Model):
 
     REPORT_TYPE_CHOICES = [
         ("oversight", _("Safety Oversight Report")),
-        ("funder_report", _("Funder Report")),
+        ("standard_report", _("Standard Report")),
     ]
 
     name = models.CharField(max_length=255)

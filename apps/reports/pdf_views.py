@@ -154,9 +154,9 @@ def generate_outcome_report_pdf(
     grouping_type="none", grouping_label=None, achievement_summary=None,
     total_clients_display=None, total_data_points_display=None,
     is_aggregate=False, aggregate_rows=None, demographic_aggregate_rows=None,
-    program_display_name=None,
+    program_display_name=None, output_format="pdf",
 ):
-    """Generate a PDF program outcome report. Called from export_form view.
+    """Generate a PDF or HTML program outcome report. Called from export_form view.
 
     Args:
         request: The HTTP request.
@@ -175,8 +175,9 @@ def generate_outcome_report_pdf(
         aggregate_rows: List of aggregate row dicts (metric stats).
         demographic_aggregate_rows: List of demographic breakdown row dicts.
         program_display_name: Override label for program name (used in All Programs mode).
+        output_format: "pdf" or "html".
     """
-    if not is_pdf_available():
+    if output_format == "pdf" and not is_pdf_available():
         return _pdf_unavailable_response(request)
 
     # Group rows by demographic if grouping is enabled (individual path only)
@@ -225,7 +226,7 @@ def generate_outcome_report_pdf(
         "date_to": str(date_to),
         "total_clients": len(unique_clients),
         "total_data_points": len(rows),
-        "format": "pdf",
+        "format": output_format,
     }
     if grouping_type != "none":
         audit_metadata["grouped_by"] = grouping_label
@@ -235,6 +236,10 @@ def generate_outcome_report_pdf(
 
     audit_pdf_export(request, "export", "outcome_report_pdf", audit_metadata)
 
+    if output_format == "html":
+        from .pdf_utils import render_html
+        html_filename = filename.replace(".pdf", ".html")
+        return render_html("reports/html_outcome_report.html", context, html_filename)
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 
 

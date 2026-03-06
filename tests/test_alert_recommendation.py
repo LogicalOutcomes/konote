@@ -17,6 +17,12 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Alert, AlertCancellationRecommendation
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -37,7 +43,7 @@ class AlertRecommendationWorkflowTest(TestCase):
             username="staff1", password="testpass123", display_name="Staff One",
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff", status="active",
+            user=self.staff_user, program=self.program, role=ROLE_STAFF, status="active",
         )
 
         # PM user — can cancel directly, can review recommendations
@@ -45,7 +51,7 @@ class AlertRecommendationWorkflowTest(TestCase):
             username="pm1", password="testpass123", display_name="PM One",
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager", status="active",
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         # Receptionist — should be denied everything
@@ -53,7 +59,7 @@ class AlertRecommendationWorkflowTest(TestCase):
             username="recep1", password="testpass123", display_name="Receptionist",
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program, role="receptionist", status="active",
+            user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST, status="active",
         )
 
         # Executive — should be denied everything
@@ -61,7 +67,7 @@ class AlertRecommendationWorkflowTest(TestCase):
             username="exec1", password="testpass123", display_name="Exec One",
         )
         UserProgramRole.objects.create(
-            user=self.executive, program=self.program, role="executive", status="active",
+            user=self.executive, program=self.program, role=ROLE_EXECUTIVE, status="active",
         )
 
         # Client enrolled in the program

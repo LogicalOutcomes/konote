@@ -203,6 +203,7 @@
             <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
         </header>
+        <p class="priority-hint">{% trans "Hiding an item removes it from your view until tomorrow. It does not resolve it." %}</p>
         {% if active_alerts %}
         <div class="priority-section">
             <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
@@ -214,7 +215,7 @@
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -231,7 +232,7 @@
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -245,7 +246,7 @@
                 <li class="priority-item dismissable-item" data-dismiss-key="attention-{{ item.client.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>
                     <span class="priority-detail secondary">{% trans "30+ days without notes" %}</span>
-                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>

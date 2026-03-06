@@ -107,6 +107,7 @@ deploy_instance() {
 
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
+    git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
     git pull origin develop
 
     # --- Record after-commit ---
@@ -137,7 +138,10 @@ deploy_instance() {
     local healthy=false
     local checked_migration=false
     local elapsed=0
-    local max_wait=120  # 2 minutes
+    local max_wait=120  # 2 minutes for production
+    if [ "$is_dev" = "true" ]; then
+        max_wait=300  # 5 minutes for dev (ghost migration cleanup can be slow)
+    fi
 
     while [ "$elapsed" -lt "$max_wait" ]; do
         local status

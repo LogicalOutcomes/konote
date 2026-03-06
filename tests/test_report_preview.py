@@ -21,6 +21,7 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import Partner, ReportTemplate
 from apps.reports.preview_views import _querydict_to_pairs
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -209,13 +210,13 @@ class TemplateReportPreviewTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager",
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program, role="executive",
+            user=self.exec_user, program=self.program, role=ROLE_EXECUTIVE,
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff",
+            user=self.staff, program=self.program, role=ROLE_STAFF,
         )
 
         # Create metric data
@@ -413,13 +414,13 @@ class AdhocReportPreviewTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager",
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program, role="executive",
+            user=self.exec_user, program=self.program, role=ROLE_EXECUTIVE,
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff",
+            user=self.staff_user, program=self.program, role=ROLE_STAFF,
         )
 
         # Create metric data

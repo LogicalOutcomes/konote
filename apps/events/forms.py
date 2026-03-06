@@ -2,6 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.programs.models import Program, UserProgramRole
 
 from .models import Alert, Event, EventType, SRECategory
@@ -26,7 +27,7 @@ class EventTypeForm(forms.ModelForm):
         if requesting_user and not requesting_user.is_admin:
             pm_program_ids = set(
                 UserProgramRole.objects.filter(
-                    user=requesting_user, role="program_manager", status="active",
+                    user=requesting_user, role=ROLE_PROGRAM_MANAGER, status="active",
                 ).values_list("program_id", flat=True)
             )
             self.fields["owning_program"].queryset = Program.objects.filter(

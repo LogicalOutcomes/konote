@@ -12,6 +12,7 @@ from apps.communications.models import Communication
 from apps.events.models import Event, Meeting
 from apps.notes.models import ProgressNote, ProgressNoteTemplate
 from apps.programs.models import Program, UserProgramRole
+from apps.auth_app.constants import ROLE_STAFF
 
 User = get_user_model()
 
@@ -24,7 +25,7 @@ class LastContactHelperTests(TestCase):
     def setUp(self):
         self.program = Program.objects.create(name="Test")
         self.staff = User.objects.create_user(username="staff", password="pass")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF, status="active")
 
         self.client1 = ClientFile.objects.create(first_name="Alice", last_name="A")
         self.client2 = ClientFile.objects.create(first_name="Bob", last_name="B")
@@ -132,7 +133,7 @@ class ClientListLastContactTests(TestCase):
     def setUp(self):
         self.program = Program.objects.create(name="Test")
         self.staff = User.objects.create_user(username="staff", password="pass")
-        UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff", status="active")
+        UserProgramRole.objects.create(user=self.staff, program=self.program, role=ROLE_STAFF, status="active")
 
         self.client1 = ClientFile.objects.create(first_name="Alice", last_name="A")
         self.client2 = ClientFile.objects.create(first_name="Bob", last_name="B")

@@ -222,12 +222,12 @@ def generate_template_report(template, date_from, date_to, period_label,
         date_to: End of reporting period (date).
         period_label: Human-readable period (e.g. "Q3 FY2025-26").
         user: Requesting user (for demo/real client filtering).
-        export_format: "csv" or "pdf".
+        export_format: "csv", "pdf", or "html".
         request: HttpRequest (needed by PDF renderer).
 
     Returns:
         Tuple of (content, filename, client_count):
-        - content: str (CSV) or bytes (PDF)
+        - content: str (CSV/HTML) or bytes (PDF)
         - filename: suggested download filename
         - client_count: raw integer count for SecureExportLink
     """
@@ -335,6 +335,14 @@ def generate_template_report(template, date_from, date_to, period_label,
         )
         filename = f"Report_{safe_partner}_{safe_period}.pdf"
         content = pdf_response.content
+    elif export_format == "html":
+        from .pdf_utils import render_html_string
+        html_template = _get_html_template_name(template)
+        html_context = _build_html_context(
+            report_data, sections, metric_results, template, user,
+        )
+        content = render_html_string(html_template, html_context)
+        filename = f"Report_{safe_partner}_{safe_period}.html"
     else:
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
@@ -355,6 +363,47 @@ def generate_template_report(template, date_from, date_to, period_label,
         content = csv_buffer.getvalue()
 
     return content, filename, total_client_count
+
+
+def _get_html_template_name(template):
+    """Return the Django template path for HTML export.
+
+    If the ReportTemplate has a custom ``html_template_name`` set (for a
+    partner-branded layout), use that.  Otherwise fall back to the default
+    HTML report template which mirrors the PDF layout.
+    """
+    custom = getattr(template, "html_template_name", "")
+    if custom:
+        return custom
+    return "reports/html_report.html"
+
+
+def _build_html_context(report_data, sections, metric_results, template, user):
+    """Build the template context dict for HTML report rendering.
+
+    Mirrors the context produced by generate_funder_report_pdf() so that
+    HTML and PDF templates receive the same data.
+    """
+    from .suppression import SMALL_CELL_THRESHOLD
+
+    context = {
+        "report_data": report_data,
+        "generated_by": getattr(user, "display_name", str(user)) if user else "",
+        "suppression_threshold": getattr(
+            template, "suppression_threshold", SMALL_CELL_THRESHOLD,
+        ),
+    }
+
+    if sections:
+        context["sections"] = sections
+    if metric_results:
+        context["metric_results"] = metric_results
+
+        from .chart_utils import generate_metric_charts, is_chart_available
+        if is_chart_available():
+            context["chart_images"] = generate_metric_charts(metric_results)
+
+    return context
 
 
 def get_compliance_summary(start_date, end_date):

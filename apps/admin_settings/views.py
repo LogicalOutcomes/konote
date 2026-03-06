@@ -462,8 +462,15 @@ def features(request):
             "is_enabled": current_flags.get(key, default_state),
         })
 
+    # AI processing info for admin awareness
+    from django.conf import settings as django_settings
+    ai_key_set = bool(getattr(django_settings, "OPENROUTER_API_KEY", ""))
+    ai_model = getattr(django_settings, "OPENROUTER_MODEL", "")
+
     return render(request, "admin_settings/features.html", {
         "feature_rows": feature_rows,
+        "ai_key_set": ai_key_set,
+        "ai_model": ai_model,
     })
 
 
@@ -1165,18 +1172,21 @@ def configuration_overview(request):
     automated_reminders = settings_all.get("automated_reminders_enabled", "false") == "true"
 
     # --- Audit log (last 20 config-related entries) ---
-    audit_entries = list(
-        AuditLog.objects.using("audit").filter(
-            resource_type__in=["settings", "Setting", "Toggle", "Terminology", "Profile"],
-        ).order_by("-event_timestamp")[:20]
-    )
-    # Also try broader filter for object_type variations
-    if not audit_entries:
+    try:
         audit_entries = list(
             AuditLog.objects.using("audit").filter(
-                resource_type__icontains="setting",
+                resource_type__in=["settings", "Setting", "Toggle", "Terminology", "Profile"],
             ).order_by("-event_timestamp")[:20]
         )
+        # Also try broader filter for object_type variations
+        if not audit_entries:
+            audit_entries = list(
+                AuditLog.objects.using("audit").filter(
+                    resource_type__icontains="setting",
+                ).order_by("-event_timestamp")[:20]
+            )
+    except Exception:
+        audit_entries = []
 
     return render(request, "admin_settings/configuration_overview.html", {
         # Organisation

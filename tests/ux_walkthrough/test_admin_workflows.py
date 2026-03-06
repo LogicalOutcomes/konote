@@ -15,6 +15,7 @@ from django.test import override_settings
 
 from .base import TEST_KEY, UxScenarioBase
 from .checker import Severity
+from apps.auth_app.constants import ROLE_STAFF
 
 
 # =====================================================================
@@ -261,7 +262,7 @@ class AdminProgramWorkflow(UxScenarioBase):
         url = f"/programs/{pid}/roles/add/"
         resp = self.client.post(
             url,
-            data={"user": self.staff_user.pk, "role": "staff"},
+            data={"user": self.staff_user.pk, "role": ROLE_STAFF},
             HTTP_HX_REQUEST="true",
         )
         issues = []
@@ -1009,7 +1010,7 @@ class AdminInviteWorkflow(UxScenarioBase):
             role, "Submit new invite",
             "/manage/users/invites/new/",
             data={
-                "role": "staff",
+                "role": ROLE_STAFF,
                 "programs": [self.program_a.pk],
                 "expires_days": "7",
             },
@@ -1248,7 +1249,7 @@ class AdminFullSetupScenario(UxScenarioBase):
 
         resp = self.client.post(
             f"/programs/{program.pk}/roles/add/",
-            data={"user": worker.pk, "role": "staff"},
+            data={"user": worker.pk, "role": ROLE_STAFF},
             HTTP_HX_REQUEST="true",
         )
         url = f"/programs/{program.pk}/roles/add/"

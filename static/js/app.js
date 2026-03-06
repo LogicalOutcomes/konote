@@ -1548,11 +1548,17 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     }
 
     function setupCheckboxes() {
-        var selectAll = document.getElementById("bulk-select-all");
-        if (selectAll) {
+        // Support multiple select-all checkboxes (one per table section).
+        // Each scopes to its own <table> so checking "select all" in one
+        // section doesn't affect the other.
+        var selectAlls = document.querySelectorAll(".bulk-select-all");
+        selectAlls.forEach(function (selectAll) {
             selectAll.addEventListener("change", function () {
                 var checked = selectAll.checked;
-                var rowCbs = document.querySelectorAll(".bulk-select-row");
+                var table = selectAll.closest("table");
+                var rowCbs = table
+                    ? table.querySelectorAll(".bulk-select-row")
+                    : document.querySelectorAll(".bulk-select-row");
                 rowCbs.forEach(function (cb) {
                     cb.checked = checked;
                     if (checked) {
@@ -1563,7 +1569,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
                 });
                 updateBar();
             });
-        }
+        });
 
         // Delegate click events for row checkboxes
         document.addEventListener("change", function (e) {
@@ -1572,8 +1578,11 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
                 selectedIds.add(e.target.value);
             } else {
                 selectedIds.delete(e.target.value);
-                // Uncheck select-all if any row is unchecked
-                var sa = document.getElementById("bulk-select-all");
+                // Uncheck select-all in the same table section
+                var table = e.target.closest("table");
+                var sa = table
+                    ? table.querySelector(".bulk-select-all")
+                    : document.querySelector(".bulk-select-all");
                 if (sa) sa.checked = false;
             }
             updateBar();
@@ -1623,15 +1632,21 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
                     cb.checked = true;
                 }
             });
-            // Update select-all state
-            var sa = target.querySelector("#bulk-select-all");
-            if (sa && rowCbs.length > 0) {
-                var allChecked = true;
-                rowCbs.forEach(function (cb) {
-                    if (!cb.checked) allChecked = false;
-                });
-                sa.checked = allChecked;
-            }
+            // Update select-all state for each table section
+            var selectAlls = target.querySelectorAll(".bulk-select-all");
+            selectAlls.forEach(function (sa) {
+                var table = sa.closest("table");
+                var tableCbs = table
+                    ? table.querySelectorAll(".bulk-select-row")
+                    : rowCbs;
+                if (tableCbs.length > 0) {
+                    var allChecked = true;
+                    tableCbs.forEach(function (cb) {
+                        if (!cb.checked) allChecked = false;
+                    });
+                    sa.checked = allChecked;
+                }
+            });
             updateBar();
         }
     });

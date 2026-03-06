@@ -18,6 +18,8 @@ from datetime import date, datetime
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
+
 logger = logging.getLogger(__name__)
 
 
@@ -194,7 +196,7 @@ class Command(BaseCommand):
         staff_roles = UserProgramRole.objects.filter(
             program=program,
             status="active",
-            role__in=["staff", "program_manager"],
+            role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER],
         ).select_related("user")
         self.stdout.write(f"  Staff to sync as app users: {staff_roles.count()}")
 

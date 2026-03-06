@@ -26,6 +26,12 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import SecureExportLink
 from apps.reports.utils import can_create_export, can_download_pii_export, get_manageable_programs, is_aggregate_only_user
 import konote.encryption as enc_module
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -93,15 +99,15 @@ class CanCreateExportHelperTest(TestCase):
 
         # PM manages program A only
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         # Staff in program A
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         # Executive in program A
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     # ── Admin ────────────────────────────────────────────────────
@@ -110,7 +116,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.admin, "metrics"))
 
     def test_admin_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.admin, "funder_report"))
+        self.assertTrue(can_create_export(self.admin, "standard_report"))
 
     def test_admin_can_export_any_program(self):
         self.assertTrue(can_create_export(self.admin, "metrics", program=self.program_a))
@@ -122,7 +128,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.pm_user, "metrics"))
 
     def test_pm_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.pm_user, "funder_report"))
+        self.assertTrue(can_create_export(self.pm_user, "standard_report"))
 
     def test_pm_can_export_own_program(self):
         self.assertTrue(can_create_export(self.pm_user, "metrics", program=self.program_a))
@@ -134,7 +140,7 @@ class CanCreateExportHelperTest(TestCase):
 
     def test_staff_cannot_create_any_export(self):
         self.assertFalse(can_create_export(self.staff_user, "metrics"))
-        self.assertFalse(can_create_export(self.staff_user, "funder_report"))
+        self.assertFalse(can_create_export(self.staff_user, "standard_report"))
 
     # ── Executive ────────────────────────────────────────────────
 
@@ -142,7 +148,7 @@ class CanCreateExportHelperTest(TestCase):
         self.assertTrue(can_create_export(self.exec_user, "metrics"))
 
     def test_executive_can_create_funder_report(self):
-        self.assertTrue(can_create_export(self.exec_user, "funder_report"))
+        self.assertTrue(can_create_export(self.exec_user, "standard_report"))
 
     def test_executive_can_export_own_program(self):
         self.assertTrue(can_create_export(self.exec_user, "metrics", program=self.program_a))
@@ -173,7 +179,7 @@ class GetManageableProgramsTest(TestCase):
         self.archived = Program.objects.create(name="Archived", status="archived")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def test_admin_sees_all_active_programs(self):
@@ -221,16 +227,16 @@ class MetricsExportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
     def test_admin_can_access_metrics_export(self):
@@ -288,13 +294,13 @@ class FunderReportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     def test_admin_can_access_funder_report(self):
@@ -349,10 +355,10 @@ class DownloadExportPermissionTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.pm_user2, program=self.program_a, role="program_manager"
+            user=self.pm_user2, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def tearDown(self):
@@ -410,7 +416,7 @@ class DownloadExportPermissionTest(TestCase):
             username="exec_dl", password="testpass123", is_admin=False, display_name="Exec"
         )
         UserProgramRole.objects.create(
-            user=exec_user, program=self.program_a, role="executive"
+            user=exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         settings.SECURE_EXPORT_DIR = self.export_dir
         link = _create_link(exec_user, self.export_dir, contains_pii=True)
@@ -460,7 +466,7 @@ class ManageRevokePermissionTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
     def tearDown(self):
@@ -511,13 +517,13 @@ class ExportAccessContextTest(TestCase):
 
         self.program_a = Program.objects.create(name="Program A")
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
     def _get_context(self, username):
@@ -571,17 +577,17 @@ class IsAggregateOnlyUserTest(TestCase):
         self.program_b = Program.objects.create(name="Program B")
 
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         # Dual user: executive in program A, PM in program B
         UserProgramRole.objects.create(
-            user=self.dual_user, program=self.program_a, role="executive"
+            user=self.dual_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.dual_user, program=self.program_b, role="program_manager"
+            user=self.dual_user, program=self.program_b, role=ROLE_PROGRAM_MANAGER
         )
 
     def test_admin_without_pm_role_is_aggregate_only(self):
@@ -605,7 +611,7 @@ class IsAggregateOnlyUserTest(TestCase):
             username="admin_pm", password="testpass123", is_admin=True, display_name="AdminPM"
         )
         UserProgramRole.objects.create(
-            user=admin_pm, program=self.program_a, role="program_manager"
+            user=admin_pm, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         self.assertFalse(is_aggregate_only_user(admin_pm))
 
@@ -661,10 +667,10 @@ class ExecutiveAggregateExportTest(TestCase):
 
         # Roles
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program, role="program_manager"
+            user=self.pm_user, program=self.program, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program, role="executive"
+            user=self.exec_user, program=self.program, role=ROLE_EXECUTIVE
         )
 
         # Client
@@ -863,22 +869,22 @@ class IndividualClientExportPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
         # Admin needs a program role to pass ProgramAccessMiddleware
         # (admins without program roles are blocked from client URLs)
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program_a, role="program_manager"
+            user=self.admin, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
 
         # Create a client for the export endpoint
@@ -962,16 +968,16 @@ class ClientProgressPdfPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.admin, program=self.program_a, role="program_manager"
+            user=self.admin, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
 
         self.client_file = ClientFile.objects.create()
@@ -1042,16 +1048,16 @@ class ClientAnalysisPermissionTest(TestCase):
         self.program_a = Program.objects.create(name="Program A")
 
         UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
+            user=self.pm_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program_a, role="staff"
+            user=self.staff_user, program=self.program_a, role=ROLE_STAFF
         )
         UserProgramRole.objects.create(
-            user=self.exec_user, program=self.program_a, role="executive"
+            user=self.exec_user, program=self.program_a, role=ROLE_EXECUTIVE
         )
         UserProgramRole.objects.create(
-            user=self.receptionist, program=self.program_a, role="receptionist"
+            user=self.receptionist, program=self.program_a, role=ROLE_RECEPTIONIST
         )
 
         self.client_file = ClientFile.objects.create()
@@ -1077,3 +1083,143 @@ class ClientAnalysisPermissionTest(TestCase):
         self.http_client.login(username="frontdesk", password="testpass123")
         resp = self.http_client.get(self._analysis_url())
         self.assertEqual(resp.status_code, 403)
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 14. HTML report rendering regression test
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class HtmlReportRenderingTest(TestCase):
+    """Regression test: HTML format must use html_outcome_report.html, not the PDF template.
+
+    Previously, requesting HTML format returned the WeasyPrint PDF template
+    (pdf_funder_report.html) which rendered as unstyled HTML with @page CSS.
+    This test ensures the correct browser-friendly template is used.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
+        self.http_client = Client()
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin"
+        )
+        self.program = Program.objects.create(name="Test Program")
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program, role=ROLE_PROGRAM_MANAGER
+        )
+
+        self.client_file = ClientFile.objects.create(record_id="REC-HTML-001")
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program
+        )
+
+        self.metric_def = MetricDefinition.objects.create(
+            name="HTML Test Metric", is_enabled=True
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Test Section", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file,
+        )
+        target.name = "Test target"
+        target.description = "Test"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric_def)
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick", author=self.admin,
+        )
+        note_target = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=note_target, metric_def=self.metric_def, value="7",
+        )
+
+    def tearDown(self):
+        shutil.rmtree(self.export_dir, ignore_errors=True)
+
+    @override_settings()
+    def test_html_export_uses_styled_template(self):
+        """HTML export must contain styled HTML (not WeasyPrint @page CSS)."""
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        self.http_client.login(username="admin", password="testpass123")
+        resp = self.http_client.post("/reports/export/", {
+            "program": self.program.pk,
+            "date_from": "2020-01-01",
+            "date_to": "2030-12-31",
+            "metrics": [self.metric_def.pk],
+            "format": "html",
+            "recipient": "Self — for my own records",
+            "recipient_reason": "Testing HTML rendering",
+        })
+        self.assertEqual(resp.status_code, 200)
+
+        # The response should contain the secure link page, find the file
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        self.assertIsNotNone(link)
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Must have styled HTML elements from html_outcome_report.html
+        self.assertIn("stat-box", content, "HTML export missing stat-box class — wrong template used")
+        self.assertIn("report-header-bar", content, "HTML export missing report-header-bar — wrong template used")
+        # Must NOT have WeasyPrint-specific CSS
+        self.assertNotIn("@page", content, "HTML export contains @page CSS — PDF template was used")
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 15. SecureExportLink.export_type validation test
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ExportTypeValidationTest(TestCase):
+    """Verify SecureExportLink rejects unknown export_type values on save."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
+        self.user = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin"
+        )
+
+    def tearDown(self):
+        shutil.rmtree(self.export_dir, ignore_errors=True)
+
+    def test_valid_export_type_accepted(self):
+        """Known export types should save without error."""
+        from django.core.exceptions import ValidationError
+        for type_code, _ in SecureExportLink.EXPORT_TYPE_CHOICES:
+            try:
+                _create_link(self.user, self.export_dir, export_type=type_code)
+            except ValidationError:
+                self.fail(f"Valid export_type '{type_code}' raised ValidationError")
+
+    def test_unknown_export_type_rejected(self):
+        """Unknown export_type (e.g. old 'funder_report') must raise ValidationError."""
+        from django.core.exceptions import ValidationError
+        with self.assertRaises(ValidationError) as cm:
+            _create_link(self.user, self.export_dir, export_type="funder_report")
+        self.assertIn("export_type", cm.exception.message_dict)
+
+    def test_bogus_export_type_rejected(self):
+        """Completely invalid export_type must raise ValidationError."""
+        from django.core.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            _create_link(self.user, self.export_dir, export_type="nonexistent_type")

@@ -7,23 +7,6 @@
 
 ## Active Work
 
-### Phase: P0 — Requirements Analysis (March 31)
-
-Items from `requirements-analysis.md` that need work before the deliverable deadline.
-
-**Product code to build:**
-
-- [ ] Write funder reporting dashboard design doc — waiting on funder reporting templates from Prosper Canada (expected March 2026), then: which metrics aggregate, how agencies publish data, how Prosper Canada views it — GK (DOC-RP4)
-- [ ] Build funder reporting dashboard — read-only view where Prosper Canada sees aggregate outcome data published by individual agencies. Not individual participant records. Depends on DOC-RP4 (SCALE-ROLLUP1)
-
-**Ops & business model:**
-
-- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md) (OPS-MANAGED1)
-
-### Phase: Session 7 — Compliance, Safety, Data Quality
-
-- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -54,14 +37,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
 
-### Phase: Server Sharing — cost optimization, not a launch prerequisite (completed in PR #220)
-
-Multiple agencies can deploy today on independent OVHcloud VPS instances (~$22/month each). Server sharing reduces per-agency costs to $4–10/month with walled database schemas per agency on one server.
-
-Details: see [tasks/design-rationale/multi-tenancy.md](tasks/design-rationale/multi-tenancy.md) and Recently Done → Multi-Tenancy Infrastructure.
-
-- [x] Improve admin UI for self-service configuration — PR #252 — 2026-03-04 (ADMIN-UX1)
-
 ### Phase: Offline Field Collection (if requested by client)
 
 - [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
@@ -77,7 +52,8 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Nothing here — all scoped tasks are in Active Work or Coming Up._
+- [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
+- [ ] Add smoke test for all-programs HTML export path (CHORE-RPT-TEST1)
 
 ## Parking Lot: Needs Review
 
@@ -92,6 +68,23 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
 
 ## Recently Done
+
+- [x] Graduated privacy threshold + focused theme analysis — N=5 self-hosted / N=15 external, Ask a Question UI, AI-powered suggestion search, DRR updates — 2026-03-05 (AI-FOCUSED-THEME1)
+
+### Session 13 — Report Fixes & Cleanup
+
+- [x] Server Sharing phase completed — multi-tenant infrastructure, admin UI self-service config — PR #220, #252 — 2026-03-04 (ADMIN-UX1)
+- [x] All-programs HTML export support — added template + view branch for HTML format — PR #337 — 2026-03-05 (RPT-HTML-ALLPROG1)
+- [x] Simplified all-programs aggregation — consolidated 4 iterations into single pass — PR #337 — 2026-03-05 (RPT-SIMPLIFY1)
+- [x] Extracted shared CSS partial + aggregation helper — ~240 lines deduped, isinstance guard fixed — 2026-03-05 (CHORE-RPT-CSS1, CHORE-RPT-FIX1)
+- [x] Marked DOC-RP4, SCALE-ROLLUP1, OPS-MANAGED1, QA-R7-EXEC-COMPLIANCE1 as done — PR #336 — 2026-03-05
+
+### Session 12 — TODO Cleanup
+
+- [x] Funder reporting design doc — architecture in reporting-architecture DRR, cross-agency reporting plan, funder report approval design — 2026-03-05 (DOC-RP4)
+- [x] Funder reporting dashboard — funder_report.py, consortia/publish.py, rollup aggregation, report templates, approval workflow, cell suppression — 2026-03-05 (SCALE-ROLLUP1)
+- [x] Managed service model — defined in p0-managed-service-plan.md + ovhcloud-deployment DRR — 2026-03-05 (OPS-MANAGED1)
+- [x] Executive compliance report — aggregate dashboard, privacy request counts, processing times (no PII) — 2026-03-05 (QA-R7-EXEC-COMPLIANCE1)
 
 ### Session 11 — Cleanup
 
@@ -129,23 +122,5 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Merge PR #236 — DQ1-TIER2 thresholds + docs verification — 2026-03-03 (DQ1-TIER2)
 - [x] Merge PR #239 — survey shareable links + 6 missing French translations — 2026-03-03 (SURVEY-LINK1)
 - [x] Clean up TODO.md — mark completed parking lot items, archive old entries — 2026-03-03
-
-### Session 6 — Data Quality + Documentation + AI Toggles
-
-- [x] Add second-tier plausibility thresholds — model fields, JS two-click confirm, 17 tests — 2026-03-03 (DQ1-TIER2)
-- [x] Verify docs: DOC-DEMO1, DOC-PERM1-3, QA-PA-TEST1-2 — all accurate — 2026-03-03
-- [x] Implement two-tier AI feature toggle split — 2026-03-03 (AI-TOGGLE1)
-- [x] Verified: note sharing toggle (6/7 checks pass) — 2026-03-03 (QA-R7-PRIVACY2)
-- [x] Build SRE workflow — PR #243 merged — 2026-03-03 (SRE1)
-- [x] Build plausibility tuning dashboard — PR #244 merged — 2026-03-03 (DQ1-TUNE)
-
-### Session 5 — Small-Cell Suppression + Compliance Summary
-
-- [x] Small-cell suppression with secondary suppression — 2026-03-03 (QA-R8-RPT1)
-- [x] Compliance summary page for executives (no PII) — 2026-03-03 (QA-R8-PERM2, QA-R7-EXEC-COMPLIANCE1)
-
-### Session 4 — Documentation & Cleanup
-
-- [x] Admin toolkit docs (01-09), deployment docs, website updates — 2026-03-03 (DEPLOY-TOOLKIT1, DOC-DEPLOY1, DOC-TECH1, WEBSITE-UPDATE1)
 
 _Older items archived to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._

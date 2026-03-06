@@ -8,6 +8,9 @@
 <h1>{% blocktrans with worker_term=term.worker %}Message My {{ worker_term }}{% endblocktrans %}</h1>
 
 <div class="portal-notice" role="note">
+    {% if worker_names %}
+    <p><strong>{% trans "To:" %} {{ worker_names|join:", " }}</strong></p>
+    {% endif %}
     <p>{% blocktrans with worker_term=term.worker %}Your {{ worker_term }} will see this next time they check. This is not for emergencies.{% endblocktrans %}</p>
 </div>
 

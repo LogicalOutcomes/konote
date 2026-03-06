@@ -5,6 +5,7 @@ from cryptography.fernet import Fernet
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from konote.middleware.program_access import ProgramAccessMiddleware
 import konote.encryption as enc_module
 
@@ -89,8 +90,8 @@ class ClientAccessTest(TestCase):
         self.program_b = Program.objects.create(name="Program B")
 
         # Assign staff to programs
-        UserProgramRole.objects.create(user=self.staff_a, program=self.program_a, role="staff")
-        UserProgramRole.objects.create(user=self.staff_b, program=self.program_b, role="staff")
+        UserProgramRole.objects.create(user=self.staff_a, program=self.program_a, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.staff_b, program=self.program_b, role=ROLE_STAFF)
 
         # Create a client enrolled in Program A only
         self.client = ClientFile.objects.create()
@@ -129,7 +130,7 @@ class ClientAccessTest(TestCase):
     def test_admin_with_program_role_can_access_client(self):
         """Admins who also have a program role can access client data."""
         UserProgramRole.objects.create(
-            user=self.admin_user, program=self.program_a, role="program_manager"
+            user=self.admin_user, program=self.program_a, role=ROLE_PROGRAM_MANAGER
         )
         request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.admin_user
@@ -180,8 +181,8 @@ class ReceptionistFieldAccessTest(TestCase):
 
         # Create program and assign users
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
         # Create client
         self.client_file = ClientFile.objects.create()
@@ -346,8 +347,8 @@ class ReceptionistNotesAccessTest(TestCase):
 
         # Create program and assign users
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
         # Create client
         self.client_file = ClientFile.objects.create()
@@ -437,9 +438,9 @@ class ReceptionistPlansAccessTest(TestCase):
 
         # Create program and assign users
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
-        UserProgramRole.objects.create(user=self.manager, program=self.program, role="program_manager")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.manager, program=self.program, role=ROLE_PROGRAM_MANAGER)
 
         # Create client
         self.client_file = ClientFile.objects.create()
@@ -508,8 +509,8 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
 
         # Create program and assign users
         self.program = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role="receptionist")
-        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.program, role=ROLE_RECEPTIONIST)
+        UserProgramRole.objects.create(user=self.staff_user, program=self.program, role=ROLE_STAFF)
 
         # Create client
         self.client_file = ClientFile.objects.create()

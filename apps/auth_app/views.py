@@ -235,9 +235,12 @@ def _local_login(request):
     demo_portal_participants = []
     if settings.DEMO_MODE:
         # Auto-detect: if instance-specific demo users exist (any group
-        # other than 'default'), show only those and suppress the defaults.
+        # other than 'default'/blank), show only those and suppress the defaults.
         all_demo = User.objects.filter(is_demo=True, is_active=True)
-        instance_specific = all_demo.exclude(demo_group="default")
+        instance_specific = (
+            all_demo.exclude(demo_group__in=["default", ""])
+            .exclude(demo_group__isnull=True)
+        )
         qs = instance_specific if instance_specific.exists() else all_demo
         demo_users = list(
             qs.order_by("display_name")
@@ -249,7 +252,7 @@ def _local_login(request):
                 is_active=True, mfa_method="exempt",
             )
             .select_related("client_file")
-            .order_by("client_file__record_id")
+            .order_by("client_file__record_id")[:2]
         )
 
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))

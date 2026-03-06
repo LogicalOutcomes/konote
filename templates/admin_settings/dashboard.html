@@ -200,6 +200,12 @@
     </article>
 
     <article>
+        <header>{% trans "Config Generator" %}</header>
+        <p>{% trans "Generate .env and setup_config.json files for new KoNote deployments." %}</p>
+        <footer><a href="{% url 'admin_settings:config_generator' %}" role="button" class="outline">{% trans "Open Generator" %}</a></footer>
+    </article>
+
+    <article>
         <header>{% trans "Demo Accounts" %}</header>
         <p>{% trans "View all demo users and demo participants. Impersonate demo users for testing." %}</p>
         <p class="settings-indicator">
