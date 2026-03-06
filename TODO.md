@@ -8,7 +8,8 @@
 
 ### Phase: Infrastructure
 
-- [ ] Migrate KoNote from Swiss VPS to Canadian VPS — waiting for OVH to finish configuring new server (see tasks/vps-migration.md, konote-ops/deployment/vps-migration-runbook.md) — GK (OPS-MIGRATE1)
+- [x] Migrate KoNote from Swiss VPS to Canadian VPS — completed 2026-03-06 (OPS-MIGRATE1)
+- [ ] Decommission old VPS (141.227.151.7) — verify new VPS stable for 1–2 weeks, then cancel old instance in OVH control panel — GK (OPS-DECOM1)
 
 ### Phase: Launch Readiness
 
