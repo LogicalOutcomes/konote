@@ -19,7 +19,7 @@
 <div class="goal-status-row">
     <dt>
         <span class="descriptor-dot descriptor-dot--{{ goal.descriptor_key }}" aria-hidden="true"></span>
-        <a href="{% url 'notes:note_detail' note_id=goal.note_id %}">{{ goal.goal_name }}</a>
+        {% if goal.note_id %}<a href="{% url 'notes:note_detail' note_id=goal.note_id %}">{{ goal.goal_name }}</a>{% else %}{{ goal.goal_name }}{% endif %}
     </dt>
     <dd>
         {{ goal.descriptor_label }}

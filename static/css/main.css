@@ -4363,6 +4363,12 @@ article[aria-label="notification"].fading-out {
 .descriptor-dot--shifting { background: #3498db; }
 .descriptor-dot--holding { background: #f39c12; }
 .descriptor-dot--harder { background: #e74c3c; }
+@media (prefers-color-scheme: dark) {
+    .descriptor-dot--good_place { background: #2ecc71; }
+    .descriptor-dot--shifting { background: #5dade2; }
+    .descriptor-dot--holding { background: #f5b041; }
+    .descriptor-dot--harder { background: #ec7063; }
+}
 .descriptor-summary { font-style: italic; margin-bottom: 0.5rem; }
 
 /* ──── Goal Builder ──── */

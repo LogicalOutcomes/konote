@@ -425,8 +425,13 @@ def client_insights_partial(request, client_id):
 
     # Per-goal current status for "How they're doing" section (2 queries)
     descriptor_labels = dict(ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES)
+    user_program_ids = set(
+        UserProgramRole.objects.filter(user=request.user, status="active")
+        .values_list("program_id", flat=True)
+    )
     active_targets = list(
         PlanTarget.objects.filter(client_file=client, status="default")
+        .select_related("plan_section")
         .order_by("plan_section__name", "pk")
     )
 
@@ -458,11 +463,17 @@ def client_insights_partial(request, client_id):
             and current.progress_descriptor != previous.progress_descriptor
         )
 
+        # Only link to note if user has access to this goal's program
+        can_link = (
+            target.plan_section.program_id is None
+            or target.plan_section.program_id in user_program_ids
+        )
+
         goal_statuses.append({
             "goal_name": target.name,
             "descriptor_key": current.progress_descriptor,
             "descriptor_label": current_label,
-            "note_id": current.progress_note_id,
+            "note_id": current.progress_note_id if can_link else None,
             "prev_label": str(descriptor_labels.get(previous.progress_descriptor, "")) if show_previous else "",
             "prev_date": previous.progress_note.effective_date if show_previous else None,
             "is_first": previous is None,

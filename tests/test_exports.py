@@ -1496,3 +1496,106 @@ class ComplianceBannerIntegrationTests(TestCase):
         resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "privacy-compliance-banner")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ClientInsightsPartialTest(TestCase):
+    """Tests for the participant-level insights HTMX partial (goal status view)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import ProgressNote, ProgressNoteTarget
+        from apps.plans.models import PlanSection, PlanTarget
+        from apps.programs.models import Program, UserProgramRole
+
+        self.http = HttpClient()
+        self.user = User.objects.create_user(
+            username="worker", password="pass", display_name="Worker"
+        )
+        self.program = Program.objects.create(name="Support")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Goal"
+        self.client_file.last_name = "Status"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="active"
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Wellbeing", program=self.program,
+        )
+        self.target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Community",
+        )
+
+        # Create two notes with different descriptors
+        note1 = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=30),
+        )
+        ProgressNoteTarget.objects.create(
+            progress_note=note1, plan_target=self.target,
+            progress_descriptor="holding",
+        )
+        note2 = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=5),
+        )
+        ProgressNoteTarget.objects.create(
+            progress_note=note2, plan_target=self.target,
+            progress_descriptor="good_place",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def _url(self):
+        return f"/reports/participant/{self.client_file.pk}/insights/"
+
+    def test_unauthenticated_redirects(self):
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthorised_user_gets_403(self):
+        from apps.auth_app.models import User
+        User.objects.create_user(username="nobody", password="pass", display_name="Nobody")
+        self.http.login(username="nobody", password="pass")
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_happy_path_shows_goal_status(self):
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "How they")
+        self.assertContains(resp, "In a good place")
+
+    def test_shows_previous_descriptor_when_changed(self):
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(self._url())
+        self.assertContains(resp, "was:")
+        self.assertContains(resp, "Holding steady")
+
+    def test_empty_client_shows_empty_state(self):
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        empty_cf = ClientFile()
+        empty_cf.first_name = "Empty"
+        empty_cf.last_name = "Client"
+        empty_cf.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=empty_cf, program=self.program, status="active"
+        )
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(f"/reports/participant/{empty_cf.pk}/insights/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "No notes recorded")
