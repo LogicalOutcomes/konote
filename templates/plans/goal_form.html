@@ -32,156 +32,19 @@
 
     {# R11: Conditional layout — show quick picks first if 3+ common goals #}
     {% if quick_pick_first %}
-
-    {# ── Quick pick path (shown first) ── #}
+    {% include "plans/_goal_quick_pick_entry.html" %}
     {% if common_goals %}
-    <fieldset id="quick-pick-entry">
-        <legend>{% trans "Quick pick from existing goals" %}</legend>
-        <div class="goal-card-grid" role="group" aria-label="{% trans 'Common goals in this program' %}">
-            {% for goal in common_goals %}
-            <button type="button"
-                    class="goal-card outline"
-                    data-goal-name="{{ goal.name }}"
-                    data-metric-id="{{ goal.metric_id|default:'' }}"
-                    aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
-                <strong>{{ goal.name }}</strong>
-                {% if goal.metric_name %}
-                <small>{{ goal.metric_name }}</small>
-                {% endif %}
-                <small class="secondary">
-                    {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
-                </small>
-            </button>
-            {% endfor %}
-        </div>
-    </fieldset>
-
-    {# R22: Quick pick words prompt (hidden until a card is clicked) #}
-    <div id="quick-pick-words" hidden>
-        <label>{% blocktrans with client=term.client|default:"participant" %}What did the {{ client }} say about this?{% endblocktrans %}</label>
-        <textarea name="quick_pick_words" rows="2" placeholder="{% trans 'Optional — in their own words…' %}"></textarea>
-        <button type="button" id="btn-continue-quick-pick">{% trans "Continue" %}</button>
-    </div>
-
     <div class="entry-divider" aria-hidden="true">
         <span>{% trans "or" %}</span>
     </div>
     {% endif %}
-
-    {# ── AI-assisted path ── #}
-    <fieldset id="ai-entry">
-        <legend>
-            {% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}
-            {# R13: Contextual help tooltip replacing onboarding hint #}
-            <span class="help-icon" title="{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}" aria-label="{% trans 'Help' %}">&#9432;</span>
-        </legend>
-        <small>{% trans "Write what they said, in their own words." %}</small>
-        <small class="secondary">
-            {% trans "Names and personal details are removed before sending to AI." %}
-        </small>
-        {# R12: Increased textarea rows #}
-        <textarea id="participant-words"
-                  name="participant_words"
-                  rows="3"
-                  placeholder="{% trans 'In their own words…' %}"
-                  maxlength="1000"
-                  aria-label="{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}">{{ participant_words }}</textarea>
-        <button type="button"
-                id="btn-shape-target"
-                hx-post="{% url 'ai:suggest_target' %}"
-                hx-target="#suggestion-container"
-                hx-swap="innerHTML"
-                hx-indicator="#ai-loading"
-                hx-include="#participant-words, #hidden-client-id"
-                hx-disabled-elt="this"
-                hx-sync="this:abort">
-            <svg class="btn-sparkle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z"/></svg>
-            {% trans "Suggest a goal" %}
-        </button>
-        <input type="hidden" id="hidden-client-id"
-               name="client_id" value="{{ client.pk }}">
-        <div id="ai-loading" class="htmx-indicator">
-            <div class="loading-bar"></div>
-            <small aria-live="polite">{% trans "Working on a suggestion…" %}</small>
-        </div>
-    </fieldset>
-
+    {% include "plans/_goal_ai_entry.html" %}
     {% else %}
-    {# AI first (fewer than 3 common goals) #}
-
-    {# ── AI-assisted path ── #}
-    <fieldset id="ai-entry">
-        <legend>
-            {% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}
-            {# R13: Contextual help tooltip #}
-            <span class="help-icon" title="{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}" aria-label="{% trans 'Help' %}">&#9432;</span>
-        </legend>
-        <small>{% trans "Write what they said, in their own words." %}</small>
-        <small class="secondary">
-            {% trans "Names and personal details are removed before sending to AI." %}
-        </small>
-        {# R12: Increased textarea rows #}
-        <textarea id="participant-words"
-                  name="participant_words"
-                  rows="3"
-                  placeholder="{% trans 'In their own words…' %}"
-                  maxlength="1000"
-                  aria-label="{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}">{{ participant_words }}</textarea>
-        <button type="button"
-                id="btn-shape-target"
-                hx-post="{% url 'ai:suggest_target' %}"
-                hx-target="#suggestion-container"
-                hx-swap="innerHTML"
-                hx-indicator="#ai-loading"
-                hx-include="#participant-words, #hidden-client-id"
-                hx-disabled-elt="this"
-                hx-sync="this:abort">
-            <svg class="btn-sparkle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z"/></svg>
-            {% trans "Suggest a goal" %}
-        </button>
-        <input type="hidden" id="hidden-client-id"
-               name="client_id" value="{{ client.pk }}">
-        <div id="ai-loading" class="htmx-indicator">
-            <div class="loading-bar"></div>
-            <small aria-live="polite">{% trans "Working on a suggestion…" %}</small>
-        </div>
-    </fieldset>
-
+    {% include "plans/_goal_ai_entry.html" %}
     <div class="entry-divider" aria-hidden="true">
         <span>{% trans "or" %}</span>
     </div>
-
-    {# ── Quick pick path (shown second) ── #}
-    {% if common_goals %}
-    <fieldset id="quick-pick-entry">
-        <legend>{% trans "Quick pick from existing goals" %}</legend>
-        <div class="goal-card-grid" role="group" aria-label="{% trans 'Common goals in this program' %}">
-            {% for goal in common_goals %}
-            <button type="button"
-                    class="goal-card outline"
-                    data-goal-name="{{ goal.name }}"
-                    data-metric-id="{{ goal.metric_id|default:'' }}"
-                    aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
-                <strong>{{ goal.name }}</strong>
-                {% if goal.metric_name %}
-                <small>{{ goal.metric_name }}</small>
-                {% endif %}
-                <small class="secondary">
-                    {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
-                </small>
-            </button>
-            {% endfor %}
-        </div>
-    </fieldset>
-
-    {# R22: Quick pick words prompt (hidden until a card is clicked) #}
-    <div id="quick-pick-words" hidden>
-        <label>{% blocktrans with client=term.client|default:"participant" %}What did the {{ client }} say about this?{% endblocktrans %}</label>
-        <textarea name="quick_pick_words" rows="2" placeholder="{% trans 'Optional — in their own words…' %}"></textarea>
-        <button type="button" id="btn-continue-quick-pick">{% trans "Continue" %}</button>
-    </div>
-    {% endif %}
-
+    {% include "plans/_goal_quick_pick_entry.html" %}
     {% endif %}{# end quick_pick_first conditional #}
 
     <p><a href="#" id="btn-manual-entry" class="secondary">

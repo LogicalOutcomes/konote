@@ -1,0 +1,38 @@
+{% load i18n %}
+{# AI-assisted entry point fieldset — included by goal_form.html #}
+<fieldset id="ai-entry">
+    <legend>
+        {% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}
+        {# R13: Contextual help tooltip replacing onboarding hint #}
+        <span class="help-icon" title="{% blocktrans with client=term.client|default:'participant' %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}" aria-label="{% trans 'Help' %}">&#9432;</span>
+    </legend>
+    <small>{% trans "Write what they said, in their own words." %}</small>
+    <small class="secondary">
+        {% trans "Names and personal details are removed before sending to AI." %}
+    </small>
+    {# R12: Increased textarea rows #}
+    <textarea id="participant-words"
+              name="participant_words"
+              rows="3"
+              placeholder="{% trans 'In their own words…' %}"
+              maxlength="1000"
+              aria-label="{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}">{{ participant_words }}</textarea>
+    <button type="button"
+            id="btn-shape-target"
+            hx-post="{% url 'ai:suggest_target' %}"
+            hx-target="#suggestion-container"
+            hx-swap="innerHTML"
+            hx-indicator="#ai-loading"
+            hx-include="#participant-words, #hidden-client-id"
+            hx-disabled-elt="this"
+            hx-sync="this:abort">
+        <svg class="btn-sparkle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z"/></svg>
+        {% trans "Suggest a goal" %}
+    </button>
+    <input type="hidden" id="hidden-client-id"
+           name="client_id" value="{{ client.pk }}">
+    <div id="ai-loading" class="htmx-indicator">
+        <div class="loading-bar"></div>
+        <small aria-live="polite">{% trans "Working on a suggestion…" %}</small>
+    </div>
+</fieldset>
