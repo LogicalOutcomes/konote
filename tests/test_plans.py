@@ -1408,3 +1408,22 @@ class GoalSaveFromSuggestionTest(TestCase):
         response = self.client.post(self.url, {"suggestion_key": "goal_suggestion_test_perm"})
         self.assertEqual(response.status_code, 403)
 
+    def test_create_goal_empty_name_raises(self):
+        """_create_goal raises ValueError when name is empty or whitespace."""
+        from apps.plans.views import _create_goal
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Test Section",
+            program=self.program,
+        )
+
+        for empty_name in ["", "   ", None]:
+            with self.assertRaises(ValueError, msg=f"Should raise for name={empty_name!r}"):
+                _create_goal(
+                    client_file=self.client_file,
+                    user=self.user,
+                    name=empty_name,
+                    section=section,
+                )
+
