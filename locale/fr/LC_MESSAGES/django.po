@@ -19759,3 +19759,32 @@ msgstr "était :"
 msgid "first assessment"
 msgstr "première évaluation"
 
+
+#: templates/plans/goal_form.html — R23: Metric tier labels
+msgid "Recommended for all participants"
+msgstr "Recommandé pour tous les participants"
+
+#: templates/plans/goal_form.html — R23: Metric tier labels
+msgid "Commonly used for goals like this"
+msgstr "Couramment utilisées pour des objectifs comme celui-ci"
+
+#: templates/plans/goal_form.html — R23: Metric tier labels
+msgid "Browse all metrics"
+msgstr "Parcourir toutes les mesures"
+
+#: templates/plans/goal_form.html — R10: Reassurance text
+msgid "You can revise this goal later as things become clearer."
+msgstr "Vous pourrez réviser cet objectif plus tard, au fur et à mesure que les choses se précisent."
+
+#: templates/plans/goal_form.html — R22: Quick pick words prompt
+msgid "Optional — in their own words…"
+msgstr "Facultatif — dans leurs propres mots…"
+
+#: templates/plans/_ai_suggestion.html — R24: Why these metrics
+msgid "Why these metrics?"
+msgstr "Pourquoi ces mesures?"
+
+#: templates/plans/goal_form.html — R22: Quick pick words prompt (blocktrans)
+#, python-format
+msgid "What did the %(client)s say about this?"
+msgstr "Qu'est-ce que le/la %(client)s a dit à ce sujet?"

@@ -51,6 +51,18 @@
         {% endif %}
     </dl>
 
+    {# R24: Collapsible "Why these metrics?" reasoning #}
+    {% if suggestion.metrics %}
+    <details class="why-suggestion">
+        <summary><small>{% trans "Why these metrics?" %}</small></summary>
+        <ul>
+            {% for m in suggestion.metrics %}
+            {% if m.reason %}<li><strong>{{ m.name }}:</strong> {{ m.reason }}</li>{% endif %}
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+
     {# R4: Demoted "Suggested area" to secondary line #}
     {% if suggestion.suggested_section %}
     <small class="secondary suggestion-area">

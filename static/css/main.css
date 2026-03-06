@@ -5056,6 +5056,71 @@ article[aria-label="notification"].fading-out {
     text-decoration: underline;
 }
 
+/* R24: "Why these metrics?" collapsible */
+.why-suggestion {
+    margin: var(--kn-space-sm) 0;
+    font-size: 0.9rem;
+}
+.why-suggestion summary {
+    cursor: pointer;
+    color: var(--pico-muted-color);
+}
+.why-suggestion ul {
+    margin: var(--kn-space-xs) 0 0;
+    padding-left: 1.25em;
+}
+.why-suggestion li {
+    margin-bottom: var(--kn-space-xs);
+}
+
+/* R21: Persistent participant words echo */
+.participant-words-echo {
+    background: var(--kn-primary-subtle);
+    border-left: 3px solid var(--kn-primary);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-xs) var(--kn-space-base);
+    margin-bottom: var(--kn-space-base);
+    font-size: 0.9rem;
+}
+.participant-words-echo small {
+    color: var(--kn-text-muted);
+    font-size: 0.8125rem;
+}
+.participant-words-echo em {
+    display: block;
+    margin-top: var(--kn-space-xs);
+}
+
+/* R13: Help icon tooltip on legend */
+.help-icon {
+    display: inline-block;
+    cursor: help;
+    font-size: 0.85em;
+    color: var(--pico-muted-color);
+    vertical-align: middle;
+    margin-left: 0.25em;
+}
+
+/* R12: Participant words textarea minimum height */
+#participant-words {
+    min-height: 4.5em;
+}
+
+/* R22: Quick pick words prompt */
+#quick-pick-words {
+    margin: var(--kn-space-base) 0;
+    padding: var(--kn-space-base);
+    background: var(--kn-primary-subtle);
+    border-radius: var(--kn-radius-card, 8px);
+}
+#quick-pick-words label {
+    font-weight: 600;
+    margin-bottom: var(--kn-space-xs);
+}
+#quick-pick-words textarea {
+    margin-bottom: var(--kn-space-sm);
+}
+
 /* Suggestion actions responsive stacking (mobile) */
 @media (max-width: 576px) {
     .suggestion-actions {
