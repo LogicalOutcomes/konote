@@ -24,7 +24,13 @@ echo "Tenant schema migrations complete."
 # Uses ALLOWED_HOSTS env var for the domain; does nothing if already registered.
 echo ""
 echo "Registering tenant domain..."
-python manage.py setup_public_tenant 2>&1 || echo "WARNING: setup_public_tenant failed (see above). Site may not be accessible."
+if ! python manage.py setup_public_tenant 2>&1; then
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: setup_public_tenant failed in production mode. Refusing to start."
+        exit 1
+    fi
+    echo "WARNING: setup_public_tenant failed (see above). Site may not be accessible."
+fi
 echo "Tenant domain registration complete."
 
 echo "Running audit migrations..."

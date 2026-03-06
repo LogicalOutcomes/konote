@@ -250,7 +250,10 @@ ADMIN_PASSWORD=$(python3 -c "import secrets; print(secrets.token_urlsafe(16))")
 ok_msg "All credentials generated (Django secret, encryption key, 2 DB passwords, admin password)"
 
 # Save credentials locally for disaster recovery
-CREDS_FILE="konote-credentials-${DOMAIN}-$(date +%Y%m%d_%H%M%S).txt"
+CREDS_DIR="${HOME}/.konote"
+mkdir -p "$CREDS_DIR"
+chmod 700 "$CREDS_DIR"
+CREDS_FILE="${CREDS_DIR}/konote-credentials-${DOMAIN}-$(date +%Y%m%d_%H%M%S).txt"
 cat > "$CREDS_FILE" <<CREDS
 # KoNote Credentials for ${DOMAIN}
 # Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
@@ -269,7 +272,7 @@ POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 AUDIT_POSTGRES_PASSWORD=${AUDIT_POSTGRES_PASSWORD}
 CREDS
 chmod 600 "$CREDS_FILE"
-ok_msg "Credentials saved to ./${CREDS_FILE}"
+ok_msg "Credentials saved to ${CREDS_FILE}"
 warn_msg "Save this file in your password manager, then delete it"
 
 # Capture version for health reports (local repo commit being deployed)

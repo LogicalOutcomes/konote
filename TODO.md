@@ -21,13 +21,18 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
 
+### Phase: Deep Review Fixes (2026-03-06)
+
+- [ ] Clean up translation catalog health: remove duplicate `msgid`s, fill missing and empty French strings, and rebuild `django.mo` (REV26-I18N2)
+- [ ] Make tenant provisioning and backup recovery paths more resumable and consistent (REV26-DEP3)
+
 ## Do Occasionally
 
 Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recurring-tasks.md).
 
 - [ ] **UX walkthrough** — run after UI changes. In Claude Code: `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` and add fixes to TODO (UX-WALK1)
 - [ ] **Quick code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the review prompt from [tasks/code-review-process.md](tasks/code-review-process.md) (REV1)
-- [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 (REV-DEEP1)
+- [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-ops/reviews/` repo. Latest: 2026-03-06 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
 - [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
@@ -114,6 +119,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Deep review follow-up hardening pass — AI scrubber expanded, focused analysis and note-structure flows scrubbed, insecure remote insights HTTP blocked, Docker build inputs tightened, tenant-key rotation disabled, `/health/` healthcheck wired, production startup fails closed on public-tenant bootstrap, French survey/export fixes landed, public survey page-step validation improved, registration intake/review audit coverage added — 2026-03-06 (REV26-SEC1, REV26-DEP1, REV26-DEP2, REV26-AI1, REV26-AI2, REV26-AI3, REV26-I18N1)
 - [x] Graduated privacy threshold + focused theme analysis — N=5 self-hosted / N=15 external, Ask a Question UI, AI-powered suggestion search, DRR updates — 2026-03-05 (AI-FOCUSED-THEME1)
 
 ### Session 13 — Report Fixes & Cleanup

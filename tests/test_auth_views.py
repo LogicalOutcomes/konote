@@ -444,6 +444,23 @@ class ImpersonationGuardTest(TestCase):
         self.assertEqual(log.metadata["impersonated_user_id"], self.demo_user.pk)
         self.assertEqual(log.metadata["admin_username"], "admin")
 
+    def test_impersonation_audit_log_uses_forwarded_ip(self):
+        """Impersonation audit logs should prefer the forwarded client IP."""
+        from apps.audit.models import AuditLog
+
+        self.http.login(username="admin", password="adminpass")
+        self.http.get(
+            f"/manage/users/{self.demo_user.pk}/impersonate/",
+            HTTP_X_FORWARDED_FOR="198.51.100.25, 10.0.0.7",
+            REMOTE_ADDR="127.0.0.1",
+        )
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="impersonation",
+            resource_id=self.demo_user.pk,
+        ).latest("event_timestamp")
+        self.assertEqual(log.ip_address, "198.51.100.25")
+
     def test_failed_impersonation_no_audit_log(self):
         """Failed impersonation (real user) should NOT create audit log."""
         from apps.audit.models import AuditLog

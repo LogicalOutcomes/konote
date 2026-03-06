@@ -8,6 +8,7 @@ import datetime
 from cryptography.fernet import Fernet
 from django.core.exceptions import ValidationError
 from django.test import TestCase, Client, override_settings
+from django.urls import reverse
 from django.utils import timezone
 
 import konote.encryption as enc_module
@@ -959,6 +960,25 @@ class MetricRationaleViewTest(TestCase):
         ).last()
         self.assertIsNotNone(log)
         self.assertIn("rationale", log.metadata.get("detail", ""))
+
+    def test_rationale_add_audit_log_uses_forwarded_ip(self):
+        """Metric rationale audit logs should use the forwarded client IP."""
+        from django.urls import reverse
+        from apps.audit.models import AuditLog
+
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(
+            url,
+            {"note": "Audited note"},
+            HTTP_X_FORWARDED_FOR="192.0.2.77, 10.0.0.3",
+            REMOTE_ADDR="127.0.0.1",
+        )
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="MetricDefinition",
+            resource_id=str(self.metric.pk),
+            action="update",
+        ).last()
+        self.assertEqual(log.ip_address, "192.0.2.77")
 
     def test_rationale_add_ignores_empty_note(self):
         """POST with empty note should not append."""

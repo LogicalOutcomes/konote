@@ -238,6 +238,29 @@ class FieldAccessAdminViewTest(TestCase):
         self.assertIn("field_access", log.metadata.get("setting", ""))
         self.assertIn("phone", log.metadata.get("changes", {}))
 
+    def test_saving_uses_forwarded_ip_for_audit_log(self):
+        """Audit logs should capture the real client IP behind a reverse proxy."""
+        from apps.audit.models import AuditLog
+
+        self.client.login(username="admin", password="testpass123")
+        self.client.post(
+            "/admin/settings/field-access/",
+            {
+                "core_phone": "view",
+                "core_email": "edit",
+                "core_preferred_name": "view",
+                "core_birth_date": "none",
+            },
+            HTTP_X_FORWARDED_FOR="203.0.113.10, 10.0.0.5",
+            REMOTE_ADDR="127.0.0.1",
+        )
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="settings",
+            action="update",
+        ).latest("event_timestamp")
+        self.assertEqual(log.ip_address, "203.0.113.10")
+
     def test_saving_unchanged_creates_no_audit_log(self):
         """Saving without changes does not create an audit log entry."""
         from apps.audit.models import AuditLog

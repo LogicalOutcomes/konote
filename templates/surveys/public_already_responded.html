@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load static %}
+{% load survey_tags %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
@@ -11,11 +12,12 @@
     {% include "_lang_toggle_styles.html" %}
 </head>
 <body>
+<a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 {% include "_lang_toggle.html" with max_width="720px" %}
-<main class="container" style="max-width:720px; padding-top:2rem; text-align:center">
+<main id="main-content" tabindex="-1" class="container" style="max-width:720px; padding-top:2rem; text-align:center">
 
 <h1>{% trans "Thank you!" %}</h1>
-<p>{% blocktrans with name=survey.name %}You have already submitted a response to "{{ name }}".{% endblocktrans %}</p>
+<p>{% blocktrans with name=survey.name|bilingual:survey.name_fr %}You have already submitted a response to "{{ name }}".{% endblocktrans %}</p>
 
 </main>
 <script>

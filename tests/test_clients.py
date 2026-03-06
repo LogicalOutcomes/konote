@@ -1023,6 +1023,31 @@ class ConsentRecordingTest(TestCase):
         self.assertIsNotNone(self.cf.consent_given_at)
         self.assertEqual(self.cf.consent_type, "written")
 
+    def test_consent_audit_log_uses_forwarded_ip(self):
+        """Consent grant audit logs should use the forwarded client IP."""
+        from apps.audit.models import AuditLog
+        from django.utils import timezone
+
+        self.client.login(username="staff", password="testpass123")
+        today = timezone.now().strftime("%Y-%m-%d")
+        self.client.post(
+            f"/participants/{self.cf.pk}/consent/",
+            {
+                "consent_type": "written",
+                "consent_date": today,
+                "notes": "Signed consent form on file.",
+            },
+            HTTP_X_FORWARDED_FOR="203.0.113.11, 10.0.0.5",
+            REMOTE_ADDR="127.0.0.1",
+        )
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="consent",
+            resource_id=self.cf.pk,
+            action="create",
+        ).latest("event_timestamp")
+        self.assertEqual(log.ip_address, "203.0.113.11")
+
     def test_consent_display_shows_consent_recorded(self):
         """Client detail shows consent status when recorded."""
         from django.utils import timezone
@@ -1112,6 +1137,31 @@ class ConsentWithdrawalTest(TestCase):
         self.assertIsNotNone(event)
         self.assertEqual(event.withdrawal_reason, "participant_requested")
         self.assertEqual(event.recorded_by, self.pm)
+
+    def test_withdrawal_audit_log_uses_forwarded_ip(self):
+        """Consent withdrawal audit logs should use the forwarded client IP."""
+        from apps.audit.models import AuditLog
+
+        self.http.login(username="pm", password="testpass123")
+        today = timezone.now().strftime("%Y-%m-%d")
+        self.http.post(
+            f"/participants/{self.cf.pk}/consent/withdraw/save/",
+            {
+                "withdrawal_date": today,
+                "withdrawal_reason": "participant_requested",
+                "request_received_via": "written",
+                "confirm": "on",
+            },
+            HTTP_X_FORWARDED_FOR="198.51.100.40, 10.0.0.9",
+            REMOTE_ADDR="127.0.0.1",
+        )
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="consent",
+            resource_id=self.cf.pk,
+            action="update",
+        ).latest("event_timestamp")
+        self.assertEqual(log.ip_address, "198.51.100.40")
 
     def test_withdrawal_blocks_note_creation(self):
         """After withdrawal, note creation returns consent-required page."""

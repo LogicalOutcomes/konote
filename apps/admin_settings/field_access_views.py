@@ -9,6 +9,7 @@ from apps.admin_settings.models import get_access_tier
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required
 from apps.clients.models import CustomFieldDefinition, FieldAccessConfig
+from konote.utils import get_client_ip
 
 
 # Human-readable labels for core fields shown in the admin UI.
@@ -48,7 +49,7 @@ def field_access(request):
                 event_timestamp=timezone.now(),
                 user_id=request.user.pk,
                 user_display=str(request.user),
-                ip_address=request.META.get("REMOTE_ADDR"),
+                ip_address=get_client_ip(request),
                 action="update",
                 resource_type="settings",
                 metadata={"setting": "field_access", "change": "reset_to_defaults"},
@@ -91,7 +92,7 @@ def field_access(request):
                 event_timestamp=timezone.now(),
                 user_id=request.user.pk,
                 user_display=str(request.user),
-                ip_address=request.META.get("REMOTE_ADDR"),
+                ip_address=get_client_ip(request),
                 action="update",
                 resource_type="settings",
                 metadata={"setting": "field_access", "changes": changes},

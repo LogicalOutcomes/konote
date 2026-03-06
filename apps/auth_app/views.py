@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils import translation
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.translation import gettext as _, ngettext
 from django_ratelimit.decorators import ratelimit
 
 logger = logging.getLogger(__name__)
@@ -183,7 +184,7 @@ def _local_login(request):
     # Check for lockout before processing login attempt
     if _is_locked_out(client_ip):
         locked_out = True
-        error = "Too many failed login attempts. Please try again in 15 minutes."
+        error = _("Too many failed login attempts. Please try again in 15 minutes.")
         _audit_failed_login(request, "(locked out)", "account_locked")
 
     if request.method == "POST" and not locked_out:
@@ -214,20 +215,28 @@ def _local_login(request):
                     attempts = _record_failed_attempt(client_ip)
                     _audit_failed_login(request, username, "invalid_password")
                     if attempts >= LOCKOUT_THRESHOLD:
-                        error = "Too many failed login attempts. Please try again in 15 minutes."
+                        error = _("Too many failed login attempts. Please try again in 15 minutes.")
                     else:
                         remaining = LOCKOUT_THRESHOLD - attempts
-                        error = f"Invalid username or password. {remaining} attempt{'s' if remaining != 1 else ''} remaining."
+                        error = ngettext(
+                            "Invalid username or password. %(count)d attempt remaining.",
+                            "Invalid username or password. %(count)d attempts remaining.",
+                            remaining,
+                        ) % {"count": remaining}
             except User.DoesNotExist:
                 attempts = _record_failed_attempt(client_ip)
                 _audit_failed_login(request, username, "user_not_found")
                 if attempts >= LOCKOUT_THRESHOLD:
-                    error = "Too many failed login attempts. Please try again in 15 minutes."
+                    error = _("Too many failed login attempts. Please try again in 15 minutes.")
                 else:
                     remaining = LOCKOUT_THRESHOLD - attempts
-                    error = f"Invalid username or password. {remaining} attempt{'s' if remaining != 1 else ''} remaining."
+                    error = ngettext(
+                        "Invalid username or password. %(count)d attempt remaining.",
+                        "Invalid username or password. %(count)d attempts remaining.",
+                        remaining,
+                    ) % {"count": remaining}
         else:
-            error = "Please enter both username and password."
+            error = _("Please enter both username and password.")
     else:
         form = LoginForm()
 

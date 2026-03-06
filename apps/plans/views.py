@@ -27,6 +27,7 @@ from apps.programs.access import (
     get_user_program_ids,
 )
 from apps.programs.models import UserProgramRole
+from konote.utils import get_client_ip
 
 from django.db import transaction
 from django.http import JsonResponse
@@ -1083,7 +1084,7 @@ def metric_export(request):
         user_display=getattr(request.user, "display_name", str(request.user)),
         action="export",
         resource_type="MetricDefinition",
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={"detail": f"Exported {metrics.count()} metric definitions to CSV"},
     )
@@ -1214,7 +1215,7 @@ def metric_rationale_add(request, metric_id):
             action="update",
             resource_type="MetricDefinition",
             resource_id=str(metric.pk),
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             is_demo_context=getattr(request.user, "is_demo", False),
             metadata={"detail": f"Added rationale note to '{metric.name}'"},
         )
@@ -1267,7 +1268,7 @@ def metric_rationale_generate(request, metric_id):
         action="update",
         resource_type="MetricDefinition",
         resource_id=str(metric.pk),
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={"detail": f"Auto-generated rationale ({source}) for '{metric.name}'"},
     )

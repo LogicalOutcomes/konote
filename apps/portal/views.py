@@ -12,6 +12,7 @@ import secrets
 from functools import wraps
 
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -174,6 +175,7 @@ def portal_login(request):
                     email_hash=email_hash, is_active=True
                 )
             except ParticipantUser.DoesNotExist:
+                make_password("dummy-timing-equalisation")
                 # Don't reveal whether the account exists
                 error = _("Invalid email or password.")
                 _audit_portal_event(request, "portal_login_failed", metadata={
@@ -917,6 +919,7 @@ def password_reset_confirm(request):
     if request.method == "POST":
         form = PortalPasswordResetConfirmForm(request.POST)
         if form.is_valid():
+            generic_error = _("Invalid or expired code. Please request a new one.")
             email = form.cleaned_data["email"].strip().lower()
             code = form.cleaned_data["code"].strip()
             new_password = form.cleaned_data["new_password"]
@@ -927,15 +930,15 @@ def password_reset_confirm(request):
                     email_hash=email_hash, is_active=True
                 )
             except ParticipantUser.DoesNotExist:
-                error = _("Invalid code or email address.")
+                error = generic_error
             else:
                 # Check expiry
                 if not participant.password_reset_expires or participant.password_reset_expires < timezone.now():
-                    error = _("This code has expired. Please request a new one.")
+                    error = generic_error
                 elif not participant.password_reset_token_hash:
-                    error = _("No reset code has been requested.")
+                    error = generic_error
                 elif not check_password(code, participant.password_reset_token_hash):
-                    error = _("Invalid code or email address.")
+                    error = generic_error
                 else:
                     # Code valid — set new password and clear reset fields
                     participant.set_password(new_password)

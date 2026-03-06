@@ -19,12 +19,14 @@ from cryptography.fernet import Fernet
 from django.test import Client as HttpClient, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import override as translation_override
 
 from apps.reports.funder_report import (
     format_number,
     generate_funder_report_csv_rows,
     generate_funder_report_data,
 )
+from apps.reports.export_engine import generate_template_csv_rows
 from apps.reports.utils import get_quarter_range, get_quarter_choices
 from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
@@ -200,6 +202,38 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         # Non-suppressed count should have normal percentage
         self.assertEqual(section_rows[1][1], "30")
         self.assertIn("%", section_rows[1][2])
+
+
+class TemplateExportLocalizationTests(SimpleTestCase):
+    """Template export metadata headers should be localized."""
+
+    def test_metadata_headers_localize_in_french(self):
+        class Partner:
+            translated_name = "Partenaire Test"
+
+        class Template:
+            partner = Partner()
+            name = "Rapport trimestriel"
+            suppression_threshold = 5
+
+        class User:
+            display_name = "Gestionnaire"
+
+        report_data = _minimal_report_data(program_name="Programme Test")
+
+        with translation_override("fr"):
+            rows = generate_template_csv_rows(
+                template=Template(),
+                report_data=report_data,
+                metric_results=[],
+                demographic_labels=[],
+                period_label="T1 2026",
+                user=User(),
+            )
+
+        self.assertTrue(rows[0][0].startswith("Rapport:"))
+        self.assertTrue(rows[1][0].startswith("Programme:"))
+        self.assertTrue(rows[2][0].startswith("Période:"))
 
 
 TEST_KEY = Fernet.generate_key().decode()

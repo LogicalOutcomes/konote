@@ -18,6 +18,7 @@ from apps.auth_app.decorators import _get_user_highest_role, admin_required, req
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
+from konote.utils import get_client_ip
 
 from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, ConsentWithdrawalForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
@@ -367,10 +368,14 @@ def client_list(request):
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
-    # Bulk operation permission flags (UX17) — disabled until UX is reworked
-    can_bulk_status = False
-    can_bulk_transfer = False
-    show_bulk = False
+    # Bulk operation permission flags (UX17)
+    can_bulk_status = any(
+        can_access(upr.role, "client.edit") != DENY for upr in _user_roles
+    )
+    can_bulk_transfer = any(
+        can_access(upr.role, "client.transfer") != DENY for upr in _user_roles
+    )
+    show_bulk = can_bulk_status or can_bulk_transfer
 
     # Base context shared by both single and split views
     context = {
@@ -1577,7 +1582,7 @@ def client_consent_save(request, client_id):
                 event_timestamp=timezone.now(),
                 user_id=request.user.pk,
                 user_display=str(request.user),
-                ip_address=request.META.get("REMOTE_ADDR"),
+                ip_address=get_client_ip(request),
                 action="create" if not is_regrant else "update",
                 resource_type="consent",
                 resource_id=client.pk,
@@ -1701,7 +1706,7 @@ def client_consent_withdraw(request, client_id):
             event_timestamp=timezone.now(),
             user_id=request.user.pk,
             user_display=str(request.user),
-            ip_address=request.META.get("REMOTE_ADDR"),
+            ip_address=get_client_ip(request),
             action="update",
             resource_type="consent",
             resource_id=client.pk,

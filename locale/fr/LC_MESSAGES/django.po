@@ -3511,7 +3511,8 @@ msgid "Groups, Projects, and Circles"
 msgstr "Groupes, projets et cercles"
 
 msgid "KoNote gives you three ways to work with multiple people:"
-msgstr "KoNote vous offre trois façons de travailler avec plusieurs personnes :"
+msgstr ""
+"KoNote vous offre trois façons de travailler avec plusieurs personnes :"
 
 msgid "Use when"
 msgstr "À utiliser quand"
@@ -3535,7 +3536,9 @@ msgid "People are connected by family or caregiving"
 msgstr "Les personnes sont liées par la famille ou les soins"
 
 msgid "Parenting class, peer support group, drop-in program"
-msgstr "Cours de parentalité, groupe de soutien par les pairs, programme sans rendez-vous"
+msgstr ""
+"Cours de parentalité, groupe de soutien par les pairs, programme sans "
+"rendez-vous"
 
 msgid "Community garden, fundraiser, advocacy campaign"
 msgstr "Jardin communautaire, collecte de fonds, campagne de plaidoyer"
@@ -3568,7 +3571,9 @@ msgid "<em>\"Do we meet as a group?\"</em> → Create a Group"
 msgstr "<em>« Est-ce qu'on se réunit en groupe? »</em> → Créer un groupe"
 
 msgid "<em>\"Are we working toward a specific result?\"</em> → Create a Project"
-msgstr "<em>« Est-ce qu'on travaille vers un résultat précis? »</em> → Créer un projet"
+msgstr ""
+"<em>« Est-ce qu'on travaille vers un résultat précis? »</em> → Créer un "
+"projet"
 
 msgid ""
 "<em>\"Are these people connected to each other outside our agency?\"</em> → "
@@ -3827,23 +3832,34 @@ msgstr "Que souhaitez-vous créer?"
 msgid "A recurring group"
 msgstr "Un groupe récurrent"
 
-msgid "For regular meetings — like a support group, workshop series, or drop-in program. You'll track attendance and record what happens each session."
-msgstr "Pour des rencontres régulières — comme un groupe de soutien, une série d'ateliers ou un programme sans rendez-vous. Vous ferez le suivi de la présence et noterez ce qui se passe à chaque séance."
+msgid ""
+"For regular meetings — like a support group, workshop series, or drop-in "
+"program. You'll track attendance and record what happens each session."
+msgstr ""
+"Pour des rencontres régulières — comme un groupe de soutien, une série "
+"d'ateliers ou un programme sans rendez-vous. Vous ferez le suivi de la "
+"présence et noterez ce qui se passe à chaque séance."
 
 msgid "A project"
 msgstr "Un projet"
 
-msgid "For goal-oriented work with a deadline — like a community event, fundraiser, or advocacy initiative. You'll track milestones and progress toward outcomes."
-msgstr "Pour un travail axé sur un objectif avec une échéance — comme un événement communautaire, une collecte de fonds ou une initiative de plaidoyer. Vous ferez le suivi des jalons et des progrès vers les résultats."
+msgid ""
+"For goal-oriented work with a deadline — like a community event, fundraiser,"
+" or advocacy initiative. You'll track milestones and progress toward "
+"outcomes."
+msgstr ""
+"Pour un travail axé sur un objectif avec une échéance — comme un événement "
+"communautaire, une collecte de fonds ou une initiative de plaidoyer. Vous "
+"ferez le suivi des jalons et des progrès vers les résultats."
 
 msgid "Tracking a family or care team?"
 msgstr "Vous suivez une famille ou une équipe de soins?"
 
-msgid "instead — for people connected by relationships, not a shared activity."
-msgstr "plutôt — pour des personnes liées par des relations, pas par une activité commune."
-
-msgid "Type"
-msgstr "Type"
+msgid ""
+"instead — for people connected by relationships, not a shared activity."
+msgstr ""
+"plutôt — pour des personnes liées par des relations, pas par une activité "
+"commune."
 
 msgid "Member"
 msgstr "Membre"
@@ -3946,9 +3962,6 @@ msgstr "Données du participant"
 
 msgid "Metric Report"
 msgstr "Rapport de mesures"
-
-msgid "Standard Report"
-msgstr "Rapport standard"
 
 msgid "%(name)s added."
 msgstr "%(name)s ajouté(e)."
@@ -11972,7 +11985,8 @@ msgid "Almost there — a few things need your attention:"
 msgstr "Presque terminé — quelques éléments nécessitent votre attention :"
 
 msgid "You chose to create a new section — please give it a name."
-msgstr "Vous avez choisi de créer une nouvelle section — veuillez lui donner un nom."
+msgstr ""
+"Vous avez choisi de créer une nouvelle section — veuillez lui donner un nom."
 
 msgid "Please choose which area of the plan this goal belongs to."
 msgstr "Veuillez choisir à quelle section du plan cet objectif appartient."
@@ -14588,11 +14602,19 @@ msgstr "Masquer"
 msgid "Hide until tomorrow"
 msgstr "Masquer jusqu'à demain"
 
-msgid "Hiding an alert removes it from your view until tomorrow. It does not resolve the alert."
-msgstr "Masquer une alerte la retire de votre affichage jusqu'à demain. Cela ne résout pas l'alerte."
+msgid ""
+"Hiding an alert removes it from your view until tomorrow. It does not "
+"resolve the alert."
+msgstr ""
+"Masquer une alerte la retire de votre affichage jusqu'à demain. Cela ne "
+"résout pas l'alerte."
 
-msgid "Hiding an item removes it from your view until tomorrow. It does not resolve it."
-msgstr "Masquer un élément le retire de votre affichage jusqu'à demain. Cela ne le résout pas."
+msgid ""
+"Hiding an item removes it from your view until tomorrow. It does not resolve"
+" it."
+msgstr ""
+"Masquer un élément le retire de votre affichage jusqu'à demain. Cela ne le "
+"résout pas."
 
 msgid "Heads up:"
 msgstr "Attention :"
@@ -14654,19 +14676,29 @@ msgid "All Participants"
 msgstr "Tous les participants"
 
 msgid "This report includes all recorded outcomes for each program."
-msgstr "Ce rapport inclut tous les résultats enregistrés pour chaque programme."
+msgstr ""
+"Ce rapport inclut tous les résultats enregistrés pour chaque programme."
 
-msgid "Metrics are shown per program — only outcomes with data in the selected period will appear."
-msgstr "Les indicateurs sont affichés par programme — seuls les résultats avec des données dans la période sélectionnée apparaîtront."
+msgid ""
+"Metrics are shown per program — only outcomes with data in the selected "
+"period will appear."
+msgstr ""
+"Les indicateurs sont affichés par programme — seuls les résultats avec des "
+"données dans la période sélectionnée apparaîtront."
 
 msgid "No specific metrics have been configured for this template."
 msgstr "Aucun indicateur spécifique n'a été configuré pour ce modèle."
 
 msgid "All outcomes with recorded data will be included by default."
-msgstr "Tous les résultats avec des données enregistrées seront inclus par défaut."
+msgstr ""
+"Tous les résultats avec des données enregistrées seront inclus par défaut."
 
-msgid "To specify which metrics appear, ask your administrator to edit this template."
-msgstr "Pour préciser quels indicateurs apparaissent, demandez à votre administrateur de modifier ce modèle."
+msgid ""
+"To specify which metrics appear, ask your administrator to edit this "
+"template."
+msgstr ""
+"Pour préciser quels indicateurs apparaissent, demandez à votre "
+"administrateur de modifier ce modèle."
 
 msgid "Chart visualisation is not yet available in PDF reports."
 msgstr ""
@@ -14806,9 +14838,6 @@ msgstr "Taux de présence"
 msgid "Build your own report"
 msgstr "Créer votre propre rapport"
 
-msgid "Generate"
-msgstr "Générer"
-
 msgid "Build a Report"
 msgstr "Créer un rapport"
 
@@ -14925,8 +14954,8 @@ msgid ""
 "yourself."
 msgstr ""
 "En attendant, vous pouvez créer un rapport ponctuel avec <strong>Créer un "
-"rapport</strong>, où vous choisissez vous-même le programme, les indicateurs "
-"et la période."
+"rapport</strong>, où vous choisissez vous-même le programme, les indicateurs"
+" et la période."
 
 msgid ""
 "All forms. For programs doing both group sessions and individual visits."
@@ -19415,15 +19444,15 @@ msgstr ""
 
 msgid ""
 "Each time a worker writes a progress note, they select how things are going "
-"for each goal: Harder right now, Holding steady, Something's shifting, or In "
-"a good place. \"Harder\" is not necessarily negative — progress often makes "
-"things harder before they get easier. Percentages reflect all goal check-ins "
-"in the selected time period."
+"for each goal: Harder right now, Holding steady, Something's shifting, or In"
+" a good place. \"Harder\" is not necessarily negative — progress often makes"
+" things harder before they get easier. Percentages reflect all goal check-"
+"ins in the selected time period."
 msgstr ""
 "Chaque fois qu'un intervenant rédige une note de suivi, il sélectionne "
 "comment les choses se passent pour chaque objectif : Plus difficile en ce "
-"moment, Stable, Quelque chose bouge, ou En bonne posture. « Plus difficile » "
-"n'est pas nécessairement négatif — le progrès rend souvent les choses plus "
+"moment, Stable, Quelque chose bouge, ou En bonne posture. « Plus difficile »"
+" n'est pas nécessairement négatif — le progrès rend souvent les choses plus "
 "difficiles avant qu'elles ne s'améliorent. Les pourcentages reflètent tous "
 "les bilans d'objectifs de la période sélectionnée."
 
@@ -19449,7 +19478,8 @@ msgid "Showing suggestions from %(start)s to %(end)s."
 msgstr "Suggestions du %(start)s au %(end)s."
 
 msgid "Show this field on the new participant creation form."
-msgstr "Afficher ce champ sur le formulaire de création de nouveau participant."
+msgstr ""
+"Afficher ce champ sur le formulaire de création de nouveau participant."
 
 msgid "On create"
 msgstr "À la création"
@@ -19458,97 +19488,107 @@ msgid "Show on create form"
 msgstr "Afficher au formulaire de création"
 
 msgid "Age Distribution"
-msgstr ""
+msgstr "Répartition par âge"
 
 msgid "Age data table"
-msgstr ""
+msgstr "Tableau des données d’âge"
 
 msgid "Age group distribution bar chart"
-msgstr ""
+msgstr "Diagramme à barres de la répartition par groupe d’âge"
 
 msgid "Agency"
-msgstr ""
+msgstr "Organisme"
 
 msgid "Agency Service Statistics"
-msgstr ""
+msgstr "Statistiques de services de l’organisme"
 
 msgid "Agency View"
-msgstr ""
+msgstr "Vue par organisme"
 
 msgid "Born in Canada"
-msgstr ""
+msgstr "Né au Canada"
 
 msgid "Born in Canada data table"
-msgstr ""
+msgstr "Tableau des données sur le lieu de naissance au Canada"
 
 msgid "Born in Canada distribution chart"
-msgstr ""
+msgstr "Graphique de répartition des personnes nées au Canada"
 
 msgid "Consortium Dashboard"
-msgstr ""
+msgstr "Tableau de bord du consortium"
 
 msgid "Data Sharing Notice"
-msgstr ""
+msgstr "Avis de partage des données"
 
 msgid "Data sharing notice"
-msgstr ""
+msgstr "Avis de partage des données"
 
 msgid ""
 "Demographics are shown only in network totals to protect participant "
 "privacy."
 msgstr ""
+"Les données démographiques sont affichées uniquement dans les totaux du "
+"réseau afin de protéger la vie privée des participants."
 
 msgid "Gender Identity"
-msgstr ""
+msgstr "Identité de genre"
 
 msgid "Gender data table"
-msgstr ""
+msgstr "Tableau des données sur le genre"
 
 msgid "Gender identity distribution chart"
-msgstr ""
+msgstr "Graphique de répartition selon l’identité de genre"
 
 msgid ""
 "If your agency is not a consortium member, no data will be shared beyond "
 "this export file."
 msgstr ""
+"Si votre organisme n’est pas membre du consortium, aucune donnée ne sera "
+"partagée au-delà de ce fichier d’exportation."
 
 msgid "Network View"
-msgstr ""
+msgstr "Vue du réseau"
 
 msgid ""
 "No rollup data available yet. Published reports from partner agencies will "
 "appear here once aggregated."
 msgstr ""
+"Aucune donnée agrégée n’est encore disponible. Les rapports publiés par les "
+"organismes partenaires apparaîtront ici une fois regroupés."
 
 msgid "Partner Agencies"
-msgstr ""
+msgstr "Organismes partenaires"
 
 msgid "Per-Agency Service Statistics"
-msgstr ""
+msgstr "Statistiques de services par organisme"
 
 msgid "Per-agency service statistics table"
-msgstr ""
+msgstr "Tableau des statistiques de services par organisme"
 
 msgid "Racial Identity"
-msgstr ""
+msgstr "Identité raciale"
 
 msgid "Racial identity data table"
-msgstr ""
+msgstr "Tableau des données sur l’identité raciale"
 
 msgid "Racial identity distribution chart"
-msgstr ""
+msgstr "Graphique de répartition selon l’identité raciale"
 
 msgid "Returning"
-msgstr ""
+msgstr "De retour"
 
 msgid ""
 "This dashboard shows de-identified aggregate data published by partner "
 "agencies. Individual participant records are never shared. Data suppression "
 "is applied to protect small groups."
 msgstr ""
+"Ce tableau de bord affiche des données agrégées dépersonnalisées publiées "
+"par les organismes partenaires. Les dossiers individuels des participants ne"
+" sont jamais partagés. Une suppression des données est appliquée pour "
+"protéger les petits groupes."
 
 msgid "Total Participants"
-msgstr ""
+msgstr "Nombre total de participants"
 
 msgid ""
 "When you approve this report, de-identified aggregate data will be shared "
@@ -19556,6 +19596,13 @@ msgid ""
 "shared. Cell suppression is applied to protect small groups (counts below 5 "
 "are suppressed; counts below 10 for sensitive demographic fields)."
 msgstr ""
+"Lorsque vous approuvez ce rapport, des données agrégées dépersonnalisées "
+"seront partagées avec votre réseau de consortium. Les dossiers individuels "
+"des participants ne sont jamais partagés. Une suppression des cellules est "
+"appliquée pour protéger les petits groupes (les nombres inférieurs à 5 sont "
+"supprimés; les nombres inférieurs à 10 le sont pour les champs "
+"démographiques sensibles)."
+
 #: apps/portal/templates/portal/progress.html — progress page redesign
 msgid "Moving up"
 msgstr "En hausse"
@@ -19569,12 +19616,6 @@ msgstr "Échelle"
 msgid "data table"
 msgstr "tableau de données"
 
-msgid "Date"
-msgstr "Date"
-
-msgid "Score"
-msgstr "Score"
-
 #: apps/portal/templates/portal/message_to_worker.html
 msgid "To:"
 msgstr "À :"
@@ -19587,26 +19628,26 @@ msgid "Programs you manage"
 msgstr "Programmes que vous gérez"
 
 #, python-format
-msgid ""
-"Your caseload — %(programs)s (%(total)s)"
-msgstr ""
-"Votre charge de travail — %(programs)s (%(total)s)"
+msgid "Your caseload — %(programs)s (%(total)s)"
+msgstr "Votre charge de travail — %(programs)s (%(total)s)"
 
 #, python-format
-msgid ""
-"Programs you manage — %(programs)s (%(total)s)"
-msgstr ""
-"Programmes que vous gérez — %(programs)s (%(total)s)"
+msgid "Programs you manage — %(programs)s (%(total)s)"
+msgstr "Programmes que vous gérez — %(programs)s (%(total)s)"
 
 #, python-format
-msgid "Staff in %(staff)s \u00b7 Manager for %(pm)s"
-msgstr "Personnel pour %(staff)s \u00b7 Gestionnaire pour %(pm)s"
+msgid "Staff in %(staff)s \\u00b7 Manager for %(pm)s"
+msgstr "Personnel pour %(staff)s \\u00b7 Gestionnaire pour %(pm)s"
 
 msgid "No participants in your caseload match the current filters."
-msgstr "Aucun participant de votre charge de travail ne correspond aux filtres sélectionnés."
+msgstr ""
+"Aucun participant de votre charge de travail ne correspond aux filtres "
+"sélectionnés."
 
 msgid "No participants in managed programs match the current filters."
-msgstr "Aucun participant des programmes que vous gérez ne correspond aux filtres sélectionnés."
+msgstr ""
+"Aucun participant des programmes que vous gérez ne correspond aux filtres "
+"sélectionnés."
 
 msgid "Select all in caseload"
 msgstr "Tout sélectionner dans la charge de travail"
@@ -19620,23 +19661,38 @@ msgid "%(achieved)s of %(measured)s"
 msgstr "%(achieved)s sur %(measured)s"
 
 #, python-format
-msgid "Data reflects client outcomes recorded during the %(period)s reporting period."
-msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(period)s."
+msgid ""
+"Data reflects client outcomes recorded during the %(period)s reporting "
+"period."
+msgstr ""
+"Les données reflètent les résultats des participants enregistrés durant la "
+"période de rapport %(period)s."
 
 #, python-format
-msgid "Data reflects client outcomes recorded during the %(fy)s reporting period."
-msgstr "Les données reflètent les résultats des participants enregistrés durant la période de rapport %(fy)s."
+msgid ""
+"Data reflects client outcomes recorded during the %(fy)s reporting period."
+msgstr ""
+"Les données reflètent les résultats des participants enregistrés durant la "
+"période de rapport %(fy)s."
 
 #, python-format
 msgid "Includes data from %(count)s program(s)."
 msgstr "Comprend les données de %(count)s programme(s)."
 
-msgid "PDF export is not available for All Programs. Please select CSV or HTML."
-msgstr "L’exportation PDF n’est pas disponible pour Tous les programmes. Veuillez sélectionner CSV ou HTML."
+msgid ""
+"PDF export is not available for All Programs. Please select CSV or HTML."
+msgstr ""
+"L’exportation PDF n’est pas disponible pour Tous les programmes. Veuillez "
+"sélectionner CSV ou HTML."
 
 #: templates/notes/suggestions/_linked_list.html
-msgid "Suggestion content is not shown for programs with fewer than 15 participants to protect privacy. Suggestion count and priority are shown below."
-msgstr "Le contenu des suggestions n’est pas affiché pour les programmes de moins de 15 participants afin de protéger la vie privée. Le nombre et la priorité des suggestions sont indiqués ci-dessous."
+msgid ""
+"Suggestion content is not shown for programs with fewer than 15 participants"
+" to protect privacy. Suggestion count and priority are shown below."
+msgstr ""
+"Le contenu des suggestions n’est pas affiché pour les programmes de moins de"
+" 15 participants afin de protéger la vie privée. Le nombre et la priorité "
+"des suggestions sont indiqués ci-dessous."
 
 #: templates/notes/suggestions/_linked_list.html
 msgid "Content not shown for small programs"
@@ -19656,7 +19712,8 @@ msgstr "Rechercher des suggestions sur un sujet précis"
 
 #: templates/notes/suggestions/theme_list.html
 msgid "e.g., Are there any themes about scheduling or opening hours?"
-msgstr "p. ex., Y a-t-il des thèmes liés aux horaires ou aux heures d’ouverture?"
+msgstr ""
+"p. ex., Y a-t-il des thèmes liés aux horaires ou aux heures d’ouverture?"
 
 #: templates/notes/suggestions/theme_list.html
 msgid "Analyse"
@@ -19688,15 +19745,21 @@ msgstr "Créer un thème à partir de ceci"
 
 #: apps/notes/suggestion_views.py
 msgid "AI participant data features are not enabled."
-msgstr "Les fonctionnalités IA pour les données des participants ne sont pas activées."
+msgstr ""
+"Les fonctionnalités IA pour les données des participants ne sont pas "
+"activées."
 
 #: apps/notes/suggestion_views.py
 msgid "Please enter a question (max 500 characters)."
 msgstr "Veuillez saisir une question (max. 500 caractères)."
 
 #, python-format
-msgid "This program has %(count)d participants. A minimum of 5 is required for AI analysis."
-msgstr "Ce programme compte %(count)d participants. Un minimum de 5 est requis pour l’analyse par IA."
+msgid ""
+"This program has %(count)d participants. A minimum of 5 is required for AI "
+"analysis."
+msgstr ""
+"Ce programme compte %(count)d participants. Un minimum de 5 est requis pour "
+"l’analyse par IA."
 
 #: apps/notes/suggestion_views.py
 msgid "Rate limit reached (10 per hour). Please try again later."
@@ -19715,24 +19778,47 @@ msgid "AI Processing"
 msgstr "Traitement IA"
 
 #: templates/admin_settings/features.html
-msgid "AI requests are sent to <strong>OpenRouter</strong> (external API) using model: <code>%(model)s</code>."
-msgstr "Les demandes d’IA sont envoyées à <strong>OpenRouter</strong> (API externe) en utilisant le modèle : <code>%(model)s</code>."
+msgid ""
+"AI requests are sent to <strong>OpenRouter</strong> (external API) using "
+"model: <code>%(model)s</code>."
+msgstr ""
+"Les demandes d’IA sont envoyées à <strong>OpenRouter</strong> (API externe) "
+"en utilisant le modèle : <code>%(model)s</code>."
 
 #: templates/admin_settings/features.html
-msgid "Data sent depends on which AI features are enabled below. Tools-only AI sends program metadata only (no personal information). Participant-data AI sends de-identified quotes."
-msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-dessous. L’IA outils uniquement envoie seulement les métadonnées du programme (aucune information personnelle). L’IA données des participants envoie des citations dé-identifiées."
+msgid ""
+"Data sent depends on which AI features are enabled below. Tools-only AI "
+"sends program metadata only (no personal information). Participant-data AI "
+"sends de-identified quotes."
+msgstr ""
+"Les données envoyées dépendent des fonctionnalités IA activées ci-dessous. "
+"L’IA outils uniquement envoie seulement les métadonnées du programme (aucune"
+" information personnelle). L’IA données des participants envoie des "
+"citations dé-identifiées."
 
 #: templates/admin_settings/features.html
-msgid "No AI API key is configured. AI features are unavailable even if enabled below."
-msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
+msgid ""
+"No AI API key is configured. AI features are unavailable even if enabled "
+"below."
+msgstr ""
+"Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas "
+"disponibles même si elles sont activées ci-dessous."
 
 #: templates/clients/custom_fields_admin.html
 msgid "Collapsed by default"
 msgstr "Réduit par défaut"
 
 #: apps/clients/models.py
-msgid "When checked, this group is collapsed on the participant info tab. Use for sensitive demographics that aren’t needed for daily service delivery. This is a display preference — it does not restrict access to the data."
-msgstr "Lorsque coché, ce groupe est réduit dans l’onglet d’information du participant. Utilisez cette option pour les données démographiques sensibles qui ne sont pas nécessaires pour la prestation quotidienne des services. Il s’agit d’une préférence d’affichage — cela ne restreint pas l’accès aux données."
+msgid ""
+"When checked, this group is collapsed on the participant info tab. Use for "
+"sensitive demographics that aren’t needed for daily service delivery. This "
+"is a display preference — it does not restrict access to the data."
+msgstr ""
+"Lorsque coché, ce groupe est réduit dans l’onglet d’information du "
+"participant. Utilisez cette option pour les données démographiques sensibles"
+" qui ne sont pas nécessaires pour la prestation quotidienne des services. Il"
+" s’agit d’une préférence d’affichage — cela ne restreint pas l’accès aux "
+"données."
 
 #: apps/clients/forms.py
 msgid "Collapsed by default (display only — does not restrict access)"
@@ -19754,7 +19840,6 @@ msgstr "était :"
 msgid "first assessment"
 msgstr "première évaluation"
 
-
 #: templates/plans/goal_form.html — R23: Metric tier labels
 msgid "Recommended for all participants"
 msgstr "Recommandé pour tous les participants"
@@ -19769,7 +19854,9 @@ msgstr "Parcourir toutes les mesures"
 
 #: templates/plans/goal_form.html — R10: Reassurance text
 msgid "You can revise this goal later as things become clearer."
-msgstr "Vous pourrez réviser cet objectif plus tard, au fur et à mesure que les choses se précisent."
+msgstr ""
+"Vous pourrez réviser cet objectif plus tard, au fur et à mesure que les "
+"choses se précisent."
 
 #: templates/plans/goal_form.html — R22: Quick pick words prompt
 msgid "Optional — in their own words…"
@@ -19784,14 +19871,17 @@ msgstr "Pourquoi ces mesures?"
 msgid "What did %(client)s say about this?"
 msgstr "Qu'a dit %(client)s à ce sujet?"
 
-
 #: templates/pages/help.html — Admin settings guide
 msgid "Settings Guide"
 msgstr "Guide des paramètres"
 
 #: templates/pages/help.html — Admin settings guide
-msgid "What each setting does, when you'd change it, and what's safe to experiment with."
-msgstr "Ce que fait chaque paramètre, quand le modifier et ce que vous pouvez essayer sans risque."
+msgid ""
+"What each setting does, when you'd change it, and what's safe to experiment "
+"with."
+msgstr ""
+"Ce que fait chaque paramètre, quand le modifier et ce que vous pouvez "
+"essayer sans risque."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Read the Settings Guide"
@@ -19806,8 +19896,14 @@ msgid "Need help with a setting?"
 msgstr "Besoin d'aide avec un paramètre?"
 
 #: templates/pages/help.html — Admin settings guide
-msgid "This guide explains what each area of the Settings page does, when you'd change it, and what's safe to experiment with. Nothing here can break your data — you can always change settings back."
-msgstr "Ce guide explique ce que fait chaque section de la page Paramètres, quand la modifier et ce que vous pouvez essayer sans risque. Rien ici ne peut endommager vos données — vous pouvez toujours revenir en arrière."
+msgid ""
+"This guide explains what each area of the Settings page does, when you'd "
+"change it, and what's safe to experiment with. Nothing here can break your "
+"data — you can always change settings back."
+msgstr ""
+"Ce guide explique ce que fait chaque section de la page Paramètres, quand la"
+" modifier et ce que vous pouvez essayer sans risque. Rien ici ne peut "
+"endommager vos données — vous pouvez toujours revenir en arrière."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Safe to experiment?"
@@ -19831,7 +19927,9 @@ msgstr "Conseils généraux"
 
 #: templates/pages/help.html — Admin settings guide
 msgid "For detailed guidance on each setting, see the Settings Guide below."
-msgstr "Pour des conseils détaillés sur chaque paramètre, consultez le Guide des paramètres ci-dessous."
+msgstr ""
+"Pour des conseils détaillés sur chaque paramètre, consultez le Guide des "
+"paramètres ci-dessous."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Create a custom metric"
@@ -19843,148 +19941,486 @@ msgstr "Activer ou désactiver une mesure"
 
 #: templates/pages/help.html — Admin settings guide
 msgid "When the built-in scales don't capture what your programme measures"
-msgstr "Quand les échelles intégrées ne correspondent pas à ce que votre programme mesure"
+msgstr ""
+"Quand les échelles intégrées ne correspondent pas à ce que votre programme "
+"mesure"
 
 #: templates/pages/help.html — Admin settings guide
-msgid "If staff report too many false warnings (values that are correct but keep getting flagged), loosen the thresholds. If implausible values are slipping through unnoticed, tighten them."
-msgstr "Si le personnel signale trop de faux avertissements (des valeurs correctes mais constamment signalées), assouplissez les seuils. Si des valeurs peu plausibles passent inaperçues, resserrez-les."
+msgid ""
+"If staff report too many false warnings (values that are correct but keep "
+"getting flagged), loosen the thresholds. If implausible values are slipping "
+"through unnoticed, tighten them."
+msgstr ""
+"Si le personnel signale trop de faux avertissements (des valeurs correctes "
+"mais constamment signalées), assouplissez les seuils. Si des valeurs peu "
+"plausibles passent inaperçues, resserrez-les."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Yes. Threshold changes only affect future warnings, not existing data."
-msgstr "Oui. Les changements de seuils n'affectent que les avertissements futurs, pas les données existantes."
+msgstr ""
+"Oui. Les changements de seuils n'affectent que les avertissements futurs, "
+"pas les données existantes."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "When you want to add a new note type (e.g. for a new programme) or adjust the prompts staff see when writing notes."
-msgstr "Quand vous voulez ajouter un nouveau type de note (par exemple pour un nouveau programme) ou ajuster les consignes que le personnel voit en rédigeant des notes."
+msgid ""
+"When you want to add a new note type (e.g. for a new programme) or adjust "
+"the prompts staff see when writing notes."
+msgstr ""
+"Quand vous voulez ajouter un nouveau type de note (par exemple pour un "
+"nouveau programme) ou ajuster les consignes que le personnel voit en "
+"rédigeant des notes."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Yes. Changing a template affects future notes only. Existing notes keep the structure they were written with."
-msgstr "Oui. Modifier un modèle n'affecte que les notes futures. Les notes existantes conservent la structure avec laquelle elles ont été rédigées."
+msgid ""
+"Yes. Changing a template affects future notes only. Existing notes keep the "
+"structure they were written with."
+msgstr ""
+"Oui. Modifier un modèle n'affecte que les notes futures. Les notes "
+"existantes conservent la structure avec laquelle elles ont été rédigées."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Create new user accounts, change someone's role, assign them to programmes, or deactivate accounts when people leave. Each user needs a role (Front Desk, Staff, Program Manager, or Administrator) and at least one programme assignment to see participant data."
-msgstr "Créer de nouveaux comptes, changer le rôle de quelqu'un, assigner à des programmes ou désactiver des comptes lors de départs. Chaque utilisateur a besoin d'un rôle (Accueil, Personnel, Gestionnaire de programme ou Administrateur) et d'au moins une affectation de programme pour voir les données des participants."
+msgid ""
+"Create new user accounts, change someone's role, assign them to programmes, "
+"or deactivate accounts when people leave. Each user needs a role (Front "
+"Desk, Staff, Program Manager, or Administrator) and at least one programme "
+"assignment to see participant data."
+msgstr ""
+"Créer de nouveaux comptes, changer le rôle de quelqu'un, assigner à des "
+"programmes ou désactiver des comptes lors de départs. Chaque utilisateur a "
+"besoin d'un rôle (Accueil, Personnel, Gestionnaire de programme ou "
+"Administrateur) et d'au moins une affectation de programme pour voir les "
+"données des participants."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "When someone joins, leaves, or changes role. Also when someone needs access to a different programme."
-msgstr "Quand quelqu'un arrive, part ou change de rôle. Aussi quand quelqu'un a besoin d'accéder à un autre programme."
+msgid ""
+"When someone joins, leaves, or changes role. Also when someone needs access "
+"to a different programme."
+msgstr ""
+"Quand quelqu'un arrive, part ou change de rôle. Aussi quand quelqu'un a "
+"besoin d'accéder à un autre programme."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Be careful with role changes — giving someone Administrator access lets them change all settings. Deactivating a user locks them out immediately. Neither action deletes data."
-msgstr "Soyez prudent avec les changements de rôle — donner à quelqu'un l'accès Administrateur lui permet de modifier tous les paramètres. La désactivation d'un utilisateur le verrouille immédiatement. Aucune de ces actions ne supprime de données."
+msgid ""
+"Be careful with role changes — giving someone Administrator access lets them"
+" change all settings. Deactivating a user locks them out immediately. "
+"Neither action deletes data."
+msgstr ""
+"Soyez prudent avec les changements de rôle — donner à quelqu'un l'accès "
+"Administrateur lui permet de modifier tous les paramètres. La désactivation "
+"d'un utilisateur le verrouille immédiatement. Aucune de ces actions ne "
+"supprime de données."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "When Front Desk staff need to see (or should not see) certain fields — for example, showing phone number but hiding clinical notes."
-msgstr "Quand le personnel d'accueil doit voir (ou ne doit pas voir) certains champs — par exemple, afficher le numéro de téléphone mais masquer les notes cliniques."
+msgid ""
+"When Front Desk staff need to see (or should not see) certain fields — for "
+"example, showing phone number but hiding clinical notes."
+msgstr ""
+"Quand le personnel d'accueil doit voir (ou ne doit pas voir) certains champs"
+" — par exemple, afficher le numéro de téléphone mais masquer les notes "
+"cliniques."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Yes. Changes take effect immediately but can be reverted just as quickly. There's also a 'Reset to defaults' button."
-msgstr "Oui. Les modifications prennent effet immédiatement mais peuvent être annulées tout aussi rapidement. Il y a aussi un bouton « Rétablir les valeurs par défaut »."
+msgid ""
+"Yes. Changes take effect immediately but can be reverted just as quickly. "
+"There's also a 'Reset to defaults' button."
+msgstr ""
+"Oui. Les modifications prennent effet immédiatement mais peuvent être "
+"annulées tout aussi rapidement. Il y a aussi un bouton « Rétablir les "
+"valeurs par défaut »."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "When a Programme Manager requests access to clinical note content, they must provide a documented justification. This page shows all active grants so you can review who has access and why."
-msgstr "Quand un gestionnaire de programme demande l'accès au contenu des notes cliniques, il doit fournir une justification documentée. Cette page affiche toutes les autorisations actives pour que vous puissiez vérifier qui a accès et pourquoi."
+msgid ""
+"When a Programme Manager requests access to clinical note content, they must"
+" provide a documented justification. This page shows all active grants so "
+"you can review who has access and why."
+msgstr ""
+"Quand un gestionnaire de programme demande l'accès au contenu des notes "
+"cliniques, il doit fournir une justification documentée. Cette page affiche "
+"toutes les autorisations actives pour que vous puissiez vérifier qui a accès"
+" et pourquoi."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Periodically (e.g. quarterly) to confirm that access justifications are still valid, or when a concern is raised about data access."
-msgstr "Périodiquement (par exemple chaque trimestre) pour confirmer que les justifications d'accès sont toujours valides, ou quand une préoccupation est soulevée concernant l'accès aux données."
+msgid ""
+"Periodically (e.g. quarterly) to confirm that access justifications are "
+"still valid, or when a concern is raised about data access."
+msgstr ""
+"Périodiquement (par exemple chaque trimestre) pour confirmer que les "
+"justifications d'accès sont toujours valides, ou quand une préoccupation est"
+" soulevée concernant l'accès aux données."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Your organisation's display name, support email, logo, date format, and session timeout. These affect what everyone sees in the header, footer, and login page."
-msgstr "Le nom affiché de votre organisation, l'adresse courriel de soutien, le logo, le format de date et le délai d'expiration de session. Cela affecte ce que tout le monde voit dans l'en-tête, le pied de page et la page de connexion."
+msgid ""
+"Your organisation's display name, support email, logo, date format, and "
+"session timeout. These affect what everyone sees in the header, footer, and "
+"login page."
+msgstr ""
+"Le nom affiché de votre organisation, l'adresse courriel de soutien, le "
+"logo, le format de date et le délai d'expiration de session. Cela affecte ce"
+" que tout le monde voit dans l'en-tête, le pied de page et la page de "
+"connexion."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "During initial setup, or when your organisation rebrands or changes contact details."
-msgstr "Lors de la configuration initiale, ou quand votre organisation change d'image de marque ou de coordonnées."
+msgid ""
+"During initial setup, or when your organisation rebrands or changes contact "
+"details."
+msgstr ""
+"Lors de la configuration initiale, ou quand votre organisation change "
+"d'image de marque ou de coordonnées."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Yes. All changes are cosmetic and can be reverted."
-msgstr "Oui. Toutes les modifications sont cosmétiques et peuvent être annulées."
+msgstr ""
+"Oui. Toutes les modifications sont cosmétiques et peuvent être annulées."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Terminology lets you rename the words used throughout KoNote. For example, you can change \"Participant\" to \"Client\" or \"Youth,\" or rename \"Progress Note\" to \"Session Note.\" Changes appear everywhere instantly for all users."
-msgstr "La terminologie vous permet de renommer les mots utilisés dans KoNote. Par exemple, vous pouvez changer « Participant » en « Client » ou « Jeune », ou renommer « Note de progrès » en « Note de session ». Les changements apparaissent partout instantanément pour tous les utilisateurs."
+msgid ""
+"Terminology lets you rename the words used throughout KoNote. For example, "
+"you can change \"Participant\" to \"Client\" or \"Youth,\" or rename "
+"\"Progress Note\" to \"Session Note.\" Changes appear everywhere instantly "
+"for all users."
+msgstr ""
+"La terminologie vous permet de renommer les mots utilisés dans KoNote. Par "
+"exemple, vous pouvez changer « Participant » en « Client » ou « Jeune », ou "
+"renommer « Note de progrès » en « Note de session ». Les changements "
+"apparaissent partout instantanément pour tous les utilisateurs."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "During initial setup to match your organisation's language, or if your terminology changes."
-msgstr "Lors de la configuration initiale pour correspondre au vocabulaire de votre organisation, ou si votre terminologie change."
+msgid ""
+"During initial setup to match your organisation's language, or if your "
+"terminology changes."
+msgstr ""
+"Lors de la configuration initiale pour correspondre au vocabulaire de votre "
+"organisation, ou si votre terminologie change."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Yes. Changes are purely cosmetic — renaming a term does not move or delete any data. You can change terms back at any time."
-msgstr "Oui. Les changements sont purement cosmétiques — renommer un terme ne déplace ni ne supprime aucune donnée. Vous pouvez revenir aux termes originaux à tout moment."
+msgid ""
+"Yes. Changes are purely cosmetic — renaming a term does not move or delete "
+"any data. You can change terms back at any time."
+msgstr ""
+"Oui. Les changements sont purement cosmétiques — renommer un terme ne "
+"déplace ni ne supprime aucune donnée. Vous pouvez revenir aux termes "
+"originaux à tout moment."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Feature toggles let you turn whole modules on or off. For example, if your organisation doesn't use Circles (family networks), you can hide them so staff don't see a feature they won't use."
-msgstr "Les bascules de fonctionnalités vous permettent d'activer ou de désactiver des modules entiers. Par exemple, si votre organisation n'utilise pas les Cercles (réseaux familiaux), vous pouvez les masquer pour que le personnel ne voie pas une fonctionnalité qu'il n'utilisera pas."
+msgid ""
+"Feature toggles let you turn whole modules on or off. For example, if your "
+"organisation doesn't use Circles (family networks), you can hide them so "
+"staff don't see a feature they won't use."
+msgstr ""
+"Les bascules de fonctionnalités vous permettent d'activer ou de désactiver "
+"des modules entiers. Par exemple, si votre organisation n'utilise pas les "
+"Cercles (réseaux familiaux), vous pouvez les masquer pour que le personnel "
+"ne voie pas une fonctionnalité qu'il n'utilisera pas."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "During initial setup, or when you're ready to introduce a new feature to your team."
-msgstr "Lors de la configuration initiale, ou quand vous êtes prêt à présenter une nouvelle fonctionnalité à votre équipe."
+msgid ""
+"During initial setup, or when you're ready to introduce a new feature to "
+"your team."
+msgstr ""
+"Lors de la configuration initiale, ou quand vous êtes prêt à présenter une "
+"nouvelle fonctionnalité à votre équipe."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Yes. Disabling a feature hides it from all users but preserves existing data. Re-enabling it brings everything back. A confirmation dialog warns you about any dependencies before you commit."
-msgstr "Oui. Désactiver une fonctionnalité la masque pour tous les utilisateurs mais préserve les données existantes. La réactiver ramène tout. Un dialogue de confirmation vous avertit des dépendances avant de valider."
+msgid ""
+"Yes. Disabling a feature hides it from all users but preserves existing "
+"data. Re-enabling it brings everything back. A confirmation dialog warns you"
+" about any dependencies before you commit."
+msgstr ""
+"Oui. Désactiver une fonctionnalité la masque pour tous les utilisateurs mais"
+" préserve les données existantes. La réactiver ramène tout. Un dialogue de "
+"confirmation vous avertit des dépendances avant de valider."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Your organisation's legal name, address, sector codes, and backup reminders. Used in reports and compliance records."
-msgstr "Le nom légal de votre organisation, l'adresse, les codes de secteur et les rappels de sauvegarde. Utilisés dans les rapports et les documents de conformité."
+msgid ""
+"Your organisation's legal name, address, sector codes, and backup reminders."
+" Used in reports and compliance records."
+msgstr ""
+"Le nom légal de votre organisation, l'adresse, les codes de secteur et les "
+"rappels de sauvegarde. Utilisés dans les rapports et les documents de "
+"conformité."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "During initial setup, or when your legal details change."
-msgstr "Lors de la configuration initiale, ou quand vos informations légales changent."
+msgstr ""
+"Lors de la configuration initiale, ou quand vos informations légales "
+"changent."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Yes. All fields can be updated at any time."
 msgstr "Oui. Tous les champs peuvent être mis à jour à tout moment."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "During initial setup to choose your messaging approach, or when you want to adjust reminder timing or message wording."
-msgstr "Lors de la configuration initiale pour choisir votre approche de messagerie, ou quand vous voulez ajuster le moment des rappels ou la formulation des messages."
+msgid ""
+"During initial setup to choose your messaging approach, or when you want to "
+"adjust reminder timing or message wording."
+msgstr ""
+"Lors de la configuration initiale pour choisir votre approche de messagerie,"
+" ou quand vous voulez ajuster le moment des rappels ou la formulation des "
+"messages."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Be thoughtful with messaging settings — enabling outbound messages means participants may receive real emails or texts. Use Safety-First mode if in doubt."
-msgstr "Soyez attentif aux paramètres de messagerie — activer les messages sortants signifie que les participants pourraient recevoir de vrais courriels ou textos. Utilisez le mode Sécurité d'abord en cas de doute."
+msgid ""
+"Be thoughtful with messaging settings — enabling outbound messages means "
+"participants may receive real emails or texts. Use Safety-First mode if in "
+"doubt."
+msgstr ""
+"Soyez attentif aux paramètres de messagerie — activer les messages sortants "
+"signifie que les participants pourraient recevoir de vrais courriels ou "
+"textos. Utilisez le mode Sécurité d'abord en cas de doute."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Partners are the organisations you report to — funders, networks, boards. Each partner can have report templates that define what data gets included when you generate a report for them."
-msgstr "Les partenaires sont les organisations auxquelles vous rendez des comptes — bailleurs de fonds, réseaux, conseils d'administration. Chaque partenaire peut avoir des modèles de rapport qui définissent quelles données sont incluses quand vous générez un rapport."
+msgid ""
+"Partners are the organisations you report to — funders, networks, boards. "
+"Each partner can have report templates that define what data gets included "
+"when you generate a report for them."
+msgstr ""
+"Les partenaires sont les organisations auxquelles vous rendez des comptes — "
+"bailleurs de fonds, réseaux, conseils d'administration. Chaque partenaire "
+"peut avoir des modèles de rapport qui définissent quelles données sont "
+"incluses quand vous générez un rapport."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "When you get a new funder, when reporting requirements change, or when you want to set up templates for recurring reports."
-msgstr "Quand vous avez un nouveau bailleur de fonds, quand les exigences de rapport changent, ou quand vous voulez configurer des modèles pour des rapports récurrents."
+msgid ""
+"When you get a new funder, when reporting requirements change, or when you "
+"want to set up templates for recurring reports."
+msgstr ""
+"Quand vous avez un nouveau bailleur de fonds, quand les exigences de rapport"
+" changent, ou quand vous voulez configurer des modèles pour des rapports "
+"récurrents."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Yes. Adding or editing partners and templates does not affect participant data."
-msgstr "Oui. Ajouter ou modifier des partenaires et des modèles n'affecte pas les données des participants."
+msgid ""
+"Yes. Adding or editing partners and templates does not affect participant "
+"data."
+msgstr ""
+"Oui. Ajouter ou modifier des partenaires et des modèles n'affecte pas les "
+"données des participants."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "A read-only, printable summary of all your current settings in one place. Useful for onboarding new administrators or for annual reviews."
-msgstr "Un résumé en lecture seule et imprimable de tous vos paramètres actuels en un seul endroit. Utile pour l'intégration de nouveaux administrateurs ou pour les revues annuelles."
+msgid ""
+"A read-only, printable summary of all your current settings in one place. "
+"Useful for onboarding new administrators or for annual reviews."
+msgstr ""
+"Un résumé en lecture seule et imprimable de tous vos paramètres actuels en "
+"un seul endroit. Utile pour l'intégration de nouveaux administrateurs ou "
+"pour les revues annuelles."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Generates configuration files for new KoNote deployments. You likely won't need this unless you're setting up a new instance — your technical support team would use it."
-msgstr "Génère des fichiers de configuration pour les nouveaux déploiements KoNote. Vous n'en aurez probablement pas besoin, sauf si vous configurez une nouvelle instance — votre équipe de soutien technique l'utiliserait."
+msgid ""
+"Generates configuration files for new KoNote deployments. You likely won't "
+"need this unless you're setting up a new instance — your technical support "
+"team would use it."
+msgstr ""
+"Génère des fichiers de configuration pour les nouveaux déploiements KoNote. "
+"Vous n'en aurez probablement pas besoin, sauf si vous configurez une "
+"nouvelle instance — votre équipe de soutien technique l'utiliserait."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "View and manage demo users and participants. You can impersonate demo users to see what KoNote looks like from their perspective — useful for training and onboarding."
-msgstr "Consulter et gérer les utilisateurs et participants de démonstration. Vous pouvez vous faire passer pour un utilisateur de démonstration pour voir KoNote de leur point de vue — utile pour la formation et l'intégration."
+msgid ""
+"View and manage demo users and participants. You can impersonate demo users "
+"to see what KoNote looks like from their perspective — useful for training "
+"and onboarding."
+msgstr ""
+"Consulter et gérer les utilisateurs et participants de démonstration. Vous "
+"pouvez vous faire passer pour un utilisateur de démonstration pour voir "
+"KoNote de leur point de vue — utile pour la formation et l'intégration."
 
 #: templates/pages/help.html — Admin settings guide
 msgid "Yes. Demo data is completely separate from real data."
-msgstr "Oui. Les données de démonstration sont complètement séparées des données réelles."
+msgstr ""
+"Oui. Les données de démonstration sont complètement séparées des données "
+"réelles."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "Most settings take effect immediately — you don't need to restart or redeploy anything."
-msgstr "La plupart des paramètres prennent effet immédiatement — vous n'avez pas besoin de redémarrer ou de redéployer quoi que ce soit."
+msgid ""
+"Most settings take effect immediately — you don't need to restart or "
+"redeploy anything."
+msgstr ""
+"La plupart des paramètres prennent effet immédiatement — vous n'avez pas "
+"besoin de redémarrer ou de redéployer quoi que ce soit."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "No setting deletes data. Disabling a feature or metric hides it but keeps all existing records safe."
-msgstr "Aucun paramètre ne supprime de données. Désactiver une fonctionnalité ou une mesure la masque mais garde toutes les données existantes en sécurité."
+msgid ""
+"No setting deletes data. Disabling a feature or metric hides it but keeps "
+"all existing records safe."
+msgstr ""
+"Aucun paramètre ne supprime de données. Désactiver une fonctionnalité ou une"
+" mesure la masque mais garde toutes les données existantes en sécurité."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "If you're unsure about a change, try it on a demo account first (Admin → Demo Accounts → Impersonate)."
-msgstr "Si vous n'êtes pas sûr d'un changement, essayez-le d'abord sur un compte de démonstration (Admin → Comptes de démonstration → Se faire passer pour)."
+msgid ""
+"If you're unsure about a change, try it on a demo account first (Admin → "
+"Demo Accounts → Impersonate)."
+msgstr ""
+"Si vous n'êtes pas sûr d'un changement, essayez-le d'abord sur un compte de "
+"démonstration (Admin → Comptes de démonstration → Se faire passer pour)."
 
 #: templates/pages/help.html — Admin settings guide
-msgid "The Configuration Overview page is a good way to review everything before and after making changes."
-msgstr "La page Vue d'ensemble de la configuration est un bon moyen de tout vérifier avant et après les modifications."
+msgid ""
+"The Configuration Overview page is a good way to review everything before "
+"and after making changes."
+msgstr ""
+"La page Vue d'ensemble de la configuration est un bon moyen de tout vérifier"
+" avant et après les modifications."
+
+msgid "<em>\\\"Are we working toward a specific result?\\\"</em> → Create a Project"
+msgstr "<em>\"Travaillons-nous vers un résultat précis?\"</em> → Créer un projet"
+
+msgid "<em>\\\"Do we meet as a group?\\\"</em> → Create a Group"
+msgstr "<em>\"Nous réunissons-nous en groupe?\"</em> → Créer un groupe"
+
+msgid "AI-assisted goal setting is available"
+msgstr "La création d’objectifs assistée par l’IA est disponible"
+
+msgid "AI-suggested goal"
+msgstr "Objectif suggéré par l’IA"
+
+msgid "Almost there…"
+msgstr "Presque terminé…"
+
+msgid "Area:"
+msgstr "Domaine :"
+
+msgid "Ask respondents for their name (optional, encrypted)"
+msgstr "Demander le nom des répondants (facultatif, chiffré)"
+
+msgid "Config Generator"
+msgstr "Générateur de configuration"
+
+msgid "Copy invite link"
+msgstr "Copier le lien d’invitation"
+
+msgid "Custom scale"
+msgstr "Échelle personnalisée"
+
+msgid "Custom scale removed."
+msgstr "Échelle personnalisée retirée."
+
+msgid ""
+"Each time a worker writes a progress note, they select how things are going "
+"for each goal: Harder right now, Holding steady, Something's shifting, or In"
+" a good place. \\\"Harder\\\" is not necessarily negative — progress often "
+"makes things harder before they get easier. Percentages reflect all goal "
+"check-ins in the selected time period."
+msgstr ""
+"Chaque fois qu’un intervenant rédige une note de progression, il choisit "
+"comment vont les choses pour chaque objectif : Plus difficile en ce moment, "
+"Stable, Quelque chose change, ou Dans une bonne situation. « Plus difficile "
+"» n’est pas nécessairement négatif — le progrès rend souvent les choses plus"
+" difficiles avant qu’elles ne deviennent plus faciles. Les pourcentages "
+"reflètent tous les suivis d’objectifs pour la période sélectionnée."
+
+msgid "Fill in the form manually"
+msgstr "Remplir le formulaire manuellement"
+
+msgid "Fiscal Year"
+msgstr "Exercice financier"
+
+msgid "Generate .env and setup_config.json files for new KoNote deployments."
+msgstr ""
+"Générer les fichiers .env et setup_config.json pour les nouveaux "
+"déploiements KoNote."
+
+msgid "Generate Report"
+msgstr "Générer le rapport"
+
+msgid "Goal added: '%(name)s' with metric%(plural)s %(metrics)s."
+msgstr "Objectif ajouté : « %(name)s » ; mesure%(plural)s : %(metrics)s."
+
+msgid "Goal added: '%(name)s'."
+msgstr "Objectif ajouté : « %(name)s »."
+
+msgid "Goal name"
+msgstr "Nom de l’objectif"
+
+msgid "How they're doing"
+msgstr "Comment ça va"
+
+msgid ""
+"If true, ask respondent for their name on identified link responses only."
+msgstr ""
+"Si vrai, demander le nom du répondant uniquement pour les réponses provenant"
+" de liens identifiés."
+
+msgid "Invalid or expired code. Please request a new one."
+msgstr "Code invalide ou expiré. Veuillez en demander un nouveau."
+
+msgid ""
+"KoNote can use AI to turn a participant's own words into a structured, "
+"measurable goal with suggested metrics. To enable it, add an OpenRouter API "
+"key in"
+msgstr ""
+"KoNote peut utiliser l’IA pour transformer les propres mots d’un participant"
+" en un objectif structuré et mesurable avec des mesures suggérées. Pour "
+"l’activer, ajoutez une clé API OpenRouter dans"
+
+msgid "Let me review first"
+msgstr "Je veux d’abord l’examiner"
+
+msgid "Open Generator"
+msgstr "Ouvrir le générateur"
+
+msgid "Optional encrypted respondent name for identified link responses."
+msgstr ""
+"Nom chiffré facultatif du répondant pour les réponses provenant de liens "
+"identifiés."
+
+msgid "Organisation Summary"
+msgstr "Sommaire de l’organisme"
+
+msgid "Program Summary"
+msgstr "Sommaire du programme"
+
+msgid "Programs Included"
+msgstr "Programmes inclus"
+
+msgid "Programs in this report"
+msgstr "Programmes dans ce rapport"
+
+msgid "Remove this scale"
+msgstr "Retirer cette échelle"
+
+msgid "Saving your goal…"
+msgstr "Enregistrement de votre objectif…"
+
+msgid "Suggest a goal"
+msgstr "Suggérer un objectif"
+
+msgid "Suggestion expired or was already used. Please try again."
+msgstr "La suggestion a expiré ou a déjà été utilisée. Veuillez réessayer."
+
+msgid "Suppression threshold"
+msgstr "Seuil de suppression"
+
+msgid "This custom scale will be added to the goal."
+msgstr "Cette échelle personnalisée sera ajoutée à l’objectif."
+
+msgid ""
+"This report was generated using KoNote's All Programs Organisation Summary."
+msgstr ""
+"Ce rapport a été généré à l’aide du sommaire de l’organisme Tous les "
+"programmes de KoNote."
+
+msgid "This report was generated using KoNote's Program Outcome Report."
+msgstr ""
+"Ce rapport a été généré à l’aide du rapport sur les résultats du programme "
+"de KoNote."
+
+msgid ""
+"This survey is anonymous, so shareable links will not collect respondent "
+"names."
+msgstr ""
+"Cette enquête est anonyme, donc les liens partageables ne recueilleront pas "
+"les noms des répondants."
+
+msgid "When to do it"
+msgstr "Quand le faire"
+
+msgid "You don't have permission to edit this plan."
+msgstr "Vous n’avez pas l’autorisation de modifier ce plan."
+
+msgid "Please enter both username and password."
+msgstr "Veuillez saisir le nom d’utilisateur et le mot de passe."
+
+msgid "Too many failed login attempts. Please try again in 15 minutes."
+msgstr "Trop de tentatives de connexion échouées. Veuillez réessayer dans 15 minutes."

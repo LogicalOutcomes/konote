@@ -27,6 +27,7 @@ konote-credentials-*
 # IDE
 .vscode/
 .idea/
+.obsidian/
 *.swp
 *.code-workspace
 
@@ -71,3 +72,7 @@ backups/
 
 # Generated documents (built from .md source)
 *.docx
+
+# Local UX feedback (screenshots + notes kept locally, not tracked)
+Pasted image*.png
+UX-feedback.md
