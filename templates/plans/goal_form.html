@@ -16,15 +16,15 @@
 </details>
 
 {% if form.errors %}
-<div class="error-summary" role="alert" id="error-summary" tabindex="-1">
-    <strong>{% trans "Please fix the following:" %}</strong>
+<div class="form-notice" role="alert" id="error-summary" tabindex="-1">
+    <strong>{% trans "Almost there — a few things need your attention:" %}</strong>
     <ul>
         {% for error in form.non_field_errors %}
         <li>{{ error }}</li>
         {% endfor %}
         {% for field in form %}
             {% if field.errors %}
-            <li><a href="#{{ field.id_for_label }}">{{ field.label }}: {{ field.errors.0 }}</a></li>
+            <li><a href="#{{ field.id_for_label }}">{{ field.errors.0 }}</a></li>
             {% endif %}
         {% endfor %}
     </ul>

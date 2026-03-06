@@ -3359,6 +3359,7 @@ article[aria-label="notification"].fading-out {
         left: 0;
         right: 0;
         min-width: 0;
+        padding-left: 0;
     }
 }
 
@@ -3460,6 +3461,21 @@ article[aria-label="notification"].fading-out {
     .goal-card-name {
         flex-direction: column;
         align-items: flex-start;
+    }
+    /* Keep goal-card dropdown menu within viewport on mobile */
+    .goal-card-actions .actions-dropdown {
+        position: static;
+    }
+    .goal-card-actions .actions-dropdown-menu {
+        position: relative;
+        left: auto;
+        right: auto;
+        min-width: 0;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid var(--kn-border-light);
+        margin-top: var(--kn-space-xs);
+        padding-left: 0;
     }
 }
 
@@ -4501,11 +4517,14 @@ article[aria-label="notification"].fading-out {
         padding: 8px 0 !important;
     }
 
-    /* Actions dropdown menu items */
+    /* Actions dropdown menu items — flex-column keeps <small> descriptions
+       on their own line instead of running into the link text */
     .actions-dropdown-menu li a,
     .actions-dropdown-menu li button {
         display: flex !important;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
         min-height: 44px !important;
         padding: 8px var(--kn-space-base, 16px) !important;
     }
@@ -4691,6 +4710,18 @@ article[aria-label="notification"].fading-out {
 }
 .error-summary ul { margin-bottom: 0; }
 .error-summary a { color: var(--kn-danger-fg); text-decoration: underline; }
+
+/* Softer form validation notice (amber instead of red) */
+.form-notice {
+    background: var(--kn-warning-bg);
+    color: var(--kn-warning-fg);
+    border: 1px solid var(--kn-warning-fg);
+    border-radius: var(--pico-border-radius);
+    padding: var(--kn-space-sm) var(--kn-space-md);
+    margin-bottom: var(--kn-space-md);
+}
+.form-notice ul { margin-bottom: 0; }
+.form-notice a { color: var(--kn-warning-fg); text-decoration: underline; }
 
 /* Common goal cards — tappable quick-pick tiles */
 .goal-card-grid {
