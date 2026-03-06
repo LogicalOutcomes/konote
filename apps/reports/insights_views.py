@@ -421,6 +421,50 @@ def client_insights_partial(request, client_id):
 
     data_tier = _get_data_tier(structured["note_count"], structured["month_count"])
 
+    # Per-goal current status for "How they're doing" section
+    from apps.plans.models import PlanTarget
+    from apps.notes.models import ProgressNoteTarget
+
+    descriptor_labels = dict(ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES)
+    active_targets = PlanTarget.objects.filter(
+        client_file=client, status="default",
+    ).order_by("plan_section__name", "pk")
+
+    goal_statuses = []
+    for target in active_targets:
+        recent = list(
+            ProgressNoteTarget.objects
+            .filter(plan_target=target, progress_descriptor__gt="")
+            .select_related("progress_note")
+            .order_by("-progress_note__created_at")[:2]
+        )
+        if not recent:
+            continue
+
+        current = recent[0]
+        previous = recent[1] if len(recent) > 1 else None
+        current_label = str(descriptor_labels.get(current.progress_descriptor, ""))
+        show_previous = (
+            previous
+            and current.progress_descriptor != previous.progress_descriptor
+        )
+
+        goal_statuses.append({
+            "goal_name": target.name,
+            "descriptor_key": current.progress_descriptor,
+            "descriptor_label": current_label,
+            "note_id": current.progress_note_id,
+            "prev_label": str(descriptor_labels.get(previous.progress_descriptor, "")) if show_previous else "",
+            "prev_date": previous.progress_note.effective_date if show_previous else None,
+            "is_first": previous is None,
+        })
+
+    all_same_descriptor = (
+        len(goal_statuses) > 1
+        and len(set(g["descriptor_key"] for g in goal_statuses)) == 1
+    )
+    summary_line = goal_statuses[0]["descriptor_label"] if all_same_descriptor else ""
+
     # Client-level: no participant threshold, dates included
     quotes = collect_quotes(
         client_file=client,
@@ -467,6 +511,9 @@ def client_insights_partial(request, client_id):
         "structured": structured,
         "quotes": other_quotes,
         "suggestions": suggestions,
+        "goal_statuses": goal_statuses,
+        "all_same_descriptor": all_same_descriptor,
+        "summary_line": summary_line,
         "data_tier": data_tier,
         "chart_data_json": structured["descriptor_trend"],
         "ai_enabled": ai_enabled,

@@ -19719,3 +19719,19 @@ msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-d
 msgid "No AI API key is configured. AI features are unavailable even if enabled below."
 msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
 
+#: templates/reports/_insights_client.html
+msgid "How they’re doing"
+msgstr "Comment ça va"
+
+#: templates/reports/_insights_client.html
+msgid "All goals: %(desc)s"
+msgstr "Tous les objectifs : %(desc)s"
+
+#: templates/reports/_insights_client.html
+msgid "was:"
+msgstr "était :"
+
+#: templates/reports/_insights_client.html
+msgid "first assessment"
+msgstr "première évaluation"
+

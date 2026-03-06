@@ -4339,6 +4339,32 @@ article[aria-label="notification"].fading-out {
     border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
 }
 
+/* ──── Per-goal status (participant analysis) ──── */
+.goal-status-list { margin: 0; padding: 0; }
+.goal-status-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    border: 0;
+}
+.goal-status-row dt { font-weight: 600; margin: 0; }
+.goal-status-row dd { margin: 0; }
+.goal-was { display: block; font-size: 0.85em; color: var(--kn-text-muted, #888); }
+.descriptor-dot {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    margin-right: 0.3em;
+    vertical-align: middle;
+}
+.descriptor-dot--good_place { background: #27ae60; }
+.descriptor-dot--shifting { background: #3498db; }
+.descriptor-dot--holding { background: #f39c12; }
+.descriptor-dot--harder { background: #e74c3c; }
+.descriptor-summary { font-style: italic; margin-bottom: 0.5rem; }
+
 /* ──── Goal Builder ──── */
 .goal-builder {
     border: 1px solid var(--pico-muted-border-color);
