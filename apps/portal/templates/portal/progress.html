@@ -8,7 +8,7 @@
 <p>{% trans "These charts show how your scores have changed over time for each of your goals." %}</p>
 
 {% if has_data %}
-<div id="portal-charts" class="portal-charts">
+<div id="portal-charts" class="portal-progress-grid">
     {# Charts are rendered by JavaScript from the data below #}
 </div>
 {% else %}
@@ -26,97 +26,198 @@
     var allData = JSON.parse(document.getElementById('chart-data').textContent);
     var container = document.getElementById('portal-charts');
 
-    // allData is expected to be an array of chart objects:
-    // [{ metric_name, labels, values, x_label, y_label, begin_at_zero, start_value, current_value }, ...]
     if (!Array.isArray(allData)) {
         allData = [allData];
     }
 
-    allData.forEach(function(chartInfo, index) {
-        // Create a section for each chart
-        var section = document.createElement('section');
-        section.setAttribute('aria-labelledby', 'chart-heading-' + index);
+    /**
+     * Format ISO date string as readable short date, locale-aware.
+     * e.g. "2026-01-15" → "Jan 15" (EN) or "15 janv." (FR)
+     */
+    var dateFmt = new Intl.DateTimeFormat(
+        document.documentElement.lang || 'en',
+        { month: 'short', day: 'numeric' }
+    );
+    function formatDate(iso) {
+        var parts = iso.split('-');
+        return dateFmt.format(new Date(parts[0], parts[1] - 1, parts[2]));
+    }
 
-        var heading = document.createElement('h2');
-        heading.id = 'chart-heading-' + index;
-        // Put goal name first in heading for context (e.g., "Find stable housing — Confidence")
-        if (chartInfo.goal_names && chartInfo.goal_names.length) {
-            heading.textContent = chartInfo.goal_names.join(', ') + ' \u2014 ' + (chartInfo.metric_name || '');
+    /**
+     * Determine trend direction and return { label, cssClass }.
+     * Handles inverted scales where max < min (e.g. pain scale 10→1).
+     */
+    function getTrend(startVal, currentVal, minVal, maxVal) {
+        var diff = currentVal - startVal;
+        if (diff === 0) {
+            return { label: '{% trans "Holding steady" context "progress trend" %}', cssClass: 'trend-steady' };
+        }
+        var goingUp = diff > 0;
+        // For inverted scales (max < min), flip the direction label
+        if (minVal != null && maxVal != null && maxVal < minVal) {
+            goingUp = !goingUp;
+        }
+        if (goingUp) {
+            return { label: '{% trans "Moving up" %}', cssClass: 'trend-up' };
         } else {
-            heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
+            return { label: '{% trans "Moving down" %}', cssClass: 'trend-down' };
         }
-        section.appendChild(heading);
+    }
 
-        // Show plain-language description if available
+    allData.forEach(function(chartInfo, index) {
+        var vals = chartInfo.values || [];
+        var headingId = 'chart-heading-' + index;
+
+        // ---- Header ----
+        var headerChildren = [];
+        if (chartInfo.goal_names && chartInfo.goal_names.length) {
+            headerChildren.push(
+                el('span', { className: 'portal-progress-goal' }, chartInfo.goal_names.join(', '))
+            );
+        }
+        headerChildren.push(
+            el('h2', { id: headingId, className: 'portal-progress-title' },
+               chartInfo.metric_name || ('Chart ' + (index + 1)))
+        );
         if (chartInfo.description) {
-            var desc = document.createElement('p');
-            desc.className = 'portal-metric-description';
-            desc.textContent = chartInfo.description;
-            section.appendChild(desc);
+            headerChildren.push(el('p', { className: 'portal-progress-desc' }, chartInfo.description));
         }
 
-        // Show start and current value summary
-        if (chartInfo.start_value !== undefined && chartInfo.current_value !== undefined) {
-            var summary = document.createElement('p');
-            summary.className = 'portal-chart-summary';
-            summary.textContent = chartInfo.start_label + ': ' + chartInfo.start_value +
-                ' \u2192 ' + chartInfo.current_label + ': ' + chartInfo.current_value;
-            section.appendChild(summary);
+        // ---- Score summary strip ----
+        var summaryEl = null;
+        if (vals.length > 0) {
+            var summaryChildren = [
+                el('div', { className: 'portal-progress-current' }, [
+                    el('span', { className: 'portal-progress-big-num' }, String(chartInfo.current_value)),
+                    el('span', { className: 'portal-progress-label' }, chartInfo.current_label || '{% trans "Now at" %}'),
+                ]),
+                el('div', { className: 'portal-progress-start' }, [
+                    el('span', { className: 'portal-progress-big-num' }, String(chartInfo.start_value)),
+                    el('span', { className: 'portal-progress-label' }, chartInfo.start_label || '{% trans "Started at" %}'),
+                ]),
+            ];
+            if (vals.length >= 2) {
+                var trend = getTrend(
+                    chartInfo.start_value, chartInfo.current_value,
+                    chartInfo.min_value, chartInfo.max_value
+                );
+                summaryChildren.push(
+                    el('div', { className: 'portal-progress-trend ' + trend.cssClass }, trend.label)
+                );
+            }
+            if (chartInfo.min_value != null && chartInfo.max_value != null) {
+                var scaleText = '{% trans "Scale" %}: ' + chartInfo.min_value + '–' + chartInfo.max_value;
+                if (chartInfo.unit) scaleText += ' (' + chartInfo.unit + ')';
+                summaryChildren.push(el('div', { className: 'portal-progress-scale' }, scaleText));
+            }
+            summaryEl = el('div', { className: 'portal-progress-summary' }, summaryChildren);
         }
 
-        var wrapper = document.createElement('div');
-        wrapper.className = 'portal-chart-container';
+        // ---- Chart canvas ----
+        var canvas = el('canvas', { id: 'progress-chart-' + index, 'aria-hidden': 'true' });
+        var chartWrap = el('div', { className: 'portal-progress-chart-wrap' }, canvas);
 
-        var canvas = document.createElement('canvas');
-        canvas.id = 'progress-chart-' + index;
-        canvas.setAttribute('aria-label', chartInfo.metric_name || 'Progress chart');
-        canvas.setAttribute('role', 'img');
-        wrapper.appendChild(canvas);
-        section.appendChild(wrapper);
+        // ---- Accessible data table (visually hidden) ----
+        var tableEl = null;
+        if (vals.length > 0) {
+            var rows = [];
+            for (var i = 0; i < vals.length; i++) {
+                rows.push(el('tr', null, [
+                    el('td', null, formatDate(chartInfo.labels[i])),
+                    el('td', null, String(vals[i])),
+                ]));
+            }
+            tableEl = el('table', {
+                className: 'visually-hidden-focusable portal-progress-table',
+                'aria-label': (chartInfo.metric_name || 'Progress') + ' — {% trans "data table" %}',
+            }, [
+                el('thead', null,
+                    el('tr', null, [
+                        el('th', { scope: 'col' }, '{% trans "Date" %}'),
+                        el('th', { scope: 'col' }, '{% trans "Score" %}'),
+                    ])
+                ),
+                el('tbody', null, rows),
+            ]);
+        }
 
-        container.appendChild(section);
+        // ---- Assemble card ----
+        var cardChildren = [el('header', { className: 'portal-progress-header' }, headerChildren)];
+        if (summaryEl) cardChildren.push(summaryEl);
+        cardChildren.push(chartWrap);
+        if (tableEl) cardChildren.push(tableEl);
 
-        // Render the chart
+        var card = el('article', {
+            className: 'portal-progress-card',
+            'aria-labelledby': headingId,
+        }, cardChildren);
+
+        container.appendChild(card);
+
+        // ---- Render Chart.js ----
+        var shortLabels = chartInfo.labels.map(formatDate);
+
+        // Use full scale range if available, otherwise let Chart.js auto-scale
+        var yMin = (chartInfo.min_value !== null && chartInfo.min_value !== undefined)
+            ? chartInfo.min_value : undefined;
+        var yMax = (chartInfo.max_value !== null && chartInfo.max_value !== undefined)
+            ? chartInfo.max_value : undefined;
+
         var ctx = canvas.getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: chartInfo.labels,
+                labels: shortLabels,
                 datasets: [{
                     label: chartInfo.metric_name || '',
                     data: chartInfo.values,
                     borderColor: '#3176aa',
-                    backgroundColor: 'rgba(13, 115, 119, 0.1)',
+                    backgroundColor: 'rgba(49, 118, 170, 0.08)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: 6,
-                    pointHoverRadius: 8
+                    pointHoverRadius: 9,
+                    pointBackgroundColor: '#3176aa',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    borderWidth: 2.5
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: '#333',
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 14 },
+                        padding: 10,
+                        displayColors: false,
                         callbacks: {
-                            title: function(items) { return items[0].label; }
+                            title: function(items) { return items[0].label; },
+                            label: function(item) {
+                                var suffix = chartInfo.unit ? ' ' + chartInfo.unit : '';
+                                return item.parsed.y + suffix;
+                            }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        title: {
-                            display: !!(chartInfo.x_label),
-                            text: chartInfo.x_label || ''
-                        }
+                        grid: { display: false },
+                        ticks: { font: { size: 12 } }
                     },
                     y: {
-                        title: {
-                            display: !!(chartInfo.y_label),
-                            text: chartInfo.y_label || ''
+                        min: yMin,
+                        max: yMax,
+                        ticks: {
+                            stepSize: (yMax !== undefined && yMin !== undefined && (yMax - yMin) <= 10) ? 1 : undefined,
+                            font: { size: 12 }
                         },
-                        beginAtZero: chartInfo.begin_at_zero || false
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.06)'
+                        }
                     }
                 }
             }

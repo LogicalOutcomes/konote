@@ -21,6 +21,7 @@ from apps.surveys.models import (
     SurveyLink,
 )
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -1791,7 +1792,7 @@ class StaffDataEntryConditionTests(TestCase):
             client_file=self.client_obj, program=self.program, status="active",
         )
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program, role="staff", status="active",
+            user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
         )
 
         self.survey = Survey.objects.create(

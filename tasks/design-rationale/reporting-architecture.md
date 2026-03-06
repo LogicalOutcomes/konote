@@ -16,13 +16,13 @@
 | **Template-driven** | `/reports/generate/` | Everyone (executives, PMs, admins) | Produce a report matching a partner's specification |
 | **Ad-hoc export** | `/reports/export/` | Program managers, executives, and admins | Data extraction with manual control (aggregate-only for executives) |
 
-Executives see both paths in navigation (decided 2026-02-22 per stakeholder request). The ad-hoc export enforces aggregate-only output for executives via `is_aggregate_only_user()` — no individual participant data is exposed. Templates remain the **primary** path for executives; Custom Export is a secondary option for one-off needs.
+Executives see both paths in navigation (decided 2026-02-22 per stakeholder request). The ad-hoc export enforces aggregate-only output for executives via `is_aggregate_only_user()` — no individual participant data is exposed. Templates remain the **primary** path for executives; Build a Report is a secondary option for one-off needs.
 
 ## Entry Points
 
 | From | Action | Destination |
 |------|--------|-------------|
-| **Navigation menu** | "Reports" dropdown | Both paths for all report-capable users (Generate Report + Custom Export) |
+| **Navigation menu** | "Reports" dropdown | Both paths for all report-capable users (Standard Report + Build a Report) |
 | **Executive dashboard** | "Generate funder report" button | `/reports/generate/` with template pre-selected if the current program maps to exactly one template |
 | **Program detail page** | "Generate report" link (future) | `/reports/generate/` with template pre-selected |
 
@@ -37,9 +37,9 @@ The executive does NOT choose a program. The template already knows its programs
 **Form fields (in order):**
 1. **Which report?** — dropdown of available templates, labelled by partner + report name (e.g., "United Way — Quarterly Outcome Report", "Board of Directors — Annual Report"). Only shows templates linked to programs the user can access.
 2. **Which period?** — dropdown populated from template's `period_type` and `period_alignment` (e.g., "Q3 FY2025-26"). Raw date inputs only for `period_type=custom`.
-3. **Export format** — CSV/PDF, constrained by `template.output_format` if not "mixed". Hidden if template only supports one format.
+3. **Export format** — CSV/PDF/HTML, constrained by `template.output_format` if not "mixed". Hidden if template only supports one format.
 4. **Recipient details** — who and why (audit requirement).
-5. **Generate Report** button.
+5. **Generate** button.
 
 **What the user does NOT see:**
 - Program dropdown (template defines programs via Partner)
@@ -60,9 +60,9 @@ When an executive has no templates available (no active templates linked to thei
 
 > "No report templates have been set up yet. Report templates define what metrics and demographic breakdowns to include for recurring partner reports. Contact your administrator to create one."
 
-The page links to Custom Export as an alternative ("In the meantime, you can create a one-off report using Custom Export"). Admins also see a link to template management.
+The page links to Build a Report as an alternative ("In the meantime, you can create a one-off report using Build a Report"). Admins also see a link to template management.
 
-Do NOT show metric checkboxes on this page. Custom Export is a separate page with its own aggregate-only safeguards for executives.
+Do NOT show metric checkboxes on this page. Build a Report is a separate page with its own aggregate-only safeguards for executives.
 
 ### Period picker logic
 
@@ -140,6 +140,16 @@ Structured by `ReportSection` (ordered by `sort_order`):
 - `chart`: Trend visualisation over last 4 periods
 - `demographic_summary`: Demographic breakdown tables
 
+### HTML output (all paths)
+
+**Added March 2026.** HTML is the third export format alongside CSV and PDF. It produces a self-contained `.html` file that can be opened in any browser, emailed, or shared with funders who don't have PDF viewers or spreadsheet software.
+
+**How it works:** The PDF pipeline already renders HTML via Django templates → WeasyPrint. HTML export uses the same templates but skips the WeasyPrint conversion step, returning the styled HTML directly. The default template (`reports/html_report.html`) is responsive, has inline CSS, and includes print styles.
+
+**Per-partner custom templates:** `ReportTemplate.html_template_name` (optional CharField) allows a custom Django template path for specific partners. When blank, the default template is used. When set (e.g., `reports/html_united_way.html`), that template receives the same context as the PDF and can apply partner-specific branding, layout, or styling. This allows funders with specific visual requirements to get reports that match their brand without affecting other partners.
+
+**Anti-pattern:** Do not create HTML templates that require JavaScript or external resources. HTML exports must be fully self-contained (inline CSS, embedded chart images as data URIs) so they work when opened from a local file or attached to an email.
+
 ### Ad-hoc CSV output
 
 Unchanged — flat per-client-per-metric rows. This is a data extract, not a funder report.
@@ -205,7 +215,7 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 4. Consortium dashboard (deferred, per multi-tenancy DRR) consumes `PublishedReport` data
 5. Sharing granularity is **per-program**, not per-agency — different programs within one agency may share with different funders
 
-**This is why templates are the primary report path for consortium reporting.** Manual metric selection makes cross-agency reports impossible because each agency would choose different metrics. The template guarantees consistency across consortium members. Executives can also use Custom Export for one-off aggregate needs, but only template-driven reports feed the consortium pipeline.
+**This is why templates are the primary report path for consortium reporting.** Manual metric selection makes cross-agency reports impossible because each agency would choose different metrics. The template guarantees consistency across consortium members. Executives can also use Build a Report for one-off aggregate needs, but only template-driven reports feed the consortium pipeline.
 
 **Implementation note:** Consortium reporting is deferred until "after report data model is validated with real data" (multi-tenancy DRR). The template-driven pipeline built here is a prerequisite.
 
@@ -221,7 +231,7 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 | 6 | Wire ReportMetric aggregation into export pipeline | Step 4 |
 | 7 | Wire ReportSection into PDF output | Step 4 |
 | 8 | Add consortium-required locking to ad-hoc form | Steps 1-2 |
-| 9 | ~~Update navigation~~ Done (2026-02-22): all report users see dropdown with Generate Report + Custom Export | Steps 3, 8 |
+| 9 | ~~Update navigation~~ Done (2026-02-22): all report users see dropdown with Standard Report + Build a Report | Steps 3, 8 |
 | 10 | Restructure ad-hoc form field order + template auto-fill via HTMX | Step 8 |
 
 ## GK Review Required
@@ -246,7 +256,7 @@ Added 2026-03-04 per PR #289 review.
 
 ## Anti-Patterns (rejected)
 
-- **Removing aggregate-only enforcement on ad-hoc for executives** — executives may use Custom Export but MUST only receive aggregate output (enforced by `is_aggregate_only_user()`). Never expose individual participant data to executives via any path
+- **Removing aggregate-only enforcement on ad-hoc for executives** — executives may use Build a Report but MUST only receive aggregate output (enforced by `is_aggregate_only_user()`). Never expose individual participant data to executives via any path
 - **Manual metric selection when template exists** — the template defines the report, not the user
 - **Program dropdown for executives** — template already knows its programs via Partner
 - **Generic fiscal year dropdown when template has period_type** — causes date boundary errors across agencies

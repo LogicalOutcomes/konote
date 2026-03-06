@@ -14,6 +14,11 @@ from django.utils import timezone
 from cryptography.fernet import Fernet
 
 from apps.admin_settings.models import InstanceSetting
+from apps.auth_app.constants import (
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 from apps.auth_app.models import User
 from apps.clients.models import (
     ClientFile,
@@ -66,7 +71,7 @@ def _create_staff_user(username="staff_user"):
     """Create a user with staff role."""
     user = User.objects.create_user(username=username, password="testpass123")
     program = Program.objects.get_or_create(name="Test Program")[0]
-    UserProgramRole.objects.create(user=user, program=program, role="staff")
+    UserProgramRole.objects.create(user=user, program=program, role=ROLE_STAFF)
     return user, program
 
 
@@ -74,7 +79,7 @@ def _create_pm_user(username="pm_user"):
     """Create a user with program_manager role."""
     user = User.objects.create_user(username=username, password="testpass123")
     program = Program.objects.get_or_create(name="Test Program")[0]
-    UserProgramRole.objects.create(user=user, program=program, role="program_manager")
+    UserProgramRole.objects.create(user=user, program=program, role=ROLE_PROGRAM_MANAGER)
     return user, program
 
 
@@ -82,7 +87,7 @@ def _create_receptionist_user(username="reception_user"):
     """Create a user with receptionist role."""
     user = User.objects.create_user(username=username, password="testpass123")
     program = Program.objects.get_or_create(name="Test Program")[0]
-    UserProgramRole.objects.create(user=user, program=program, role="receptionist")
+    UserProgramRole.objects.create(user=user, program=program, role=ROLE_RECEPTIONIST)
     return user, program
 
 
@@ -210,7 +215,7 @@ class DvFieldHidingTest(TestCase):
     def test_receptionist_sees_both_without_dv_flag(self):
         """Without DV flag, receptionist sees all allowed fields."""
         from apps.clients.views import _get_custom_fields_context
-        ctx = _get_custom_fields_context(self.client_file, "receptionist", hide_empty=False)
+        ctx = _get_custom_fields_context(self.client_file, ROLE_RECEPTIONIST, hide_empty=False)
         field_names = [
             f["field_def"].name
             for group_data in ctx["custom_data"]
@@ -225,7 +230,7 @@ class DvFieldHidingTest(TestCase):
         self.client_file.save(update_fields=["is_dv_safe"])
 
         from apps.clients.views import _get_custom_fields_context
-        ctx = _get_custom_fields_context(self.client_file, "receptionist", hide_empty=False)
+        ctx = _get_custom_fields_context(self.client_file, ROLE_RECEPTIONIST, hide_empty=False)
         field_names = [
             f["field_def"].name
             for group_data in ctx["custom_data"]
@@ -240,7 +245,7 @@ class DvFieldHidingTest(TestCase):
         self.client_file.save(update_fields=["is_dv_safe"])
 
         from apps.clients.views import _get_custom_fields_context
-        ctx = _get_custom_fields_context(self.client_file, "staff", hide_empty=False)
+        ctx = _get_custom_fields_context(self.client_file, ROLE_STAFF, hide_empty=False)
         field_names = [
             f["field_def"].name
             for group_data in ctx["custom_data"]

@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 from apps.programs.access import get_user_program_ids
 from apps.programs.models import Program, UserProgramRole
 
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from .decorators import admin_required, requires_permission
 from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
@@ -26,14 +27,14 @@ from .models import User
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
 # PMs with user.manage: PROGRAM can manage staff in their own program
 # but cannot create PM/executive accounts or elevate front desk to staff.
-_PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
+_PM_BLOCKED_ROLE_ASSIGNMENTS = MANAGEMENT_ROLES
 
 
 def _get_pm_program_ids(user):
     """Return set of program IDs where the user is an active PM."""
     return set(
         UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active",
+            user=user, role=ROLE_PROGRAM_MANAGER, status="active",
         ).values_list("program_id", flat=True)
     )
 
@@ -299,7 +300,7 @@ def user_role_add(request, user_id):
                 existing_role = UserProgramRole.objects.filter(
                     user=edit_user, program=program, status="active",
                 ).values_list("role", flat=True).first()
-                if existing_role == "receptionist" and role == "staff":
+                if existing_role == ROLE_RECEPTIONIST and role == ROLE_STAFF:
                     messages.error(
                         request,
                         _("Elevating front desk to staff grants clinical data access. "

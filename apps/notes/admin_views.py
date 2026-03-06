@@ -12,6 +12,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import requires_permission
 from apps.programs.models import UserProgramRole
 
@@ -32,7 +33,7 @@ def _get_pm_program_ids(user):
     """Return set of program IDs where the user is an active PM."""
     return set(
         UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active",
+            user=user, role=ROLE_PROGRAM_MANAGER, status="active",
         ).values_list("program_id", flat=True)
     )
 

@@ -12,6 +12,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.portal.models import ClientResourceLink, ParticipantUser, PortalResourceLink
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -283,7 +284,7 @@ class StaffClientResourceTests(TestCase):
         # Admin needs a program role to pass @requires_permission("note.create")
         UserProgramRole.objects.create(
             user=self.staff, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
         self.client_file = ClientFile.objects.create(
             record_id="CLI-001", status="active",

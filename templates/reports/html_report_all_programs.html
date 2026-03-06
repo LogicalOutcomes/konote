@@ -1,0 +1,236 @@
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% trans "All Programs — Organisation Summary" %}</title>
+    <style>
+        {% include "reports/_report_styles.html" %}
+
+        @media print {
+            body { padding: 0; max-width: none; }
+            .no-print { display: none; }
+            details > summary { display: none; }
+            details > *:not(summary) { display: block !important; }
+            .program-section { page-break-before: always; }
+            .program-section:first-of-type { page-break-before: auto; }
+        }
+
+        /* Program section dividers */
+        .program-section {
+            margin-top: 2rem;
+            border-top: 3px solid #3176aa;
+            padding-top: 1rem;
+        }
+        .program-section:first-of-type {
+            border-top: none;
+            margin-top: 1rem;
+        }
+        .program-section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #3176aa;
+            margin-bottom: 0.5rem;
+            margin-top: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- Report Header -->
+<div class="pdf-header">
+    <h1>{% trans "All Programs — Organisation Summary" %}</h1>
+    <div class="subtitle">{{ organisation_name }}</div>
+    <dl class="meta-grid">
+        <dt>{% trans "Organisation" %}</dt>
+        <dd>{{ organisation_name }}</dd>
+        <dt>{% trans "Fiscal Year" %}</dt>
+        <dd>{{ fiscal_year_label }}</dd>
+        <dt>{% trans "Period" %}</dt>
+        <dd>{{ date_from }} {% trans "to" %} {{ date_to }}</dd>
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{{ generated_at }} {% trans "by" %} {{ generated_by }}</dd>
+        <dt>{% trans "Programs Included" %}</dt>
+        <dd>{{ programs|length }}</dd>
+    </dl>
+</div>
+
+{% if agency_notes %}
+<div class="report-header-bar">{% trans "Agency Notes" %}</div>
+<div style="padding: 0.8rem 1rem; background-color: #f7f8fa; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 4px 4px;">
+    <p>{{ agency_notes }}</p>
+</div>
+{% endif %}
+
+<!-- Organisation-wide summary -->
+<div class="report-header-bar">{% trans "Organisation Summary" %}</div>
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="value">{{ total_served }}</div>
+        <div class="label">{% trans "Total Individuals Served" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ total_new_clients }}</div>
+        <div class="label">{% trans "New Participants This Period" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ total_contacts }}</div>
+        <div class="label">{% trans "Total Service Contacts" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ programs|length }}</div>
+        <div class="label">{% trans "Programs" %}</div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+{% if programs|length >= 3 %}
+<nav class="report-toc no-print" aria-label="{% trans 'Programs in this report' %}">
+    <h2>{% trans "Programs" %}</h2>
+    <ol>
+    {% for prog in programs %}
+        <li><a href="#program-{{ forloop.counter }}">{{ prog.name }}</a></li>
+    {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+
+<!-- Per-program sections -->
+{% for prog in programs %}
+<div class="program-section" id="program-{{ forloop.counter }}">
+    <h2 class="program-section-title">{{ prog.name }}</h2>
+
+    <div class="stat-grid">
+        <div class="stat-box">
+            <div class="value">{{ prog.report_data.total_individuals_served|default:"0" }}</div>
+            <div class="label">{% trans "Total Individuals Served" %}</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ prog.report_data.new_clients_this_period|default:"0" }}</div>
+            <div class="label">{% trans "New Participants This Period" %}</div>
+        </div>
+        <div class="stat-box">
+            <div class="value">{{ prog.report_data.total_contacts|default:"0" }}</div>
+            <div class="label">{% trans "Total Service Contacts" %}</div>
+        </div>
+    </div>
+
+    {% if prog.report_data.age_demographics %}
+    <details open>
+    <summary class="report-header-bar">{% trans "Age Demographics" %} &mdash; {{ prog.report_data.age_demographics_total }} {% trans "participants" %}</summary>
+    <div style="margin: 0.8rem 0;">
+        <div class="demo-row header">
+            <div>{% trans "Age Group" %}</div>
+            <div style="text-align: right;">{% trans "Count" %}</div>
+            <div style="text-align: right;">{% trans "Percentage" %}</div>
+        </div>
+        {% for age_group, count in prog.report_data.age_demographics.items %}
+        <div class="demo-row">
+            <div>
+                {{ age_group }}
+                {% if prog.report_data.age_demographics_total > 0 %}
+                <div class="demo-bar" role="progressbar" aria-valuenow="{% widthratio count prog.report_data.age_demographics_total 100 %}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ age_group }}">
+                    <div class="demo-bar-fill" style="width: {% widthratio count prog.report_data.age_demographics_total 100 %}%;"></div>
+                </div>
+                {% endif %}
+            </div>
+            <div style="text-align: right;">{{ count }}</div>
+            <div style="text-align: right;">
+                {% if prog.report_data.age_demographics_total > 0 %}
+                {% widthratio count prog.report_data.age_demographics_total 100 %}%
+                {% else %}
+                {% trans "N/A" %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="demo-row header">
+            <div>{% trans "Total" %}</div>
+            <div style="text-align: right;">{{ prog.report_data.age_demographics_total }}</div>
+            <div style="text-align: right;">100%</div>
+        </div>
+    </div>
+    </details>
+    {% endif %}
+
+    {% if prog.report_data.primary_outcome %}
+    <details open>
+    <summary class="report-header-bar">{% trans "Outcome Indicators" %}</summary>
+    <h4 style="margin-top: 0.5rem;">{% trans "Primary Outcome" %}</h4>
+    <div class="outcome-card">
+        <h4>{{ prog.report_data.primary_outcome.name }}</h4>
+        <div class="rate">{{ prog.report_data.primary_outcome.achievement_rate }}%</div>
+        <div class="achievement-bar" role="progressbar" aria-valuenow="{{ prog.report_data.primary_outcome.achievement_rate }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ prog.report_data.primary_outcome.name }}">
+            <div class="achievement-bar-fill" style="width: {{ prog.report_data.primary_outcome.achievement_rate }}%;"></div>
+        </div>
+        <div class="details">
+            <strong>{% trans "Target:" %}</strong> {{ prog.report_data.primary_outcome.target_value }}<br>
+            <strong>{% trans "Clients Measured:" %}</strong> {{ prog.report_data.primary_outcome.clients_measured }}<br>
+            <strong>{% trans "Clients Achieving Target:" %}</strong> {% blocktrans with achieved=prog.report_data.primary_outcome.clients_achieved measured=prog.report_data.primary_outcome.clients_measured %}{{ achieved }} of {{ measured }}{% endblocktrans %}
+        </div>
+    </div>
+
+    {% if prog.report_data.secondary_outcomes %}
+    <h4>{% trans "Secondary Outcomes" %}</h4>
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Indicator Name" %}</th>
+                <th scope="col">{% trans "Target" %}</th>
+                <th scope="col">{% trans "Measured" %}</th>
+                <th scope="col">{% trans "Achieved" %}</th>
+                <th scope="col">{% trans "Rate" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for outcome in prog.report_data.secondary_outcomes %}
+            <tr>
+                <td>{{ outcome.name }}</td>
+                <td>{{ outcome.target_value }}</td>
+                <td>{{ outcome.clients_measured }}</td>
+                <td>{{ outcome.clients_achieved }}</td>
+                <td>
+                    {{ outcome.achievement_rate }}%
+                    <div class="achievement-bar" role="progressbar" aria-valuenow="{{ outcome.achievement_rate }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="achievement-bar-fill" style="width: {{ outcome.achievement_rate }}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    </details>
+    {% endif %}
+
+    {% if prog.report_data.achievement_summary.total_clients > 0 %}
+    <div class="report-header-bar">{% trans "Program Summary" %}</div>
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="number">{{ prog.report_data.achievement_summary.overall_rate }}%</div>
+            <div class="achievement-bar" role="progressbar" aria-valuenow="{{ prog.report_data.achievement_summary.overall_rate }}" aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Overall achievement rate' %}">
+                <div class="achievement-bar-fill" style="width: {{ prog.report_data.achievement_summary.overall_rate }}%;"></div>
+            </div>
+            <div class="label">{% trans "Overall Achievement Rate" %}</div>
+        </div>
+        <div class="summary-card">
+            <div class="number">{{ prog.report_data.achievement_summary.clients_met_any_target }} / {{ prog.report_data.achievement_summary.total_clients }}</div>
+            <div class="label">{% trans "Participants Met at Least One Target" %}</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div class="footer-note">
+    {% trans "This report was generated using KoNote's All Programs Organisation Summary." %}
+    {% blocktrans with fy=fiscal_year_label %}Data reflects client outcomes recorded during the {{ fy }} reporting period.{% endblocktrans %}
+    {% blocktrans with count=programs|length %}Includes data from {{ count }} program(s).{% endblocktrans %}
+</div>
+
+<div class="generated-by">
+    {% trans "Generated by KoNote" %}
+</div>
+</body>
+</html>

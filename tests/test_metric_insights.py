@@ -24,6 +24,7 @@ from apps.reports.metric_insights import (
     get_metric_trends,
     get_two_lenses,
 )
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 
 User = get_user_model()
 TEST_KEY = Fernet.generate_key().decode()
@@ -749,7 +750,7 @@ class ProgramInsightsViewContextTest(TestCase):
         )
         UserProgramRole.objects.create(
             user=self.user, program=self.program,
-            role="program_manager", status="active",
+            role=ROLE_PROGRAM_MANAGER, status="active",
         )
 
         self.metric = MetricDefinition.objects.create(

@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KoNote Configuration Generator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+<style>
+:root {
+  --kn-brand: #6366F1;
+  --kn-brand-light: #818CF8;
+  --kn-success: #22C55E;
+  --kn-warn: #F59E0B;
+  --kn-danger: #EF4444;
+  --kn-border: #E5E7EB;
+  --kn-bg-muted: #F9FAFB;
+}
+
+body { max-width: 960px; margin: 0 auto; padding: 1rem 1.5rem; }
+
+.tab-nav { display: flex; gap: 0; border-bottom: 2px solid var(--kn-border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab-nav button {
+  background: none; border: none; padding: 0.5rem 1rem; cursor: pointer;
+  font-size: 0.875rem; color: var(--pico-muted-color); border-bottom: 2px solid transparent;
+  margin-bottom: -2px; white-space: nowrap;
+}
+.tab-nav button.active { color: var(--kn-brand); border-bottom-color: var(--kn-brand); font-weight: 600; }
+.tab-nav button:hover { color: var(--kn-brand-light); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+fieldset { border: 1px solid var(--kn-border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+fieldset legend { font-weight: 600; font-size: 0.9375rem; padding: 0 0.5rem; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-row.three { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 640px) { .field-row, .field-row.three { grid-template-columns: 1fr; } }
+
+.help-text { font-size: 0.75rem; color: var(--pico-muted-color); margin-top: -0.5rem; margin-bottom: 0.75rem; }
+.key-display { font-family: monospace; font-size: 0.8125rem; word-break: break-all; background: var(--kn-bg-muted); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--kn-border); }
+.key-display-row { display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 0.75rem; }
+.key-display-row .key-display { flex: 1; }
+.key-display-row button { flex-shrink: 0; padding: 0.4rem 0.75rem; font-size: 0.75rem; }
+
+.repeatable-item { border: 1px solid var(--kn-border); border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; position: relative; background: var(--kn-bg-muted); }
+.repeatable-item .remove-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--kn-danger); cursor: pointer; font-size: 1.25rem; padding: 0.25rem; line-height: 1; }
+.add-btn { font-size: 0.875rem; padding: 0.4rem 1rem; }
+
+.metric-category { margin-bottom: 1rem; }
+.metric-category summary { font-weight: 600; cursor: pointer; padding: 0.5rem 0; }
+.metric-category .metric-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 1rem; padding: 0.5rem 0; }
+@media (max-width: 640px) { .metric-category .metric-list { grid-template-columns: 1fr; } }
+.metric-item { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.8125rem; }
+.metric-item input[type="checkbox"] { margin-top: 0.15rem; flex-shrink: 0; }
+.metric-item .metric-name { font-weight: 500; }
+.metric-item .metric-def { color: var(--pico-muted-color); font-size: 0.75rem; }
+
+.preview-panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 768px) { .preview-panes { grid-template-columns: 1fr; } }
+.preview-pane { position: relative; }
+.preview-pane h3 { font-size: 0.9375rem; margin-bottom: 0.5rem; }
+.preview-pane pre {
+  background: #1E293B; color: #E2E8F0; padding: 1rem; border-radius: 6px;
+  font-size: 0.75rem; overflow: auto; max-height: 500px; white-space: pre-wrap; word-break: break-all;
+}
+.preview-pane .copy-btn {
+  position: absolute; top: 2.25rem; right: 0.5rem; background: rgba(255,255,255,0.15);
+  border: none; color: #E2E8F0; cursor: pointer; padding: 0.25rem 0.5rem;
+  border-radius: 4px; font-size: 0.75rem;
+}
+.preview-pane .copy-btn:hover { background: rgba(255,255,255,0.25); }
+
+.download-row { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+.download-row button { flex: 1; min-width: 200px; }
+
+.badge { display: inline-block; font-size: 0.6875rem; padding: 0.1rem 0.4rem; border-radius: 3px; font-weight: 600; }
+.badge-on { background: #DCFCE7; color: #166534; }
+.badge-off { background: #FEE2E2; color: #991B1B; }
+.badge-dep { background: #FEF3C7; color: #92400E; }
+
+.nested-section { border-left: 3px solid var(--kn-brand-light); padding-left: 1rem; margin-left: 0.5rem; margin-bottom: 0.75rem; }
+
+.search-box { margin-bottom: 1rem; }
+.search-box input { font-size: 0.875rem; padding: 0.4rem 0.75rem; }
+
+header.page-header { text-align: center; margin-bottom: 2rem; }
+header.page-header h1 { margin-bottom: 0.25rem; }
+header.page-header p { color: var(--pico-muted-color); }
+
+.colour-swatch { width: 2rem; height: 2rem; border-radius: 4px; border: 1px solid var(--kn-border); display: inline-block; vertical-align: middle; }
+input[type="color"] { height: 2.5rem; padding: 0.25rem; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>KoNote Configuration Generator</h1>
+  <p>Generate <code>.env</code> and <code>setup_config.json</code> files for a new KoNote instance.</p>
+</header>
+
+<nav class="tab-nav" role="tablist">
+  <button role="tab" class="active" data-tab="infrastructure">Infrastructure</button>
+  <button role="tab" data-tab="organisation">Organisation</button>
+  <button role="tab" data-tab="email-ops">Email &amp; Operations</button>
+  <button role="tab" data-tab="features">Features</button>
+  <button role="tab" data-tab="programs-metrics">Programs &amp; Metrics</button>
+  <button role="tab" data-tab="templates-fields">Templates &amp; Fields</button>
+  <button role="tab" data-tab="review">Review &amp; Download</button>
+</nav>
+
+<!-- ============================================================ -->
+<!-- TAB 1: INFRASTRUCTURE -->
+<!-- ============================================================ -->
+<div id="tab-infrastructure" class="tab-panel active">
+
+  <fieldset>
+    <legend>Domain &amp; Hosts</legend>
+    <label>Domain name
+      <input type="text" id="domain" placeholder="konote.example.ca" oninput="deriveDomainFields()">
+    </label>
+    <p class="help-text">Your public domain. ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS are derived automatically.</p>
+    <div class="field-row">
+      <label>ALLOWED_HOSTS
+        <input type="text" id="allowed_hosts" placeholder="Auto-derived from domain">
+      </label>
+      <label>CSRF_TRUSTED_ORIGINS
+        <input type="text" id="csrf_trusted_origins" placeholder="Auto-derived from domain">
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Security Keys</legend>
+    <p class="help-text">Cryptographic keys generated in your browser. Nothing leaves this page.</p>
+
+    <label>SECRET_KEY</label>
+    <div class="key-display-row">
+      <div class="key-display" id="secret_key_display">Click "Generate All Keys" below</div>
+      <button class="outline" onclick="generateSecretKey()">Regenerate</button>
+    </div>
+
+    <label>FIELD_ENCRYPTION_KEY</label>
+    <div class="key-display-row">
+      <div class="key-display" id="encryption_key_display">Click "Generate All Keys" below</div>
+      <button class="outline" onclick="generateEncryptionKey()">Regenerate</button>
+    </div>
+
+    <label>EMAIL_HASH_KEY</label>
+    <div class="key-display-row">
+      <div class="key-display" id="email_hash_key_display">Click "Generate All Keys" below</div>
+      <button class="outline" onclick="generateEmailHashKey()">Regenerate</button>
+    </div>
+
+    <button onclick="generateAllKeys()">Generate All Keys</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Database</legend>
+    <div style="margin-bottom: 1rem;">
+      <label><input type="radio" name="db_mode" value="docker" checked onchange="toggleDbMode()"> Docker Compose (recommended)</label>
+      <label><input type="radio" name="db_mode" value="external" onchange="toggleDbMode()"> External PostgreSQL</label>
+    </div>
+
+    <div id="db_docker">
+      <div class="field-row">
+        <label>Main DB username <input type="text" id="pg_user" value="konote"></label>
+        <label>Main DB password <input type="password" id="pg_password" placeholder="Secure password"></label>
+      </div>
+      <div class="field-row">
+        <label>Audit DB username <input type="text" id="audit_pg_user" value="audit_writer"></label>
+        <label>Audit DB password <input type="password" id="audit_pg_password" placeholder="Secure password"></label>
+      </div>
+    </div>
+    <div id="db_external" style="display:none;">
+      <label>DATABASE_URL <input type="text" id="database_url" placeholder="postgresql://user:pass@host:5432/konote"></label>
+      <label>AUDIT_DATABASE_URL <input type="text" id="audit_database_url" placeholder="postgresql://user:pass@host:5433/konote_audit"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Authentication</legend>
+    <div style="margin-bottom: 1rem;">
+      <label><input type="radio" name="auth_mode" value="local" checked onchange="toggleAuthMode()"> Local (username/password with Argon2)</label>
+      <label><input type="radio" name="auth_mode" value="azure" onchange="toggleAuthMode()"> Azure AD SSO</label>
+    </div>
+    <div id="auth_azure" style="display:none;">
+      <div class="field-row">
+        <label>Azure Client ID <input type="text" id="azure_client_id"></label>
+        <label>Azure Tenant ID <input type="text" id="azure_tenant_id"></label>
+      </div>
+      <label>Azure Client Secret <input type="password" id="azure_client_secret"></label>
+      <label>Azure Redirect URI <input type="text" id="azure_redirect_uri" placeholder="https://yourdomain.com/auth/callback/"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Mode</legend>
+    <div class="field-row three">
+      <label>KONOTE_MODE
+        <select id="konote_mode">
+          <option value="production">Production</option>
+          <option value="demo">Demo / Evaluation</option>
+        </select>
+      </label>
+      <label>DEBUG
+        <select id="debug_mode">
+          <option value="False">False (production)</option>
+          <option value="True">True (development)</option>
+        </select>
+      </label>
+      <label>DEMO_MODE
+        <select id="demo_mode">
+          <option value="">Disabled</option>
+          <option value="true">Enabled</option>
+        </select>
+      </label>
+    </div>
+    <div id="demo_email_section" style="display:none;">
+      <label>Demo email base <input type="email" id="demo_email_base" placeholder="user@gmail.com"></label>
+      <p class="help-text">If set, demo users get tagged emails (e.g. user+demo-admin@gmail.com)</p>
+    </div>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 2: ORGANISATION & BRANDING -->
+<!-- ============================================================ -->
+<div id="tab-organisation" class="tab-panel">
+
+  <fieldset>
+    <legend>Organisation Details</legend>
+    <label>Organisation name <input type="text" id="org_name" placeholder="e.g. Community Services of Simcoe County"></label>
+    <div class="field-row">
+      <label>Support email <input type="email" id="support_email" placeholder="support@agency.ca"></label>
+      <label>Website <input type="url" id="website" placeholder="https://agency.ca"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Branding &amp; Display</legend>
+    <div class="field-row">
+      <label>Product name <input type="text" id="product_name" placeholder="KoNote" value="KoNote"></label>
+      <label>Brand colour
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <input type="color" id="brand_colour" value="#6366F1" style="width:4rem;">
+          <input type="text" id="brand_colour_hex" value="#6366F1" style="width:8rem;" oninput="document.getElementById('brand_colour').value=this.value" onchange="document.getElementById('brand_colour').value=this.value">
+        </div>
+      </label>
+    </div>
+    <div class="field-row three">
+      <label>Date format
+        <select id="date_format">
+          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+          <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+          <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+          <option value="D MMM YYYY">D MMM YYYY</option>
+        </select>
+      </label>
+      <label>Time format
+        <select id="time_format">
+          <option value="h:mma">12-hour (3:30pm)</option>
+          <option value="HH:mm">24-hour (15:30)</option>
+        </select>
+      </label>
+      <label>Session timeout (minutes)
+        <input type="number" id="session_timeout" value="30" min="5" max="480">
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Print Settings</legend>
+    <div class="field-row">
+      <label>Print header <input type="text" id="print_header" placeholder="Organisation name for printed reports"></label>
+      <label>Print footer <input type="text" id="print_footer" placeholder="CONFIDENTIAL - Do not distribute"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Access Tier</legend>
+    <select id="access_tier">
+      <option value="1">Tier 1 - Open (all staff see all data)</option>
+      <option value="2">Tier 2 - Role-Based (front desk restrictions)</option>
+      <option value="3" selected>Tier 3 - Clinical (program-scoped access, audit grants)</option>
+    </select>
+    <p class="help-text">Controls who can see what. Tier 3 is recommended for agencies handling clinical data.</p>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 3: EMAIL & OPERATIONS -->
+<!-- ============================================================ -->
+<div id="tab-email-ops" class="tab-panel">
+
+  <fieldset>
+    <legend>Email (SMTP)</legend>
+    <label>SMTP Preset
+      <select id="smtp_preset" onchange="applySmtpPreset()">
+        <option value="none">None (no email)</option>
+        <option value="resend">Resend.com (recommended)</option>
+        <option value="m365">Microsoft 365</option>
+        <option value="custom">Custom SMTP</option>
+      </select>
+    </label>
+    <div id="smtp_fields" style="display:none;">
+      <div class="field-row">
+        <label>EMAIL_HOST <input type="text" id="email_host"></label>
+        <label>EMAIL_PORT <input type="number" id="email_port" value="587"></label>
+      </div>
+      <div class="field-row">
+        <label>EMAIL_HOST_USER <input type="text" id="email_host_user"></label>
+        <label>EMAIL_HOST_PASSWORD <input type="password" id="email_host_password"></label>
+      </div>
+      <label><input type="checkbox" id="email_use_tls" checked> Use TLS</label>
+      <label>DEFAULT_FROM_EMAIL <input type="email" id="default_from_email" placeholder="KoNote <noreply@yourdomain.ca>"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Notifications</legend>
+    <label>Export notification emails (comma-separated)
+      <input type="text" id="export_notification_emails" placeholder="privacy@agency.ca, ed@agency.ca">
+    </label>
+    <div class="field-row">
+      <label>Export link expiry (hours) <input type="number" id="export_link_expiry" value="24" min="1"></label>
+      <label>Elevated export delay (minutes) <input type="number" id="elevated_export_delay" value="10" min="0"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>SMS (Optional)</legend>
+    <div class="field-row three">
+      <label>Twilio Account SID <input type="text" id="twilio_sid"></label>
+      <label>Twilio Auth Token <input type="password" id="twilio_token"></label>
+      <label>Twilio From Number <input type="text" id="twilio_from" placeholder="+1234567890"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Operations (Docker ops sidecar)</legend>
+    <div class="field-row">
+      <label>Backup retention (days) <input type="number" id="backup_retention" value="30" min="1"></label>
+      <label>Audit retention (days) <input type="number" id="audit_retention" value="90" min="1"></label>
+    </div>
+    <label>Healthcheck ping URL <input type="url" id="healthcheck_url" placeholder="https://hc-ping.com/your-uuid-here"></label>
+    <label>Alert webhook URL <input type="url" id="alert_webhook" placeholder="https://ntfy.sh/your-topic"></label>
+    <div class="field-row">
+      <label>Disk threshold (%) <input type="number" id="disk_threshold" value="80" min="50" max="99"></label>
+      <label>Health report email <input type="email" id="health_report_email" placeholder="admin@agency.ca"></label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>AI Features (Optional)</legend>
+    <label>OpenRouter API Key <input type="password" id="openrouter_api_key" placeholder="sk-or-..."></label>
+    <p class="help-text">Enables AI Goal Builder, metric suggestions, and narrative generation. Also enable the AI feature toggle.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>ODK Central (Optional)</legend>
+    <label>ODK Central URL <input type="url" id="odk_central_url" placeholder="https://odk.example.ca"></label>
+    <p class="help-text">Required if you enable the Field Collection feature toggle.</p>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 4: FEATURES & TERMINOLOGY -->
+<!-- ============================================================ -->
+<div id="tab-features" class="tab-panel">
+
+  <fieldset>
+    <legend>Feature Toggles</legend>
+    <p class="help-text">Select which features to enable for this instance. Dependencies are noted.</p>
+    <div id="feature-table"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Terminology Overrides</legend>
+    <p class="help-text">Override any default term used throughout KoNote. Leave blank to keep the default.</p>
+    <div id="terminology-table"></div>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 5: PROGRAMS & METRICS -->
+<!-- ============================================================ -->
+<div id="tab-programs-metrics" class="tab-panel">
+
+  <fieldset>
+    <legend>Programs</legend>
+    <p class="help-text">Define the programs your agency runs. Each program has its own enrolment, notes, and metrics.</p>
+    <div id="programs-list"></div>
+    <button class="add-btn outline" onclick="addProgram()">+ Add Program</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Metrics</legend>
+    <p class="help-text">Select which outcome metrics to enable from the KoNote library. Unchecked metrics will be disabled.</p>
+    <div class="search-box">
+      <input type="text" id="metric-search" placeholder="Search metrics..." oninput="filterMetrics()">
+    </div>
+    <div id="metrics-list"></div>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 6: TEMPLATES & CUSTOM FIELDS -->
+<!-- ============================================================ -->
+<div id="tab-templates-fields" class="tab-panel">
+
+  <fieldset>
+    <legend>Plan Templates</legend>
+    <p class="help-text">Define reusable outcome plan structures. Each template has sections with targets.</p>
+    <div id="templates-list"></div>
+    <button class="add-btn outline" onclick="addTemplate()">+ Add Template</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Custom Field Groups</legend>
+    <p class="help-text">Add custom data fields to participant files (demographics, referral info, etc.).</p>
+    <div id="field-groups-list"></div>
+    <button class="add-btn outline" onclick="addFieldGroup()">+ Add Field Group</button>
+  </fieldset>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB 7: REVIEW & DOWNLOAD -->
+<!-- ============================================================ -->
+<div id="tab-review" class="tab-panel">
+
+  <div class="preview-panes">
+    <div class="preview-pane">
+      <h3>.env</h3>
+      <button class="copy-btn" onclick="copyToClipboard('env-preview')">Copy</button>
+      <pre id="env-preview"></pre>
+    </div>
+    <div class="preview-pane">
+      <h3>setup_config.json</h3>
+      <button class="copy-btn" onclick="copyToClipboard('json-preview')">Copy</button>
+      <pre id="json-preview"></pre>
+    </div>
+  </div>
+
+  <div class="download-row">
+    <button onclick="downloadEnv()">Download .env</button>
+    <button onclick="downloadJson()">Download setup_config.json</button>
+  </div>
+
+</div>
+
+<script>
+// =============================================================================
+// EMBEDDED DATA
+// =============================================================================
+
+const METRIC_LIBRARY = [
+  {"name":"PHQ-9 (Depression)","category":"mental_health","definition":"Patient Health Questionnaire-9. Scores 0-27. Measures depression severity.","is_standardized_instrument":true},
+  {"name":"GAD-7 (Anxiety)","category":"mental_health","definition":"Generalized Anxiety Disorder-7. Scores 0-21. Measures anxiety severity.","is_standardized_instrument":true},
+  {"name":"K10 (Psychological Distress)","category":"mental_health","definition":"Kessler Psychological Distress Scale. Scores 10-50.","is_standardized_instrument":true},
+  {"name":"Nights in Shelter (past 30 days)","category":"housing","definition":"Number of nights spent in emergency shelter in the past 30 days."},
+  {"name":"Monthly Income","category":"housing","definition":"Participant's total monthly income from all sources, in local currency."},
+  {"name":"Hours Worked (past week)","category":"employment","definition":"Number of paid hours worked in the past 7 days."},
+  {"name":"School Attendance Rate","category":"youth","definition":"Percentage of school days attended in the past month."},
+  {"name":"How are you feeling today?","category":"general","definition":"Simple wellbeing check-in. 1-5 scale."},
+  {"name":"Since we last met, how are things going?","category":"general","definition":"Change since previous session. 1-5 scale."},
+  {"name":"How ready do you feel for work?","category":"employment","definition":"Self-reported readiness for job searching or starting work. 1-5 scale."},
+  {"name":"Confidence in your job search","category":"employment","definition":"How confident about finding work? 1-5 scale."},
+  {"name":"How safe do you feel where you live?","category":"housing","definition":"Self-reported feeling of safety in current living situation. 1-5 scale."},
+  {"name":"How connected do you feel to the group?","category":"youth","definition":"Sense of belonging in group activities. 1-5 scale."},
+  {"name":"Confidence navigating services","category":"general","definition":"How confident accessing community services on your own? 1-5 scale."},
+  {"name":"Comfort with English in daily life","category":"general","definition":"Self-reported comfort using English for everyday tasks. 1-5 scale."},
+  {"name":"Cooking confidence","category":"general","definition":"How confident preparing a healthy meal from scratch? 1-5 scale."},
+  {"name":"Healthy meals prepared this week","category":"general","definition":"Number of healthy meals prepared at home this week."},
+  {"name":"Sessions attended this month","category":"general","definition":"Number of program sessions attended in the past month."},
+  {"name":"Community connections this month","category":"general","definition":"Number of new community connections or resources accessed this month."},
+  {"name":"Goal Progress","category":"general","definition":"What are you doing toward this goal? 1-5 scale. Universal metric."},
+  {"name":"Self-Efficacy","category":"general","definition":"How sure do you feel about being able to do this? 1-5 scale. Universal metric."},
+  {"name":"Satisfaction","category":"general","definition":"How satisfied with how things are going in this area? 1-5 scale. Universal metric."},
+  {"name":"Job Placement","category":"employment","definition":"Has the participant secured employment? Achievement metric."},
+  {"name":"Housing Secured","category":"housing","definition":"Has the participant secured stable housing? Achievement metric."},
+  {"name":"School Enrolment","category":"youth","definition":"Is the youth enrolled in school or an educational program? Achievement metric."},
+  {"name":"Everyone is made to feel welcome","category":"client_experience","definition":"Inclusivity battery item. 4-point scale."},
+  {"name":"Everyone is valued equally","category":"client_experience","definition":"Inclusivity battery item. 4-point scale."},
+  {"name":"I am treated with respect","category":"client_experience","definition":"Inclusivity battery item. 4-point scale."},
+  {"name":"People help each other","category":"client_experience","definition":"Inclusivity battery item. 4-point scale."},
+  {"name":"I get help when I need it","category":"client_experience","definition":"Inclusivity battery item. 4-point scale."},
+  {"name":"How has taking part in this program changed things for you?","category":"client_experience","definition":"Open-text reflection on program impact."},
+  {"name":"How can we improve our program or services?","category":"client_experience","definition":"Open-text suggestion for program improvement."}
+];
+
+const CATEGORY_LABELS = {
+  mental_health: "Mental Health",
+  housing: "Housing",
+  employment: "Employment",
+  youth: "Youth",
+  general: "General / Universal",
+  client_experience: "Client Experience"
+};
+
+const DEFAULT_FEATURES = {
+  programs: { label: "Programs", description: "Organise services into separate programs.", default_on: false, depends_on: [], config: [] },
+  custom_fields: { label: "Custom Participant Fields", description: "Add extra data fields to participant files.", default_on: false, depends_on: [], config: [] },
+  alerts: { label: "Metric Alerts", description: "Notify staff when metrics hit thresholds.", default_on: false, depends_on: [], config: [] },
+  events: { label: "Event Tracking", description: "Record significant events on participant timelines.", default_on: false, depends_on: [], config: [] },
+  program_reports: { label: "Program Reports", description: "Generate formatted outcome reports for funders.", default_on: false, depends_on: [], config: [] },
+  require_client_consent: { label: "Consent Requirement", description: "Require consent before creating progress notes (PIPEDA/PHIPA).", default_on: true, depends_on: [], config: [] },
+  messaging_email: { label: "Email Messaging", description: "Send email reminders and messages to participants.", default_on: false, depends_on: [], config: ["EMAIL_HOST"] },
+  messaging_sms: { label: "SMS Messaging", description: "Send SMS reminders (requires Twilio).", default_on: false, depends_on: [], config: ["TWILIO_ACCOUNT_SID"] },
+  participant_portal: { label: "Participant Portal", description: "Secure portal for participants to view goals and progress.", default_on: false, depends_on: [], config: [] },
+  portal_journal: { label: "Portal Journal", description: "Private journal feature in the participant portal.", default_on: true, depends_on: ["participant_portal"], config: [] },
+  portal_messaging: { label: "Portal Messaging", description: "Secure messaging between participants and workers.", default_on: true, depends_on: ["participant_portal"], config: [] },
+  surveys: { label: "Surveys", description: "Structured feedback forms with trigger rules and scoring.", default_on: false, depends_on: [], config: [] },
+  ai_assist_tools_only: { label: "AI Tools (no participant data)", description: "AI helps write SMART outcomes, suggest metrics. No PII sent to AI.", default_on: true, depends_on: [], config: ["OPENROUTER_API_KEY"] },
+  ai_assist_participant_data: { label: "AI Participant Insights", description: "AI summarises themes from de-identified feedback.", default_on: false, depends_on: ["ai_assist_tools_only"], config: ["OPENROUTER_API_KEY"] },
+  groups: { label: "Groups", description: "Group sessions and attendance tracking.", default_on: false, depends_on: [], config: [] },
+  quick_notes: { label: "Quick Notes", description: "Lightweight contact logging for phone calls and brief interactions.", default_on: false, depends_on: [], config: [] },
+  analysis_charts: { label: "Analysis Charts", description: "Progress visualisation charts on participant files.", default_on: false, depends_on: [], config: [] },
+  shift_summaries: { label: "Shift Summaries", description: "End-of-shift summary generation for team handoffs.", default_on: false, depends_on: [], config: [] },
+  client_avatar: { label: "Participant Avatars", description: "Display avatars in lists and file headers.", default_on: false, depends_on: [], config: [] },
+  plan_export_to_word: { label: "Plan Export to Word", description: "Export outcome plans as Word documents.", default_on: false, depends_on: [], config: [] },
+  cross_program_note_sharing: { label: "Cross-Program Note Sharing", description: "Share clinical notes across programs.", default_on: true, depends_on: ["programs"], config: [] },
+  field_collection: { label: "Field Collection", description: "Offline mobile data collection via ODK Central.", default_on: false, depends_on: [], config: ["ODK_CENTRAL_URL"] },
+  circles: { label: "Circles", description: "Track families, households, and support networks.", default_on: false, depends_on: [], config: [] },
+  portal_resources: { label: "Portal Resources", description: "Show helpful resource links in the participant portal.", default_on: true, depends_on: ["participant_portal"], config: [] },
+  messaging_notifications: { label: "Notification Preferences", description: "Let users configure their notification preferences.", default_on: false, depends_on: [], config: [] }
+};
+
+const DEFAULT_TERMS = {
+  client: "Participant", client_plural: "Participants",
+  worker: "Worker", worker_plural: "Workers",
+  file: "File", file_plural: "Files",
+  plan: "Plan", plan_plural: "Plans",
+  section: "Section", section_plural: "Sections",
+  target: "Target", target_plural: "Targets",
+  metric: "Metric", metric_plural: "Metrics",
+  progress_note: "Note", progress_note_plural: "Notes",
+  quick_note: "Quick Note", quick_note_plural: "Quick Notes",
+  event: "Event", event_plural: "Events",
+  alert: "Alert", alert_plural: "Alerts",
+  program: "Program", program_plural: "Programs",
+  enrolment: "Enrolment", enrolment_plural: "Enrolments",
+  group: "Group", group_plural: "Groups",
+  member: "Member", member_plural: "Members",
+  session: "Session", session_plural: "Sessions",
+  circle: "Circle", circle_plural: "Circles",
+  resource: "Resource", resource_plural: "Resources"
+};
+
+// =============================================================================
+// TAB NAVIGATION
+// =============================================================================
+
+document.querySelectorAll('.tab-nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'review') refreshPreview();
+  });
+});
+
+// =============================================================================
+// KEY GENERATION (Web Crypto API)
+// =============================================================================
+
+function randomChars(length, charset) {
+  const arr = new Uint8Array(length);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => charset[b % charset.length]).join('');
+}
+
+function generateSecretKey() {
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*(-_=+)';
+  const key = randomChars(50, charset);
+  document.getElementById('secret_key_display').textContent = key;
+}
+
+function generateEncryptionKey() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  const base64 = btoa(String.fromCharCode(...arr));
+  // Fernet key is URL-safe base64 of 32 bytes, padded with =
+  const key = base64.replace(/\+/g, '-').replace(/\//g, '_');
+  document.getElementById('encryption_key_display').textContent = key;
+}
+
+function generateEmailHashKey() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  const base64 = btoa(String.fromCharCode(...arr));
+  const key = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  document.getElementById('email_hash_key_display').textContent = key;
+}
+
+function generateAllKeys() {
+  generateSecretKey();
+  generateEncryptionKey();
+  generateEmailHashKey();
+}
+
+// =============================================================================
+// DOMAIN AUTO-DERIVE
+// =============================================================================
+
+function deriveDomainFields() {
+  const domain = document.getElementById('domain').value.trim();
+  if (domain) {
+    document.getElementById('allowed_hosts').value = domain + ',www.' + domain;
+    document.getElementById('csrf_trusted_origins').value = 'https://' + domain + ',https://www.' + domain;
+  }
+}
+
+// =============================================================================
+// DB & AUTH TOGGLES
+// =============================================================================
+
+function toggleDbMode() {
+  const mode = document.querySelector('input[name="db_mode"]:checked').value;
+  document.getElementById('db_docker').style.display = mode === 'docker' ? '' : 'none';
+  document.getElementById('db_external').style.display = mode === 'external' ? '' : 'none';
+}
+
+function toggleAuthMode() {
+  const mode = document.querySelector('input[name="auth_mode"]:checked').value;
+  document.getElementById('auth_azure').style.display = mode === 'azure' ? '' : 'none';
+}
+
+// Demo mode toggle
+document.getElementById('demo_mode').addEventListener('change', function() {
+  document.getElementById('demo_email_section').style.display = this.value === 'true' ? '' : 'none';
+});
+
+// =============================================================================
+// SMTP PRESETS
+// =============================================================================
+
+function applySmtpPreset() {
+  const preset = document.getElementById('smtp_preset').value;
+  const fields = document.getElementById('smtp_fields');
+  fields.style.display = preset === 'none' ? 'none' : '';
+
+  if (preset === 'resend') {
+    document.getElementById('email_host').value = 'smtp.resend.com';
+    document.getElementById('email_port').value = '587';
+    document.getElementById('email_host_user').value = 'resend';
+    document.getElementById('email_host_password').value = '';
+    document.getElementById('email_use_tls').checked = true;
+  } else if (preset === 'm365') {
+    document.getElementById('email_host').value = 'smtp.office365.com';
+    document.getElementById('email_port').value = '587';
+    document.getElementById('email_host_user').value = '';
+    document.getElementById('email_host_password').value = '';
+    document.getElementById('email_use_tls').checked = true;
+  } else if (preset === 'custom') {
+    document.getElementById('email_host').value = '';
+    document.getElementById('email_port').value = '587';
+    document.getElementById('email_host_user').value = '';
+    document.getElementById('email_host_password').value = '';
+  }
+}
+
+// =============================================================================
+// FEATURE TOGGLES TABLE
+// =============================================================================
+
+function buildFeatureTable() {
+  const container = document.getElementById('feature-table');
+  let html = '<table role="grid" style="font-size:0.8125rem;"><thead><tr><th style="width:2rem;"></th><th>Feature</th><th>Description</th><th>Notes</th></tr></thead><tbody>';
+
+  for (const [key, feat] of Object.entries(DEFAULT_FEATURES)) {
+    const checked = feat.default_on ? 'checked' : '';
+    let notes = '';
+    if (feat.depends_on.length) notes += '<span class="badge badge-dep">Requires: ' + feat.depends_on.join(', ') + '</span> ';
+    if (feat.config.length) notes += '<span class="badge badge-dep">Env: ' + feat.config.join(', ') + '</span>';
+    html += `<tr>
+      <td><input type="checkbox" id="feat_${key}" data-feature="${key}" ${checked} onchange="handleFeatureDep('${key}')"></td>
+      <td><strong>${feat.label}</strong></td>
+      <td>${feat.description}</td>
+      <td>${notes}</td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function handleFeatureDep(key) {
+  const cb = document.getElementById('feat_' + key);
+  const feat = DEFAULT_FEATURES[key];
+
+  if (cb.checked) {
+    // Enable dependencies
+    for (const dep of feat.depends_on) {
+      const depCb = document.getElementById('feat_' + dep);
+      if (depCb && !depCb.checked) {
+        depCb.checked = true;
+        handleFeatureDep(dep);
+      }
+    }
+  } else {
+    // Disable dependents
+    for (const [k, f] of Object.entries(DEFAULT_FEATURES)) {
+      if (f.depends_on.includes(key)) {
+        const depCb = document.getElementById('feat_' + k);
+        if (depCb && depCb.checked) {
+          depCb.checked = false;
+          handleFeatureDep(k);
+        }
+      }
+    }
+  }
+}
+
+// =============================================================================
+// TERMINOLOGY TABLE
+// =============================================================================
+
+function buildTerminologyTable() {
+  const container = document.getElementById('terminology-table');
+  let html = '<table role="grid" style="font-size:0.8125rem;"><thead><tr><th>Key</th><th>Default</th><th>Override</th></tr></thead><tbody>';
+
+  for (const [key, defaultVal] of Object.entries(DEFAULT_TERMS)) {
+    html += `<tr>
+      <td><code>${key}</code></td>
+      <td>${defaultVal}</td>
+      <td><input type="text" id="term_${key}" placeholder="${defaultVal}" style="font-size:0.8125rem; padding:0.25rem 0.5rem; margin:0;"></td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// =============================================================================
+// PROGRAMS (Repeatable)
+// =============================================================================
+
+let programCounter = 0;
+
+function addProgram(name, description, colour) {
+  const id = programCounter++;
+  const container = document.getElementById('programs-list');
+  const div = document.createElement('div');
+  div.className = 'repeatable-item';
+  div.id = 'program-' + id;
+  div.innerHTML = `
+    <button class="remove-btn" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+    <div class="field-row three">
+      <label>Name <input type="text" class="prog-name" value="${name || ''}"></label>
+      <label>Description <input type="text" class="prog-desc" value="${description || ''}"></label>
+      <label>Colour <input type="color" class="prog-colour" value="${colour || '#3B82F6'}" style="width:4rem; height:2.25rem;"></label>
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+// =============================================================================
+// METRICS (Grouped checkboxes)
+// =============================================================================
+
+function buildMetricsList() {
+  const container = document.getElementById('metrics-list');
+  const grouped = {};
+  for (const m of METRIC_LIBRARY) {
+    if (!grouped[m.category]) grouped[m.category] = [];
+    grouped[m.category].push(m);
+  }
+
+  let html = '';
+  for (const [cat, metrics] of Object.entries(grouped)) {
+    const label = CATEGORY_LABELS[cat] || cat;
+    html += `<details class="metric-category" open>
+      <summary>${label} (${metrics.length})</summary>
+      <div class="metric-list">`;
+    for (const m of metrics) {
+      const safeId = 'metric_' + m.name.replace(/[^a-zA-Z0-9]/g, '_');
+      html += `<label class="metric-item" data-name="${m.name.toLowerCase()}" data-def="${m.definition.toLowerCase()}">
+        <input type="checkbox" id="${safeId}" data-metric-name="${m.name}" checked>
+        <div>
+          <div class="metric-name">${m.name}</div>
+          <div class="metric-def">${m.definition}</div>
+        </div>
+      </label>`;
+    }
+    html += '</div></details>';
+  }
+  container.innerHTML = html;
+}
+
+function filterMetrics() {
+  const q = document.getElementById('metric-search').value.toLowerCase();
+  document.querySelectorAll('.metric-item').forEach(item => {
+    const match = item.dataset.name.includes(q) || item.dataset.def.includes(q);
+    item.style.display = match ? '' : 'none';
+  });
+}
+
+// =============================================================================
+// PLAN TEMPLATES (Repeatable with nested sections/targets)
+// =============================================================================
+
+let templateCounter = 0;
+let sectionCounter = 0;
+let targetCounter = 0;
+
+function addTemplate() {
+  const id = templateCounter++;
+  const container = document.getElementById('templates-list');
+  const div = document.createElement('div');
+  div.className = 'repeatable-item';
+  div.id = 'template-' + id;
+  div.innerHTML = `
+    <button class="remove-btn" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+    <div class="field-row">
+      <label>Template name <input type="text" class="tpl-name"></label>
+      <label>Description <input type="text" class="tpl-desc"></label>
+    </div>
+    <div class="tpl-sections" id="tpl-sections-${id}"></div>
+    <button class="add-btn outline" onclick="addSection(${id})" style="font-size:0.75rem;">+ Add Section</button>
+  `;
+  container.appendChild(div);
+}
+
+function addSection(tplId) {
+  const id = sectionCounter++;
+  const container = document.getElementById('tpl-sections-' + tplId);
+  const div = document.createElement('div');
+  div.className = 'nested-section';
+  div.id = 'section-' + id;
+  div.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <label style="flex:1; margin-right:0.5rem;">Section name <input type="text" class="sec-name"></label>
+      <button class="outline" onclick="this.parentElement.parentElement.remove()" style="font-size:0.75rem; padding:0.25rem 0.5rem; color:var(--kn-danger); margin-top:1.25rem;">Remove</button>
+    </div>
+    <div class="sec-targets" id="sec-targets-${id}"></div>
+    <button class="add-btn outline" onclick="addTarget(${id})" style="font-size:0.7rem;">+ Add Target</button>
+  `;
+  container.appendChild(div);
+}
+
+function addTarget(secId) {
+  const id = targetCounter++;
+  const container = document.getElementById('sec-targets-' + secId);
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex; gap:0.5rem; align-items:flex-start; margin-bottom:0.5rem;';
+  div.innerHTML = `
+    <input type="text" class="tgt-name" placeholder="Target name" style="flex:2; font-size:0.8125rem; padding:0.25rem 0.5rem;">
+    <input type="text" class="tgt-desc" placeholder="Description (optional)" style="flex:3; font-size:0.8125rem; padding:0.25rem 0.5rem;">
+    <button class="outline" onclick="this.parentElement.remove()" style="font-size:0.7rem; padding:0.2rem 0.5rem; color:var(--kn-danger);">&times;</button>
+  `;
+  container.appendChild(div);
+}
+
+// =============================================================================
+// CUSTOM FIELD GROUPS (Repeatable with nested fields)
+// =============================================================================
+
+let fieldGroupCounter = 0;
+let fieldCounter = 0;
+
+function addFieldGroup() {
+  const id = fieldGroupCounter++;
+  const container = document.getElementById('field-groups-list');
+  const div = document.createElement('div');
+  div.className = 'repeatable-item';
+  div.id = 'fg-' + id;
+  div.innerHTML = `
+    <button class="remove-btn" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+    <label>Group title <input type="text" class="fg-title"></label>
+    <div class="fg-fields" id="fg-fields-${id}"></div>
+    <button class="add-btn outline" onclick="addField(${id})" style="font-size:0.75rem;">+ Add Field</button>
+  `;
+  container.appendChild(div);
+}
+
+function addField(fgId) {
+  const id = fieldCounter++;
+  const container = document.getElementById('fg-fields-' + fgId);
+  const div = document.createElement('div');
+  div.className = 'nested-section';
+  div.id = 'field-' + id;
+  div.innerHTML = `
+    <div style="display:flex; gap:0.5rem; align-items:flex-start; flex-wrap:wrap;">
+      <input type="text" class="fld-name" placeholder="Field name" style="flex:2; font-size:0.8125rem; padding:0.25rem 0.5rem;">
+      <select class="fld-type" style="flex:1; font-size:0.8125rem; padding:0.25rem 0.5rem;" onchange="toggleFieldOptions(this)">
+        <option value="text">Text</option>
+        <option value="textarea">Textarea</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+        <option value="select">Select (dropdown)</option>
+        <option value="checkbox">Checkbox</option>
+      </select>
+      <label style="font-size:0.75rem; white-space:nowrap; margin:0;"><input type="checkbox" class="fld-required"> Required</label>
+      <label style="font-size:0.75rem; white-space:nowrap; margin:0;"><input type="checkbox" class="fld-sensitive"> Sensitive</label>
+      <button class="outline" onclick="this.parentElement.parentElement.remove()" style="font-size:0.7rem; padding:0.2rem 0.5rem; color:var(--kn-danger);">&times;</button>
+    </div>
+    <div class="fld-options-row" style="display:none; margin-top:0.5rem;">
+      <input type="text" class="fld-options" placeholder="Options (comma-separated)" style="font-size:0.8125rem; padding:0.25rem 0.5rem;">
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+function toggleFieldOptions(sel) {
+  const row = sel.closest('.nested-section').querySelector('.fld-options-row');
+  row.style.display = sel.value === 'select' ? '' : 'none';
+}
+
+// =============================================================================
+// GENERATE .env CONTENT
+// =============================================================================
+
+function generateEnv() {
+  const lines = [];
+  const v = (id) => document.getElementById(id)?.value?.trim() || '';
+  const t = (id) => document.getElementById(id)?.textContent?.trim() || '';
+
+  lines.push('# KoNote Web — Environment Variables');
+  lines.push('# Generated by KoNote Configuration Generator');
+  lines.push('# ' + new Date().toISOString().split('T')[0]);
+  lines.push('');
+
+  lines.push('# ==============================================================================');
+  lines.push('# REQUIRED');
+  lines.push('# ==============================================================================');
+  lines.push('');
+  lines.push('SECRET_KEY=' + t('secret_key_display'));
+  lines.push('FIELD_ENCRYPTION_KEY=' + t('encryption_key_display'));
+  lines.push('EMAIL_HASH_KEY=' + t('email_hash_key_display'));
+  lines.push('');
+
+  const dbMode = document.querySelector('input[name="db_mode"]:checked').value;
+  if (dbMode === 'docker') {
+    const pgUser = v('pg_user') || 'konote';
+    const pgPass = v('pg_password') || 'REPLACE_THIS';
+    const auditUser = v('audit_pg_user') || 'audit_writer';
+    const auditPass = v('audit_pg_password') || 'REPLACE_THIS';
+    lines.push('DATABASE_URL=postgresql://' + pgUser + ':' + pgPass + '@db:5432/konote');
+    lines.push('AUDIT_DATABASE_URL=postgresql://' + auditUser + ':' + auditPass + '@audit_db:5433/konote_audit');
+    lines.push('');
+    lines.push('# Docker Compose database credentials');
+    lines.push('POSTGRES_USER=' + pgUser);
+    lines.push('POSTGRES_PASSWORD=' + pgPass);
+    lines.push('POSTGRES_DB=konote');
+    lines.push('AUDIT_POSTGRES_USER=' + auditUser);
+    lines.push('AUDIT_POSTGRES_PASSWORD=' + auditPass);
+    lines.push('AUDIT_POSTGRES_DB=konote_audit');
+  } else {
+    lines.push('DATABASE_URL=' + v('database_url'));
+    lines.push('AUDIT_DATABASE_URL=' + v('audit_database_url'));
+  }
+  lines.push('');
+
+  lines.push('# ==============================================================================');
+  lines.push('# AUTHENTICATION');
+  lines.push('# ==============================================================================');
+  lines.push('');
+  const authMode = document.querySelector('input[name="auth_mode"]:checked').value;
+  lines.push('AUTH_MODE=' + authMode);
+  if (authMode === 'azure') {
+    lines.push('AZURE_CLIENT_ID=' + v('azure_client_id'));
+    lines.push('AZURE_CLIENT_SECRET=' + v('azure_client_secret'));
+    lines.push('AZURE_TENANT_ID=' + v('azure_tenant_id'));
+    lines.push('AZURE_REDIRECT_URI=' + v('azure_redirect_uri'));
+  }
+  lines.push('');
+
+  lines.push('# ==============================================================================');
+  lines.push('# HOSTS & DOMAIN');
+  lines.push('# ==============================================================================');
+  lines.push('');
+  if (v('domain')) lines.push('DOMAIN=' + v('domain'));
+  if (v('allowed_hosts')) lines.push('ALLOWED_HOSTS=' + v('allowed_hosts'));
+  if (v('csrf_trusted_origins')) lines.push('CSRF_TRUSTED_ORIGINS=' + v('csrf_trusted_origins'));
+  lines.push('');
+
+  lines.push('# ==============================================================================');
+  lines.push('# MODE');
+  lines.push('# ==============================================================================');
+  lines.push('');
+  lines.push('KONOTE_MODE=' + v('konote_mode'));
+  lines.push('DEBUG=' + v('debug_mode'));
+  if (v('demo_mode')) {
+    lines.push('DEMO_MODE=' + v('demo_mode'));
+    if (v('demo_email_base')) lines.push('DEMO_EMAIL_BASE=' + v('demo_email_base'));
+  }
+  lines.push('');
+
+  // Email
+  const smtpPreset = v('smtp_preset');
+  if (smtpPreset !== 'none') {
+    lines.push('# ==============================================================================');
+    lines.push('# EMAIL');
+    lines.push('# ==============================================================================');
+    lines.push('');
+    lines.push('EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend');
+    lines.push('EMAIL_HOST=' + v('email_host'));
+    lines.push('EMAIL_PORT=' + v('email_port'));
+    lines.push('EMAIL_HOST_USER=' + v('email_host_user'));
+    lines.push('EMAIL_HOST_PASSWORD=' + v('email_host_password'));
+    lines.push('EMAIL_USE_TLS=' + (document.getElementById('email_use_tls').checked ? 'True' : 'False'));
+    if (v('default_from_email')) lines.push('DEFAULT_FROM_EMAIL=' + v('default_from_email'));
+    lines.push('');
+  }
+
+  // Notifications
+  if (v('export_notification_emails')) lines.push('EXPORT_NOTIFICATION_EMAILS=' + v('export_notification_emails'));
+  if (v('export_link_expiry') && v('export_link_expiry') !== '24') lines.push('SECURE_EXPORT_LINK_EXPIRY_HOURS=' + v('export_link_expiry'));
+  if (v('elevated_export_delay') && v('elevated_export_delay') !== '10') lines.push('ELEVATED_EXPORT_DELAY_MINUTES=' + v('elevated_export_delay'));
+
+  // SMS
+  if (v('twilio_sid')) {
+    lines.push('');
+    lines.push('# SMS (Twilio)');
+    lines.push('TWILIO_ACCOUNT_SID=' + v('twilio_sid'));
+    lines.push('TWILIO_AUTH_TOKEN=' + v('twilio_token'));
+    lines.push('TWILIO_FROM_NUMBER=' + v('twilio_from'));
+  }
+
+  // AI
+  if (v('openrouter_api_key')) {
+    lines.push('');
+    lines.push('# AI Features');
+    lines.push('OPENROUTER_API_KEY=' + v('openrouter_api_key'));
+  }
+
+  // ODK
+  if (v('odk_central_url')) {
+    lines.push('');
+    lines.push('# ODK Central');
+    lines.push('ODK_CENTRAL_URL=' + v('odk_central_url'));
+  }
+
+  // Ops
+  lines.push('');
+  lines.push('# ==============================================================================');
+  lines.push('# OPS / AUTOMATION');
+  lines.push('# ==============================================================================');
+  lines.push('');
+  if (v('backup_retention') && v('backup_retention') !== '30') lines.push('BACKUP_RETENTION_DAYS=' + v('backup_retention'));
+  if (v('audit_retention') && v('audit_retention') !== '90') lines.push('AUDIT_RETENTION_DAYS=' + v('audit_retention'));
+  if (v('healthcheck_url')) lines.push('HEALTHCHECK_PING_URL=' + v('healthcheck_url'));
+  if (v('alert_webhook')) lines.push('ALERT_WEBHOOK_URL=' + v('alert_webhook'));
+  if (v('disk_threshold') && v('disk_threshold') !== '80') lines.push('DISK_THRESHOLD=' + v('disk_threshold'));
+  if (v('health_report_email')) lines.push('OPS_HEALTH_REPORT_TO=' + v('health_report_email'));
+
+  return lines.join('\n');
+}
+
+// =============================================================================
+// GENERATE setup_config.json CONTENT
+// =============================================================================
+
+function generateJson() {
+  const v = (id) => document.getElementById(id)?.value?.trim() || '';
+  const config = {};
+
+  // Instance settings
+  const inst = {};
+  if (v('product_name') && v('product_name') !== 'KoNote') inst.product_name = v('product_name');
+  if (v('support_email')) inst.support_email = v('support_email');
+  if (v('brand_colour_hex') && v('brand_colour_hex') !== '#6366F1') inst.brand_colour = v('brand_colour_hex');
+  if (v('date_format') !== 'YYYY-MM-DD') inst.date_format = v('date_format');
+  if (v('time_format') !== 'h:mma') inst.time_format = v('time_format');
+  if (v('session_timeout') && v('session_timeout') !== '30') inst.session_timeout_minutes = v('session_timeout');
+  if (v('print_header')) inst.print_header = v('print_header');
+  if (v('print_footer')) inst.print_footer = v('print_footer');
+  if (v('access_tier') !== '3') inst.access_tier = v('access_tier');
+  if (Object.keys(inst).length) config.instance_settings = inst;
+
+  // Terminology
+  const terms = {};
+  for (const key of Object.keys(DEFAULT_TERMS)) {
+    const val = v('term_' + key);
+    if (val && val !== DEFAULT_TERMS[key]) terms[key] = val;
+  }
+  if (Object.keys(terms).length) config.terminology = terms;
+
+  // Features
+  const features = {};
+  for (const key of Object.keys(DEFAULT_FEATURES)) {
+    const cb = document.getElementById('feat_' + key);
+    if (cb) features[key] = cb.checked;
+  }
+  config.features = features;
+
+  // Programs
+  const programs = [];
+  document.querySelectorAll('#programs-list .repeatable-item').forEach(item => {
+    const name = item.querySelector('.prog-name')?.value?.trim();
+    if (name) {
+      programs.push({
+        name,
+        description: item.querySelector('.prog-desc')?.value?.trim() || '',
+        colour_hex: item.querySelector('.prog-colour')?.value || '#3B82F6'
+      });
+    }
+  });
+  if (programs.length) config.programs = programs;
+
+  // Metrics
+  const enabled = [];
+  const disabled = [];
+  document.querySelectorAll('[data-metric-name]').forEach(cb => {
+    if (cb.checked) enabled.push(cb.dataset.metricName);
+    else disabled.push(cb.dataset.metricName);
+  });
+  if (enabled.length) config.metrics_enabled = enabled;
+  if (disabled.length) config.metrics_disabled = disabled;
+
+  // Plan templates
+  const templates = [];
+  document.querySelectorAll('#templates-list > .repeatable-item').forEach(tplEl => {
+    const tplName = tplEl.querySelector('.tpl-name')?.value?.trim();
+    if (!tplName) return;
+    const sections = [];
+    tplEl.querySelectorAll('.nested-section').forEach(secEl => {
+      // Only top-level nested sections (direct children of tpl-sections)
+      if (secEl.closest('.fg-fields')) return;
+      const secName = secEl.querySelector('.sec-name')?.value?.trim();
+      if (!secName) return;
+      const targets = [];
+      secEl.querySelectorAll('.tgt-name').forEach((tgtInput, i) => {
+        const tgtName = tgtInput.value.trim();
+        if (tgtName) {
+          const tgtDesc = secEl.querySelectorAll('.tgt-desc')[i]?.value?.trim() || '';
+          targets.push({ name: tgtName, description: tgtDesc });
+        }
+      });
+      sections.push({ name: secName, targets });
+    });
+    templates.push({ name: tplName, description: tplEl.querySelector('.tpl-desc')?.value?.trim() || '', sections });
+  });
+  if (templates.length) config.plan_templates = templates;
+
+  // Custom field groups
+  const fieldGroups = [];
+  document.querySelectorAll('#field-groups-list > .repeatable-item').forEach(fgEl => {
+    const title = fgEl.querySelector('.fg-title')?.value?.trim();
+    if (!title) return;
+    const fields = [];
+    fgEl.querySelectorAll('.nested-section').forEach(fldEl => {
+      const name = fldEl.querySelector('.fld-name')?.value?.trim();
+      if (!name) return;
+      const field = {
+        name,
+        input_type: fldEl.querySelector('.fld-type')?.value || 'text',
+        is_required: fldEl.querySelector('.fld-required')?.checked || false,
+        is_sensitive: fldEl.querySelector('.fld-sensitive')?.checked || false
+      };
+      if (field.input_type === 'select') {
+        const opts = fldEl.querySelector('.fld-options')?.value?.trim();
+        if (opts) field.options = opts.split(',').map(o => o.trim()).filter(Boolean);
+      }
+      fields.push(field);
+    });
+    fieldGroups.push({ title, fields });
+  });
+  if (fieldGroups.length) config.custom_field_groups = fieldGroups;
+
+  return JSON.stringify(config, null, 2);
+}
+
+// =============================================================================
+// PREVIEW & DOWNLOAD
+// =============================================================================
+
+function refreshPreview() {
+  document.getElementById('env-preview').textContent = generateEnv();
+  document.getElementById('json-preview').textContent = generateJson();
+}
+
+function copyToClipboard(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(elementId).parentElement.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadEnv() {
+  downloadFile('.env', generateEnv());
+}
+
+function downloadJson() {
+  downloadFile('setup_config.json', generateJson());
+}
+
+// =============================================================================
+// INITIALISE
+// =============================================================================
+
+buildFeatureTable();
+buildTerminologyTable();
+buildMetricsList();
+
+// Sync colour picker <-> hex input
+document.getElementById('brand_colour').addEventListener('input', function() {
+  document.getElementById('brand_colour_hex').value = this.value;
+});
+</script>
+
+</body>
+</html>

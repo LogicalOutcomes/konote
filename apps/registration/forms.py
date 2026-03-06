@@ -4,6 +4,7 @@ import json
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 from apps.clients.validators import (
     normalize_phone_number, validate_phone_number,
@@ -57,7 +58,7 @@ class RegistrationLinkForm(forms.ModelForm):
         if requesting_user and not requesting_user.is_admin:
             pm_program_ids = set(
                 UserProgramRole.objects.filter(
-                    user=requesting_user, role="program_manager", status="active",
+                    user=requesting_user, role=ROLE_PROGRAM_MANAGER, status="active",
                 ).values_list("program_id", flat=True)
             )
             base_qs = base_qs.filter(pk__in=pm_program_ids)

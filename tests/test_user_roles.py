@@ -5,6 +5,7 @@ from cryptography.fernet import Fernet
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -41,7 +42,7 @@ class UserRoleManagementTest(TestCase):
 
         # Give staff a role so they can log in
         UserProgramRole.objects.create(
-            user=self.staff, program=self.program_a, role="staff",
+            user=self.staff, program=self.program_a, role=ROLE_STAFF,
         )
 
     def tearDown(self):
@@ -58,13 +59,13 @@ class UserRoleManagementTest(TestCase):
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(
             f"/manage/users/{self.target.pk}/roles/add/",
-            {"program": self.program_a.pk, "role": "staff"},
+            {"program": self.program_a.pk, "role": ROLE_STAFF},
         )
         self.assertEqual(resp.status_code, 403)
 
     def test_non_admin_cannot_remove_role(self):
         role = UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="staff",
+            user=self.target, program=self.program_a, role=ROLE_STAFF,
         )
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(
@@ -82,7 +83,7 @@ class UserRoleManagementTest(TestCase):
 
     def test_roles_page_shows_existing_roles(self):
         UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="staff",
+            user=self.target, program=self.program_a, role=ROLE_STAFF,
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get(f"/manage/users/{self.target.pk}/roles/")
@@ -95,35 +96,35 @@ class UserRoleManagementTest(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
             f"/manage/users/{self.target.pk}/roles/add/",
-            {"program": self.program_a.pk, "role": "staff"},
+            {"program": self.program_a.pk, "role": ROLE_STAFF},
         )
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(
             UserProgramRole.objects.filter(
-                user=self.target, program=self.program_a, role="staff", status="active",
+                user=self.target, program=self.program_a, role=ROLE_STAFF, status="active",
             ).exists()
         )
 
     def test_add_role_reactivates_removed_role(self):
         """Adding a role to a program where the user was previously removed reactivates it."""
         role = UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="staff", status="removed",
+            user=self.target, program=self.program_a, role=ROLE_STAFF, status="removed",
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
             f"/manage/users/{self.target.pk}/roles/add/",
-            {"program": self.program_a.pk, "role": "program_manager"},
+            {"program": self.program_a.pk, "role": ROLE_PROGRAM_MANAGER},
         )
         self.assertEqual(resp.status_code, 302)
         role.refresh_from_db()
         self.assertEqual(role.status, "active")
-        self.assertEqual(role.role, "program_manager")
+        self.assertEqual(role.role, ROLE_PROGRAM_MANAGER)
 
     # --- Remove role ---
 
     def test_admin_can_remove_role(self):
         role = UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="staff",
+            user=self.target, program=self.program_a, role=ROLE_STAFF,
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
@@ -137,7 +138,7 @@ class UserRoleManagementTest(TestCase):
 
     def test_add_form_excludes_assigned_programs(self):
         UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="staff",
+            user=self.target, program=self.program_a, role=ROLE_STAFF,
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get(f"/manage/users/{self.target.pk}/roles/")
@@ -152,7 +153,7 @@ class UserRoleManagementTest(TestCase):
 
     def test_user_list_shows_program_roles(self):
         UserProgramRole.objects.create(
-            user=self.target, program=self.program_a, role="program_manager",
+            user=self.target, program=self.program_a, role=ROLE_PROGRAM_MANAGER,
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/manage/users/")

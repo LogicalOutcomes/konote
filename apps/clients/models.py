@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import ROLE_RECEPTIONIST
 from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
@@ -306,7 +307,7 @@ class ClientFile(models.Model):
 
         visible = {}
 
-        if role == 'receptionist':
+        if role == ROLE_RECEPTIONIST:
             # Always-visible fields (identity + status)
             for f in FieldAccessConfig.ALWAYS_VISIBLE:
                 visible[f] = True
@@ -765,6 +766,10 @@ class CustomFieldDefinition(models.Model):
             "When checked, this field is hidden from front desk staff "
             "for participants with a DV safety flag."
         ),
+    )
+    show_on_create = models.BooleanField(
+        default=False,
+        help_text=_("Show this field on the new participant creation form."),
     )
     # Determines which validation and normalisation rules apply (I18N-FIX2).
     # Auto-detected from field name on first save if not explicitly set.

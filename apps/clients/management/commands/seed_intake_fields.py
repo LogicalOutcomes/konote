@@ -796,6 +796,13 @@ class Command(BaseCommand):
                     name=field_name,
                 ).exclude(sort_order=sort_val).update(sort_order=sort_val)
 
+            # Pronouns: show on create form by default
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Contact Information",
+                name="Pronouns",
+                show_on_create=False,
+            ).update(show_on_create=True)
+
             if fixups:
                 self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")
 

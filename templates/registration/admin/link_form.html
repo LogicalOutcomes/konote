@@ -14,7 +14,7 @@
     <p>
         <strong>{% trans "Registration URL:" %}</strong><br>
         <code id="registration-url">{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}</code>
-        <button type="button" class="outline secondary" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem;" onclick="copyToClipboard()">{% trans "Copy" %}</button>
+        <button type="button" class="outline secondary copy-btn" data-clipboard-target="#registration-url" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem;">{% trans "Copy" %}</button>
     </p>
 </article>
 {% endif %}
@@ -100,16 +100,4 @@
     </div>
 </form>
 
-{% if editing and link %}
-<script>
-function copyToClipboard() {
-    const url = document.getElementById('registration-url').textContent;
-    navigator.clipboard.writeText(url).then(function() {
-        alert('Link copied to clipboard!');
-    }, function() {
-        prompt('Copy this link:', url);
-    });
-}
-</script>
-{% endif %}
 {% endblock %}

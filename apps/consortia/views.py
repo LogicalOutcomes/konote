@@ -13,6 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
 from apps.consortia.models import ConsortiumMembership, PublishedReport
+from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 from apps.tenants.models import Consortium, ConsortiumRollup
 
 
@@ -89,45 +90,46 @@ def export_csv(request, consortium_id):
     if not rollup:
         return HttpResponse("No data available.", status=404)
 
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = (
-        f'attachment; filename="{consortium.name} - '
-        f'{rollup.period_start} to {rollup.period_end}.csv"'
+    filename = sanitise_filename(
+        f"{consortium.name} - {rollup.period_start} to {rollup.period_end}"
     )
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
 
     writer = csv.writer(response)
 
     # Service stats
-    writer.writerow(["Service Statistics"])
-    writer.writerow(["Metric", "Value"])
+    writer.writerow(sanitise_csv_row(["Service Statistics"]))
+    writer.writerow(sanitise_csv_row(["Metric", "Value"]))
     stats = rollup.data_json.get("service_stats", {})
     for key, value in stats.items():
-        writer.writerow([key.replace("_", " ").title(), value])
+        writer.writerow(sanitise_csv_row([key.replace("_", " ").title(), value]))
 
     writer.writerow([])
 
     # Demographics
-    writer.writerow(["Demographics"])
+    writer.writerow(sanitise_csv_row(["Demographics"]))
     demographics = rollup.data_json.get("demographics", {})
     for category, rows in demographics.items():
-        writer.writerow([category.replace("_", " ").title()])
-        writer.writerow(["Category", "Count"])
+        writer.writerow(sanitise_csv_row([category.replace("_", " ").title()]))
+        writer.writerow(sanitise_csv_row(["Category", "Count"]))
         if isinstance(rows, list):
             for row in rows:
-                writer.writerow([row.get("label", ""), row.get("count", "")])
+                writer.writerow(sanitise_csv_row([row.get("label", ""), row.get("count", "")]))
         writer.writerow([])
 
     # Outcomes
-    writer.writerow(["Outcomes"])
-    writer.writerow(["Metric", "Average", "N"])
+    writer.writerow(sanitise_csv_row(["Outcomes"]))
+    writer.writerow(sanitise_csv_row(["Metric", "Average", "N"]))
     outcomes = rollup.data_json.get("outcomes", {})
     for key, data in outcomes.items():
         if isinstance(data, dict):
-            writer.writerow([
+            writer.writerow(sanitise_csv_row([
                 key.replace("_", " ").title(),
                 data.get("average", ""),
                 data.get("n", ""),
-            ])
+            ]))
 
     return response
 

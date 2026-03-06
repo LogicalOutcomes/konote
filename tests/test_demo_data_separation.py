@@ -12,6 +12,7 @@ from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -79,7 +80,7 @@ class DemoDataVisibilityTest(TestCase):
         self.real_staff = User.objects.create_user(
             username="real-staff", password="testpass123", is_admin=False, is_demo=False
         )
-        UserProgramRole.objects.create(user=self.real_staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.real_staff, program=self.prog, role=ROLE_STAFF)
 
         # Create demo users
         self.demo_admin = User.objects.create_user(
@@ -88,7 +89,7 @@ class DemoDataVisibilityTest(TestCase):
         self.demo_staff = User.objects.create_user(
             username="demo-staff", password="testpass123", is_admin=False, is_demo=True
         )
-        UserProgramRole.objects.create(user=self.demo_staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.demo_staff, program=self.prog, role=ROLE_STAFF)
 
         # Create clients
         self.real_client = self._create_client("Real", "Client", is_demo=False)

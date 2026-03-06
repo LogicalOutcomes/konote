@@ -40,6 +40,12 @@ from tests.utils.page_capture import (
     write_axe_report,
     write_manifest,
 )
+from apps.auth_app.constants import (
+    ROLE_EXECUTIVE,
+    ROLE_PROGRAM_MANAGER,
+    ROLE_RECEPTIONIST,
+    ROLE_STAFF,
+)
 
 
 @pytest.mark.skipif(
@@ -71,7 +77,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Casey New",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="staff",
+                user=u, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS2: Jean-Luc (French-speaking staff)
@@ -81,7 +87,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Jean-Luc Bergeron",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="staff",
+                user=u, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS3: Amara (accessibility / keyboard-only staff)
@@ -93,7 +99,7 @@ class TestPageCapture(BrowserTestBase):
                                           # stale cookie from setting lang="fr"
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="staff",
+                user=u, program=self.program_a, role=ROLE_STAFF,
             )
 
         # R2: Omar (tech-savvy part-time receptionist)
@@ -103,7 +109,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Omar Hussain",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_b, role="receptionist",
+                user=u, program=self.program_b, role=ROLE_RECEPTIONIST,
             )
 
         # R2-FR: Amelie (French receptionist)
@@ -113,7 +119,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Amelie Tremblay",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="receptionist",
+                user=u, program=self.program_a, role=ROLE_RECEPTIONIST,
             )
 
         # DS1c: Casey with ADHD (cognitive accessibility)
@@ -123,7 +129,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Casey Parker",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="staff",
+                user=u, program=self.program_a, role=ROLE_STAFF,
             )
 
         # DS4: Riley Chen (voice navigation / Dragon user)
@@ -133,7 +139,7 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Riley Chen",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="staff",
+                user=u, program=self.program_a, role=ROLE_STAFF,
             )
 
         # PM1: Morgan Tremblay (program manager, cross-program)
@@ -145,13 +151,13 @@ class TestPageCapture(BrowserTestBase):
                 display_name="Morgan Tremblay",
             )
             UserProgramRole.objects.create(
-                user=mgr, program=self.program_a, role="program_manager",
+                user=mgr, program=self.program_a, role=ROLE_PROGRAM_MANAGER,
             )
         if not UserProgramRole.objects.filter(
             user=mgr, program=self.program_b,
         ).exists():
             UserProgramRole.objects.create(
-                user=mgr, program=self.program_b, role="program_manager",
+                user=mgr, program=self.program_b, role=ROLE_PROGRAM_MANAGER,
             )
 
         # E2: Kwame Asante (second executive/admin)
@@ -163,10 +169,10 @@ class TestPageCapture(BrowserTestBase):
             u.is_admin = True
             u.save()
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="executive",
+                user=u, program=self.program_a, role=ROLE_EXECUTIVE,
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_b, role="executive",
+                user=u, program=self.program_b, role=ROLE_EXECUTIVE,
             )
 
     # ------------------------------------------------------------------

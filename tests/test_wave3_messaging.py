@@ -33,6 +33,7 @@ from apps.communications.services import (
 from apps.events.models import Event, EventType, Meeting
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -48,7 +49,7 @@ def _create_test_fixtures(test_case):
     UserProgramRole.objects.create(
         user=test_case.staff,
         program=test_case.program,
-        role="staff",
+        role=ROLE_STAFF,
         status="active",
     )
     test_case.admin_user = User.objects.create_user(
@@ -60,7 +61,7 @@ def _create_test_fixtures(test_case):
     UserProgramRole.objects.create(
         user=test_case.admin_user,
         program=test_case.program,
-        role="staff",
+        role=ROLE_STAFF,
         status="active",
     )
     test_case.client_file = ClientFile()

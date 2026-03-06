@@ -14,6 +14,20 @@
     {% endif %}
 </div>
 
+{# ── About these insights (collapsible) ── #}
+<details class="insights-about">
+    <summary><small>{% trans "About these insights" %}</small></summary>
+    <div class="insights-about-body">
+        <p>{% trans "These insights are drawn from progress notes written by staff. Nothing on this page is automated — every data point reflects a staff member's professional judgment recorded during or after a session with a participant." %}</p>
+        <dl>
+            <dt>{% trans "Progress Snapshot" %}</dt>
+            <dd>{% trans "Each time a worker writes a progress note, they select how things are going for each goal: Harder right now, Holding steady, Something's shifting, or In a good place. \"Harder\" is not necessarily negative — progress often makes things harder before they get easier. Percentages reflect all goal check-ins in the selected time period." %}</dd>
+            <dt>{% trans "Engagement" %}</dt>
+            <dd>{% trans "Staff observe how actively a participant is engaging during each session. Categories range from Not participating to Fully invested, with a No 1-on-1 option when there was no direct interaction. This is the worker's observation, not a score." %}</dd>
+        </dl>
+    </div>
+</details>
+
 {% if structured.note_count == 0 %}
 {# ── No data at all ── #}
 <article class="insights-notice" role="status">
@@ -261,7 +275,7 @@
         <ul class="addressed-themes-list">
             {% for theme in addressed_themes %}
             <li>
-                <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+                <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}{% if date_from and date_to %}?date_from={{ date_from|date:"Y-m-d" }}&amp;date_to={{ date_to|date:"Y-m-d" }}{% endif %}">{{ theme.name }}</a>
                 <span class="muted">({{ theme.link_count }})</span>
             </li>
             {% endfor %}

@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
 from apps.auth_app.decorators import admin_required, requires_permission
 from apps.programs.access import get_user_program_ids
 from apps.reports.csv_utils import sanitise_csv_row
@@ -179,7 +180,7 @@ def program_audit_log(request, program_id):
         user=request.user,
         program=program,
         status="active",
-        role="program_manager",
+        role=ROLE_PROGRAM_MANAGER,
     ).first()
 
     if not role:

@@ -6,6 +6,8 @@ from typing import List, Tuple
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
+from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER
+
 
 def is_aggregate_only_user(user):
     """Check if this user should only receive aggregate (non-individual) export data.
@@ -30,7 +32,7 @@ def is_aggregate_only_user(user):
     from apps.programs.models import UserProgramRole
 
     has_pm_role = UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active"
+        user=user, role=ROLE_PROGRAM_MANAGER, status="active"
     ).exists()
     return not has_pm_role
 
@@ -52,7 +54,7 @@ def can_download_pii_export(user):
     from apps.programs.models import UserProgramRole
 
     return UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active"
+        user=user, role=ROLE_PROGRAM_MANAGER, status="active"
     ).exists()
 
 
@@ -66,7 +68,7 @@ def can_create_export(user, export_type, program=None):
 
     Args:
         user: The User instance.
-        export_type: One of "metrics", "funder_report".
+        export_type: One of "metrics", "standard_report".
         program: Optional Program instance — when provided, checks whether
                  the user manages that specific program.
 
@@ -78,9 +80,9 @@ def can_create_export(user, export_type, program=None):
     if user.is_admin:
         return True
 
-    if export_type in ("metrics", "funder_report", "session_report"):
+    if export_type in ("metrics", "standard_report", "session_report"):
         qs = UserProgramRole.objects.filter(
-            user=user, role__in=["program_manager", "executive"], status="active"
+            user=user, role__in=list(MANAGEMENT_ROLES), status="active"
         )
         if program:
             return qs.filter(program=program).exists()
@@ -105,7 +107,7 @@ def get_manageable_programs(user):
         return Program.objects.filter(status="active")
 
     managed_ids = UserProgramRole.objects.filter(
-        user=user, role__in=["program_manager", "executive"], status="active"
+        user=user, role__in=list(MANAGEMENT_ROLES), status="active"
     ).values_list("program_id", flat=True)
     return Program.objects.filter(pk__in=managed_ids, status="active")
 
@@ -240,3 +242,32 @@ def get_quarter_choices(num_quarters: int = 8) -> List[Tuple[str, str]]:
             fy -= 1
 
     return choices
+
+
+def aggregate_all_programs_totals(data_or_sections):
+    """Aggregate service metrics across all program reports.
+
+    Args:
+        data_or_sections: List of (program, report_data) tuples.
+
+    Returns:
+        dict with total_served, total_new_clients, total_contacts, and programs list.
+    """
+    total_served = 0
+    total_new = 0
+    total_contacts = 0
+    programs = []
+    for program, rd in data_or_sections:
+        if isinstance(rd.get("total_individuals_served"), int):
+            total_served += rd["total_individuals_served"]
+        if isinstance(rd.get("new_clients_this_period"), int):
+            total_new += rd["new_clients_this_period"]
+        if isinstance(rd.get("total_contacts"), int):
+            total_contacts += rd["total_contacts"]
+        programs.append({"name": program.name, "report_data": rd})
+    return {
+        "total_served": total_served,
+        "total_new_clients": total_new,
+        "total_contacts": total_contacts,
+        "programs": programs,
+    }

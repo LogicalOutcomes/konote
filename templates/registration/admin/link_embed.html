@@ -35,7 +35,8 @@
         <div style="position: relative;">
             <pre style="padding: 1rem; background: var(--pico-secondary-background); border-radius: 0.25rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code id="embed-code">{{ embed_code }}</code></pre>
             <button type="button"
-                    onclick="copyToClipboard('embed-code')"
+                    class="copy-btn"
+                    data-clipboard-target="#embed-code"
                     style="position: absolute; top: 0.5rem; right: 0.5rem;">
                 {% trans "Copy" %}
             </button>
@@ -55,7 +56,8 @@
                    readonly
                    style="padding-right: 5rem;">
             <button type="button"
-                    onclick="copyToClipboard('direct-url')"
+                    class="copy-btn"
+                    data-clipboard-target="#direct-url"
                     style="position: absolute; top: 0.25rem; right: 0.25rem;">
                 {% trans "Copy" %}
             </button>
@@ -107,32 +109,4 @@
     </footer>
 </article>
 
-<script>
-function copyToClipboard(elementId) {
-    const element = document.getElementById(elementId);
-    const text = element.tagName === 'INPUT' ? element.value : element.textContent;
-
-    navigator.clipboard.writeText(text).then(function() {
-        // Show brief feedback
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = '{% trans "Copied!" %}';
-        setTimeout(function() {
-            button.textContent = originalText;
-        }, 2000);
-    }).catch(function(err) {
-        // Fallback for older browsers
-        if (element.tagName === 'INPUT') {
-            element.select();
-        } else {
-            const range = document.createRange();
-            range.selectNode(element);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-        }
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-    });
-}
-</script>
 {% endblock %}

@@ -10,6 +10,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
 from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -26,8 +27,8 @@ class NoteViewsTest(TestCase):
         self.other_staff = User.objects.create_user(username="other", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role=ROLE_STAFF)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -103,7 +104,7 @@ class NoteViewsTest(TestCase):
 
     def test_admin_with_program_role_can_create_note(self):
         """Admins who also have a program role can create notes."""
-        UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role=ROLE_PROGRAM_MANAGER)
         # Add consent to other_client so note creation is allowed
         self.other_client.consent_given_at = timezone.now()
         self.other_client.consent_type = "written"
@@ -698,7 +699,7 @@ class NoteViewsTest(TestCase):
 
     def test_admin_with_program_role_can_cancel_note(self):
         """Admins who also have a program role can cancel notes in their programs."""
-        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role=ROLE_PROGRAM_MANAGER)
         note = ProgressNote.objects.create(
             client_file=self.client_file, note_type="quick",
             notes_text="Admin cancel", author=self.staff,
@@ -847,8 +848,8 @@ class QualitativeSummaryTest(TestCase):
         self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role=ROLE_RECEPTIONIST)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -939,8 +940,8 @@ class CheckNoteDateTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
         self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role=ROLE_RECEPTIONIST)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -1012,8 +1013,8 @@ class TemplatePreviewTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
         self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
-        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role=ROLE_RECEPTIONIST)
 
         from apps.notes.models import ProgressNoteTemplate, ProgressNoteTemplateSection
         self.template = ProgressNoteTemplate.objects.create(
@@ -1107,7 +1108,7 @@ class PlausibilityOverrideLogTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Financial Coaching", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -1268,7 +1269,7 @@ class PlausibilityTuningDashboardTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Financial Coaching", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role=ROLE_STAFF)
 
         self.metric_def = MetricDefinition.objects.create(
             name="Total Debt",
@@ -1419,7 +1420,7 @@ class TestMetricCadence(TestCase):
         self.user = User.objects.create_user(username="cadtest", password="pass", is_admin=True)
 
         self.prog = Program.objects.create(name="Cadence Prog", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.user, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.user, program=self.prog, role=ROLE_STAFF)
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
@@ -1552,7 +1553,7 @@ class TestAllianceRotation(TestCase):
         enc_module._fernet = None
         self.user = User.objects.create_user(username="allitest", password="pass", is_admin=True)
         self.prog = Program.objects.create(name="Alliance Prog", colour_hex="#10B981")
-        UserProgramRole.objects.create(user=self.user, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.user, program=self.prog, role=ROLE_STAFF)
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
         self.client_file.last_name = "Client"

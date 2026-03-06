@@ -21,6 +21,7 @@ from apps.plans.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -67,7 +68,7 @@ class GoalBuilderBaseTest(TestCase):
         )
         self.program = Program.objects.create(name="Housing Support")
         UserProgramRole.objects.create(
-            user=self.user, program=self.program, role="staff", status="active"
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
         )
 
         # Client enrolled in program
@@ -129,7 +130,7 @@ class GoalBuilderStartTest(GoalBuilderBaseTest):
         """Program managers have plan.edit: DENY, so they can't use Goal Builder."""
         pm = User.objects.create_user(username="pm", password="pass", display_name="PM")
         UserProgramRole.objects.create(
-            user=pm, program=self.program, role="program_manager", status="active"
+            user=pm, program=self.program, role=ROLE_PROGRAM_MANAGER, status="active"
         )
         self.http.login(username="pm", password="pass")
         resp = self.http.get(self.start_url)

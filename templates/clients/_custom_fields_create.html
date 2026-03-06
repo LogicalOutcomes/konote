@@ -1,0 +1,126 @@
+{% load i18n client_tags %}
+{# Partial: Custom fields marked show_on_create, rendered on the New Participant form.
+   Context: custom_groups — list of {"group": CustomFieldGroup, "fields": [{"def": fd, "key": "custom_<pk>"}]}
+            custom_form  — CustomFieldValuesForm instance #}
+{% for group in custom_groups %}
+<fieldset aria-labelledby="create-group-{{ group.group.pk }}">
+    <legend id="create-group-{{ group.group.pk }}">{{ group.group.title }}</legend>
+    {% for item in group.fields %}
+    {% with bound=custom_form|get_field:item.key %}
+    <div class="form-row">
+        <label for="id_{{ item.key }}">
+            {{ item.def.name }}
+            {% if item.def.is_required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+        </label>
+
+        {% if item.def.input_type == "textarea" %}
+            <textarea name="{{ item.key }}"
+                      id="id_{{ item.key }}"
+                      rows="3"
+                      placeholder="{{ item.def.placeholder }}"
+                      {% if item.def.is_required %}required aria-required="true"{% endif %}
+                      {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}>{{ bound.value|default:"" }}</textarea>
+
+        {% elif item.def.input_type == "select" %}
+            <select name="{{ item.key }}"
+                    id="id_{{ item.key }}"
+                    {% if item.def.is_required %}required aria-required="true"{% endif %}
+                    {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}>
+                <option value="">{% trans "Select…" %}</option>
+                {% for opt in item.def.options_json %}
+                <option value="{{ opt }}" {% if bound.value == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+            </select>
+
+        {% elif item.def.input_type == "select_other" %}
+            <select name="{{ item.key }}"
+                    id="id_{{ item.key }}"
+                    {% if item.def.is_required %}required aria-required="true"{% endif %}
+                    {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}
+                    onchange="document.getElementById('other_wrap_{{ item.def.pk }}').style.display = this.value === '__other__' ? '' : 'none';">
+                <option value="">{% trans "Select…" %}</option>
+                {% for opt in item.def.options_json %}
+                <option value="{{ opt }}" {% if bound.value == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+                <option value="__other__" {% if bound.value == "__other__" %}selected{% endif %}>{% trans "Other" %}</option>
+            </select>
+            {% with other_key=item.key|add:"_other" %}
+            <div id="other_wrap_{{ item.def.pk }}"
+                 style="margin-top: 0.5rem;{% if bound.value != '__other__' %} display: none;{% endif %}">
+                <label for="{{ other_key }}" class="sr-only">{% trans "Other (please specify)" %}</label>
+                <input type="text"
+                       name="{{ other_key }}"
+                       id="{{ other_key }}"
+                       value="{{ custom_form|get_field:other_key }}"
+                       placeholder="{% trans 'Please specify…' %}">
+            </div>
+            {% endwith %}
+
+        {% elif item.def.input_type == "multi_select" %}
+            <fieldset role="group" aria-labelledby="id_{{ item.key }}">
+                {% for opt in item.def.options_json %}
+                <label>
+                    <input type="checkbox"
+                           name="{{ item.key }}"
+                           value="{{ opt }}">
+                    {{ opt }}
+                </label>
+                {% endfor %}
+            </fieldset>
+
+        {% elif item.def.input_type == "multi_select_other" %}
+            <fieldset role="group" aria-labelledby="id_{{ item.key }}">
+                {% for opt in item.def.options_json %}
+                <label>
+                    <input type="checkbox"
+                           name="{{ item.key }}"
+                           value="{{ opt }}">
+                    {{ opt }}
+                </label>
+                {% endfor %}
+            </fieldset>
+            {% with other_key=item.key|add:"_other" %}
+            <div style="margin-top: 0.5rem;">
+                <label for="{{ other_key }}">{% trans "Other (please specify)" %}</label>
+                <input type="text"
+                       name="{{ other_key }}"
+                       id="{{ other_key }}"
+                       placeholder="{% trans 'Please specify…' %}">
+            </div>
+            {% endwith %}
+
+        {% elif item.def.input_type == "date" %}
+            <input type="date"
+                   name="{{ item.key }}"
+                   id="id_{{ item.key }}"
+                   value="{{ bound.value|default:"" }}"
+                   {% if item.def.is_required %}required aria-required="true"{% endif %}
+                   {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}>
+
+        {% elif item.def.input_type == "number" %}
+            <input type="number"
+                   name="{{ item.key }}"
+                   id="id_{{ item.key }}"
+                   value="{{ bound.value|default:"" }}"
+                   placeholder="{{ item.def.placeholder }}"
+                   {% if item.def.is_required %}required aria-required="true"{% endif %}
+                   {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}>
+
+        {% else %}
+            <input type="text"
+                   name="{{ item.key }}"
+                   id="id_{{ item.key }}"
+                   value="{{ bound.value|default:"" }}"
+                   placeholder="{{ item.def.placeholder }}"
+                   {% if item.def.is_required %}required aria-required="true"{% endif %}
+                   {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}>
+        {% endif %}
+
+        {% if bound.errors %}
+        <small class="error" id="err_{{ item.key }}" role="alert">{{ bound.errors.0 }}</small>
+        {% endif %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+</fieldset>
+{% endfor %}
