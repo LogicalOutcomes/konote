@@ -13,6 +13,7 @@ from pathlib import Path
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 
 import konote.encryption as enc_module
@@ -399,6 +400,41 @@ class ProvisionTenantCommandTest(TestCase):
         domain.refresh_from_db()
         self.assertTrue(domain.is_primary)
         self.assertIn("already exists", out.getvalue())
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class RotateTenantKeyCommandTest(TestCase):
+    """Tests for the disabled rotate_tenant_key command."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_live_run_is_explicitly_disabled(self):
+        """Live rotation should fail closed until re-encryption exists."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command("rotate_tenant_key", short_code="youth-services")
+
+        message = str(ctx.exception)
+        self.assertIn("rotate_tenant_key is disabled (LIVE RUN)", message)
+        self.assertIn("safe tenant-wide re-encryption workflow", message)
+
+    def test_dry_run_is_also_disabled(self):
+        """Dry-run should not imply the unsafe workflow is available."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command(
+                "rotate_tenant_key",
+                short_code="youth-services",
+                dry_run=True,
+            )
+
+        message = str(ctx.exception)
+        self.assertIn("rotate_tenant_key is disabled (DRY RUN)", message)
+        self.assertIn("strand existing encrypted data", message)
 
 
 # =========================================================================

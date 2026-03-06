@@ -420,11 +420,10 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         url = f"{insights_base.rstrip('/')}/chat/completions"
         parsed = urlparse(url)
         if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
-            logger.error(
-                "INSIGHTS_API_BASE uses insecure HTTP for remote host %s; refusing participant-data AI call",
+            logger.warning(
+                "INSIGHTS_API_BASE uses HTTP for remote host %s; de-identified data will transit unencrypted. Use HTTPS for production deployments.",
                 parsed.hostname,
             )
-            return None
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
