@@ -10,6 +10,16 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
+{% if ai_nudge_admin %}
+<article class="ai-nudge" role="note" style="border-left: 4px solid var(--pico-primary); padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "AI-assisted goal setting is available" %}</strong>
+    <p style="margin: 0.25rem 0 0;">
+        {% trans "KoNote can use AI to turn a participant's own words into a structured, measurable goal with suggested metrics. To enable it, add an OpenRouter API key in" %}
+        <a href="{% url 'admin_settings:features' %}">{% trans "Features" %}</a>.
+    </p>
+</article>
+{% endif %}
+
 {% if form.errors %}
 <div class="form-notice" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Almost there — a few things need your attention:" %}</strong>
