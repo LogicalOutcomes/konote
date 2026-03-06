@@ -522,8 +522,13 @@ class DemoDataEngine:
 
     # ----- Demo user creation -----
 
-    def create_demo_users(self, programs):
-        """Create 6 demo users with roles distributed across programs.
+    def create_demo_users(self, programs, profile=None):
+        """Create demo users with roles distributed across programs.
+
+        If the profile defines a ``users`` list, those specs are used instead
+        of the hardcoded defaults.  A profile-level ``demo_group`` is set on
+        every user so the login page can separate instance-specific demo users
+        from the generic defaults.
 
         Returns a dict of {username: User}.
         """
@@ -537,14 +542,23 @@ class DemoDataEngine:
                 return f"{local}+{username}@{domain}"
             return f"{username}@example.com"
 
-        user_specs = [
-            ("demo-frontdesk", "Dana Front Desk", False),
-            ("demo-worker-1", "Casey Worker", False),
-            ("demo-worker-2", "Noor Worker", False),
-            ("demo-manager", "Morgan Manager", False),
-            ("demo-executive", "Eva Executive", False),
-            ("demo-admin", "Alex Admin", True),
-        ]
+        demo_group = (profile or {}).get("demo_group", "")
+        profile_users = (profile or {}).get("users", [])
+
+        if profile_users:
+            user_specs = [
+                (u["username"], u["display_name"], u.get("is_admin", False))
+                for u in profile_users
+            ]
+        else:
+            user_specs = [
+                ("demo-frontdesk", "Dana Front Desk", False),
+                ("demo-worker-1", "Casey Worker", False),
+                ("demo-worker-2", "Noor Worker", False),
+                ("demo-manager", "Morgan Manager", False),
+                ("demo-executive", "Eva Executive", False),
+                ("demo-admin", "Alex Admin", True),
+            ]
 
         users = {}
         for username, display_name, is_admin in user_specs:
@@ -554,6 +568,7 @@ class DemoDataEngine:
                     "display_name": display_name,
                     "is_admin": is_admin,
                     "is_demo": True,
+                    "demo_group": demo_group,
                     "email": demo_email(username),
                     "preferred_language": "en",
                 },
@@ -562,19 +577,30 @@ class DemoDataEngine:
                 user.set_password("demo1234")
                 user.save()
             else:
-                # Ensure existing users have is_demo=True and is_active=True
+                # Ensure existing users have correct demo fields
+                changed = False
                 if not user.is_demo or not user.is_active:
                     user.is_demo = True
                     user.is_active = True
+                    changed = True
+                if demo_group and user.demo_group != demo_group:
+                    user.demo_group = demo_group
+                    changed = True
+                if user.display_name != display_name:
+                    user.display_name = display_name
+                    changed = True
+                if changed:
                     user.save()
             users[username] = user
 
-        # Assign roles across programs
-        front_desk = users["demo-frontdesk"]
-        worker1 = users["demo-worker-1"]
-        worker2 = users["demo-worker-2"]
-        manager = users["demo-manager"]
-        executive = users["demo-executive"]
+        # Assign roles across programs (positional: 0=frontdesk, 1=worker1,
+        # 2=worker2, 3=manager, 4=executive, 5=admin)
+        usernames = [spec[0] for spec in user_specs]
+        front_desk = users[usernames[0]]
+        worker1 = users[usernames[1]]
+        worker2 = users[usernames[2]]
+        manager = users[usernames[3]]
+        executive = users[usernames[4]]
 
         # Front desk: receptionist on all programs
         for prog in programs:
@@ -1144,7 +1170,7 @@ class DemoDataEngine:
             return False
 
         # 2. Create demo users
-        users = self.create_demo_users(programs)
+        users = self.create_demo_users(programs, profile)
 
         # 3. Create demo clients
         client_assignments = self.create_demo_clients(

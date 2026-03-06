@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import config_generator_views
 from . import field_access_views
 from . import partner_views
 from . import report_template_views
@@ -26,6 +27,7 @@ urlpatterns = [
     path("plausibility-tuning/", views.plausibility_tuning_dashboard, name="plausibility_tuning"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
     path("demo-data/", views.demo_data_management, name="demo_data_management"),
+    path("config-generator/", config_generator_views.config_generator, name="config_generator"),
     # Access grants admin (Tier 3 only)
     path("access-grants/", access_grant_views.access_grant_admin_list, name="access_grant_admin_list"),
     path("access-grant-reasons/", access_grant_views.access_grant_reasons_admin, name="access_grant_reasons"),
