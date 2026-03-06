@@ -99,7 +99,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
     def setUp(self):
         enc_module._fernet = None
         self._create_minimal_data()
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(bypass_csp=True)
         self.page = self._context.new_page()
 
     def tearDown(self):
@@ -111,6 +111,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         """Create just enough data for pages to render."""
         from apps.auth_app.models import User
         from apps.programs.models import Program, UserProgramRole
+        from apps.surveys.models import Survey, SurveyLink, SurveyQuestion, SurveySection
 
         self.user = User.objects.create_user(
             username="a11y_staff", password="testpass123",
@@ -122,6 +123,26 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         UserProgramRole.objects.create(
             user=self.user, program=self.program, role=ROLE_PROGRAM_MANAGER,
         )
+
+        survey = Survey.objects.create(
+            name="Accessibility Smoke Survey",
+            status="active",
+            created_by=self.user,
+        )
+        section = SurveySection.objects.create(
+            survey=survey,
+            title="Feedback",
+            sort_order=1,
+        )
+        SurveyQuestion.objects.create(
+            section=section,
+            question_text="How was your visit?",
+            question_type="short_text",
+            sort_order=1,
+            required=True,
+        )
+        link = SurveyLink.objects.create(survey=survey, created_by=self.user)
+        self.public_survey_path = f"/s/{link.token}/"
 
     def _login(self):
         """Log in via the login form."""
@@ -174,8 +195,12 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         """Run axe-core on key pages — fail on critical/serious violations."""
         logged_in = False
         all_violations = {}
+        pages_to_check = [
+            *SMOKE_PAGES,
+            (self.public_survey_path, "Public survey", False),
+        ]
 
-        for path, description, requires_login in SMOKE_PAGES:
+        for path, description, requires_login in pages_to_check:
             if requires_login and not logged_in:
                 self._login()
                 logged_in = True

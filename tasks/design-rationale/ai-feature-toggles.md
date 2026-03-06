@@ -42,6 +42,7 @@ Processes **de-identified participant content** — survey responses, open-ended
 |---------|-------------|----------------|
 | Outcome insights | Summarise themes from participant feedback | De-identified participant quotes and responses |
 | Qualitative analysis | Identify patterns in open-ended responses | Scrubbed participant text |
+| Suggestion categorisation | Group and tag open-ended participant suggestions | Scrubbed suggestion text processed on a self-hosted open-source model managed by KoNote |
 
 **Privacy classification:** Even with name scrubbing, this is **de-identified personal information** under PIPEDA s.2 and potentially **personal health information** under PHIPA s.4 if it relates to health services. Context, small sample sizes, or distinctive phrasing can re-identify participants.
 
@@ -123,7 +124,7 @@ The scrubbed quotes are sent via HTTPS POST to one of two endpoints:
 ### What is NOT protected (known gaps)
 
 1. **Content re-identification risk** — Even after name scrubbing, distinctive phrasing or unusual situations described in participant quotes could identify someone in a small community. The 15-participant minimum helps but doesn't eliminate this risk.
-2. **AI provider data retention** — OpenRouter and the underlying model provider (Anthropic) have their own data retention policies. KoNote does not control what happens to data after it reaches the API. This is the core reason the self-hosted LLM path is important.
+2. **AI provider data retention** — For any participant-data flow that still uses OpenRouter or another external endpoint, the provider has its own data retention policies. KoNote does not control what happens to data after it reaches that API. Open-ended suggestion categorisation should instead use the self-hosted LLM path described below.
 3. **Toggle change audit** — Currently no audit log entry when `ai_assist` is toggled on or off. The DRR recommends adding this.
 4. **No participant notification** — Participants are not currently informed whether AI processes their feedback. The DRR recommends adding a portal transparency statement.
 
@@ -202,8 +203,16 @@ Log when `ai_assist_participant_data` is toggled: who, when, on/off. Use the exi
 
 The participant portal should state the current AI posture:
 
-- **If participant insights ON:** "This agency uses AI to summarise feedback themes. Your name is removed before processing. No individual responses are shared."
-- **If participant insights OFF:** "This agency does not use AI to process your responses."
+- **If participant insights ON:** "This agency uses AI to help group feedback themes from survey responses and suggestions. Direct identifiers such as your name are removed before that processing. Open-ended suggestions are categorised using a self-hosted model managed by KoNote. Staff still review the results before using them."
+- **If participant insights OFF:** "This agency does not use AI to process your survey responses or suggestions."
+
+Recommended participant-facing privacy notice wording:
+
+> We collect your responses so staff can understand program outcomes, improve services, and meet reporting requirements. Your information is stored in KoNote on systems managed for this agency. If this agency enables AI-assisted feedback analysis, direct identifiers are removed before participant text is processed. Open-ended suggestions are categorised using a self-hosted model managed by KoNote, and staff review AI-generated summaries before using them. If this agency does not enable that feature, your responses are reviewed only by authorised staff and reporting tools.
+
+Short portal disclosure variant:
+
+> Your responses help improve services. If AI-assisted feedback analysis is enabled for this agency, KoNote removes direct identifiers before processing participant text and uses a self-hosted model for open-ended suggestion categorisation.
 
 ### UI guardrails on goal builder
 
@@ -213,15 +222,15 @@ The goal builder input should include helper text: "Describe the general goal ar
 
 When AI generates a suggested target or metric, staff should see a small "AI-suggested" indicator — not as a warning, but as transparency. Preserves human agency in the decision.
 
-## Future: Self-Hosted Open-Source LLM for Participant Data
+## Self-Hosted Open-Source LLM for Open-Ended Suggestions
 
-For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles, newcomer-serving organisations), even de-identified data leaving the agency's infrastructure may be unacceptable.
+Open-ended suggestion categorisation should be planned and operated as a self-hosted open-source workflow managed by KoNote. This keeps the suggestion-tagging path on infrastructure controlled by the operator rather than a public AI API.
 
-**Future architectural direction:** For `ai_assist_participant_data`, support a self-hosted open-source LLM (e.g., Llama, Mistral) so participant data never leaves the agency's infrastructure.
+For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles, newcomer-serving organisations), even de-identified data leaving the operator-controlled environment may be unacceptable. Those agencies may still decide to disable participant-data AI entirely.
 
-The toggle design already supports this — `ai_assist_participant_data` can switch between external API and local model without changing the user-facing feature. The existing `INSIGHTS_API_BASE` environment variable already supports pointing to a local Ollama endpoint.
+The toggle design already supports this — `ai_assist_participant_data` can use a local model endpoint without changing the user-facing feature. The existing `INSIGHTS_API_BASE` environment variable already supports pointing to a self-hosted OpenAI-compatible endpoint.
 
-**When to build:** After the first agency deployment, when real data sovereignty requirements are articulated by a specific partner. Do not build speculatively.
+This does not require a product-level distinction in the UI. The operator decision is infrastructural: if open-ended suggestions are enabled for AI processing at all, the default posture should be the self-hosted managed model described in the self-hosted LLM DRR.
 
 ## Migration Notes
 

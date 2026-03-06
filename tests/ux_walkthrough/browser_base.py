@@ -134,7 +134,7 @@ class BrowserTestBase(StaticLiveServerTestCase):
     def setUp(self):
         enc_module._fernet = None
         self._create_test_data()
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(bypass_csp=True)
         self.page = self._context.new_page()
 
     def tearDown(self):
@@ -353,7 +353,7 @@ class BrowserTestBase(StaticLiveServerTestCase):
         """Switch to a different user (new browser context)."""
         self.page.close()
         self._context.close()
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(bypass_csp=True)
         self.page = self._context.new_page()
         self.login_via_browser(username)
 
@@ -361,7 +361,10 @@ class BrowserTestBase(StaticLiveServerTestCase):
         """Switch to a different user with a specific colour scheme."""
         self.page.close()
         self._context.close()
-        self._context = self._browser.new_context(color_scheme=color_scheme)
+        self._context = self._browser.new_context(
+            color_scheme=color_scheme,
+            bypass_csp=True,
+        )
         self.page = self._context.new_page()
         self.login_via_browser(username)
 
