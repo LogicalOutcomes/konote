@@ -333,6 +333,7 @@ class CustomFieldGroupForm(forms.ModelForm):
         fields = ["title", "sort_order", "collapsed_by_default", "status"]
         labels = {
             "sort_order": _("Display order"),
+            "collapsed_by_default": _("Collapsed by default (display only — does not restrict access)"),
         }
 
 

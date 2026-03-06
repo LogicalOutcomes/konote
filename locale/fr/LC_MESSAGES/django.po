@@ -19719,3 +19719,15 @@ msgstr "Les données envoyées dépendent des fonctionnalités IA activées ci-d
 msgid "No AI API key is configured. AI features are unavailable even if enabled below."
 msgstr "Aucune clé API IA n’est configurée. Les fonctionnalités IA ne sont pas disponibles même si elles sont activées ci-dessous."
 
+#: templates/clients/custom_fields_admin.html
+msgid "Collapsed by default"
+msgstr "Réduit par défaut"
+
+#: apps/clients/models.py
+msgid "When checked, this group is collapsed on the participant info tab. Use for sensitive demographics that aren’t needed for daily service delivery. This is a display preference — it does not restrict access to the data."
+msgstr "Lorsque coché, ce groupe est réduit dans l’onglet d’information du participant. Utilisez cette option pour les données démographiques sensibles qui ne sont pas nécessaires pour la prestation quotidienne des services. Il s’agit d’une préférence d’affichage — cela ne restreint pas l’accès aux données."
+
+#: apps/clients/forms.py
+msgid "Collapsed by default (display only — does not restrict access)"
+msgstr "Réduit par défaut (affichage seulement — ne restreint pas l’accès)"
+

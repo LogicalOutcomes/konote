@@ -712,7 +712,8 @@ class CustomFieldGroup(models.Model):
         default=False,
         help_text=_(
             "When checked, this group is collapsed on the participant info tab. "
-            "Use for sensitive demographics that aren't needed for daily service delivery."
+            "Use for sensitive demographics that aren't needed for daily service delivery. "
+            "This is a display preference — it does not restrict access to the data."
         ),
     )
     status = models.CharField(
