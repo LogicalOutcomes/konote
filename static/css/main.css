@@ -1893,6 +1893,7 @@ label {
 }
 .field-engagement { max-width: 20rem; }
 .field-followup { max-width: 12rem; }
+.field-followup:has(.mp-chips) { max-width: 28rem; }
 
 @media (max-width: 768px) {
     .wrapup-grid {
