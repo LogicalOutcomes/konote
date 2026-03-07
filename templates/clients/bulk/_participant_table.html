@@ -1,0 +1,89 @@
+{% load i18n %}
+
+{% if clients is not None %}
+<form method="post" id="bulk-select-form">
+    {% csrf_token %}
+
+    {% if filter_form.source_program.value %}
+    <input type="hidden" name="source_program_id" value="{{ filter_form.source_program.value }}">
+    {% endif %}
+
+    <p class="secondary">
+        {% blocktrans count counter=client_count %}
+        {{ counter }} participant found.
+        {% plural %}
+        {{ counter }} participants found.
+        {% endblocktrans %}
+    </p>
+
+    {% if clients %}
+    <div style="margin-bottom: var(--kn-space-sm);">
+        <label>
+            <input type="checkbox" id="select-all" aria-label="{% trans 'Select all participants' %}">
+            <strong>{% trans "Select All" %}</strong>
+        </label>
+    </div>
+
+    <figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col" style="width: 3rem;"></th>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Programs" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="selected_clients" value="{{ client.pk }}"
+                           class="client-checkbox" aria-label="{% blocktrans with name=client.display_name %}Select {{ name }}{% endblocktrans %}">
+                </td>
+                <td>{{ client.display_name }} {{ client.last_name }}</td>
+                <td>
+                    {% for e in client.enrolments.all %}
+                        {% if e.status == "active" or e.status == "on_hold" %}
+                        <span class="badge badge-{% if e.status == 'active' %}success{% else %}warning{% endif %}">{{ e.get_status_display }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for e in client.enrolments.all %}
+                        {% if e.status == "active" or e.status == "on_hold" %}
+                        <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>
+                        {{ e.program.translated_name }}{% if not forloop.last %}, {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+
+    <div style="margin-top: var(--kn-space-base);">
+        <button type="submit" name="confirm" value="1">{% trans "Continue to Confirmation" %}</button>
+    </div>
+    {% else %}
+    <p>{% trans "No participants match the selected filters." %}</p>
+    {% endif %}
+</form>
+
+<script>
+(function() {
+    var selectAll = document.getElementById("select-all");
+    if (!selectAll) return;
+    var boxes = document.querySelectorAll(".client-checkbox");
+    selectAll.addEventListener("change", function() {
+        boxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+    });
+    boxes.forEach(function(cb) {
+        cb.addEventListener("change", function() {
+            selectAll.checked = Array.from(boxes).every(function(b) { return b.checked; });
+        });
+    });
+})();
+</script>
+{% endif %}
