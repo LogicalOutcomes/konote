@@ -86,7 +86,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Evaluation Planning & CIDS Full Tier
 
 - [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
-- [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a frontier LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
+- [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a more capable LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
 - [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
 - [x] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) — 2026-03-07 (EVAL-ENRICH-SPEC1)
 - [x] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — PR #422, deployed and validated on dev VPS — 2026-03-07 (EVAL-EDITOR1)
