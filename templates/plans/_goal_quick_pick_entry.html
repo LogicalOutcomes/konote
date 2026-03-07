@@ -3,7 +3,7 @@
 {% if common_goals %}
 <fieldset id="quick-pick-entry">
     <legend>{% blocktrans with targets=term.target_plural|default:"goals" %}Quick pick from similar {{ targets }}{% endblocktrans %}</legend>
-    <div class="goal-card-grid" role="group" aria-label="{% trans 'Common goals in this program' %}">
+    <div class="goal-card-grid" role="group" aria-label="{% blocktrans with targets=term.target_plural|default:'targets' %}Common {{ targets }} in this program{% endblocktrans %}">
         {% for goal in common_goals %}
         <button type="button"
                 class="goal-card outline"

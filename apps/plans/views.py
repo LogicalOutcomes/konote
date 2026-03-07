@@ -711,7 +711,7 @@ def goal_create(request, client_id):
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": reverse("plans:plan_view", kwargs={"client_id": client.pk}), "label": _("Plan")},
-        {"url": "", "label": _("Add a Goal")},
+        {"url": "", "label": _("Add a %(target)s") % {"target": request.get_term("target")}},
     ]
     # R11: Show quick picks first if 3+ common goals exist
     quick_pick_first = len(common_goals) >= 3

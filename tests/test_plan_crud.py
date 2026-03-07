@@ -736,6 +736,10 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertIn("ai_enabled", response.context)
         self.assertTrue(response.context["ai_enabled"])
         self.assertContains(response, "Need help drafting this")
+        self.assertContains(response, "Tips for writing a good")
+        self.assertNotContains(response, "Tips for writing a good goal")
+        self.assertContains(response, "You can revise this Target later")
+        self.assertContains(response, "Saving your Target")
         self.assertContains(response, 'name="client_goal"')
 
     @patch("apps.plans.views._can_edit_plan", return_value=True)

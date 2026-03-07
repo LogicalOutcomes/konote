@@ -12,9 +12,9 @@
 
 {% if ai_nudge_admin %}
 <article class="ai-nudge" role="note" style="border-left: 4px solid var(--pico-primary); padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
-    <strong>{% trans "AI-assisted goal setting is available" %}</strong>
+    <strong>{% blocktrans with target=term.target|default:"target" %}AI-assisted {{ target }} drafting is available{% endblocktrans %}</strong>
     <p style="margin: 0.25rem 0 0;">
-        {% trans "KoNote can use AI to turn a participant's own words into a structured, measurable goal with suggested metrics. To enable it, add an OpenRouter API key in" %}
+        {% blocktrans with target=term.target|default:"target" %}KoNote can use AI to turn a participant's own words into a structured, measurable {{ target }} with suggested metrics. To enable it, add an OpenRouter API key in{% endblocktrans %}
         <a href="{% url 'admin_settings:features' %}">{% trans "Features" %}</a>.
     </p>
 </article>
@@ -98,7 +98,7 @@
 
         <div class="phase-action">
             <button type="button" id="btn-next-phase">
-                {% trans "Next: shape this into a goal" %} &#9656;
+                {% blocktrans with target=term.target|default:"target" %}Next: shape this into a {{ target }}{% endblocktrans %} &#9656;
             </button>
             <a href="{% url 'plans:plan_view' client_id=client.pk %}" class="secondary">{% trans "Cancel" %}</a>
         </div>
@@ -109,7 +109,7 @@
         </div>
 
         <div class="common-goal-cards" role="group" aria-label="{% trans 'Common goals in this program' %}">
-            <small class="secondary">{% trans "Quick pick — tap to use an existing goal:" %}</small>
+            <small class="secondary">{% blocktrans with target=term.target|default:"target" %}Quick pick — tap to use an existing {{ target }}:{% endblocktrans %}</small>
             <div class="goal-card-grid">
                 {% for goal in common_goals %}
                 <button type="button"
@@ -176,8 +176,8 @@
         {% if ai_enabled %}
         <aside class="smart-guidance" role="note">
             <details>
-                <summary>{% trans "Tips for writing a good goal" %}</summary>
-                <p>{% trans "Try turning their words into something Specific, Measurable, Achievable, Relevant, and Time-bound (SMART)." %}</p>
+                <summary>{% blocktrans with target=term.target|default:"target" %}Tips for writing a good {{ target }}{% endblocktrans %}</summary>
+                <p>{% blocktrans with target=term.target|default:"target" %}Try turning their words into a {{ target }} that is Specific, Measurable, Achievable, Relevant, and Time-bound (SMART).{% endblocktrans %}</p>
                 <p class="secondary">{% trans "For example:" %} <em>&ldquo;{% trans "Make a friend" %}&rdquo;</em> &rarr; <em>&ldquo;{% trans "Build one social connection outside of program activities within 3 months" %}&rdquo;</em></p>
             </details>
         </aside>
@@ -204,7 +204,7 @@
                        data-suggestions-url="{% url 'plans:goal_name_suggestions' client_id=client.pk %}">
                 <div id="goal-suggestions-list"
                      role="listbox"
-                     aria-label="{% trans 'Goal name suggestions' %}"
+                     aria-label="{% blocktrans with target=term.target|default:'target' %}{{ target }} name suggestions{% endblocktrans %}"
                      hidden></div>
                 <div aria-live="polite" class="sr-only" id="suggestion-count"></div>
             </div>
@@ -254,7 +254,7 @@
             {# Tier 2: Used in this program (R23: relabelled) #}
             {% if program_used_metrics %}
             <details class="metric-tier">
-                <summary>{% trans "Commonly used for goals like this" %}</summary>
+                <summary>{% blocktrans with targets=term.target_plural|default:"targets" %}Commonly used for {{ targets }} like this{% endblocktrans %}</summary>
                 <div class="metric-tier-list" role="group" aria-label="{% trans 'Metrics used in this program' %}">
                     {% for metric in program_used_metrics %}
                     <label for="metric-{{ metric.pk }}">
@@ -357,7 +357,7 @@
         {% endif %}
 
         {# R10: Reassurance text before submit #}
-        <p class="secondary"><small>{% trans "You can revise this goal later as things become clearer." %}</small></p>
+        <p class="secondary"><small>{% blocktrans with target=term.target|default:"target" %}You can revise this {{ target }} later as things become clearer.{% endblocktrans %}</small></p>
 
         {# ── Submit ── #}
         <div role="group">
@@ -419,7 +419,7 @@
 
         // Announce to screen readers
         var announce = document.getElementById("phase-announce");
-        if (announce) announce.textContent = "{% trans 'Form expanded — complete the goal details below.' %}";
+        if (announce) announce.textContent = "{% blocktrans with target=term.target|default:'target' %}Form expanded — complete the {{ target }} details below.{% endblocktrans %}";
 
         // Focus goal name
         if (nameInput) nameInput.focus();
@@ -631,7 +631,7 @@
         var id = evt.detail.elt.id;
         if (id === "btn-use-suggestion") {
             var announce = document.getElementById("save-announce");
-            if (announce) announce.textContent = "{% trans 'Saving your goal…' %}";
+            if (announce) announce.textContent = "{% blocktrans with target=term.target|default:'target' %}Saving your {{ target }}…{% endblocktrans %}";
         }
         if (id === "btn-shape-target") {
             var loadingEl = document.querySelector("#ai-loading small");

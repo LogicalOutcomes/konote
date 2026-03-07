@@ -101,7 +101,7 @@
 
     {# Save loading indicator #}
     <div id="save-loading" class="htmx-indicator save-loading-state">
-        <small>{% trans "Saving your goal…" %}</small>
+        <small>{% blocktrans with target=term.target|default:"target" %}Saving your {{ target }}…{% endblocktrans %}</small>
     </div>
 
     {# Screen reader save announcement #}
