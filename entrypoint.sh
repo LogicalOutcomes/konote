@@ -108,7 +108,7 @@ checked_total += checked
 from apps.clients.models import ClientFile
 bad = 0
 checked = 0
-for c in ClientFile.objects.exclude(_first_name_encrypted=b'').iterator():
+for c in ClientFile.objects.exclude(_first_name_encrypted=b'').exclude(_first_name_encrypted__isnull=True).iterator():
     checked += 1
     if c.first_name == '[DECRYPTION ERROR]' or c.last_name == '[DECRYPTION ERROR]':
         bad += 1
