@@ -122,6 +122,7 @@
 {% trans "Something's shifting" as lbl_shifting %}
 {% trans "In a good place" as lbl_good %}
 (function() {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function initClientTrendChart() {
         var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
         if (!Array.isArray(rawData) || rawData.length === 0) return;
@@ -141,6 +142,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
                 scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
             },

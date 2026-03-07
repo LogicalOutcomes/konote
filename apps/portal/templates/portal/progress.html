@@ -164,6 +164,7 @@
             ? chartInfo.max_value : undefined;
 
         var ctx = canvas.getContext('2d');
+        var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -186,6 +187,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {

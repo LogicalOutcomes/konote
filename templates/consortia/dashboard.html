@@ -194,6 +194,7 @@ function makeBarChart(canvasId, tableId, dataKey, labelKey) {
     const rows = (rollupData.demographics || {})[dataKey] || [];
     const labels = rows.map(r => r.label || '');
     const counts = rows.map(r => typeof r.count === 'number' ? r.count : 0);
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Chart
     const ctx = document.getElementById(canvasId);
@@ -210,6 +211,9 @@ function makeBarChart(canvasId, tableId, dataKey, labelKey) {
             },
             options: {
                 responsive: true,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined,
+                },
                 plugins: {
                     legend: { display: false },
                     // Data labels for colourblind accessibility
