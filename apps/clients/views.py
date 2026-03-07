@@ -1989,7 +1989,3 @@ def client_sharing_toggle(request, client_id):
         messages.success(request, _("Note sharing disabled."))
 
     return redirect("clients:client_detail", client_id=client_id)
-
-
-# ---- Bulk Operations (UX17) ----
-
