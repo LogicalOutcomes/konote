@@ -19,31 +19,25 @@
     {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
     {% endfor %}
 
+    <p>
+        <a href="{% url 'survey_manage:csv_template' %}" download>{% trans "Download template CSV" %}</a>
+        — {% trans "a ready-to-edit file with example questions you can replace with your own." %}
+    </p>
+
     <details>
-        <summary>{% trans "CSV format guide" %}</summary>
-        <p>{% trans "Your CSV file should have the following columns:" %}</p>
-        <table aria-label="{% trans 'CSV columns' %}">
-            <thead>
-                <tr>
-                    <th scope="col">{% trans "Column" %}</th>
-                    <th scope="col">{% trans "Required" %}</th>
-                    <th scope="col">{% trans "Description" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>section</td><td>{% trans "Yes" %}</td><td>{% trans "Section name — questions with the same section name are grouped together." %}</td></tr>
-                <tr><td>question</td><td>{% trans "Yes" %}</td><td>{% trans "The question text." %}</td></tr>
-                <tr><td>type</td><td>{% trans "No" %}</td><td>{% trans "Question type: short_text, long_text, single_choice, multiple_choice, rating_scale, yes_no." %}</td></tr>
-                <tr><td>required</td><td>{% trans "No" %}</td><td>{% trans "yes or no — whether the question must be answered." %}</td></tr>
-                <tr><td>options</td><td>{% trans "No" %}</td><td>{% trans "For choice questions — separate options with semicolons: Agree;Neutral;Disagree" %}</td></tr>
-                <tr><td>score_values</td><td>{% trans "No" %}</td><td>{% trans "Numeric scores matching options: 3;2;1" %}</td></tr>
-                <tr><td>instructions</td><td>{% trans "No" %}</td><td>{% trans "Instructions shown at the top of a section." %}</td></tr>
-                <tr><td>page_break</td><td>{% trans "No" %}</td><td>{% trans "yes — to start a new page at this section." %}</td></tr>
-                <tr><td>section_fr</td><td>{% trans "No" %}</td><td>{% trans "French section name." %}</td></tr>
-                <tr><td>question_fr</td><td>{% trans "No" %}</td><td>{% trans "French question text." %}</td></tr>
-                <tr><td>options_fr</td><td>{% trans "No" %}</td><td>{% trans "French option labels, semicolon-separated." %}</td></tr>
-            </tbody>
-        </table>
+        <summary>{% trans "Column reference" %}</summary>
+        <p>{% trans "Only <strong>section</strong> and <strong>question</strong> are required. All other columns are optional." %}</p>
+        <ul>
+            <li><strong>section</strong> — {% trans "Section name. Questions with the same section name are grouped together." %}</li>
+            <li><strong>question</strong> — {% trans "The question text." %}</li>
+            <li><strong>type</strong> — {% trans "short_text, long_text, single_choice, multiple_choice, rating_scale, or yes_no. Defaults to short_text." %}</li>
+            <li><strong>required</strong> — {% trans "yes or no." %}</li>
+            <li><strong>options</strong> — {% trans "For choice/rating questions, separate with semicolons: Agree;Neutral;Disagree" %}</li>
+            <li><strong>score_values</strong> — {% trans "Numeric scores matching options: 3;2;1" %}</li>
+            <li><strong>instructions</strong> — {% trans "Instructions shown at the top of a section." %}</li>
+            <li><strong>page_break</strong> — {% trans "yes to start a new page at this section." %}</li>
+            <li><strong>section_fr</strong>, <strong>question_fr</strong>, <strong>options_fr</strong> — {% trans "French translations (optional)." %}</li>
+        </ul>
     </details>
 
     <div role="group">

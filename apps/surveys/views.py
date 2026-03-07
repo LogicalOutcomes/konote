@@ -431,6 +431,43 @@ def csv_import(request):
     return render(request, "surveys/admin/csv_import.html", {"form": form})
 
 
+@login_required
+@admin_required
+def csv_template(request):
+    """Download a template CSV for survey import with example rows."""
+    _surveys_or_404()
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="survey-template.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        "section", "question", "type", "required", "options",
+        "score_values", "instructions", "page_break",
+        "section_fr", "question_fr", "options_fr",
+    ])
+    writer.writerow([
+        "Demographics", "What is your age range?", "single_choice", "yes",
+        "Under 18;18-30;31-50;Over 50", "", "Answer the following about yourself.",
+        "yes", "Démographie", "Quelle est votre tranche d'âge?",
+        "Moins de 18 ans;18-30;31-50;Plus de 50 ans",
+    ])
+    writer.writerow([
+        "Demographics", "What is your postal code?", "short_text", "no",
+        "", "", "", "", "Démographie", "Quel est votre code postal?", "",
+    ])
+    writer.writerow([
+        "Satisfaction", "How satisfied are you with the program?", "rating_scale",
+        "yes", "Very dissatisfied;Dissatisfied;Neutral;Satisfied;Very satisfied",
+        "1;2;3;4;5", "Rate your experience below.", "",
+        "Satisfaction", "Quel est votre niveau de satisfaction avec le programme?",
+        "Très insatisfait;Insatisfait;Neutre;Satisfait;Très satisfait",
+    ])
+    writer.writerow([
+        "Satisfaction", "What could we improve?", "long_text", "no",
+        "", "", "", "", "Satisfaction", "Que pourrions-nous améliorer?", "",
+    ])
+    return response
+
+
 # ---------------------------------------------------------------------------
 # Participant-level views — staff viewing/managing surveys on a client file
 # ---------------------------------------------------------------------------
