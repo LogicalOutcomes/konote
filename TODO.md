@@ -2,7 +2,6 @@
 
 ## Flagged
 
-- [ ] Fix VPS dev repo divergent branches — `/opt/konote-dev` has diverged from `origin/develop`, causing deploy script to skip pulling latest code. Reset with `sudo git -C /opt/konote-dev reset --hard origin/develop`. Due 2026-03-07 — GK (OPS-DEVFIX1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -89,8 +88,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
 - [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a frontier LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
 - [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
-- [ ] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) (EVAL-ENRICH-SPEC1)
-- [ ] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — depends on EVAL-ENRICH-SPEC1 (EVAL-EDITOR1)
+- [x] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) — 2026-03-07 (EVAL-ENRICH-SPEC1)
+- [x] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — PR #422, deployed and validated on dev VPS — 2026-03-07 (EVAL-EDITOR1)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -116,7 +115,7 @@ Scope is clear, just needs time. A session can pick these up without special app
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
-- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
+- [ ] Add CIDS conformance badge and SHACL validation reporting — `validate_cids_jsonld` management command now works (pyshacl installed as test dep). Consider adding badge UI after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
@@ -126,6 +125,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] CIDS Full Tier + Evaluation Framework deployed to dev VPS — PR #422 merged, migration dependency fix PR #423, all exports pass SHACL validation, coverage dashboard live at 8/14 classes, evaluation framework CRUD working end-to-end — 2026-03-07 (CIDS-DEPLOY1)
 - [x] Translation catalog cleanup — filled 16 remaining empty French entries, 0 empty remain — PR #414 — 2026-03-07 (REV26-I18N2)
 - [x] Tenant provisioning + backup recovery resumability — --skip-to, --dry-run, --pre-restore, --full, transaction wrapping, expanded encryption checks — PR #414 — 2026-03-07 (REV26-DEP3)
 - [x] Extract role string constants into auth_app/constants.py — 5 PRs merged, 107 files updated — 2026-03-07 (REFACTOR1)
