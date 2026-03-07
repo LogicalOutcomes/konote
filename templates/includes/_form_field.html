@@ -1,0 +1,26 @@
+{% comment %}
+Reusable form field renderer that handles checkbox vs. non-checkbox fields.
+
+Pico CSS requires checkboxes to be INSIDE the <label> tag for proper layout.
+Regular fields need the label ABOVE the input. This include handles both.
+Help text and errors are linked via aria-describedby for screen readers.
+
+Usage:
+    {% include "includes/_form_field.html" with field=field %}
+{% endcomment %}{% load i18n form_tags %}{% describedby_ids field as desc_ids %}
+{% if field.field.widget.input_type == "checkbox" %}
+<label>
+    {% if desc_ids %}{{ field|aria_describedby:desc_ids }}{% else %}{{ field }}{% endif %}
+    {{ field.label }}
+</label>
+{% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
+{% if field.errors %}<small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+{% else %}
+<label for="{{ field.id_for_label }}">
+    {{ field.label }}
+    {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+</label>
+{% if desc_ids %}{{ field|aria_describedby:desc_ids }}{% else %}{{ field }}{% endif %}
+{% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
+{% if field.errors %}<small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+{% endif %}
