@@ -1,9 +1,14 @@
+import os
+
 from django.db import migrations, models
 
 from konote.encryption import DecryptionError, decrypt_field, encrypt_field
 
 
 def encrypt_existing_respondent_names(apps, schema_editor):
+    if not os.environ.get("FERNET_KEY"):
+        # No encryption key available (CI/test). Skip — no real data to encrypt.
+        return
     SurveyResponse = apps.get_model("surveys", "SurveyResponse")
     for response in SurveyResponse.objects.exclude(respondent_name_display="").iterator():
         response._respondent_name_encrypted = encrypt_field(
@@ -13,6 +18,8 @@ def encrypt_existing_respondent_names(apps, schema_editor):
 
 
 def decrypt_existing_respondent_names(apps, schema_editor):
+    if not os.environ.get("FERNET_KEY"):
+        return
     SurveyResponse = apps.get_model("surveys", "SurveyResponse")
     for response in SurveyResponse.objects.exclude(_respondent_name_encrypted=b"").iterator():
         try:

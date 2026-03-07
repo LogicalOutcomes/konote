@@ -755,7 +755,7 @@ def goal_create_from_suggestion(request, client_id):
         suggestion_key = ""
     suggestion = request.session.pop(suggestion_key, None) if suggestion_key else None
 
-    if not suggestion:
+    if not suggestion or not isinstance(suggestion, dict) or not suggestion.get("name", "").strip():
         return render(request, "plans/_goal_save_error.html", {
             "error": _("Suggestion expired or was already used. Please try again."),
             "client": client,

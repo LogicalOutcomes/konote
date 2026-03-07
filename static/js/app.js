@@ -21,8 +21,13 @@ function _knParseCallArgs(raw, el) {
     }
 }
 
+var _KN_ALLOWED_FNS = {
+    toggleView: 1, closeBulkModal: 1, resetRow: 1,
+    addGroup: 1, toggleAll: 1, addProgram: 1, addTemplate: 1
+};
+
 function _knCallFunction(name, el, rawArgs) {
-    if (!name || typeof window[name] !== "function") return false;
+    if (!name || !_KN_ALLOWED_FNS[name] || typeof window[name] !== "function") return false;
     var args = _knParseCallArgs(rawArgs, el);
     window[name].apply(window, args);
     return true;
