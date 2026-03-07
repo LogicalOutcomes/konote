@@ -256,6 +256,73 @@ The N=5 threshold **only applies when `INSIGHTS_API_BASE` is configured** (self-
 
 **Focused analysis** (top-down question-based search) follows the same graduated model and always returns synthesised content, never verbatim quotes, regardless of program size.
 
+## Three-Tier AI Architecture (Added 2026-03-07)
+
+KoNote uses AI at three distinct tiers, each with different data access, provider routing, and privacy controls. The two-toggle system (`ai_assist_tools_only` and `ai_assist_participant_data`) governs Tiers 1 and 2. Tier 3 operates outside KoNote's toggle system because it runs in an external LLM session controlled by the evaluator.
+
+### Tier 1: Operational AI (self-hosted)
+
+**Provider:** Self-hosted open-source model on the KoNote VPS (Ollama). Configured via `INSIGHTS_API_BASE` and `INSIGHTS_API_KEY`.
+
+**Toggle:** `ai_assist_participant_data` (disabled by default).
+
+**Data it sees:** De-identified participant content — survey responses, open-ended feedback, suggestion themes. PII-scrubbed. Stays on Canadian infrastructure.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Outcome insights (theme summarisation) | Scrubbed participant quotes | N>=5 self-hosted, N>=15 external; PII scrub; quote verification |
+| Suggestion categorisation (nightly batch) | Scrubbed suggestion text | Same thresholds; self-hosted only |
+| Focused analysis (question-based search) | Scrubbed participant content | Synthesised output only, never verbatim quotes |
+
+### Tier 2: Tools AI (cloud API)
+
+**Provider:** Cloud AI API. Configured via `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
+
+**Toggle:** `ai_assist_tools_only` (enabled by default).
+
+**Data it sees:** Program-level metadata only — metric names, goal text, program descriptions, aggregate statistics. Zero participant data.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Metric suggestions | Target description + metric catalogue | No participant data — institutional metadata only |
+| Goal builder | Staff-written outcome text (PII-scrubbed) | Staff controls input; PII scrub as safety net |
+| Narrative generation | Program name + date range + aggregate numbers | Aggregate only |
+| Note structure suggestions | Target name + description + metric names | No participant data |
+| CIDS code suggestions (batch) | Field names + metric definitions | Taxonomy metadata only |
+
+### Tier 3: Evaluation AI (external, evaluator-controlled)
+
+**Provider:** A more capable LLM accessed via an external platform. Not configured in KoNote's `.env` — the evaluator manages the session directly.
+
+**Toggle:** None. This tier operates outside KoNote entirely. No KoNote data is sent automatically.
+
+**Data it sees:** Non-PII program documentation uploaded by the evaluator — grant applications, logic models, program descriptions, aggregate statistics, published literature.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Evaluation framework planning | Program documentation (uploaded by evaluator) | Evaluator controls what is shared; no participant data |
+| CIDS Full Tier metadata drafting | Service/activity/risk/counterfactual descriptions | Program-level metadata only |
+| Literature-informed enrichment | Published literature + aggregate program stats | Public and de-identified data only |
+| Taxonomy classification review | Metric definitions + taxonomy code lists | Institutional metadata only |
+
+**Why a separate tier?** The evaluation planning tasks require synthesis across multiple documents, evaluation methodology knowledge, and literature-informed judgement. These exceed the capabilities of the self-hosted model (Tier 1) and involve a different interaction pattern — a structured multi-step conversation rather than single API calls. The evaluator works with a more capable model directly, uploading only non-PII program documentation.
+
+**See also:**
+- [CIDS Evaluation Protocol](../cids-evaluation-protocol.md) — the 5-phase process that uses Tier 3
+- [CIDS Evaluation Planning Prompt](../cids-evaluation-planning-prompt.md) — the structured prompt for Tier 3 sessions
+- [Self-hosted LLM Infrastructure DRR](self-hosted-llm-infrastructure.md) — Tier 1 infrastructure details
+
+### Summary: What goes where
+
+| Data type | Tier | Provider | Leaves VPS? |
+|-----------|------|----------|-------------|
+| Participant quotes (scrubbed) | 1 — Operational | Self-hosted | No |
+| Open-ended suggestions (scrubbed) | 1 — Operational | Self-hosted | No |
+| Metric/goal/program metadata | 2 — Tools | Cloud API | Yes (no PII) |
+| CIDS taxonomy suggestions | 2 — Tools | Cloud API | Yes (no PII) |
+| Evaluation framework content | 3 — Evaluation | External LLM platform | Yes (no PII, evaluator-controlled) |
+| Translation strings | Outside toggle system | Cloud API | Yes (no PII — static UI strings) |
+
 ## GK Review Items
 
 - [ ] Participant-facing transparency wording (portal statement)
