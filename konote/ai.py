@@ -6,6 +6,7 @@ program names, aggregate stats). Client PII never reaches this module.
 """
 import json
 import logging
+import re
 from urllib.parse import urlparse
 
 import requests
@@ -24,6 +25,77 @@ _SAFETY_FOOTER = (
     "(names, dates of birth, addresses, or record IDs). "
     "Work only with the program context and metrics provided."
 )
+
+
+def _extract_json_payload(text):
+    """Extract the first balanced JSON object or array from model output."""
+    if not isinstance(text, str):
+        return None
+
+    cleaned = text.strip()
+    if not cleaned:
+        return None
+
+    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.IGNORECASE | re.DOTALL).strip()
+
+    if cleaned.startswith("```"):
+        lines = cleaned.split("\n")
+        lines = [line for line in lines if not line.strip().startswith("```")]
+        cleaned = "\n".join(lines).strip()
+
+    start = None
+    opener = None
+    for index, char in enumerate(cleaned):
+        if char in "[{":
+            start = index
+            opener = char
+            break
+
+    if start is None:
+        return None
+
+    closer = "}" if opener == "{" else "]"
+    depth = 0
+    in_string = False
+    escape = False
+
+    for index in range(start, len(cleaned)):
+        char = cleaned[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+            continue
+
+        if char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                return cleaned[start:index + 1]
+
+    return None
+
+
+def _parse_ai_json(result, log_label):
+    """Parse a JSON payload from model output, tolerating wrapper text."""
+    text = _extract_json_payload(result)
+    if text is None:
+        logger.warning("Could not find JSON in %s response: %s", log_label, str(result)[:300])
+        return None
+
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse %s response: %s", log_label, text[:300])
+        return None
 
 
 def is_ai_available():
@@ -127,12 +199,9 @@ def generate_metric_rationale(name, definition, category, metric_type, scale_ran
     result = _call_openrouter(system, user_msg, max_tokens=512)
     if result is None:
         return None
-    try:
-        parsed = json.loads(result)
-        if isinstance(parsed, dict) and "note" in parsed:
-            return parsed
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric rationale response")
+    parsed = _parse_ai_json(result, "metric rationale")
+    if isinstance(parsed, dict) and "note" in parsed:
+        return parsed
     return None
 
 
@@ -186,11 +255,7 @@ def suggest_metrics(target_description, metric_catalogue):
     result = _call_openrouter(system, user_msg)
     if result is None:
         return None
-    try:
-        return json.loads(result)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric suggestions response")
-        return None
+    return _parse_ai_json(result, "metric suggestions")
 
 
 def improve_outcome(draft_text):
@@ -323,17 +388,8 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse suggest_target response: %s", text[:300])
+    parsed = _parse_ai_json(result, "suggest_target")
+    if parsed is None:
         return None
 
     return _validate_suggest_target_response(parsed, metric_catalogue)
@@ -613,17 +669,8 @@ def generate_outcome_insights(
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse outcome insights response")
+    parsed = _parse_ai_json(result, "outcome insights")
+    if parsed is None:
         return None
 
     # Validate response structure
@@ -837,17 +884,8 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse goal builder response")
+    parsed = _parse_ai_json(result, "goal builder")
+    if parsed is None:
         return None
 
     return _validate_goal_chat_response(parsed, metric_catalogue)
@@ -938,11 +976,7 @@ def suggest_note_structure(target_name, target_description, metric_names):
     result = _call_openrouter(system, user_msg)
     if result is None:
         return None
-    try:
-        return json.loads(result)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse note structure response")
-        return None
+    return _parse_ai_json(result, "note structure")
 
 
 def generate_focused_analysis(question, suggestions, program_name):
@@ -1002,17 +1036,8 @@ def generate_focused_analysis(question, suggestions, program_name):
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [ln for ln in lines if not ln.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse focused analysis response")
+    parsed = _parse_ai_json(result, "focused analysis")
+    if parsed is None:
         return None
 
     return _validate_focused_analysis(parsed, len(suggestions))

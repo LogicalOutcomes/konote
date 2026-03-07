@@ -31,6 +31,62 @@ def test_suggest_target_prompt_includes_validation_criteria():
         assert "custom_metric" in system_prompt.lower() or "target-specific metric" in system_prompt.lower()
 
 
+def test_suggest_target_parses_reasoning_wrapped_json():
+    """suggest_target should tolerate reasoning text around the JSON payload."""
+    from konote.ai import suggest_target
+
+    wrapped_response = """
+<think>I should draft a SMART target.</think>
+Here is the JSON:
+```json
+{
+  "name": "Build friendships",
+  "description": "Participant will attend one community activity each week for the next 8 weeks to build a new friendship.",
+  "client_goal": "I want to make a friend",
+  "suggested_section": "Social",
+  "metrics": [],
+  "custom_metric": null
+}
+```
+"""
+
+    with patch("konote.ai._call_openrouter", return_value=wrapped_response):
+        result = suggest_target("I want to make a friend", "Test Program", [], [])
+
+    assert result is not None
+    assert result["name"] == "Build friendships"
+    assert result["suggested_section"] == "Social"
+
+
+def test_suggest_metrics_parses_reasoning_wrapped_json_array():
+    """Array-style AI responses should also tolerate wrapper text."""
+    from konote.ai import suggest_metrics
+
+    wrapped_response = """
+I found the best matches below.
+```json
+[
+  {
+    "metric_id": 12,
+    "name": "Community participation",
+    "reason": "Tracks whether the participant is showing up in social settings."
+  }
+]
+```
+"""
+
+    with patch("konote.ai._call_openrouter", return_value=wrapped_response):
+        result = suggest_metrics("Attend a weekly community activity", [])
+
+    assert result == [
+        {
+            "metric_id": 12,
+            "name": "Community participation",
+            "reason": "Tracks whether the participant is showing up in social settings.",
+        }
+    ]
+
+
 def _make_valid_response(**overrides):
     """Build a minimal valid suggest_target response dict."""
     base = {

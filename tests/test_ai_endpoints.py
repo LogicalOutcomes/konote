@@ -394,7 +394,10 @@ class SuggestTargetViewTest(AIEndpointBaseTest):
             "client_id": self.client_file.pk,
         })
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "couldn't be generated")
+        self.assertContains(
+            resp,
+            "AI suggestion couldn't be generated right now. You can add the target manually.",
+        )
         self.assertContains(resp, "btn-show-manual-form")
 
     @patch("konote.ai.suggest_target")
