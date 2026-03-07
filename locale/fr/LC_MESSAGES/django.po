@@ -21197,3 +21197,138 @@ msgid ""
 "Use Log Contact for a fast update, or Detailed Note when you need target-by-"
 "target progress and session reflections."
 msgstr ""
+
+#: templates/clients/bulk/transfer.html
+#: templates/clients/bulk/discharge.html
+#, python-format
+msgid "Transfer %(client)s"
+msgid_plural "Transfer %(client)s"
+msgstr[0] "Transférer %(client)s"
+msgstr[1] "Transférer %(client)s"
+
+#: templates/clients/bulk/discharge.html
+#, python-format
+msgid "Discharge %(client)s"
+msgid_plural "Discharge %(client)s"
+msgstr[0] "Retirer %(client)s"
+msgstr[1] "Retirer %(client)s"
+
+#: templates/clients/bulk/_participant_table.html
+#, python-format
+msgid "%(counter)s participant found."
+msgid_plural "%(counter)s participants found."
+msgstr[0] "%(counter)s participant trouvé."
+msgstr[1] "%(counter)s participants trouvés."
+
+#: templates/clients/bulk/_participant_table.html
+#, python-format
+msgid "Select %(name)s"
+msgstr "Sélectionner %(name)s"
+
+#: templates/clients/bulk/transfer_confirm.html
+#, python-format
+msgid "Transfer %(counter)s participant to a new program."
+msgid_plural "Transfer %(counter)s participants to a new program."
+msgstr[0] "Transférer %(counter)s participant vers un nouveau programme."
+msgstr[1] "Transférer %(counter)s participants vers un nouveau programme."
+
+#: templates/clients/bulk/discharge_confirm.html
+#, python-format
+msgid "Discharge %(counter)s participant from %(program)s."
+msgid_plural "Discharge %(counter)s participants from %(program)s."
+msgstr[0] "Retirer %(counter)s participant de %(program)s."
+msgstr[1] "Retirer %(counter)s participants de %(program)s."
+
+#: templates/base.html
+msgid "Bulk Transfer"
+msgstr "Transfert groupé"
+
+msgid "Bulk Discharge"
+msgstr "Retrait groupé"
+
+msgid "Move multiple participants from one program to another."
+msgstr "Déplacer plusieurs participants d'un programme à un autre."
+
+msgid "Discharge multiple participants from a program at once."
+msgstr "Retirer plusieurs participants d'un programme en une seule fois."
+
+msgid "Step 1: Filter"
+msgstr "Étape 1 : Filtrer"
+
+msgid "Step 1: Select a program"
+msgstr "Étape 1 : Sélectionner un programme"
+
+msgid "From program"
+msgstr "Du programme"
+
+msgid "— All programs —"
+msgstr "— Tous les programmes —"
+
+msgid "— Select program —"
+msgstr "— Sélectionner un programme —"
+
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+msgid "Select all participants"
+msgstr "Sélectionner tous les participants"
+
+msgid "Continue to Confirmation"
+msgstr "Continuer vers la confirmation"
+
+msgid "No participants match the selected filters."
+msgstr "Aucun participant ne correspond aux filtres sélectionnés."
+
+msgid "Confirm Transfer"
+msgstr "Confirmer le transfert"
+
+msgid "Confirm Discharge"
+msgstr "Confirmer le retrait"
+
+msgid "Consent Notice"
+msgstr "Avis de consentement"
+
+msgid "The following participants have restricted cross-program note sharing. After transfer, their notes from the source program will not be visible to staff in the destination program."
+msgstr "Les participants suivants ont un partage de notes inter-programmes restreint. Après le transfert, leurs notes du programme d'origine ne seront pas visibles par le personnel du programme de destination."
+
+msgid "Selected Participants"
+msgstr "Participants sélectionnés"
+
+msgid "Destination"
+msgstr "Destination"
+
+msgid "Transfer to program"
+msgstr "Transférer vers le programme"
+
+msgid "This will be recorded in the audit log for each participant."
+msgstr "Ceci sera enregistré dans le journal d'audit pour chaque participant."
+
+msgid "Transfer Participants"
+msgstr "Transférer les participants"
+
+msgid "Discharge Participants"
+msgstr "Retirer les participants"
+
+msgid "Reason for Discharge"
+msgstr "Raison du retrait"
+
+msgid "Program Closure"
+msgstr "Fermeture du programme"
+
+msgid "Cohort Ended"
+msgstr "Cohorte terminée"
+
+msgid "Your selection has expired. Please start again."
+msgstr "Votre sélection a expiré. Veuillez recommencer."
+
+msgid "None of the selected participants are accessible."
+msgstr "Aucun des participants sélectionnés n'est accessible."
+
+msgid "No participants selected."
+msgstr "Aucun participant sélectionné."
+
+msgid "Invalid selection."
+msgstr "Sélection invalide."
+
+msgid "Please select a program."
+msgstr "Veuillez sélectionner un programme."
