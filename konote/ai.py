@@ -161,6 +161,8 @@ def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages
                 "model": getattr(settings, "OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514"),
                 "messages": api_messages,
                 "max_tokens": max_tokens,
+                "reasoning": {"enabled": False},
+                "include_reasoning": False,
             },
             timeout=TIMEOUT_SECONDS,
         )

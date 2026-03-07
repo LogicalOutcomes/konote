@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from konote.ai import _call_insights_api, _validate_suggest_target_response
+from konote.ai import _call_insights_api, _call_openrouter, _validate_suggest_target_response
 
 
 @pytest.mark.django_db
@@ -85,6 +85,26 @@ I found the best matches below.
             "reason": "Tracks whether the participant is showing up in social settings.",
         }
     ]
+
+
+@pytest.mark.django_db
+def test_call_openrouter_disables_reasoning_output(settings):
+    """OpenRouter requests should opt out of reasoning-heavy output."""
+    settings.OPENROUTER_API_KEY = "test-key"
+
+    mock_response = Mock()
+    mock_response.raise_for_status.return_value = None
+    mock_response.json.return_value = {
+        "choices": [{"message": {"content": "{\"ok\": true}"}}],
+    }
+
+    with patch("konote.ai.requests.post", return_value=mock_response) as mock_post:
+        result = _call_openrouter("Return JSON", "Return JSON", max_tokens=128)
+
+    assert result == '{"ok": true}'
+    payload = mock_post.call_args.kwargs["json"]
+    assert payload["reasoning"] == {"enabled": False}
+    assert payload["include_reasoning"] is False
 
 
 def _make_valid_response(**overrides):
