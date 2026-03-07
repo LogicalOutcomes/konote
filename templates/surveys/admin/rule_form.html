@@ -39,16 +39,7 @@
 
         {% for field in form %}
         <div>
-            {{ field.label_tag }}
-            {{ field }}
-            {% if field.help_text %}
-                <small id="{{ field.id_for_label }}_help">{{ field.help_text }}</small>
-            {% endif %}
-            {% if field.errors %}
-                {% for error in field.errors %}
-                    <small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ error }}</small>
-                {% endfor %}
-            {% endif %}
+            {% include "includes/_form_field.html" with field=field %}
         </div>
         {% endfor %}
 

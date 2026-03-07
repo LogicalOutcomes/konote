@@ -21141,62 +21141,74 @@ msgstr ""
 "puis approuvez pour générer le fichier d'exportation."
 
 msgid "AI-suggested draft"
-msgstr ""
+msgstr "Ébauche suggérée par l'IA"
 
 msgid "Choose a Primary Metric"
-msgstr ""
+msgstr "Choisir une métrique principale"
 
 msgid ""
 "Choose one primary metric for this target. Start with the section-relevant "
 "options below, then browse the full library only if you need something else."
 msgstr ""
+"Choisissez une métrique principale pour cet objectif. Commencez par les "
+"options pertinentes pour cette section ci-dessous, puis parcourez la "
+"bibliothèque complète seulement si vous avez besoin d'autre chose."
 
 msgid ""
 "Choose the faster Log Contact flow for brief updates, or Detailed Note for a"
 " full session note."
 msgstr ""
+"Choisissez le flux rapide Journal de contact pour les mises à jour brèves, "
+"ou Note détaillée pour une note de séance complète."
 
 msgid "Create a note"
-msgstr ""
+msgstr "Créer une note"
 
 msgid "Filter metrics"
-msgstr ""
+msgstr "Filtrer les métriques"
 
 msgid ""
 "Here's a draft based on what they shared. Adjust it to fit what you know "
 "about them."
 msgstr ""
+"Voici une ébauche basée sur ce qu'ils ont partagé. Ajustez-la selon ce que "
+"vous savez d'eux."
 
 msgid ""
 "Optional overall reflections after you have captured the target-specific "
 "details you need."
 msgstr ""
+"Réflexions générales facultatives après avoir saisi les détails spécifiques "
+"à l'objectif dont vous avez besoin."
 
 msgid "Recommended for this section"
-msgstr ""
+msgstr "Recommandé pour cette section"
 
 msgid "Review in the form"
-msgstr ""
+msgstr "Réviser dans le formulaire"
 
 msgid "Select a target to begin"
-msgstr ""
+msgstr "Sélectionnez un objectif pour commencer"
 
 msgid "Session reflections and follow-up"
-msgstr ""
+msgstr "Réflexions de séance et suivi"
 
 msgid "Suggest a draft"
-msgstr ""
+msgstr "Suggérer une ébauche"
 
 msgid "Suggested name"
-msgstr ""
+msgstr "Nom suggéré"
 
 msgid "The full library is grouped by category below."
-msgstr ""
+msgstr "La bibliothèque complète est regroupée par catégorie ci-dessous."
 
 msgid ""
 "Use Log Contact for a fast update, or Detailed Note when you need target-by-"
 "target progress and session reflections."
 msgstr ""
+"Utilisez Journal de contact pour une mise à jour rapide, ou Note détaillée "
+"lorsque vous avez besoin du progrès objectif par objectif et des réflexions "
+"de séance."
 
 #: templates/clients/bulk/transfer.html
 #: templates/clients/bulk/discharge.html
