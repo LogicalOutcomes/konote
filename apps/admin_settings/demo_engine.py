@@ -411,13 +411,13 @@ PORTAL_SURVEY_DEFINITIONS = [
         ],
     },
     {
-        "name": "Programme Feedback",
-        "name_fr": "Rétroaction sur le programme",
+        "name": "Program Feedback Survey",
+        "name_fr": "Sondage de rétroaction sur le programme",
         "description": "Help us improve — tell us what's working and what could be better.",
         "description_fr": "Aidez-nous à nous améliorer — dites-nous ce qui fonctionne et ce qui pourrait être mieux.",
         "sections": [
             {
-                "title": "About the Programme",
+                "title": "About the Program",
                 "title_fr": "À propos du programme",
                 "questions": [
                     {
@@ -596,6 +596,16 @@ class DemoDataEngine:
         SurveyResponse.objects.filter(client_file__is_demo=True).delete()
         SurveyAssignment.objects.filter(client_file__is_demo=True).delete()
 
+        # Restore metric portal_visibility to pre-demo values
+        originals = getattr(self, "_metric_visibility_originals", {})
+        for metric_pk, original_value in originals.items():
+            MetricDefinition.objects.filter(pk=metric_pk).update(
+                portal_visibility=original_value,
+            )
+        if originals:
+            self.log(f"  Restored portal_visibility on {len(originals)} metrics.")
+        self._metric_visibility_originals = {}
+
         # Registration submissions for demo links
         counts["registrations"] = RegistrationSubmission.objects.filter(
             registration_link__slug="demo"
@@ -716,18 +726,34 @@ class DemoDataEngine:
         If all metrics have portal_visibility='no', progress charts will be
         empty. This sets universal and program metrics to 'summary' so the
         portal progress page has data to display.
+
+        Only runs when DEMO_MODE is enabled to prevent accidentally modifying
+        an agency's intentional metric visibility settings on production
+        instances. Original values are stored in _metric_visibility_originals
+        so cleanup_demo_data() can restore them.
         """
-        updated = MetricDefinition.objects.filter(
+        from django.conf import settings
+        if not getattr(settings, "DEMO_MODE", False):
+            return
+
+        self._metric_visibility_originals = {}
+
+        # Collect metrics that need changing
+        qs = MetricDefinition.objects.filter(
             is_universal=True, is_enabled=True, portal_visibility="no",
-        ).update(portal_visibility="summary")
-
+        )
         for program in programs:
-            updated += MetricDefinition.objects.filter(
+            qs = qs | MetricDefinition.objects.filter(
                 owning_program=program, is_enabled=True, portal_visibility="no",
-            ).update(portal_visibility="summary")
+            )
 
+        # Store originals before modifying
+        for m in qs:
+            self._metric_visibility_originals[m.pk] = m.portal_visibility
+
+        updated = qs.update(portal_visibility="yes")
         if updated:
-            self.log(f"  Set {updated} metrics to portal_visibility='summary'.")
+            self.log(f"  Set {updated} metrics to portal_visibility='yes'.")
 
     # ----- Demo user creation -----
 
