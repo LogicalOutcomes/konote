@@ -20387,8 +20387,14 @@ msgid "AI-assisted %(target)s drafting is available"
 msgstr "La rédaction assistée par l’IA de %(target)s est disponible"
 
 #, python-format
-msgid "KoNote can use AI to turn a participant's own words into a structured, measurable %(target)s with suggested metrics. To enable it, add an OpenRouter API key in"
-msgstr "KoNote peut utiliser l’IA pour transformer les propres mots d’un participant en %(target)s structuré(e) et mesurable avec des mesures suggérées. Pour l’activer, ajoutez une clé API OpenRouter dans"
+msgid ""
+"KoNote can use AI to turn a participant's own words into a structured, "
+"measurable %(target)s with suggested metrics. To enable it, add an "
+"OpenRouter API key in"
+msgstr ""
+"KoNote peut utiliser l’IA pour transformer les propres mots d’un participant"
+" en %(target)s structuré(e) et mesurable avec des mesures suggérées. Pour "
+"l’activer, ajoutez une clé API OpenRouter dans"
 
 #, python-format
 msgid "%(target)s name suggestions"
@@ -20399,8 +20405,12 @@ msgid "Tips for writing a good %(target)s"
 msgstr "Conseils pour rédiger un bon %(target)s"
 
 #, python-format
-msgid "Try turning their words into a %(target)s that is Specific, Measurable, Achievable, Relevant, and Time-bound (SMART)."
-msgstr "Essayez de transformer leurs mots en %(target)s qui soit Spécifique, Mesurable, Atteignable, Réaliste et Temporellement défini(e) (SMART)."
+msgid ""
+"Try turning their words into a %(target)s that is Specific, Measurable, "
+"Achievable, Relevant, and Time-bound (SMART)."
+msgstr ""
+"Essayez de transformer leurs mots en %(target)s qui soit Spécifique, "
+"Mesurable, Atteignable, Réaliste et Temporellement défini(e) (SMART)."
 
 #, python-format
 msgid "Commonly used for %(targets)s like this"
@@ -20408,11 +20418,14 @@ msgstr "Couramment utilisées pour des %(targets)s comme celui-ci"
 
 #, python-format
 msgid "You can revise this %(target)s later as things become clearer."
-msgstr "Vous pourrez réviser ce ou cette %(target)s plus tard, au fur et à mesure que les choses se précisent."
+msgstr ""
+"Vous pourrez réviser ce ou cette %(target)s plus tard, au fur et à mesure "
+"que les choses se précisent."
 
 #, python-format
 msgid "Form expanded — complete the %(target)s details below."
-msgstr "Formulaire développé — complétez ci-dessous les détails de %(target)s."
+msgstr ""
+"Formulaire développé — complétez ci-dessous les détails de %(target)s."
 
 #, python-format
 msgid "Saving your %(target)s…"
@@ -21196,4 +21209,7 @@ msgstr ""
 msgid ""
 "Use Log Contact for a fast update, or Detailed Note when you need target-by-"
 "target progress and session reflections."
+msgstr ""
+
+msgid "Choose how to start"
 msgstr ""
