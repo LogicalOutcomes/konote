@@ -175,8 +175,10 @@ def report_template_download_csv(request, profile_id):
         messages.warning(request, _("No source CSV available for this profile."))
         return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
+    from apps.reports.csv_utils import sanitise_filename
+
     response = HttpResponse(profile.source_csv, content_type="text/csv; charset=utf-8")
-    safe_name = profile.name.replace(" ", "_").replace("/", "_")
+    safe_name = sanitise_filename(profile.name)
     response["Content-Disposition"] = f'attachment; filename="report_template_{safe_name}.csv"'
     return response
 
