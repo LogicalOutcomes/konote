@@ -181,18 +181,16 @@ If you're running a dev/demo instance alongside production (see [deploy-ovhcloud
 
 ```bash
 # Update dev
-cd /opt/konote-dev
-sudo git pull origin main
-sudo docker compose up -d --build
+ssh konote-vps "sudo /opt/konote/scripts/deploy.sh --dev"
 
 # Test dev instance thoroughly
 # If everything looks good, update production:
-cd /opt/konote
-sudo git pull origin main
-sudo docker compose up -d --build
+ssh konote-vps "sudo /opt/konote/scripts/deploy.sh"
 ```
 
-This gives you a safe testing environment before touching production data.
+The VPS deploy script pulls the latest `develop` branch, rebuilds the containers, restarts them, and waits for the health check.
+
+For the dev instance, the script can also reset and re-seed the demo database if migrations fail. This gives you a safe testing environment before touching production data.
 
 ---
 
