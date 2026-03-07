@@ -6,13 +6,13 @@ if [ -d ".git" ]; then
     git config core.hooksPath .githooks 2>/dev/null || true
 fi
 
-# Verify FERNET_KEY is set before migrations touch encrypted fields
-if [ -z "${FERNET_KEY:-}" ]; then
+# Verify FIELD_ENCRYPTION_KEY is set before migrations touch encrypted fields
+if [ -z "${FIELD_ENCRYPTION_KEY:-}" ]; then
     if [ "${KONOTE_MODE:-production}" = "production" ]; then
-        echo "ERROR: FERNET_KEY is not set. Cannot run migrations safely."
+        echo "ERROR: FIELD_ENCRYPTION_KEY is not set. Cannot run migrations safely."
         exit 1
     fi
-    echo "WARNING: FERNET_KEY not set — encrypted field migrations will be skipped."
+    echo "WARNING: FIELD_ENCRYPTION_KEY not set — encrypted field migrations will be skipped."
 fi
 
 echo "Running migrations..."
@@ -94,7 +94,7 @@ for r in SurveyResponse.objects.exclude(_respondent_name_encrypted=b'').iterator
 if bad:
     import sys
     print(f'FAIL: {bad}/{checked} survey respondent names cannot be decrypted.')
-    print('The FERNET_KEY may not match the key used during migration.')
+    print('The FIELD_ENCRYPTION_KEY may not match the key used during migration.')
     sys.exit(1)
 print(f'OK: {checked} encrypted respondent name(s) verified.' if checked else 'OK: No encrypted respondent names to verify.')
 " 2>&1 || {

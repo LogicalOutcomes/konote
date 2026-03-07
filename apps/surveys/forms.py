@@ -217,6 +217,14 @@ class CSVImportForm(forms.Form):
     """Form for uploading a survey via CSV."""
 
     csv_file = forms.FileField(label=_("CSV file"))
+
+    def clean_csv_file(self):
+        csv_file = self.cleaned_data["csv_file"]
+        if not csv_file.name.endswith(".csv"):
+            raise forms.ValidationError(_("File must be a .csv file."))
+        if csv_file.size > 1024 * 1024:  # 1MB limit
+            raise forms.ValidationError(_("File too large. Maximum size is 1MB."))
+        return csv_file
     survey_name = forms.CharField(max_length=255, label=_("Survey name"))
     survey_name_fr = forms.CharField(
         max_length=255, required=False, label=_("Survey name (French)"),
