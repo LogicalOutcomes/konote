@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Full Tier CIDS Export Status — KoNote Wireframe</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    :root {
+      --kn-primary: #3176aa;
+      --kn-primary-hover: #296490;
+      --kn-primary-subtle: rgba(49, 118, 170, 0.08);
+      --kn-success-bg: #d4edda;
+      --kn-success-fg: #1a5632;
+      --kn-warning-bg: #fff3cd;
+      --kn-warning-fg: #6c5a1e;
+      --kn-info-bg: #d1ecf1;
+      --kn-info-fg: #0c5460;
+      --kn-danger-bg: #f8d7da;
+      --kn-danger-fg: #842029;
+      --kn-neutral-bg: #e9ecef;
+      --kn-neutral-fg: #495057;
+      --kn-page-bg: #f7f6f3;
+      --kn-card-bg: #ffffff;
+      --kn-border: #d1d5db;
+      --kn-border-light: #e8e6e1;
+      --kn-text: #1a202c;
+      --kn-text-secondary: #4a5568;
+      --kn-text-muted: #64748b;
+      --kn-radius-card: 8px;
+      --kn-radius-badge: 4px;
+      --kn-shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+      --kn-space-sm: 8px;
+      --kn-space-md: 12px;
+      --kn-space-base: 16px;
+      --kn-space-lg: 24px;
+      --pico-primary: var(--kn-primary);
+      --pico-primary-hover: var(--kn-primary-hover);
+      --pico-font-size: 15px;
+    }
+    body { background: var(--kn-page-bg); }
+
+    .breadcrumb { list-style: none; display: flex; gap: 0.5rem; padding: 0; margin-bottom: 1rem; font-size: 0.9rem; }
+    .breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; color: var(--kn-text-muted); }
+
+    .wireframe-banner {
+      background: var(--kn-warning-bg); color: var(--kn-warning-fg);
+      padding: var(--kn-space-sm) var(--kn-space-base);
+      border-radius: var(--kn-radius-badge); font-size: 0.85rem;
+      margin-bottom: 1.5rem; text-align: center;
+    }
+
+    .card {
+      background: var(--kn-card-bg); border-radius: var(--kn-radius-card);
+      box-shadow: var(--kn-shadow-card); padding: var(--kn-space-lg);
+      margin-bottom: var(--kn-space-lg);
+    }
+    .card h2, .card h3 { margin-top: 0; }
+
+    .cids-badge {
+      display: inline-block; padding: 2px 8px; border-radius: var(--kn-radius-badge);
+      font-size: 0.75rem; font-family: monospace;
+      background: var(--kn-primary-subtle); color: var(--kn-primary);
+      border: 1px solid rgba(49, 118, 170, 0.2);
+    }
+
+    .quality-badge {
+      display: inline-block; padding: 2px 10px; border-radius: var(--kn-radius-badge);
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .quality-confirmed { background: var(--kn-success-bg); color: var(--kn-success-fg); }
+
+    /* Coverage progress */
+    .coverage-hero {
+      text-align: center; padding: var(--kn-space-lg) 0;
+    }
+    .coverage-hero .number {
+      font-size: 3rem; font-weight: 700; color: var(--kn-primary); line-height: 1;
+    }
+    .coverage-hero .label {
+      font-size: 1rem; color: var(--kn-text-secondary); margin-top: 0.25rem;
+    }
+    progress {
+      width: 100%; height: 12px; margin: var(--kn-space-base) 0;
+    }
+    progress::-webkit-progress-bar { background: var(--kn-neutral-bg); border-radius: 6px; }
+    progress::-webkit-progress-value { background: var(--kn-primary); border-radius: 6px; }
+    progress::-moz-progress-bar { background: var(--kn-primary); border-radius: 6px; }
+
+    /* Status icons */
+    .status-yes { color: var(--kn-success-fg); font-weight: 700; font-size: 1.1rem; }
+    .status-no { color: var(--kn-danger-fg); font-weight: 700; font-size: 1.1rem; }
+    .status-partial { color: var(--kn-warning-fg); font-weight: 700; font-size: 1.1rem; }
+
+    .class-table th { font-size: 0.85rem; color: var(--kn-text-secondary); }
+    .class-table td { vertical-align: middle; }
+    .class-table .source { font-size: 0.85rem; color: var(--kn-text-muted); }
+
+    /* Layer cards */
+    .layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--kn-space-base); }
+    .layer-card {
+      border-radius: var(--kn-radius-card); padding: var(--kn-space-base) var(--kn-space-lg);
+      border-left: 4px solid;
+    }
+    .layer-1 { background: var(--kn-success-bg); border-color: var(--kn-success-fg); }
+    .layer-2 { background: var(--kn-success-bg); border-color: var(--kn-success-fg); }
+    .layer-3 { background: var(--kn-info-bg); border-color: var(--kn-info-fg); }
+
+    .layer-card h4 { margin: 0 0 0.25rem 0; font-size: 0.95rem; }
+    .layer-card .layer-status { font-weight: 600; font-size: 0.9rem; }
+    .layer-card .layer-privacy { font-size: 0.8rem; color: var(--kn-text-secondary); margin-top: 0.5rem; }
+
+    .attestation-panel {
+      background: var(--kn-success-bg); border-radius: var(--kn-radius-card);
+      padding: var(--kn-space-base) var(--kn-space-lg);
+      border-left: 4px solid var(--kn-success-fg);
+    }
+    .attestation-panel dt { font-weight: 600; font-size: 0.85rem; color: var(--kn-success-fg); margin-top: 0.5rem; }
+    .attestation-panel dd { margin-left: 0; }
+
+    .export-options {
+      background: var(--kn-neutral-bg); border-radius: var(--kn-radius-card);
+      padding: var(--kn-space-base) var(--kn-space-lg);
+    }
+
+    .actions { display: flex; gap: var(--kn-space-sm); flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="wireframe-banner">
+      WIREFRAME &mdash; KoNote Full Tier CIDS Export Status (not a working page)
+    </div>
+
+    <!-- Breadcrumb -->
+    <ul class="breadcrumb" aria-label="Breadcrumb">
+      <li><a href="#">Programs</a></li>
+      <li><a href="#">Bright Futures Youth Employment</a></li>
+      <li aria-current="page">Full Tier Export</li>
+    </ul>
+
+    <h1>Full Tier CIDS Export Status</h1>
+    <p style="color: var(--kn-text-secondary);">Bright Futures Youth Employment Services</p>
+
+    <!-- ───────── Coverage Hero ───────── -->
+    <div class="card">
+      <div class="coverage-hero">
+        <div class="number">13/14</div>
+        <div class="label">CIDS Full Tier classes populated</div>
+      </div>
+      <progress value="13" max="14" aria-label="CIDS class coverage: 13 of 14"></progress>
+      <p style="text-align:center; color: var(--kn-text-muted); font-size: 0.9rem;">
+        93% coverage &mdash; missing: <span class="cids-badge">cids:ImpactDimension</span>
+        <a href="#" style="margin-left: 0.5rem;">Add component</a>
+      </p>
+    </div>
+
+    <!-- ───────── Three-Layer Architecture ───────── -->
+    <div class="card">
+      <h2>Three-Layer Compliance Architecture</h2>
+      <div class="layer-grid">
+        <div class="layer-card layer-1">
+          <h4>Layer 1: Program Model</h4>
+          <div class="layer-status" style="color: var(--kn-success-fg);">Ready</div>
+          <p style="font-size:0.85rem; margin: 0.5rem 0 0;">
+            ImpactModel, Service, Activity, Output, Stakeholder, StakeholderOutcome, ImpactRisk, Counterfactual
+          </p>
+          <div class="layer-privacy">No privacy concern &mdash; describes programs, not people</div>
+        </div>
+        <div class="layer-card layer-2">
+          <h4>Layer 2: Aggregate Measurement</h4>
+          <div class="layer-status" style="color: var(--kn-success-fg);">Ready</div>
+          <p style="font-size:0.85rem; margin: 0.5rem 0 0;">
+            IndicatorReport with cohort breakdowns (k&ge;5 suppression)
+          </p>
+          <div class="layer-privacy">Existing statistical disclosure controls</div>
+        </div>
+        <div class="layer-card layer-3">
+          <h4>Layer 3: Case Trajectories</h4>
+          <div class="layer-status" style="color: var(--kn-info-fg);">Available (optional)</div>
+          <p style="font-size:0.85rem; margin: 0.5rem 0 0;">
+            De-identified outcome pathways &mdash; 23 active participants (threshold: 15)
+          </p>
+          <div class="layer-privacy">k-anonymity (k&ge;5), dates generalised to quarters, n&ge;15</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────── Class-by-Class Coverage ───────── -->
+    <div class="card">
+      <h2>CIDS Class Coverage</h2>
+      <table class="class-table" role="grid">
+        <thead>
+          <tr>
+            <th>CIDS Class</th>
+            <th style="text-align:center;">Status</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Basic Tier classes -->
+          <tr>
+            <td><span class="cids-badge">cids:Organization</span> <small>Organization</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">OrganizationProfile</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Outcome</span> <small>Outcome</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Program outcome definition</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Indicator</span> <small>Indicator</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">4 metric definitions</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:IndicatorReport</span> <small>Indicator Report</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Observation counts (aggregate)</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Theme</span> <small>Theme</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">SDG alignment: Goal 8 (Decent Work)</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Code</span> <small>Code</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">ICNPO:6100, IRIS+ OI1234</td>
+          </tr>
+          <!-- Full Tier classes -->
+          <tr style="border-top: 2px solid var(--kn-border);">
+            <td><span class="cids-badge">cids:ImpactModel</span> <small>Impact Model</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Evaluation Framework (Human Reviewed)</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Service</span> <small>Service</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Evaluation component: Job Readiness Training</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Activity</span> <small>Activity</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">2 evaluation components</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Output</span> <small>Output</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">2 evaluation components + observation counts</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Stakeholder</span> <small>Stakeholder</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">2 participant groups (youth_16_24, newcomers)</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:StakeholderOutcome</span> <small>Stakeholder Outcome</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Aggregate: 15 achieved, 5 in progress, 3 improving</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:ImpactRisk</span> <small>Impact Risk</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Evaluation component: Economic downturn</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:Counterfactual</span> <small>Counterfactual</small></td>
+            <td style="text-align:center;"><span class="status-yes" title="Populated">&#10003;</span></td>
+            <td class="source">Evaluation component: Employment Ontario baseline</td>
+          </tr>
+          <tr>
+            <td><span class="cids-badge">cids:ImpactDimension</span> <small>Impact Dimension</small></td>
+            <td style="text-align:center;"><span class="status-no" title="Missing">&#10007;</span></td>
+            <td class="source"><a href="#">Add impact_dimension component</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ───────── Evaluator Attestation ───────── -->
+    <div class="card">
+      <h2>Evaluator Attestation</h2>
+      <div class="attestation-panel">
+        <dl style="margin:0;">
+          <dt>Attested by</dt>
+          <dd>Jennifer Martinez, M.Ed.</dd>
+          <dt>Date</dt>
+          <dd>2026-03-05</dd>
+          <dt>Statement</dt>
+          <dd>I have reviewed the evaluation framework and confirm that it accurately reflects our program model and evaluation methodology.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- ───────── Export Actions ───────── -->
+    <div class="card">
+      <h2>Generate Export</h2>
+
+      <div class="export-options">
+        <form>
+          <fieldset>
+            <legend>Export Options</legend>
+
+            <label>
+              <input type="checkbox" checked disabled>
+              Layer 1: Program Model (always included)
+            </label>
+            <label>
+              <input type="checkbox" checked disabled>
+              Layer 2: Aggregate Measurement (always included)
+            </label>
+            <label>
+              <input type="checkbox" name="include_layer3">
+              Layer 3: De-identified case trajectories
+              <small style="display:block; color: var(--kn-text-muted); margin-left: 1.75rem;">
+                k-anonymity (k&ge;5), dates generalised to quarters. 23 participants (minimum 15 required).
+              </small>
+            </label>
+
+            <label for="date_from">Reporting period</label>
+            <div class="grid">
+              <input type="date" id="date_from" value="2025-09-01" aria-label="From date">
+              <input type="date" id="date_to" value="2026-03-07" aria-label="To date">
+            </div>
+          </fieldset>
+
+          <div class="actions" style="margin-top: var(--kn-space-base);">
+            <button type="button">Generate Full Tier JSON-LD</button>
+            <button type="button" class="secondary outline">Preview JSON-LD</button>
+            <button type="button" class="secondary outline">Validate (SHACL)</button>
+          </div>
+        </form>
+      </div>
+
+      <details style="margin-top: var(--kn-space-lg);">
+        <summary>Previous Exports</summary>
+        <table role="grid">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Tier</th>
+              <th>Layers</th>
+              <th>Classes</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-03-05 14:32</td>
+              <td>Full</td>
+              <td>1, 2</td>
+              <td>13/14</td>
+              <td><span class="quality-badge quality-confirmed">Approved</span></td>
+              <td><a href="#">Download</a></td>
+            </tr>
+            <tr>
+              <td>2026-02-28 09:15</td>
+              <td>Basic</td>
+              <td>2</td>
+              <td>7/14</td>
+              <td><span class="quality-badge quality-confirmed">Approved</span></td>
+              <td><a href="#">Download</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
+    </div>
+
+    <!-- ───────── Navigation ───────── -->
+    <div class="actions" style="margin-bottom: 3rem;">
+      <a href="#" role="button" class="secondary">Edit Evaluation Framework</a>
+      <a href="#" role="button" class="outline secondary">Back to Program</a>
+    </div>
+
+  </main>
+</body>
+</html>

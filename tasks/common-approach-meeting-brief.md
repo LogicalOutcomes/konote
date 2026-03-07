@@ -84,9 +84,9 @@ KoNote introduces an **evaluator attestation** workflow:
 
 **We propose this to Common Approach as a best practice** — a provenance signal that adds trust to impact claims. It's more rigorous than automated export because a qualified human has confirmed the evaluation framework's accuracy.
 
-## Privacy Architecture (Ontario/PHIPA Context)
+## Privacy Architecture (Canadian Context)
 
-KoNote serves Ontario nonprofits subject to PHIPA (Personal Health Information Protection Act). Our architecture ensures:
+KoNote serves Canadian nonprofits. Agencies in Ontario are subject to PHIPA (Personal Health Information Protection Act); other provinces have comparable health privacy legislation. Our architecture ensures:
 
 - **Participant data never leaves the instance** — all PII stays encrypted locally (Fernet/AES)
 - **Only approved aggregate exports cross the boundary** — non-PII confirmed before any external processing
