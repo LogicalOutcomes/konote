@@ -50,6 +50,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from django.utils import timezone
+
+        from apps.audit.models import AuditLog
         from apps.programs.models import Program
 
         program_filter = {}
@@ -66,6 +69,18 @@ class Command(BaseCommand):
         )
 
         output = json.dumps(document, indent=options["indent"], ensure_ascii=False)
+
+        program_names = ", ".join(p.name for p in programs[:10])
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=0,
+            user_display="system (manage.py)",
+            ip_address="127.0.0.1",
+            action="export",
+            object_type="CIDSFullTierExport",
+            object_id=0,
+            description=f"CIDS Full Tier export via management command: {program_names}",
+        )
 
         if options["output"]:
             with open(options["output"], "w", encoding="utf-8") as f:

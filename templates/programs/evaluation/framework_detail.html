@@ -71,9 +71,9 @@
                 <td>{{ comp.get_quality_state_display }}</td>
                 <td>
                     <a href="{% url 'programs:component_edit' framework_id=framework.pk component_id=comp.pk %}">{% trans "Edit" %}</a>
-                    <form method="post" action="{% url 'programs:component_deactivate' framework_id=framework.pk component_id=comp.pk %}" style="display:inline">
+                    <form method="post" action="{% url 'programs:component_deactivate' framework_id=framework.pk component_id=comp.pk %}" class="inline-form">
                         {% csrf_token %}
-                        <button type="submit" class="outline contrast" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">{% trans "Remove" %}</button>
+                        <button type="submit" class="outline contrast" class="compact-btn">{% trans "Remove" %}</button>
                     </form>
                 </td>
             </tr>
@@ -110,9 +110,9 @@
                 <td>{{ link.get_source_type_display }}</td>
                 <td>{% if link.contains_pii %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
                 <td>
-                    <form method="post" action="{% url 'programs:evidence_delete' framework_id=framework.pk evidence_id=link.pk %}" style="display:inline">
+                    <form method="post" action="{% url 'programs:evidence_delete' framework_id=framework.pk evidence_id=link.pk %}" class="inline-form">
                         {% csrf_token %}
-                        <button type="submit" class="outline contrast" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">{% trans "Remove" %}</button>
+                        <button type="submit" class="outline contrast" class="compact-btn">{% trans "Remove" %}</button>
                     </form>
                 </td>
             </tr>

@@ -27,11 +27,11 @@
 
 <section>
     <h2>{% trans "Coverage by Program" %}</h2>
-    <div class="grid" style="grid-template-columns: 1fr;">
+    <div class="grid grid-single">
     {% for summary in summaries %}
     <article>
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="flex-between">
                 <strong>{{ summary.program.name }}</strong>
                 <span>{{ summary.present }} / {{ summary.total }} ({{ summary.pct }}%)</span>
             </div>

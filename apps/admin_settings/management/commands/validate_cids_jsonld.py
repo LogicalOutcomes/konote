@@ -59,7 +59,10 @@ class Command(BaseCommand):
             ) from exc
 
         if options["input"]:
-            data_graph = Graph().parse(options["input"], format="json-ld")
+            try:
+                data_graph = Graph().parse(options["input"], format="json-ld")
+            except Exception as exc:
+                raise CommandError(f"Failed to parse JSON-LD file: {exc}") from exc
         else:
             program_filter = {}
             if options["program_id"]:
@@ -78,7 +81,12 @@ class Command(BaseCommand):
                 format="json-ld",
             )
 
-        shapes_graph = Graph().parse(options["shapes_url"], format="turtle")
+        try:
+            shapes_graph = Graph().parse(options["shapes_url"], format="turtle")
+        except Exception as exc:
+            raise CommandError(
+                f"Failed to fetch SHACL shapes from {options['shapes_url']}: {exc}"
+            ) from exc
         conforms, _results_graph, results_text = validate(
             data_graph,
             shacl_graph=shapes_graph,

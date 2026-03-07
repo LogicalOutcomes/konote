@@ -5500,3 +5500,23 @@ article[aria-label="notification"].fading-out {
 .pill-nav a:focus {
     opacity: 0.85;
 }
+
+/* ---- CIDS / classification inline utilities ---- */
+.inline-form {
+    display: inline;
+}
+
+.compact-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.grid-single {
+    grid-template-columns: 1fr;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
