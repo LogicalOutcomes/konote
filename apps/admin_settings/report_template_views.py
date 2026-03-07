@@ -45,6 +45,12 @@ def report_template_upload(request):
 
     # Accept either file upload or pasted text
     if csv_file:
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, _("File must be a .csv file."))
+            return render(request, "admin_settings/funder_profiles/upload.html")
+        if csv_file.size > 1024 * 1024:  # 1MB limit
+            messages.error(request, _("File too large. Maximum size is 1MB."))
+            return render(request, "admin_settings/funder_profiles/upload.html")
         try:
             csv_content = csv_file.read().decode("utf-8-sig")
         except UnicodeDecodeError:
