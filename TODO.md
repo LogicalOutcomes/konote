@@ -84,9 +84,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
-### Phase: Evaluation Planning & Report Enrichment
+### Phase: Evaluation Planning & CIDS Full Tier
 
+- [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
+- [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a frontier LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
+- [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
 - [ ] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) (EVAL-ENRICH-SPEC1)
+- [ ] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — depends on EVAL-ENRICH-SPEC1 (EVAL-EDITOR1)
 
 ### Phase: Post-Launch Communication Enhancements
 
