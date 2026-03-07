@@ -4,6 +4,22 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program
 
+from .forms import DISCHARGE_REASON_CHOICES
+
+
+class BulkClientIdsMixin:
+    """Shared clean_client_ids for bulk confirm forms."""
+
+    def clean_client_ids(self):
+        raw = self.cleaned_data["client_ids"]
+        try:
+            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
+        except (ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid participant selection."))
+        if not ids:
+            raise forms.ValidationError(_("No participants selected."))
+        return ids
+
 
 class BulkFilterForm(forms.Form):
     """Step 1: Filter participants for a bulk operation."""
@@ -31,7 +47,7 @@ class BulkFilterForm(forms.Form):
             self.fields["source_program"].queryset = available_programs
 
 
-class BulkTransferConfirmForm(forms.Form):
+class BulkTransferConfirmForm(BulkClientIdsMixin, forms.Form):
     """Step 3: Confirm bulk transfer — destination program + reason."""
 
     client_ids = forms.CharField(widget=forms.HiddenInput)
@@ -54,30 +70,9 @@ class BulkTransferConfirmForm(forms.Form):
         if available_programs is not None:
             self.fields["destination_program"].queryset = available_programs
 
-    def clean_client_ids(self):
-        raw = self.cleaned_data["client_ids"]
-        try:
-            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
-        except (ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid participant selection."))
-        if not ids:
-            raise forms.ValidationError(_("No participants selected."))
-        return ids
 
-
-class BulkDischargeConfirmForm(forms.Form):
+class BulkDischargeConfirmForm(BulkClientIdsMixin, forms.Form):
     """Step 3: Confirm bulk discharge — reason + optional details."""
-
-    DISCHARGE_REASON_CHOICES = [
-        ("completed", _("Completed")),
-        ("goals_met", _("Goals Met")),
-        ("program_closure", _("Program Closure")),
-        ("cohort_ended", _("Cohort Ended")),
-        ("withdrew", _("Withdrew")),
-        ("lost_contact", _("Lost Contact")),
-        ("moved", _("Moved")),
-        ("other", _("Other")),
-    ]
 
     client_ids = forms.CharField(widget=forms.HiddenInput)
     source_program = forms.ModelChoiceField(
@@ -99,13 +94,3 @@ class BulkDischargeConfirmForm(forms.Form):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["source_program"].queryset = available_programs
-
-    def clean_client_ids(self):
-        raw = self.cleaned_data["client_ids"]
-        try:
-            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
-        except (ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid participant selection."))
-        if not ids:
-            raise forms.ValidationError(_("No participants selected."))
-        return ids

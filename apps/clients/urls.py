@@ -25,8 +25,6 @@ urlpatterns = [
     path("executive/pdf/", executive_dashboard_pdf, name="executive_dashboard_pdf"),
     path("executive/alerts/", alert_overview_by_program, name="alert_overview"),
     path("", views.client_list, name="client_list"),
-    path("bulk-status/", views.bulk_status, name="bulk_status"),
-    path("bulk-transfer/", views.bulk_transfer, name="bulk_transfer"),
     # Bulk operation wizards (BULK1)
     path("manage/bulk-transfer/", bulk_views.bulk_transfer, name="bulk_transfer_wizard"),
     path("manage/bulk-discharge/", bulk_views.bulk_discharge, name="bulk_discharge_wizard"),

@@ -234,6 +234,22 @@ class ClientFileForm(forms.Form):
         return phone
 
 
+DISCHARGE_REASON_CHOICES = [
+    ("completed", _("Completed")),
+    ("goals_met", _("Goals Met")),
+    ("program_closure", _("Program Closure")),
+    ("cohort_ended", _("Cohort Ended")),
+    ("withdrew", _("Withdrew")),
+    ("transferred", _("Transferred")),
+    ("referred_out", _("Referred Out")),
+    ("lost_contact", _("Lost Contact")),
+    ("moved", _("Moved")),
+    ("ineligible", _("Ineligible")),
+    ("deceased", _("Deceased")),
+    ("other", _("Other")),
+]
+
+
 class DischargeForm(forms.Form):
     """Form for discharging a client from a specific program.
 
@@ -242,18 +258,7 @@ class DischargeForm(forms.Form):
     """
 
     end_reason = forms.ChoiceField(
-        choices=[
-            ("completed", _("Completed")),
-            ("goals_met", _("Goals Met")),
-            ("withdrew", _("Withdrew")),
-            ("transferred", _("Transferred")),
-            ("referred_out", _("Referred Out")),
-            ("lost_contact", _("Lost Contact")),
-            ("moved", _("Moved")),
-            ("ineligible", _("Ineligible")),
-            ("deceased", _("Deceased")),
-            ("other", _("Other")),
-        ],
+        choices=DISCHARGE_REASON_CHOICES,
         widget=forms.RadioSelect,
         label=_("Why is this person leaving?"),
     )
