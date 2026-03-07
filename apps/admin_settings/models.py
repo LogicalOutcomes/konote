@@ -387,6 +387,16 @@ class TaxonomyMapping(models.Model):
         db_table = "taxonomy_mappings"
         ordering = ["taxonomy_system", "taxonomy_code"]
         verbose_name = "Taxonomy Mapping"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(metric_definition__isnull=False, program__isnull=True, plan_target__isnull=True)
+                    | models.Q(metric_definition__isnull=True, program__isnull=False, plan_target__isnull=True)
+                    | models.Q(metric_definition__isnull=True, program__isnull=True, plan_target__isnull=False)
+                ),
+                name="taxonomy_exactly_one_fk",
+            ),
+        ]
 
     def __str__(self):
         target = (

@@ -7,8 +7,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
+from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required
 from apps.programs.models import EvaluationFramework, Program
+from konote.utils import get_client_ip
 
 from .cids_full_tier import (
     build_full_tier_jsonld,
@@ -85,6 +87,18 @@ def cids_full_tier_export(request):
         programs,
         taxonomy_lens=taxonomy_lens,
         include_layer3=include_layer3,
+    )
+
+    program_names = ", ".join(p.name for p in programs[:10])
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=str(request.user),
+        ip_address=get_client_ip(request),
+        action="export",
+        object_type="CIDSFullTierExport",
+        object_id=0,
+        description=f"CIDS Full Tier export ({taxonomy_lens}): {program_names}",
     )
 
     if request.GET.get("format") == "download":

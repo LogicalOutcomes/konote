@@ -1,44 +1,45 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Review Mapping — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Review Mapping" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>Review Mapping</h1>
+    <h1>{% trans "Review Mapping" %}</h1>
     <p>{{ mapping.subject_display }} · {{ mapping.subject_type|title }} · {{ mapping.taxonomy_list_name|default:mapping.get_taxonomy_system_display }}</p>
 </hgroup>
 
 <article>
-    <header><strong>Current Suggestion</strong></header>
-    <p><strong>Code:</strong> {{ mapping.taxonomy_code }}</p>
-    <p><strong>Label:</strong> {{ mapping.taxonomy_label|default:"(no label)" }}</p>
-    <p><strong>Status:</strong> {{ mapping.get_mapping_status_display }}</p>
-    <p><strong>Confidence:</strong> {% if mapping.confidence_score is not None %}{{ mapping.confidence_score|floatformat:2 }}{% else %}—{% endif %}</p>
-    <p><strong>Reason:</strong> {{ mapping.rationale|default:"No rationale stored." }}</p>
+    <header><strong>{% trans "Current Suggestion" %}</strong></header>
+    <p><strong>{% trans "Code:" %}</strong> {{ mapping.taxonomy_code }}</p>
+    <p><strong>{% trans "Label:" %}</strong> {{ mapping.taxonomy_label|default:"(no label)" }}</p>
+    <p><strong>{% trans "Status:" %}</strong> {{ mapping.get_mapping_status_display }}</p>
+    <p><strong>{% trans "Confidence:" %}</strong> {% if mapping.confidence_score is not None %}{{ mapping.confidence_score|floatformat:2 }}{% else %}—{% endif %}</p>
+    <p><strong>{% trans "Reason:" %}</strong> {{ mapping.rationale|default_if_none:"" }}</p>
     {% if mapping.mapping_status == 'draft' %}
-    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_approve' mapping.pk %}" style="display:inline;">
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_approve' mapping.pk %}" class="inline-form">
         {% csrf_token %}
-        <button type="submit">Approve This Mapping</button>
+        <button type="submit">{% trans "Approve This Mapping" %}</button>
     </form>
-    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reject' mapping.pk %}" style="display:inline;">
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reject' mapping.pk %}" class="inline-form">
         {% csrf_token %}
-        <button type="submit" class="secondary">Reject This Mapping</button>
+        <button type="submit" class="secondary">{% trans "Reject This Mapping" %}</button>
     </form>
     {% endif %}
 </article>
 
 <section>
-    <h2>Other Suggestions for This Item</h2>
+    <h2>{% trans "Other Suggestions for This Item" %}</h2>
     {% if related_mappings %}
     <div class="overflow-auto">
         <table>
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Label</th>
-                    <th>Status</th>
-                    <th>Confidence</th>
-                    <th>Reason</th>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Label" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Confidence" %}</th>
+                    <th>{% trans "Reason" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,24 +56,24 @@
         </table>
     </div>
     {% else %}
-    <p>No sibling suggestions yet.</p>
+    <p>{% trans "No sibling suggestions yet." %}</p>
     {% endif %}
 </section>
 
 <section>
-    <h2>Rerun Using Another Code List</h2>
+    <h2>{% trans "Rerun Using Another Code List" %}</h2>
     <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reclassify' mapping.pk %}">
         {% csrf_token %}
         {{ reclassify_form.as_p }}
-        <button type="submit" class="secondary">Rerun Suggestions</button>
+        <button type="submit" class="secondary">{% trans "Rerun Suggestions" %}</button>
     </form>
 </section>
 
 <section>
-    <h2>Manual Code Search</h2>
+    <h2>{% trans "Manual Code Search" %}</h2>
     <form method="get">
         {{ manual_search_form.as_p }}
-        <button type="submit" class="secondary">Search This Code List</button>
+        <button type="submit" class="secondary">{% trans "Search This Code List" %}</button>
     </form>
 
     {% if manual_search_results %}
@@ -80,10 +81,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Label</th>
-                    <th>Description</th>
-                    <th>Action</th>
+                    <th>{% trans "Code" %}</th>
+                    <th>{% trans "Label" %}</th>
+                    <th>{% trans "Description" %}</th>
+                    <th>{% trans "Action" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +97,7 @@
                         <form method="post" action="{% url 'admin_settings:taxonomy_mapping_manual_pick' mapping.pk %}">
                             {% csrf_token %}
                             <input type="hidden" name="code" value="{{ entry.code }}">
-                            <button type="submit">Use This Code</button>
+                            <button type="submit">{% trans "Use This Code" %}</button>
                         </form>
                     </td>
                 </tr>
@@ -105,16 +106,16 @@
         </table>
     </div>
     {% elif manual_search_form.is_bound %}
-    <p>No matching codes were found in {{ mapping.taxonomy_list_name }}.</p>
+    <p>{% trans "No matching codes were found." %}</p>
     {% endif %}
 </section>
 
 <section>
-    <h2>Ask the Review Assistant</h2>
+    <h2>{% trans "Ask the Review Assistant" %}</h2>
     <form method="post" action="{% url 'admin_settings:taxonomy_mapping_ask' mapping.pk %}">
         {% csrf_token %}
         {{ question_form.as_p }}
-        <button type="submit" class="secondary">Ask</button>
+        <button type="submit" class="secondary">{% trans "Ask" %}</button>
     </form>
 
     {% if conversation %}
@@ -127,5 +128,5 @@
     {% endif %}
 </section>
 
-<p><a href="{% url 'admin_settings:taxonomy_review_queue' %}">← Back to Classification Review</a></p>
+<p><a href="{% url 'admin_settings:taxonomy_review_queue' %}">{% trans "← Back to Classification Review" %}</a></p>
 {% endblock %}
