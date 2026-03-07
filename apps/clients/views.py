@@ -369,10 +369,13 @@ def client_list(request):
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
     # Bulk operation permission flags (UX17)
-    can_bulk_status = any(
+    # Only show bulk ops for management roles (PM, executive) and admins —
+    # regular workers find the bulk modal confusing and don't need it.
+    _bulk_eligible = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
+    can_bulk_status = _bulk_eligible and any(
         can_access(upr.role, "client.edit") != DENY for upr in _user_roles
     )
-    can_bulk_transfer = any(
+    can_bulk_transfer = _bulk_eligible and any(
         can_access(upr.role, "client.transfer") != DENY for upr in _user_roles
     )
     show_bulk = can_bulk_status or can_bulk_transfer
