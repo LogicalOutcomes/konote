@@ -9,6 +9,8 @@
     <p>{% trans "Create and manage self-service registration forms for programs." %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Each registration link gives you a public form to share. After you create one, use View Form, Copy Direct Link, or Get Embed Code from the Actions menu.') %}
+
 <p>
     <a href="{% url 'registration:registration_link_create' %}" role="button">{% trans "New Registration Link" %}</a>
 </p>

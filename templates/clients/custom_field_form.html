@@ -6,7 +6,10 @@
 {% block content %}
 <hgroup>
     <h1>{{ title }}</h1>
+    <p>{% trans "Create a field only when staff need information that is not already captured elsewhere in KoNote." %}</p>
 </hgroup>
+
+{% include "admin_settings/_page_help.html" with content=_('Custom fields affect data entry, privacy, and reporting. Keep labels plain, use required fields sparingly, and double-check front desk access before saving.') %}
 
 <form method="post">
     {% csrf_token %}

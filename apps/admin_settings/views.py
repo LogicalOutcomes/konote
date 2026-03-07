@@ -24,7 +24,8 @@ from .models import (
 @login_required
 @admin_required
 def dashboard(request):
-    from apps.auth_app.models import User
+    from apps.auth_app.models import Invite, User
+    from apps.clients.models import ErasureRequest
     from apps.notes.models import PlausibilityOverrideLog, ProgressNoteTemplate
     from apps.plans.models import MetricDefinition, PlanTemplate
 
@@ -37,6 +38,7 @@ def dashboard(request):
     )
     terminology_overrides = TerminologyOverride.objects.count()
     active_users = User.objects.filter(is_active=True).count()
+    active_invites = Invite.objects.filter(used_by__isnull=True, expires_at__gt=tz.now()).count()
     note_template_count = ProgressNoteTemplate.objects.count()
 
     # IMPROVE-1b: Instance Settings summary
@@ -44,6 +46,7 @@ def dashboard(request):
 
     # IMPROVE-1b: Demo Accounts summary
     demo_users = User.objects.filter(is_demo=True, is_active=True).count()
+    pending_erasure_requests = ErasureRequest.objects.filter(status="pending").count()
 
     # Partners and report templates count
     from apps.reports.models import Partner, ReportTemplate
@@ -118,9 +121,11 @@ def dashboard(request):
         "total_features": total_features,
         "terminology_overrides": terminology_overrides,
         "active_users": active_users,
+        "active_invites": active_invites,
         "note_template_count": note_template_count,
         "instance_settings_count": instance_settings_count,
         "demo_users": demo_users,
+        "pending_erasure_requests": pending_erasure_requests,
         "partner_count": partner_count,
         "report_template_count": report_template_count,
         "staff_messaging_enabled": staff_messaging_enabled,

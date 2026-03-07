@@ -336,6 +336,13 @@ class CustomFieldGroupForm(forms.ModelForm):
             "collapsed_by_default": _("Collapsed by default (display only — does not restrict access)"),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].help_text = _("Use groups to bundle related fields together, such as Intake, Demographics, or Accessibility.")
+        self.fields["sort_order"].help_text = _("Lower numbers appear earlier on the participant file.")
+        self.fields["collapsed_by_default"].help_text = _("This only affects whether the group starts open or closed on screen.")
+        self.fields["status"].help_text = _("Archived groups stay on old records but are hidden from new use.")
+
 
 class CustomFieldValuesForm(forms.Form):
     """Dynamic form for saving custom field values on a client.
@@ -428,8 +435,18 @@ class CustomFieldDefinitionForm(forms.ModelForm):
             "is_dv_sensitive": _("DV-sensitive"),
         }
         help_texts = {
-            "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),
+            "group": _("Choose where this field should appear on the participant file."),
+            "name": _("Question or field label staff will see."),
+            "input_type": _("Pick the kind of answer staff should enter, such as text, date, or dropdown.") ,
+            "placeholder": _("Optional example text shown inside the field before anything is entered."),
+            "is_required": _("Turn this on only when staff must always collect this information."),
+            "is_sensitive": _("Marks the field as sensitive so it can be handled more carefully in the interface and exports."),
+            "front_desk_access": _("Choose what front desk staff can do with this field. Use view/edit only for information they genuinely need at reception."),
             "is_dv_sensitive": _("When checked, this field is hidden from front desk staff for participants with a DV safety flag."),
+            "show_on_create": _("Show this field during new participant intake so staff can collect it right away."),
+            "options_json": _("For dropdowns or multi-select fields, enter a JSON list such as [\"Option 1\", \"Option 2\"]."),
+            "sort_order": _("Lower numbers appear earlier within the group."),
+            "status": _("Archived fields stay on old records but are hidden from new use."),
         }
 
 

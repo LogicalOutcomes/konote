@@ -6,7 +6,16 @@
 {% block content %}
 <hgroup>
     <h1>{% if editing %}{% blocktrans with name=event_type.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "New Event Type" %}{% endif %}</h1>
+    <p>
+        {% if editing %}
+            {% trans "Update how this event type appears when staff add timeline events." %}
+        {% else %}
+            {% trans "Create an event type for timeline items such as intake, discharge, court dates, or other important moments." %}
+        {% endif %}
+    </p>
 </hgroup>
+
+{% include "admin_settings/_page_help.html" with content=_('Event types help staff classify what happened on a participant timeline. Choose names that are easy to recognise at a glance.') %}
 
 <form method="post">
     {% csrf_token %}

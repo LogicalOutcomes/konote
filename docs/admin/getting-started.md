@@ -42,8 +42,9 @@ You'll be prompted for a **username** and **password**. This creates a user with
 
 Control your organisation's branding and behaviour.
 
-1. Click the **gear icon** (top-right) -> **Instance Settings**
-2. Configure:
+1. Open **Admin** -> **Settings**
+2. Click **Instance Settings**
+3. Configure:
 
 | Field | What it does | Example |
 |-------|--------------|---------|
@@ -53,7 +54,7 @@ Control your organisation's branding and behaviour.
 | **Date Format** | How dates appear throughout the system | 2026-02-03 (ISO) |
 | **Session Timeout** | Minutes before auto-logout | 30 |
 
-3. Click **Save**
+4. Click **Save**
 
 ---
 
@@ -65,18 +66,22 @@ The setup wizard guides you through the most common configuration steps in order
 2. Terminology customisation
 3. Feature toggles
 4. Programs
+5. Metrics
+6. Plan templates
+7. Custom fields
+8. Review and apply
 
-Access it from **gear icon -> Setup Wizard** or the admin dashboard.
+Access it from **Admin** -> **Settings** -> **Start Setup Wizard**.
 
 ---
 
 ## Apply Setup Command
 
-> **Status:** The `apply_setup` management command is **planned but not yet built**. It will be created when the first agency requests setup assistance. The design is documented below so you know what to expect.
+The `apply_setup` command creates a full agency configuration from a single JSON file. It is useful when a consultant or implementation lead wants to set up a new instance quickly and consistently.
 
-The `apply_setup` command will create a full agency configuration from a single JSON file. This is intended for consultants setting up new KoNote instances, replacing the need to manually configure each setting through the web interface.
+If you prefer a guided web workflow, use the **Setup Wizard** instead.
 
-### How It Will Work
+### How It Works
 
 ```bash
 # Apply a configuration file
@@ -132,7 +137,7 @@ See `tasks/setup-wizard-design.md` in the codebase for the full configuration fi
 
 - The command is **not idempotent** -- running it twice creates duplicates. Clear the database or remove items manually before re-running.
 - User accounts, custom metrics, and client data imports are handled separately through their own workflows.
-- For now, use the web interface to configure your instance manually.
+- For a step-by-step, non-technical setup process, use the web interface and the Setup Wizard.
 
 ---
 

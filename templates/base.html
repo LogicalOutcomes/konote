@@ -181,7 +181,7 @@
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
-                        <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "New Users" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "User Invites" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'erasure_pending_list' %}">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>

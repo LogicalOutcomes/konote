@@ -6,7 +6,12 @@
 {% block content %}
 <div class="page-header">
     <h1>{% trans "Settings" %}</h1>
-    <p>{% trans "Manage your instance configuration." %}</p>
+    <p>{% trans "Start here for setup, configuration, and core admin tools." %}</p>
+</div>
+
+<div role="group" style="margin-bottom: 1rem;">
+    <a href="{% url 'admin_settings:setup_wizard' %}" role="button">{% trans "Start Setup Wizard" %}</a>
+    <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Open Users" %}</a>
 </div>
 
 <aside class="settings-guide-callout" role="note">
@@ -19,6 +24,15 @@
 </aside>
 
 <div class="settings-grid">
+
+    {# ---- Getting Started ---- #}
+    <h2>{% trans "Getting Started" %}</h2>
+
+    <article>
+        <header>{% trans "Setup Wizard" %}</header>
+        <p>{% trans "Guided setup for a new or reconfigured instance. Work through settings, terminology, features, programs, metrics, and templates in order." %}</p>
+        <footer><a href="{% url 'admin_settings:setup_wizard' %}" role="button" class="outline">{% trans "Open Wizard" %}</a></footer>
+    </article>
 
     {# ---- Data & Measurement ---- #}
     <h2>{% trans "Data & Measurement" %}</h2>
@@ -72,6 +86,19 @@
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
         <p class="settings-indicator">{% blocktrans count count=active_users %}{{ count }} active user{% plural %}{{ count }} active users{% endblocktrans %}</p>
         <footer><a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "User Invites" %}</header>
+        <p>{% trans "Create one-time invite links so new team members can set up their own accounts." %}</p>
+        <p class="settings-indicator">
+            {% if active_invites %}
+                {% blocktrans count count=active_invites %}{{ count }} active invite{% plural %}{{ count }} active invites{% endblocktrans %}
+            {% else %}
+                {% trans "No active invites" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_users:invite_list' %}" role="button" class="outline">{% trans "Manage Invites" %}</a></footer>
     </article>
 
     {% if access_tier >= 2 %}
@@ -197,6 +224,40 @@
             {% endif %}
         </p>
         <footer><a href="{% url 'admin_settings:partner_list' %}" role="button" class="outline">{% trans "Manage Partners" %}</a></footer>
+    </article>
+
+    {# ---- Oversight & Privacy ---- #}
+    <h2>{% trans "Oversight & Privacy" %}</h2>
+
+    <article>
+        <header>{% trans "Audit Log" %}</header>
+        <p>{% trans "Review system activity, exports, and permission-sensitive actions." %}</p>
+        <footer><a href="{% url 'audit:audit_log_list' %}" role="button" class="outline">{% trans "Open Audit Log" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Safety Oversight" %}</header>
+        <p>{% trans "Review safety report snapshots and follow-up items that need leadership attention." %}</p>
+        <footer><a href="{% url 'reports:oversight_list' %}" role="button" class="outline">{% trans "Open Oversight" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Merge Duplicates" %}</header>
+        <p>{% trans "Find and merge duplicate participant records before they create reporting or care-coordination issues." %}</p>
+        <footer><a href="{% url 'merge_candidates_list' %}" role="button" class="outline">{% trans "Review Duplicates" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Erasure Requests" %}</header>
+        <p>{% trans "Review pending requests to anonymise or permanently erase participant data." %}</p>
+        <p class="settings-indicator">
+            {% if pending_erasure_requests %}
+                {% blocktrans count count=pending_erasure_requests %}{{ count }} pending request{% plural %}{{ count }} pending requests{% endblocktrans %}
+            {% else %}
+                {% trans "No pending requests" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'erasure_pending_list' %}" role="button" class="outline">{% trans "Review Requests" %}</a></footer>
     </article>
 
     {# ---- Tools ---- #}

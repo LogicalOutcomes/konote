@@ -11,6 +11,8 @@
 
 <p><a href="{% url 'event_types:event_type_create' %}" role="button">{% trans "New Event Type" %}</a></p>
 
+{% include "admin_settings/_page_help.html" with content=_('Use event types to keep participant timelines consistent across staff. Create a new one only when an existing type would be misleading.') %}
+
 {% if event_types %}
 <figure>
 <table role="grid" aria-label="{% trans 'Event types' %}">

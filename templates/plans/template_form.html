@@ -1,14 +1,25 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %} {% trans "Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% if is_edit %}{% trans "Edit Plan Template" %}{% else %}{% trans "New Plan Template" %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<h1>{% if is_edit %}{% trans "Edit Template" %}{% else %}{% trans "Create Template" %}{% endif %}</h1>
+<hgroup>
+    <h1>{% if is_edit %}{% trans "Edit Plan Template" %}{% else %}{% trans "New Plan Template" %}{% endif %}</h1>
+    <p>
+        {% if is_edit %}
+            {% trans "Update the template details used when staff create new plans from this template." %}
+        {% else %}
+            {% trans "Start by creating the template shell. After you save, you can add sections and goals to build out the full plan." %}
+        {% endif %}
+    </p>
+</hgroup>
+
+{% include "admin_settings/_page_help.html" with content=_('Plan templates are reusable starting points for participant plans. Use them to keep common goals and sections consistent across staff.') %}
 
 <nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
-        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Templates" %}</a></li>
+        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
         {% if is_edit %}<li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>{% endif %}
         <li>{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %}</li>
     </ul>
@@ -32,7 +43,7 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit">{% if is_edit %}{% trans "Save Changes" %}{% else %}{% trans "Create Template" %}{% endif %}</button>
+        <button type="submit">{% if is_edit %}{% trans "Save Changes" %}{% else %}{% trans "Create Plan Template" %}{% endif %}</button>
         <a href="{% url 'plan_templates:template_list' %}" role="button" class="secondary">{% trans "Cancel" %}</a>
     </div>
 </form>

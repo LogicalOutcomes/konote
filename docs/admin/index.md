@@ -20,7 +20,7 @@ This guide covers everything administrators need to configure, maintain, and sec
 
 ## All Admin Pages
 
-- [Getting Started](getting-started.md) -- First admin account, first login, instance settings, setup wizard
+- [Getting Started](getting-started.md) -- First admin account, first login, settings dashboard, setup wizard, apply_setup
 - [Features & Modules](features-and-modules.md) -- Feature toggles, programs, plan templates, metrics, note templates, custom fields, registration forms, suggestion themes
 - [Surveys (Admin)](surveys.md) -- Creating surveys, questions, trigger rules, shareable links, scoring, CSV import
 - [Terminology](terminology.md) -- Customise the words used throughout the system
@@ -42,4 +42,4 @@ This guide covers everything administrators need to configure, maintain, and sec
 ---
 
 **Version 2.3** -- KoNote
-Last updated: 2026-02-20
+Last updated: 2026-03-06
