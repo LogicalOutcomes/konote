@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirm Bulk Discharge" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Confirm Discharge" %}</h1>
+    <p>{% blocktrans with program=source_program.translated_name count counter=selected_clients|length %}Discharge {{ counter }} participant from {{ program }}.{% plural %}Discharge {{ counter }} participants from {{ program }}.{% endblocktrans %}</p>
+</hgroup>
+
+<form method="post" action="{% url 'clients:bulk_discharge_wizard' %}">
+    {% csrf_token %}
+
+    {% include "includes/_form_errors.html" with form=confirm_form %}
+
+    <article>
+        <header>
+            <h2 style="font-size: 1rem; margin-bottom: 0;">{% trans "Selected Participants" %}</h2>
+        </header>
+        <ul style="list-style: none; padding: 0; columns: 2;">
+            {% for client in selected_clients %}
+            <li style="margin-bottom: var(--kn-space-xs);">{{ client.display_name }} {{ client.last_name }}</li>
+            {% endfor %}
+        </ul>
+    </article>
+
+    {{ confirm_form.client_ids }}
+    {{ confirm_form.source_program }}
+
+    <fieldset>
+        <legend>{% trans "Reason for Discharge" %}</legend>
+        {% for radio in confirm_form.end_reason %}
+        <label>{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+        {% if confirm_form.end_reason.errors %}<small class="badge badge-danger">{{ confirm_form.end_reason.errors.0 }}</small>{% endif %}
+    </fieldset>
+
+    <div>
+        <label for="id_status_reason">{% trans "Additional details (optional)" %}</label>
+        {{ confirm_form.status_reason }}
+        <small class="secondary">{% trans "This will be recorded in the audit log for each participant." %}</small>
+    </div>
+
+    <div role="group" style="margin-top: var(--kn-space-base);">
+        <button type="submit" name="execute" value="1" class="contrast">{% trans "Discharge Participants" %}</button>
+        <a href="{% url 'clients:bulk_discharge_wizard' %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

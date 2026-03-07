@@ -202,6 +202,12 @@
                 <details class="dropdown">
                     <summary aria-haspopup="menu"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
                     <ul role="menu">
+                        {% has_permission "client.transfer" as can_bulk_ops %}
+                        {% if can_bulk_ops %}
+                        <li role="none"><a role="menuitem" href="{% url 'clients:bulk_transfer_wizard' %}">{% blocktrans with client=term.client_plural|default:"Participants" %}Transfer {{ client }}{% endblocktrans %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'clients:bulk_discharge_wizard' %}">{% blocktrans with client=term.client_plural|default:"Participants" %}Discharge {{ client }}{% endblocktrans %}</a></li>
+                        <li role="separator" aria-hidden="true"><hr style="margin: 0.25rem 0;"></li>
+                        {% endif %}
                         <li role="none"><a role="menuitem" href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
                         {% has_permission "suggestion_theme.view" as can_see_themes %}
                         {% if can_see_themes %}
