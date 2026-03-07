@@ -335,7 +335,12 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
         "- It is better to suggest 0 metrics than to suggest misaligned ones. "
         "An empty metrics array is a valid response.\n"
         "- Prefer metrics that measure the participant's own actions or "
-        "experiences, not program attendance or generic wellbeing.\n\n"
+        "experiences, not program attendance or generic wellbeing.\n"
+        "- Avoid upstream predictors or soft proxy metrics unless the participant "
+        "explicitly asked about them. For example, for a rent-payment goal, do not "
+        "suggest income or feeling-safe metrics unless the participant asked about "
+        "income or safety. For a steady-hours work goal, do not suggest readiness or "
+        "confidence metrics unless the participant asked about readiness or confidence.\n\n"
         "TARGET-SPECIFIC METRIC:\n"
         "In addition to suggesting existing metrics from the catalogue, generate ONE "
         "custom metric specific to this target. This metric should:\n"
@@ -394,10 +399,47 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
     if parsed is None:
         return None
 
-    return _validate_suggest_target_response(parsed, metric_catalogue)
+    return _validate_suggest_target_response(parsed, metric_catalogue, participant_words)
 
 
-def _validate_suggest_target_response(response, metric_catalogue):
+def _text_contains_any(text, terms):
+    """Return True when any candidate substring is present in text."""
+    return any(term in text for term in terms)
+
+
+def _metric_matches_concrete_goal(metric, participant_words):
+    """Return True when a suggested metric is not an obvious proxy mismatch."""
+    participant_text = (participant_words or "").lower()
+    metric_text = f"{metric.get('name', '')} {metric.get('definition', '')}".lower()
+
+    soft_state_groups = [
+        {
+            "metric_terms": ("confidence", "confident", "readiness", "ready for work"),
+            "allowed_prompt_terms": ("confidence", "confident", "ready", "readiness"),
+        },
+        {
+            "metric_terms": ("safe", "safety", "feel where you live", "feel safe"),
+            "allowed_prompt_terms": ("safe", "safety", "unsafe", "feel safe"),
+        },
+        {
+            "metric_terms": ("comfortable", "comfort"),
+            "allowed_prompt_terms": ("comfortable", "comfort"),
+        },
+    ]
+    for group in soft_state_groups:
+        if _text_contains_any(metric_text, group["metric_terms"]):
+            if not _text_contains_any(participant_text, group["allowed_prompt_terms"]):
+                return False
+
+    if _text_contains_any(participant_text, ("rent", "housing", "housed", "eviction", "shelter")):
+        if _text_contains_any(metric_text, ("income", "earnings", "wage", "salary")):
+            if not _text_contains_any(participant_text, ("income", "earn", "wage", "salary", "budget", "money", "afford")):
+                return False
+
+    return True
+
+
+def _validate_suggest_target_response(response, metric_catalogue, participant_words=""):
     """Validate the structure of a suggest_target AI response.
 
     Returns the response dict if valid, or None if validation fails.
@@ -419,19 +461,27 @@ def _validate_suggest_target_response(response, metric_catalogue):
         logger.info("suggest_target response missing suggested_section, defaulted to 'General'")
 
     # Validate metrics array
-    catalogue_ids = {m["metric_id"] for m in metric_catalogue} if metric_catalogue else set()
+    catalogue_by_id = {m["metric_id"]: m for m in metric_catalogue} if metric_catalogue else {}
     if isinstance(response.get("metrics"), list):
         valid_metrics = []
         for m in response["metrics"]:
             if not isinstance(m, dict):
                 continue
             mid = m.get("metric_id")
-            if mid not in catalogue_ids:
+            catalogue_metric = catalogue_by_id.get(mid)
+            if catalogue_metric is None:
                 continue
             if not isinstance(m.get("name"), str):
                 continue
             if not isinstance(m.get("reason"), str):
                 m["reason"] = ""
+            merged_metric = {
+                **catalogue_metric,
+                "name": m.get("name") or catalogue_metric.get("name", ""),
+                "reason": m.get("reason", ""),
+            }
+            if not _metric_matches_concrete_goal(merged_metric, participant_words):
+                continue
             valid_metrics.append(m)
         response["metrics"] = valid_metrics
     else:

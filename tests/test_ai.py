@@ -142,6 +142,67 @@ def test_validate_suggest_target_preserves_valid_section():
     assert result["suggested_section"] == "Employment"
 
 
+def test_validate_suggest_target_filters_soft_proxy_metric_for_steady_hours_goal():
+    """Confidence/readiness metrics should be dropped for concrete work-hour goals."""
+    catalogue = [
+        {"metric_id": 6, "name": "Hours Worked (past week)", "definition": "Number of paid hours worked in the past 7 days.", "category": "employment"},
+        {"metric_id": 10, "name": "How ready do you feel for work?", "definition": "Self-reported readiness for job searching or starting work.", "category": "employment"},
+    ]
+    response = _make_valid_response(metrics=[
+        {"metric_id": 6, "name": "Hours Worked (past week)", "reason": "Tracks weekly hours."},
+        {"metric_id": 10, "name": "How ready do you feel for work?", "reason": "Tracks readiness."},
+    ])
+
+    result = _validate_suggest_target_response(
+        response,
+        catalogue,
+        "I need a job that gives me steady hours",
+    )
+
+    assert result is not None
+    assert [metric["metric_id"] for metric in result["metrics"]] == [6]
+
+
+def test_validate_suggest_target_filters_income_proxy_for_rent_goal():
+    """Income metrics should be dropped when the participant asked about on-time rent, not income."""
+    catalogue = [
+        {"metric_id": 24, "name": "Housing Secured", "definition": "Has the participant secured stable housing?", "category": "housing"},
+        {"metric_id": 5, "name": "Monthly Income", "definition": "Total income received this month.", "category": "employment"},
+    ]
+    response = _make_valid_response(metrics=[
+        {"metric_id": 24, "name": "Housing Secured", "reason": "Tracks housing stability."},
+        {"metric_id": 5, "name": "Monthly Income", "reason": "Tracks financial capacity."},
+    ])
+
+    result = _validate_suggest_target_response(
+        response,
+        catalogue,
+        "I want to keep my housing and pay rent on time",
+    )
+
+    assert result is not None
+    assert [metric["metric_id"] for metric in result["metrics"]] == [24]
+
+
+def test_validate_suggest_target_keeps_safety_metric_when_participant_asks_for_safety():
+    """Safety metrics should remain when the participant explicitly asked for safety."""
+    catalogue = [
+        {"metric_id": 12, "name": "How safe do you feel where you live?", "definition": "Self-reported safety in current housing.", "category": "housing"},
+    ]
+    response = _make_valid_response(metrics=[
+        {"metric_id": 12, "name": "How safe do you feel where you live?", "reason": "Tracks perceived safety."},
+    ])
+
+    result = _validate_suggest_target_response(
+        response,
+        catalogue,
+        "I want to feel safer where I live",
+    )
+
+    assert result is not None
+    assert [metric["metric_id"] for metric in result["metrics"]] == [12]
+
+
 @pytest.mark.django_db
 def test_call_insights_api_rejects_remote_http_provider(settings):
     settings.OPENROUTER_API_KEY = "test-key"
