@@ -120,8 +120,11 @@
 <div class="empty-state">
     <p>{% blocktrans with notes=term.progress_note|default:"notes" %}No {{ notes }} recorded yet.{% endblocktrans %}</p>
     {% if active_service_model != "group" %}
-    <p><small>{% trans "Use the Actions menu to Log Contact or add a Detailed Note." %}</small></p>
-    <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{% trans "Add the first note" %}</a>
+    <p><small>{% trans "Choose the faster Log Contact flow for brief updates, or Detailed Note for a full session note." %}</small></p>
+    <div role="group">
+        <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{% trans "Log Contact" %}</a>
+        <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Detailed Note" %}</a>
+    </div>
     {% endif %}
 </div>
 {% endif %}

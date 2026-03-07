@@ -2,16 +2,16 @@
 {# AI suggestion card — HTMX partial returned by suggest_target_view #}
 <div class="ai-suggestion-card"
      id="ai-suggestion"
-     aria-label="{% trans 'AI-suggested goal' %}"
+     aria-label="{% trans 'AI-suggested draft' %}"
      role="region"
      tabindex="-1">
 
     <p class="suggestion-intro">
-        {% trans "Here's a suggestion based on what they shared. Adjust it to fit what you know about them." %}
+        {% trans "Here's a draft based on what they shared. Adjust it to fit what you know about them." %}
     </p>
 
     <dl class="suggestion-details">
-        <dt>{% trans "Goal name" %}</dt>
+        <dt>{% trans "Suggested name" %}</dt>
         <dd class="suggestion-name">{{ suggestion.name }}</dd>
 
         <dt>{% trans "Description" %}</dt>
@@ -90,7 +90,7 @@
                 data-suggestion="{{ suggestion_json }}"
                 data-section-pk="{{ matched_section_pk|default:'' }}"
                 data-new-section="{{ suggestion.suggested_section }}">
-            {% trans "Let me review first" %}
+            {% trans "Review in the form" %}
         </button>
         <button type="button"
                 id="btn-start-over"

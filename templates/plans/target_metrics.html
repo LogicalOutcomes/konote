@@ -5,26 +5,52 @@
 
 {% block content %}
 <hgroup>
-    <h1>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Assign {{ metrics }}{% endblocktrans %}</h1>
+    <h1>{% trans "Choose a Primary Metric" %}</h1>
     <p>{{ term.target|default:"Target" }}: {{ target.name }} — {{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
+
+<p class="secondary"><small>{% trans "Choose one primary metric for this target. Start with the section-relevant options below, then browse the full library only if you need something else." %}</small></p>
 
 <form method="post">
     {% csrf_token %}
 
-    {% for category, metrics in metrics_by_category.items %}
+    {% if featured_metrics %}
     <fieldset>
-        <legend>{{ category }}</legend>
-        {% for metric in metrics %}
-        <label>
-            <input type="checkbox" name="metrics" value="{{ metric.pk }}"
-                   {% if metric.pk in form.initial.metrics %}checked{% endif %}>
+        <legend>{% trans "Recommended for this section" %}</legend>
+        {% for metric in featured_metrics %}
+        <label class="metric-choice" data-name="{{ metric.translated_name|lower }}">
+            <input type="radio" name="metrics" value="{{ metric.pk }}"
+                   {% if metric.pk|stringformat:"s" == selected_metric_id|stringformat:"s" %}checked{% endif %}>
             <strong>{{ metric.translated_name }}</strong>
             {% if metric.translated_unit %}<small>({{ metric.translated_unit }})</small>{% endif %}
             <br><small>{{ metric.translated_definition|truncatewords:20 }}</small>
         </label>
         {% endfor %}
     </fieldset>
+    {% endif %}
+
+    {% if metrics_by_category %}
+    <label for="metric-filter">{% trans "Filter metrics" %}</label>
+    <input type="search" id="metric-filter" placeholder="{% trans 'Search metrics…' %}" autocomplete="off">
+    <small class="secondary">{% trans "The full library is grouped by category below." %}</small>
+    {% endif %}
+
+    {% for category, metrics in metrics_by_category.items %}
+    <details class="metric-category-group" {% if category == open_category %}open{% endif %}>
+        <summary>{{ category }} ({{ metrics|length }})</summary>
+        <fieldset>
+            <legend class="sr-only">{{ category }}</legend>
+            {% for metric in metrics %}
+            <label class="metric-choice" data-name="{{ metric.translated_name|lower }}">
+                <input type="radio" name="metrics" value="{{ metric.pk }}"
+                       {% if metric.pk|stringformat:"s" == selected_metric_id|stringformat:"s" %}checked{% endif %}>
+                <strong>{{ metric.translated_name }}</strong>
+                {% if metric.translated_unit %}<small>({{ metric.translated_unit }})</small>{% endif %}
+                <br><small>{{ metric.translated_definition|truncatewords:20 }}</small>
+            </label>
+            {% endfor %}
+        </fieldset>
+    </details>
     {% empty %}
     {% url 'metrics:metric_library' as metric_library_url %}
     <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No enabled {{ metrics }} available.{% endblocktrans %} {% blocktrans with url=metric_library_url %}An administrator can add them in the <a href="{{ url }}">metric library</a>.{% endblocktrans %}</p>
@@ -35,4 +61,26 @@
         <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ request.csp_nonce }}">
+(function () {
+    var filter = document.getElementById("metric-filter");
+    if (!filter) return;
+
+    filter.addEventListener("input", function () {
+        var query = this.value.trim().toLowerCase();
+        document.querySelectorAll(".metric-choice").forEach(function (choice) {
+            var name = choice.getAttribute("data-name") || "";
+            choice.hidden = query && name.indexOf(query) === -1;
+        });
+        document.querySelectorAll(".metric-category-group").forEach(function (group) {
+            var visibleChoices = group.querySelectorAll(".metric-choice:not([hidden])").length;
+            group.hidden = visibleChoices === 0;
+            if (query && visibleChoices > 0) group.open = true;
+        });
+    });
+})();
+</script>
 {% endblock %}

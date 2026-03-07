@@ -735,6 +735,8 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ai_enabled", response.context)
         self.assertTrue(response.context["ai_enabled"])
+        self.assertContains(response, "Need help drafting this")
+        self.assertContains(response, 'name="client_goal"')
 
     @patch("apps.plans.views._can_edit_plan", return_value=True)
     @patch("konote.ai_views._ai_tools_enabled", return_value=False)
@@ -746,3 +748,43 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ai_enabled", response.context)
         self.assertFalse(response.context["ai_enabled"])
+
+    def test_target_metrics_page_shows_primary_metric_guidance(self):
+        """Metric assignment page emphasizes a single primary metric and direct search."""
+        self.http.login(username="counsellor", password="pass")
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Confidence Goals",
+            program=self.program,
+        )
+        metric = MetricDefinition.objects.create(
+            name="Confidence Score",
+            definition="1-5 scale",
+            category="general",
+            is_enabled=True,
+            min_value=1,
+            max_value=5,
+        )
+        MetricDefinition.objects.create(
+            name="Community Participation",
+            definition="Tracks community participation",
+            category="general",
+            is_enabled=True,
+            min_value=1,
+            max_value=5,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section,
+            client_file=self.client_file,
+            name="Build confidence",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        url = reverse("plans:target_metrics", args=[target.pk])
+        response = self.http.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose a Primary Metric")
+        self.assertContains(response, "Choose one primary metric for this target")
+        self.assertContains(response, 'type="radio"')
+        self.assertContains(response, "Filter metrics")

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Add a Goal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
-    <h1>{% trans "Add a Goal" %}</h1>
+    <h1>{% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}</h1>
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
@@ -37,8 +37,14 @@
 {% endif %}
 
 {% if ai_enabled %}
+<article class="notice" role="note">
+    <small>{% blocktrans with target=term.target|default:"goal" %}Start with the form below. If you want help drafting the {{ target }}, use the helper tools here first.{% endblocktrans %}</small>
+</article>
+<details id="goal-helper-tools" class="goal-helper-tools"{% if form.errors %} open{% endif %}>
+    <summary>{% blocktrans with target=term.target|default:"goal" %}Need help drafting this {{ target }}?{% endblocktrans %}</summary>
+
 {# ====== Entry points (AI-assisted page) ====== #}
-<div id="entry-points" {% if form.errors %}hidden{% endif %}>
+<div id="entry-points">
 
     {# R11: Conditional layout — show quick picks first if 3+ common goals #}
     {% if quick_pick_first %}
@@ -57,10 +63,8 @@
     {% include "plans/_goal_quick_pick_entry.html" %}
     {% endif %}{# end quick_pick_first conditional #}
 
-    <p id="manual-entry-row"><a href="#" id="btn-manual-entry" class="secondary">
-        {% trans "Or fill in the form manually" %}
-    </a></p>
 </div>
+</details>
 
 {# Container for AI suggestion (HTMX swaps here) #}
 <div id="suggestion-container" aria-live="polite"></div>
@@ -68,10 +72,10 @@
 
 {% comment %}
     UNIFIED FORM (T-4): Single form for both AI and non-AI paths.
-    Hidden when AI enabled until "Let me review first" / manual entry / quick pick reveals it.
     Non-AI path uses phase 1 (listen) + phase 2 (shape) progressive disclosure.
+    AI-enabled path keeps the manual form visible and treats AI/quick-pick tools as optional drafting help.
 {% endcomment %}
-<form method="post" id="goal-form" novalidate {% if ai_enabled and not form.errors %}hidden{% endif %}>
+<form method="post" id="goal-form" novalidate>
     {% csrf_token %}
 
     {% if not ai_enabled %}
@@ -357,7 +361,7 @@
 
         {# ── Submit ── #}
         <div role="group">
-            <button type="submit">{% trans "Add a Goal" %}</button>
+            <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}</button>
             <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
         </div>
     </div>
@@ -376,6 +380,7 @@
 
     var goalForm = document.getElementById("goal-form");
     var entryPoints = document.getElementById("entry-points");
+    var helperTools = document.getElementById("goal-helper-tools");
     var suggestionContainer = document.getElementById("suggestion-container");
     var nameInput = document.getElementById("{{ form.name.id_for_label }}");
     var participantEcho = document.getElementById("participant-echo");
@@ -472,9 +477,9 @@
     // ────────────────────────────────────────
 
     function revealForm() {
-        if (entryPoints) entryPoints.hidden = true;
+        if (entryPoints) entryPoints.hidden = false;
+        if (helperTools) helperTools.open = false;
         if (goalForm) {
-            goalForm.hidden = false;
             var firstInput = goalForm.querySelector("input:not([type=hidden]):not([disabled]), textarea, select");
             if (firstInput) firstInput.focus();
         }
@@ -554,8 +559,7 @@
             if (card) {
                 card.scrollIntoView({ behavior: "smooth" });
                 card.focus();
-                // R7: Hide entry points after suggestion loads
-                if (entryPoints) entryPoints.hidden = true;
+                if (helperTools) helperTools.open = false;
             }
             // If error partial was loaded, wire up its button
             var showFormBtn = document.getElementById("btn-show-manual-form");
@@ -575,6 +579,7 @@
                 retryBtn.addEventListener("click", function() {
                     suggestionContainer.innerHTML = "";
                     if (entryPoints) entryPoints.hidden = false;
+                    if (helperTools) helperTools.open = true;
                     var pw = document.getElementById("participant-words");
                     if (pw) { pw.value = ""; pw.focus(); }
                 });
@@ -606,6 +611,7 @@
             if (btn.id === "btn-start-over") {
                 suggestionContainer.innerHTML = "";
                 if (entryPoints) entryPoints.hidden = false;
+                if (helperTools) helperTools.open = true;
                 var pw = document.getElementById("participant-words");
                 if (pw) {
                     pw.value = "";

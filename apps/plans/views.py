@@ -937,13 +937,21 @@ def goal_name_suggestions(request, client_id):
 @login_required
 @requires_permission("plan.edit", _get_program_from_target)
 def target_metrics(request, target_id):
-    """Assign metrics to a target — checkboxes grouped by category."""
+    """Assign a primary metric to a target with section-relevant options first."""
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
+    current = (
+        PlanTargetMetric.objects.filter(plan_target=target)
+        .select_related("metric_def")
+        .first()
+    )
+    selected_metric_id = str(current.metric_def_id) if current else ""
+
     if request.method == "POST":
         form = MetricAssignmentForm(request.POST)
+        selected_metric_id = request.POST.get("metrics", "")
         if form.is_valid():
             selected = form.cleaned_data["metrics"]
             # Remove old assignments
@@ -956,12 +964,38 @@ def target_metrics(request, target_id):
             messages.success(request, _("Metric updated."))
             return redirect("plans:plan_view", client_id=target.client_file.pk)
     else:
-        current = PlanTargetMetric.objects.filter(plan_target=target).first()
         form = MetricAssignmentForm(initial={"metrics": current.metric_def_id if current else None})
 
-    # Group metrics by category for template display
+    featured_metrics = []
+    featured_ids = set()
+    if current:
+        featured_metrics.append(current.metric_def)
+        featured_ids.add(current.metric_def_id)
+
+    section_metrics = (
+        MetricDefinition.objects.filter(
+            is_enabled=True,
+            status="active",
+            plantargetmetric__plan_target__plan_section=target.plan_section,
+            plantargetmetric__plan_target__status="default",
+        )
+        .exclude(pk__in=featured_ids)
+        .distinct()
+        .order_by("name")
+    )
+    for metric in section_metrics[:6]:
+        featured_metrics.append(metric)
+        featured_ids.add(metric.pk)
+
+    open_category = current.metric_def.get_category_display() if current else None
+
+    # Group the remaining metrics by category for template display
     metrics_by_category = {}
-    for metric in MetricDefinition.objects.filter(is_enabled=True, status="active"):
+    for metric in (
+        MetricDefinition.objects.filter(is_enabled=True, status="active")
+        .exclude(pk__in=featured_ids)
+        .order_by("category", "name")
+    ):
         cat = metric.get_category_display()
         metrics_by_category.setdefault(cat, []).append(metric)
 
@@ -969,7 +1003,10 @@ def target_metrics(request, target_id):
         "form": form,
         "target": target,
         "client": target.client_file,
+        "featured_metrics": featured_metrics,
         "metrics_by_category": metrics_by_category,
+        "open_category": open_category,
+        "selected_metric_id": selected_metric_id,
     })
 
 
