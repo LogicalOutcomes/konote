@@ -1,4 +1,4 @@
-"""Export aggregate CIDS Basic Tier JSON-LD for one or more programs."""
+"""Export aggregate CIDS JSON-LD for one or more programs."""
 
 import json
 from datetime import date
@@ -9,7 +9,7 @@ from apps.reports.cids_jsonld import build_cids_jsonld_document
 
 
 class Command(BaseCommand):
-    help = "Export aggregate CIDS Basic Tier JSON-LD for the agency."
+    help = "Export aggregate CIDS JSON-LD for the agency."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -43,6 +43,11 @@ class Command(BaseCommand):
             type=date.fromisoformat,
             help="Optional end date (YYYY-MM-DD) for IndicatorReport aggregation.",
         )
+        parser.add_argument(
+            "--full-tier-stubs",
+            action="store_true",
+            help="Include Full Tier stub nodes (ImpactModel, Stakeholder, StakeholderOutcome, Output).",
+        )
 
     def handle(self, *args, **options):
         from apps.programs.models import Program
@@ -57,6 +62,7 @@ class Command(BaseCommand):
             taxonomy_lens=options["taxonomy_lens"],
             date_from=options.get("date_from"),
             date_to=options.get("date_to"),
+            include_full_tier_stubs=options["full_tier_stubs"],
         )
 
         output = json.dumps(document, indent=options["indent"], ensure_ascii=False)

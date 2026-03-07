@@ -1,4 +1,8 @@
-"""Utilities for building Common Approach CIDS Basic Tier JSON-LD exports."""
+"""Utilities for building Common Approach CIDS JSON-LD exports.
+
+Supports Basic Tier (7 classes) and extended Basic+Stubs (11 classes).
+Full Tier (14 classes) requires Phase 1 EvaluationFramework models.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +15,7 @@ from django.utils import timezone
 
 from apps.admin_settings.models import CidsCodeList, OrganizationProfile, TaxonomyMapping
 from apps.notes.models import MetricValue
-from apps.plans.models import MetricDefinition, PlanTargetMetric
+from apps.plans.models import MetricDefinition, PlanTarget, PlanTargetMetric
 
 from .cids_enrichment import derive_cids_theme, get_taxonomy_lens_label
 
@@ -165,11 +169,100 @@ def _build_theme_node(metric_definition):
     return theme_id, theme_node
 
 
-def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_from=None, date_to=None, metric_definitions=None):
-    """Build a CIDS Basic Tier JSON-LD document for one or more programs.
+def _build_impact_model_node(program, org_id):
+    """Derive a cids:ImpactModel stub from Program.description."""
+    if not program.description:
+        return None
+    model_id = f"urn:konote:impact-model:{program.pk}"
+    return {
+        "@id": model_id,
+        "@type": "cids:ImpactModel",
+        "hasName": f"{program.name} program model",
+        "hasDescription": program.description,
+        "forOrganization": {"@id": org_id},
+    }
+
+
+def _build_stakeholder_nodes(program, org_id):
+    """Derive cids:Stakeholder nodes from Program.population_served_codes."""
+    codes = program.population_served_codes or []
+    if not codes:
+        return []
+    nodes = []
+    for code in codes:
+        code_label = code if isinstance(code, str) else str(code)
+        code_list = CidsCodeList.objects.filter(
+            list_name="PopulationServed", code=code_label,
+        ).first()
+        label = (code_list.label if code_list else code_label)
+        stakeholder_id = f"urn:konote:stakeholder:{program.pk}:{code_label}"
+        nodes.append({
+            "@id": stakeholder_id,
+            "@type": "cids:BeneficialStakeholder",
+            "hasName": label,
+            "hasDescription": f"Population group: {label}",
+            "forOrganization": {"@id": org_id},
+        })
+    return nodes
+
+
+def _build_stakeholder_outcome_node(program, outcome_id, org_id):
+    """Derive a cids:StakeholderOutcome from aggregate PlanTarget achievement."""
+    targets = PlanTarget.objects.filter(
+        plan_section__program=program,
+        status__in=["default", "completed"],
+    )
+    total = targets.count()
+    if not total:
+        return None
+    achieved = targets.filter(achievement_status="achieved").count()
+    sustaining = targets.filter(achievement_status="sustaining").count()
+    met_count = achieved + sustaining
+    rate = round(met_count / total * 100, 1)
+
+    so_id = f"urn:konote:stakeholder-outcome:{program.pk}"
+    return {
+        "@id": so_id,
+        "@type": "cids:StakeholderOutcome",
+        "hasName": f"{program.name} participant outcomes",
+        "hasDescription": (
+            f"{met_count} of {total} targets achieved or sustaining ({rate}%)"
+        ),
+        "forOutcome": [{"@id": outcome_id}],
+        "forOrganization": {"@id": org_id},
+    }
+
+
+def _build_output_node(program, org_id, note_filter):
+    """Derive a cids:Output from observation counts."""
+    observation_count = MetricValue.objects.filter(
+        progress_note_target__plan_target__plan_section__program=program,
+        progress_note_target__progress_note__status="default",
+    ).filter(note_filter).count()
+    if not observation_count:
+        return None
+
+    output_id = f"urn:konote:output:{program.pk}"
+    return {
+        "@id": output_id,
+        "@type": "cids:Output",
+        "hasName": f"{program.name} service outputs",
+        "hasDescription": (
+            f"{observation_count} metric observations recorded"
+        ),
+        "forOrganization": {"@id": org_id},
+    }
+
+
+def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_from=None, date_to=None, metric_definitions=None, include_full_tier_stubs=False):
+    """Build a CIDS JSON-LD document for one or more programs.
 
     The export is intentionally aggregate-only. It avoids client-specific target
     names and instead emits one program-level outcome node per program.
+
+    When ``include_full_tier_stubs`` is True, additional nodes are emitted:
+    ImpactModel, BeneficialStakeholder, StakeholderOutcome, and Output —
+    derived from existing Program and PlanTarget data without new models.
     """
     programs = list(programs)
     org = OrganizationProfile.get_solo()
@@ -317,6 +410,27 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         add_node(outcome_node)
         org_outcomes.append({"@id": outcome_id})
 
+        if include_full_tier_stubs:
+            impact_model = _build_impact_model_node(program, org_id)
+            if impact_model:
+                outcome_node["forImpactModel"] = [{"@id": impact_model["@id"]}]
+                add_node(impact_model)
+
+            stakeholder_nodes = _build_stakeholder_nodes(program, org_id)
+            for sn in stakeholder_nodes:
+                add_node(sn)
+
+            so_node = _build_stakeholder_outcome_node(program, outcome_id, org_id)
+            if so_node:
+                stakeholder_refs = [{"@id": sn["@id"]} for sn in stakeholder_nodes]
+                if stakeholder_refs:
+                    so_node["forStakeholder"] = stakeholder_refs
+                add_node(so_node)
+
+            output_node = _build_output_node(program, org_id, note_filter)
+            if output_node:
+                add_node(output_node)
+
     if org.operating_name:
         org_node["hasName"] = org.operating_name
     if org.description:
@@ -335,7 +449,7 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         org_node["hasIndicator"] = deduped_indicators
     add_node(org_node)
 
-    return {
+    doc = {
         "@context": CIDS_CONTEXT,
         "@graph": graph,
         "cids:version": CIDS_VERSION,
@@ -344,6 +458,10 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         "cids:taxonomyLens": taxonomy_lens,
         "cids:taxonomyLensLabel": get_taxonomy_lens_label(taxonomy_lens),
     }
+    if include_full_tier_stubs:
+        doc["cids:complianceTier"] = "EssentialTier"
+        doc["cids:classCount"] = len({n["@type"] for n in graph if "@type" in n})
+    return doc
 
 
 def serialize_cids_jsonld(*args, indent=2, **kwargs):
