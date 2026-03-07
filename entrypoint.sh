@@ -6,6 +6,15 @@ if [ -d ".git" ]; then
     git config core.hooksPath .githooks 2>/dev/null || true
 fi
 
+# Verify FERNET_KEY is set before migrations touch encrypted fields
+if [ -z "${FERNET_KEY:-}" ]; then
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: FERNET_KEY is not set. Cannot run migrations safely."
+        exit 1
+    fi
+    echo "WARNING: FERNET_KEY not set — encrypted field migrations will be skipped."
+fi
+
 echo "Running migrations..."
 # migrate_default uses Django's real migrate (bypassing django_tenants' migrate_schemas)
 # so the PUBLIC schema is kept in sync with all pending migrations, including
@@ -70,6 +79,31 @@ echo ""
 echo "Running security checks..."
 python manage.py startup_check
 # If startup_check exits non-zero, the script stops here (set -e)
+
+# Verify encrypted fields are readable (catches FERNET_KEY mismatches after migration)
+echo ""
+echo "Verifying encrypted field integrity..."
+python manage.py shell -c "
+from apps.surveys.models import SurveyResponse
+bad = 0
+checked = 0
+for r in SurveyResponse.objects.exclude(_respondent_name_encrypted=b'').iterator():
+    checked += 1
+    if r.respondent_name_display == '[DECRYPTION ERROR]':
+        bad += 1
+if bad:
+    import sys
+    print(f'FAIL: {bad}/{checked} survey respondent names cannot be decrypted.')
+    print('The FERNET_KEY may not match the key used during migration.')
+    sys.exit(1)
+print(f'OK: {checked} encrypted respondent name(s) verified.' if checked else 'OK: No encrypted respondent names to verify.')
+" 2>&1 || {
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: Encryption verification failed. Refusing to start."
+        exit 1
+    fi
+    echo "WARNING: Encryption verification failed (non-production — continuing)."
+}
 
 PORT=${PORT:-8000}
 echo "Starting gunicorn on port $PORT"
