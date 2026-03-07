@@ -1,6 +1,6 @@
 # Phase 4: Full Tier CIDS JSON-LD Export Assembly — Agent Prompt
 
-Assemble Privacy-First Full Tier CIDS export using evaluation frameworks, enriched metadata, and existing aggregate measurement. Depends on Phases 1-3.
+Assemble Privacy-First Full Tier CIDS export using evaluation frameworks and existing aggregate measurement. Depends on Phases 0, 0.5, and 1.
 
 ## Context
 
@@ -18,7 +18,16 @@ Create branch `feat/full-tier-cids-export` off `develop`.
 
 ## Prerequisites
 
-Phases 1-3 must be merged.
+Phases 0 (CIDS foundation commit), 0.5 (quick Full Tier stub nodes), and 1 (evaluation planning) must be merged. Phases 2-3 (report artifacts, AI enrichment) are NOT prerequisites — they improve metadata quality but don't affect CIDS class coverage.
+
+## Critical notes — KoNote model quirks
+
+- **User model** has `display_name` field and `get_display_name()` method — NO `first_name`/`last_name`/`get_display_name()`.
+- **TaxonomyMapping** fields: `taxonomy_system`, `taxonomy_code`, `taxonomy_label`, `funder_context`, `mapping_status`, `mapping_source`, `confidence_score`, `taxonomy_list_name`, `rationale`, `reviewed_by`, `reviewed_at`. Filter with `mapping_status="approved"`.
+- **PlanTarget** achievement_status choices: `in_progress`, `improving`, `worsening`, `no_change`, `achieved`, `sustaining`, `not_achieved`, `not_attainable`.
+- **PlanSection** has required `client_file` FK and nullable `program` FK. NO `Plan` model exists.
+- **Client enrolments** use `ClientProgramEnrolment` in `apps.clients.models` (not `Enrolment`).
+- **ProgressNote** uses `interaction_type` and `note_type` — no `service_type` field.
 
 ## 1. Full Tier serialiser — create `apps/reports/cids_full_tier.py`
 
@@ -46,7 +55,6 @@ from apps.reports.cids_jsonld import (
     CIDS_VERSION,
     build_cids_jsonld_document,
 )
-from apps.reports.models import ExportMetadataSnapshot
 
 
 def build_full_tier_jsonld(
@@ -54,7 +62,6 @@ def build_full_tier_jsonld(
     date_from=None,
     date_to=None,
     include_layer3=False,
-    snapshot=None,
 ):
     """
     Build a CIDS Full Tier JSON-LD document.
@@ -64,7 +71,6 @@ def build_full_tier_jsonld(
         date_from: Start date for measurement period
         date_to: End date for measurement period
         include_layer3: Whether to include de-identified case trajectories
-        snapshot: ExportMetadataSnapshot to apply (or None)
 
     Returns:
         dict: JSON-LD document
@@ -88,10 +94,6 @@ def build_full_tier_jsonld(
         layer1_nodes = _build_layer1_nodes(program, framework)
         graph.extend(layer1_nodes)
 
-    # Apply enriched metadata from snapshot
-    if snapshot:
-        _apply_snapshot_metadata(graph, snapshot)
-
     # Layer 3: Optional de-identified trajectories
     if include_layer3:
         layer3_nodes = _build_layer3_trajectories(program, date_from, date_to)
@@ -105,7 +107,7 @@ def build_full_tier_jsonld(
     # Add evaluator attestation if present
     if framework and framework.attested_by:
         basic_doc["cids:evaluatorAttestation"] = {
-            "attestedBy": framework.attested_by.get_full_name(),
+            "attestedBy": framework.attested_by.get_display_name(),
             "attestedAt": framework.attested_at.isoformat() if framework.attested_at else None,
             "attestationNote": framework.attestation_note,
         }
@@ -208,34 +210,24 @@ def _build_component_node(comp, program_uri, framework):
     elif comp.component_type == "counterfactual":
         node["cids:hasCounterfactualDescription"] = comp.description
 
-    # Add taxonomy mappings for this component
-    mappings = TaxonomyMapping.objects.filter(
-        subject_id=str(comp.pk),
-        review_status="approved",
-    )
-    if mappings.exists():
-        node["cids:hasCode"] = [
-            {
-                "@type": "cids:Code",
-                "cids:hasCodeValue": m.code_value,
-                "cids:hasCodeLabel": m.code_label,
-                "cids:inCodeList": m.list_name,
-            }
-            for m in mappings
-        ]
+    # Add taxonomy mappings for this component's linked metric
+    if comp.linked_metric_id:
+        mappings = TaxonomyMapping.objects.filter(
+            metric_definition_id=comp.linked_metric_id,
+            mapping_status="approved",
+        )
+        if mappings.exists():
+            node["cids:hasCode"] = [
+                {
+                    "@type": "cids:Code",
+                    "cids:hasCodeValue": m.taxonomy_code,
+                    "cids:hasCodeLabel": m.taxonomy_label,
+                    "cids:inCodeList": m.taxonomy_list_name or m.taxonomy_system,
+                }
+                for m in mappings
+            ]
 
     return node
-
-
-def _apply_snapshot_metadata(graph, snapshot):
-    """Apply enriched metadata from a snapshot to the graph."""
-    payload = snapshot.snapshot_payload or {}
-    # Snapshot items are narrative improvements — they don't add new nodes,
-    # they enrich existing ones. For now, add as annotations.
-    for item in payload.get("accepted_items", []):
-        # Find matching node by field_path and update description
-        # This is a simple implementation — could be more sophisticated
-        pass  # Phase 4 refinement: match items to nodes
 
 
 def _build_layer3_trajectories(program, date_from, date_to):
@@ -245,14 +237,13 @@ def _build_layer3_trajectories(program, date_from, date_to):
     Uses k-anonymity (k>=5), date generalisation (quarters), n>=15 minimum.
     Only includes programs with sufficient participants.
     """
-    from apps.clients.models import Enrolment
-    from apps.notes.models import MetricValue
-    from apps.plans.models import PlanTarget
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.plans.models import PlanTarget, PlanSection
 
     nodes = []
 
     # Count active participants
-    enrolments = Enrolment.objects.filter(
+    enrolments = ClientProgramEnrolment.objects.filter(
         program=program,
         status="active",
     )
@@ -263,15 +254,16 @@ def _build_layer3_trajectories(program, date_from, date_to):
         return nodes
 
     # Get plan targets with achievement data
+    # PlanTarget → PlanSection → program (nullable FK)
     targets = PlanTarget.objects.filter(
-        plan__enrolment__program=program,
-        plan__enrolment__status="active",
-    ).select_related("plan", "plan__enrolment")
+        plan_section__program=program,
+        status="default",
+    ).exclude(achievement_status="").select_related("plan_section")
 
-    # Group by outcome type for k-anonymity
+    # Group by achievement_status for k-anonymity
     outcome_groups = {}
     for target in targets:
-        key = target.description[:50]  # Group by target description prefix
+        key = target.achievement_status  # Group by status for anonymity
         if key not in outcome_groups:
             outcome_groups[key] = []
         outcome_groups[key].append(target)
@@ -541,7 +533,7 @@ path("programs/<int:program_id>/full-tier-export/",
 <h2>{% trans "Evaluator Attestation" %}</h2>
 <dl>
   <dt>{% trans "Attested by" %}</dt>
-  <dd>{{ framework.attested_by.get_full_name }}</dd>
+  <dd>{{ framework.attested_by.get_display_name }}</dd>
   <dt>{% trans "Date" %}</dt>
   <dd>{{ framework.attested_at|date:"Y-m-d" }}</dd>
   <dt>{% trans "Note" %}</dt>

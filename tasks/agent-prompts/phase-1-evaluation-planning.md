@@ -2,6 +2,10 @@
 
 Build the evaluation planning foundation: 3 models, forms, views, templates, and tests.
 
+## Prerequisites
+
+Phase 0 (`feat/cids-foundation`) and Phase 0.5 (`feat/cids-quick-full-tier-nodes`) must be merged first. Phase 0 commits the existing CIDS code and applies the TaxonomyMapping migrations. Phase 0.5 adds quick Full Tier stub nodes from existing data.
+
 ## Context
 
 KoNote is achieving CIDS Full Tier compliance. Most CIDS Full Tier classes describe the *program model*, not individual participants. The `EvaluationFramework` and `EvaluationComponent` models map directly to CIDS Full Tier classes:
@@ -584,7 +588,7 @@ Create these files under `templates/programs/`:
 {% if framework.attested_by %}
 <details>
   <summary>{% trans "Evaluator Attestation" %}</summary>
-  <p>{% trans "Attested by" %} {{ framework.attested_by.get_full_name }} {% trans "on" %} {{ framework.attested_at|date:"Y-m-d H:i" }}</p>
+  <p>{% trans "Attested by" %} {{ framework.attested_by.get_display_name }} {% trans "on" %} {{ framework.attested_at|date:"Y-m-d H:i" }}</p>
   <blockquote>{{ framework.attestation_note }}</blockquote>
 </details>
 {% endif %}
@@ -879,6 +883,15 @@ Edit `templates/programs/detail.html` to add a link:
 ```
 
 If the program already has a framework, show a link to view it instead.
+
+## Critical notes — KoNote model quirks
+
+- **User model** has `display_name` field and `get_display_name()` method — there is NO `first_name`/`last_name`/`get_full_name()`. Always use `user.get_display_name()` in Python and `{{ user.get_display_name }}` in templates.
+- **TaxonomyMapping** (after Phase 0 migration) has fields: `taxonomy_system`, `taxonomy_code`, `taxonomy_label`, `funder_context`, `mapping_status`, `mapping_source`, `confidence_score`, `taxonomy_list_name`, `rationale`, `reviewed_by`, `reviewed_at`. Filter approved mappings with `mapping_status="approved"`.
+- **PlanTarget** achievement_status choices are: `in_progress`, `improving`, `worsening`, `no_change`, `achieved`, `sustaining`, `not_achieved`, `not_attainable`. There is NO `on_track`, `at_risk`, or `not_started`.
+- **PlanSection** has required `client_file` FK and nullable `program` FK. There is NO `Plan` model.
+- **ProgressNote** uses `interaction_type` (session/group/phone/etc.) and `note_type` (quick/full/assessment). There is NO `service_type` field.
+- **Client enrolments** use `ClientProgramEnrolment` model in `apps.clients.models`, not `Enrolment`.
 
 ## Acceptance criteria
 
