@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluation Framework Editor — KoNote Wireframe</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    :root {
+      --kn-primary: #3176aa;
+      --kn-primary-hover: #296490;
+      --kn-primary-subtle: rgba(49, 118, 170, 0.08);
+      --kn-success-bg: #d4edda;
+      --kn-success-fg: #1a5632;
+      --kn-warning-bg: #fff3cd;
+      --kn-warning-fg: #6c5a1e;
+      --kn-info-bg: #d1ecf1;
+      --kn-info-fg: #0c5460;
+      --kn-neutral-bg: #e9ecef;
+      --kn-neutral-fg: #495057;
+      --kn-page-bg: #f7f6f3;
+      --kn-card-bg: #ffffff;
+      --kn-border: #d1d5db;
+      --kn-border-light: #e8e6e1;
+      --kn-text: #1a202c;
+      --kn-text-secondary: #4a5568;
+      --kn-text-muted: #64748b;
+      --kn-radius-card: 8px;
+      --kn-radius-badge: 4px;
+      --kn-shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+      --kn-space-sm: 8px;
+      --kn-space-md: 12px;
+      --kn-space-base: 16px;
+      --kn-space-lg: 24px;
+      --pico-primary: var(--kn-primary);
+      --pico-primary-hover: var(--kn-primary-hover);
+      --pico-font-size: 15px;
+    }
+    body { background: var(--kn-page-bg); }
+
+    .breadcrumb { list-style: none; display: flex; gap: 0.5rem; padding: 0; margin-bottom: 1rem; font-size: 0.9rem; }
+    .breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; color: var(--kn-text-muted); }
+
+    .wireframe-banner {
+      background: var(--kn-warning-bg); color: var(--kn-warning-fg);
+      padding: var(--kn-space-sm) var(--kn-space-base);
+      border-radius: var(--kn-radius-badge); font-size: 0.85rem;
+      margin-bottom: 1.5rem; text-align: center;
+    }
+
+    .card {
+      background: var(--kn-card-bg); border-radius: var(--kn-radius-card);
+      box-shadow: var(--kn-shadow-card); padding: var(--kn-space-lg);
+      margin-bottom: var(--kn-space-lg);
+    }
+    .card h3 { margin-top: 0; }
+
+    .read-only-section {
+      background: var(--kn-neutral-bg); border-radius: var(--kn-radius-card);
+      padding: var(--kn-space-base) var(--kn-space-lg);
+      margin-bottom: var(--kn-space-lg); border-left: 4px solid var(--kn-border);
+    }
+    .read-only-section dt { font-weight: 600; color: var(--kn-text-secondary); font-size: 0.85rem; margin-top: 0.75rem; }
+    .read-only-section dd { margin-left: 0; margin-bottom: 0; }
+    .read-only-label { font-size: 0.75rem; color: var(--kn-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .quality-badge {
+      display: inline-block; padding: 2px 10px; border-radius: var(--kn-radius-badge);
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .quality-draft { background: var(--kn-neutral-bg); color: var(--kn-neutral-fg); }
+    .quality-ai { background: var(--kn-info-bg); color: var(--kn-info-fg); }
+    .quality-reviewed { background: var(--kn-warning-bg); color: var(--kn-warning-fg); }
+    .quality-confirmed { background: var(--kn-success-bg); color: var(--kn-success-fg); }
+
+    .cids-badge {
+      display: inline-block; padding: 2px 8px; border-radius: var(--kn-radius-badge);
+      font-size: 0.75rem; font-family: monospace;
+      background: var(--kn-primary-subtle); color: var(--kn-primary);
+      border: 1px solid rgba(49, 118, 170, 0.2);
+    }
+
+    .component-table { width: 100%; }
+    .component-table th { font-size: 0.85rem; color: var(--kn-text-secondary); }
+    .component-table td { vertical-align: middle; }
+
+    .ai-btn {
+      background: var(--kn-info-bg); color: var(--kn-info-fg);
+      border: 1px solid rgba(12, 84, 96, 0.2); padding: 4px 12px;
+      border-radius: var(--kn-radius-badge); font-size: 0.8rem;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .ai-btn:hover { background: #bde0e7; }
+
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: var(--kn-space-sm);
+    }
+
+    .attestation-panel {
+      background: var(--kn-success-bg); border-radius: var(--kn-radius-card);
+      padding: var(--kn-space-base) var(--kn-space-lg);
+      border-left: 4px solid var(--kn-success-fg);
+    }
+    .attestation-panel dt { font-weight: 600; font-size: 0.85rem; color: var(--kn-success-fg); }
+
+    .empty-state {
+      text-align: center; padding: 2rem; color: var(--kn-text-muted);
+      border: 2px dashed var(--kn-border); border-radius: var(--kn-radius-card);
+    }
+
+    .actions { display: flex; gap: var(--kn-space-sm); flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="wireframe-banner">
+      WIREFRAME &mdash; KoNote Evaluation Framework Editor (not a working page)
+    </div>
+
+    <!-- Breadcrumb -->
+    <ul class="breadcrumb" aria-label="Breadcrumb">
+      <li><a href="#">Frameworks</a></li>
+      <li><a href="#">Bright Futures Youth Employment Services</a></li>
+      <li aria-current="page">Edit</li>
+    </ul>
+
+    <h1>Edit Evaluation Framework</h1>
+    <p style="color: var(--kn-text-secondary);">
+      Bright Futures Youth Employment Services
+      <span class="quality-badge quality-reviewed">Human Reviewed</span>
+    </p>
+
+    <!-- ───────── Program Details (read-only) ───────── -->
+    <div class="read-only-section">
+      <div class="section-header">
+        <h3 style="margin:0;">Program Details</h3>
+        <span class="read-only-label">Read-only &mdash; edit on program page</span>
+      </div>
+      <dl>
+        <dt>Description</dt>
+        <dd>Comprehensive employment readiness program for youth aged 16-24 in the Greater Toronto Area. Provides job skills training, mentorship, and placement support to help young people achieve sustainable employment.</dd>
+
+        <dt>CIDS Sector</dt>
+        <dd><code>ICNPO:6100</code> Employment &amp; Training</dd>
+
+        <dt>Service Model</dt>
+        <dd>Group-based with individual mentorship</dd>
+
+        <dt>Population Served</dt>
+        <dd>
+          <span class="cids-badge">youth_16_24</span>
+          <span class="cids-badge">unemployed</span>
+          <span class="cids-badge">newcomers</span>
+        </dd>
+      </dl>
+    </div>
+
+    <!-- ───────── Evaluation Narrative (editable) ───────── -->
+    <div class="card">
+      <div class="section-header">
+        <h2 style="margin:0;">Evaluation Narrative</h2>
+        <button class="ai-btn" type="button" title="Draft all sections using AI">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Draft with AI
+        </button>
+      </div>
+
+      <form>
+        <label for="outcome_chain">
+          Theory of Change
+          <button class="ai-btn" type="button" style="float:right; margin-top:-4px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            AI
+          </button>
+        </label>
+        <textarea id="outcome_chain" rows="4">Youth aged 16-24 who are unemployed or underemployed participate in a 12-week job readiness program. Through skills training (weeks 1-6), mentorship matching (weeks 4-8), and supported job search (weeks 8-12), participants develop employment competencies. Expected chain: Training &rarr; Skills acquisition &rarr; Confidence &rarr; Job interviews &rarr; Employment &rarr; Income stability.</textarea>
+
+        <label for="risk_summary">
+          Impact Risks
+          <button class="ai-btn" type="button" style="float:right; margin-top:-4px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            AI
+          </button>
+        </label>
+        <textarea id="risk_summary" rows="3">1. Economic downturn may reduce available positions despite participant readiness (likelihood: medium, severity: high). 2. Participant attrition during 12-week program due to housing instability (likelihood: medium, severity: medium). 3. Employer bias against youth with gaps in employment history (likelihood: high, severity: medium).</textarea>
+
+        <label for="counterfactual">Counterfactual</label>
+        <textarea id="counterfactual" rows="3">Without the program, participants would continue job searching independently with lower success rates. Comparable youth unemployment programs in the GTA show a 23% placement rate without structured support, vs. our target of 65%. The counterfactual assumes participants have access to basic Employment Ontario services but not structured training or mentorship.</textarea>
+
+        <label for="output_summary">Outputs</label>
+        <textarea id="output_summary" rows="3">Per cohort of 20 participants: 60 group training sessions, 120 individual mentorship meetings, 40 employer engagement contacts, 20 mock interviews, 15-18 job placements within 90 days of program completion.</textarea>
+
+        <label for="partner_req">Partner Requirements</label>
+        <textarea id="partner_req" rows="2">United Way Greater Toronto requires quarterly outcome reporting with SDG alignment. Employment Ontario requires ESDC Common Indicators. Both require aggregate data only (no individual PII in reports).</textarea>
+
+        <label for="quality_state">Quality State</label>
+        <select id="quality_state">
+          <option value="draft">Draft</option>
+          <option value="ai_generated">AI Generated</option>
+          <option value="human_reviewed" selected>Human Reviewed</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+      </form>
+    </div>
+
+    <!-- ───────── Components ───────── -->
+    <div class="card">
+      <div class="section-header">
+        <h2 style="margin:0;">Evaluation Components</h2>
+        <div class="actions">
+          <button class="ai-btn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Generate components from narrative
+          </button>
+        </div>
+      </div>
+
+      <table class="component-table" role="grid">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>CIDS Class</th>
+            <th>Title</th>
+            <th>Quality</th>
+            <th>Linked Metric</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Participant Group</td>
+            <td><span class="cids-badge">cids:Stakeholder</span></td>
+            <td>Youth aged 16-24, unemployed</td>
+            <td><span class="quality-badge quality-confirmed">Confirmed</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Participant Group</td>
+            <td><span class="cids-badge">cids:Stakeholder</span></td>
+            <td>Newcomer youth (arrived &lt;5 years)</td>
+            <td><span class="quality-badge quality-reviewed">Human Reviewed</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Service</td>
+            <td><span class="cids-badge">cids:Service</span></td>
+            <td>Job Readiness Training (12 weeks)</td>
+            <td><span class="quality-badge quality-reviewed">Human Reviewed</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Activity</td>
+            <td><span class="cids-badge">cids:Activity</span></td>
+            <td>Group skills workshops (3x/week)</td>
+            <td><span class="quality-badge quality-ai">AI Generated</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Activity</td>
+            <td><span class="cids-badge">cids:Activity</span></td>
+            <td>1:1 mentorship sessions (weekly)</td>
+            <td><span class="quality-badge quality-ai">AI Generated</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Output</td>
+            <td><span class="cids-badge">cids:Output</span></td>
+            <td>Training sessions completed</td>
+            <td><span class="quality-badge quality-confirmed">Confirmed</span></td>
+            <td><em>Sessions Attended</em></td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Output</td>
+            <td><span class="cids-badge">cids:Output</span></td>
+            <td>Job placements achieved</td>
+            <td><span class="quality-badge quality-confirmed">Confirmed</span></td>
+            <td><em>Employment Status</em></td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Outcome</td>
+            <td><span class="cids-badge">cids:StakeholderOutcome</span></td>
+            <td>Sustainable employment (90+ days)</td>
+            <td><span class="quality-badge quality-reviewed">Human Reviewed</span></td>
+            <td><em>Employment Retention</em></td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Impact Risk</td>
+            <td><span class="cids-badge">cids:ImpactRisk</span></td>
+            <td>Economic downturn reduces placements</td>
+            <td><span class="quality-badge quality-reviewed">Human Reviewed</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Risk Mitigation</td>
+            <td><span class="cids-badge">cids:ImpactRisk</span></td>
+            <td>Diversify employer partnerships</td>
+            <td><span class="quality-badge quality-draft">Draft</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+          <tr>
+            <td>Counterfactual</td>
+            <td><span class="cids-badge">cids:Counterfactual</span></td>
+            <td>Baseline: Employment Ontario only</td>
+            <td><span class="quality-badge quality-reviewed">Human Reviewed</span></td>
+            <td>&mdash;</td>
+            <td><a href="#">Edit</a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: var(--kn-space-base);">
+        <button class="secondary outline" type="button">+ Add Component</button>
+      </div>
+    </div>
+
+    <!-- ───────── Evidence Links ───────── -->
+    <div class="card">
+      <h2>Source Evidence</h2>
+      <table role="grid">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Title</th>
+            <th>Contains PII?</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Document</td>
+            <td>Program logic model (2025 revision)</td>
+            <td>No</td>
+            <td>2025-11-15</td>
+          </tr>
+          <tr>
+            <td>URL</td>
+            <td>United Way reporting requirements guide</td>
+            <td>No</td>
+            <td>2026-01-10</td>
+          </tr>
+          <tr>
+            <td>AI Output</td>
+            <td>AI-drafted risk assessment (Claude, reviewed by J. Martinez)</td>
+            <td>No</td>
+            <td>2026-02-28</td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="secondary outline" type="button">+ Add Evidence Link</button>
+    </div>
+
+    <!-- ───────── Evaluator Attestation ───────── -->
+    <div class="card">
+      <h2>Evaluator Attestation</h2>
+
+      <div class="attestation-panel">
+        <dl style="margin:0;">
+          <dt>Attested by</dt>
+          <dd>Jennifer Martinez, M.Ed. (Program Manager)</dd>
+          <dt>Date</dt>
+          <dd>2026-03-05 14:30</dd>
+          <dt>Statement</dt>
+          <dd>I have reviewed the evaluation framework, outcome chain, risk assessment, and component definitions for the Bright Futures program. The framework accurately reflects our program model and evaluation methodology. All data sources referenced are available and the measurement methods described are in active use.</dd>
+        </dl>
+      </div>
+
+      <details style="margin-top: var(--kn-space-base);">
+        <summary>Update Attestation</summary>
+        <label for="attestation_note">Attestation Statement</label>
+        <textarea id="attestation_note" rows="3" placeholder="I have reviewed the evaluation framework and confirm that..."></textarea>
+        <button type="button">Record Attestation</button>
+      </details>
+    </div>
+
+    <!-- ───────── Action bar ───────── -->
+    <div class="actions" style="margin-top: var(--kn-space-lg); margin-bottom: 3rem;">
+      <button type="button">Save Framework</button>
+      <a href="#" role="button" class="secondary">Full Tier Export Status</a>
+      <a href="#" role="button" class="outline secondary">Back to Frameworks</a>
+    </div>
+
+  </main>
+</body>
+</html>
