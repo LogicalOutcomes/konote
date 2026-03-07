@@ -32,9 +32,17 @@ The following files exist locally but have never been committed or deployed:
 - `apps/reports/funder_report.py` — standards alignment in reports
 - `apps/reports/preview_views.py` — CIDS preview
 - `konote/ai.py` — AI module updates
-- Various templates with CIDS/taxonomy additions
+- `templates/admin_settings/dashboard.html` — CIDS section on admin dashboard
+- `templates/reports/export_template_driven.html` — CIDS export format option
+- `templates/reports/funder_report_form.html` — taxonomy lens selector
+- `templates/reports/funder_report_preview.html` — standards alignment display
+- `templates/reports/html_report.html` — CIDS metadata in HTML reports
+- `templates/reports/pdf_funder_outcome_report.html` — CIDS data in PDF reports
+- `templates/reports/report_preview.html` — CIDS preview additions
+- `tests/ux_walkthrough/browser_base.py` — browser test base updates
 - `tests/test_cids.py` — CIDS test suite
 - `tests/test_reports.py` — report tests with CIDS
+- `requirements-test.txt` — adds `pyshacl` dependency for SHACL validation
 
 ## Branch
 
@@ -68,10 +76,17 @@ git add \
   apps/reports/preview_views.py \
   konote/ai.py \
   templates/admin_settings/ \
-  templates/reports/ \
+  templates/reports/export_template_driven.html \
+  templates/reports/funder_report_form.html \
+  templates/reports/funder_report_preview.html \
+  templates/reports/html_report.html \
+  templates/reports/pdf_funder_outcome_report.html \
+  templates/reports/report_preview.html \
   tests/test_cids.py \
   tests/test_reports.py \
-  tests/test_taxonomy_review.py
+  tests/test_taxonomy_review.py \
+  tests/ux_walkthrough/browser_base.py \
+  requirements-test.txt
 ```
 
 ### 2. Review the diff carefully
@@ -134,6 +149,7 @@ Deploy to dev VPS and verify the migration applies cleanly.
 
 ## Critical notes
 
+- **Do NOT stage `TODO.md` or `.Jules/`** — those have unrelated changes that shouldn't be in this commit.
 - **Do NOT modify the uncommitted files beyond fixing bugs.** This phase is about committing existing work, not adding new features.
 - **The TaxonomyMapping model gains 7 new fields.** The migration must handle existing rows (all new fields have defaults or are nullable).
 - **`cids_jsonld.py` references `mapping_status="approved"` on TaxonomyMapping.** This will crash until the migration is applied. That's why deployment order matters: migration first, then the code that uses the new fields.
