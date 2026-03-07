@@ -73,7 +73,7 @@
                     <a href="{% url 'programs:component_edit' framework_id=framework.pk component_id=comp.pk %}">{% trans "Edit" %}</a>
                     <form method="post" action="{% url 'programs:component_deactivate' framework_id=framework.pk component_id=comp.pk %}" class="inline-form">
                         {% csrf_token %}
-                        <button type="submit" class="outline contrast" class="compact-btn">{% trans "Remove" %}</button>
+                        <button type="submit" class="outline contrast compact-btn">{% trans "Remove" %}</button>
                     </form>
                 </td>
             </tr>
@@ -112,7 +112,7 @@
                 <td>
                     <form method="post" action="{% url 'programs:evidence_delete' framework_id=framework.pk evidence_id=link.pk %}" class="inline-form">
                         {% csrf_token %}
-                        <button type="submit" class="outline contrast" class="compact-btn">{% trans "Remove" %}</button>
+                        <button type="submit" class="outline contrast compact-btn">{% trans "Remove" %}</button>
                     </form>
                 </td>
             </tr>
