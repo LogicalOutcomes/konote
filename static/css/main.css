@@ -1805,6 +1805,10 @@ button.outline.secondary:hover {
     border-radius: var(--kn-radius, 4px);
     margin-bottom: 1.5rem;
 }
+.page-help summary,
+.page-help summary strong {
+    color: var(--kn-info-fg);
+}
 .page-help-content {
     font-size: 0.875rem;
     color: var(--kn-info-fg);
