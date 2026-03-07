@@ -150,27 +150,27 @@
         </blockquote>
 
         {# ── 1. Participant's words ── #}
+        {% if not ai_enabled %}
         <fieldset>
             <legend>{{ form.client_goal.label }}</legend>
             <small>{{ form.client_goal.help_text }}</small>
-            {% if not ai_enabled %}
             {# Non-AI: hidden field preserves Phase 1 value for POST #}
             <input type="hidden"
                    id="{{ form.client_goal.id_for_label }}-phase2"
                    name="client_goal"
                    value="{{ form.client_goal.value|default_if_none:'' }}">
-            {% else %}
-            <input type="text"
-                   id="{{ form.client_goal.id_for_label }}"
-                   name="client_goal"
-                   value="{{ form.client_goal.value|default_if_none:'' }}"
-                   placeholder="{% trans 'In their own words…' %}"
-                   maxlength="255">
-            {% endif %}
             {% if form.client_goal.errors %}
             <small class="error" role="alert">{{ form.client_goal.errors.0 }}</small>
             {% endif %}
         </fieldset>
+        {% else %}
+        {# AI path: hidden field — participant words are captured in the AI
+           entry textarea and copied here by JS (populateForm / manual-entry). #}
+        <input type="hidden"
+               id="{{ form.client_goal.id_for_label }}"
+               name="client_goal"
+               value="{{ form.client_goal.value|default_if_none:'' }}">
+        {% endif %}
 
         {# ── SMART guidance (AI path only — non-AI gets it via the phase 1 flow) ── #}
         {% if ai_enabled %}
