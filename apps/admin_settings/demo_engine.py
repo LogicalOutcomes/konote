@@ -590,6 +590,12 @@ class DemoDataEngine:
             created_by__is_demo=True
         ).delete()[0]
 
+        # Also clean up survey assignments/responses linked to demo clients
+        # for surveys NOT created by demo users (e.g. pre-existing surveys)
+        from apps.surveys.models import SurveyAssignment, SurveyResponse
+        SurveyResponse.objects.filter(client_file__is_demo=True).delete()
+        SurveyAssignment.objects.filter(client_file__is_demo=True).delete()
+
         # Registration submissions for demo links
         counts["registrations"] = RegistrationSubmission.objects.filter(
             registration_link__slug="demo"
@@ -701,6 +707,27 @@ class DemoDataEngine:
                 owning_program__isnull=True, status="active",
             ).first()
         return template
+
+    # ----- Metric portal visibility -----
+
+    def _ensure_portal_visible_metrics(self, programs):
+        """Ensure metrics used in demo plans are visible in the portal.
+
+        If all metrics have portal_visibility='no', progress charts will be
+        empty. This sets universal and program metrics to 'summary' so the
+        portal progress page has data to display.
+        """
+        updated = MetricDefinition.objects.filter(
+            is_universal=True, is_enabled=True, portal_visibility="no",
+        ).update(portal_visibility="summary")
+
+        for program in programs:
+            updated += MetricDefinition.objects.filter(
+                owning_program=program, is_enabled=True, portal_visibility="no",
+            ).update(portal_visibility="summary")
+
+        if updated:
+            self.log(f"  Set {updated} metrics to portal_visibility='summary'.")
 
     # ----- Demo user creation -----
 
@@ -996,36 +1023,51 @@ class DemoDataEngine:
                     )
                     all_targets.append((target, target_metrics))
         else:
-            # Generic plan structure: one section with 1-2 targets
-            section = PlanSection.objects.create(
-                client_file=client,
-                name=f"{program.name} Goals",
-                program=program,
-                sort_order=0,
-            )
-            # Create 1-2 targets
-            num_targets = min(2, max(1, len(metrics) // 2))
-            for t_idx in range(num_targets):
-                target_name = f"Goal {t_idx + 1}"
-                target_desc = "Work toward positive outcomes in this area."
-                target = PlanTarget.objects.create(
-                    plan_section=section,
+            # Generic plan structure with meaningful goals
+            generic_sections = [
+                {
+                    "name": "Personal Well-being",
+                    "targets": [
+                        ("Build confidence and self-efficacy",
+                         "Strengthen belief in ability to manage day-to-day challenges."),
+                    ],
+                },
+                {
+                    "name": f"{program.name} Goals",
+                    "targets": [
+                        ("Make progress in the program",
+                         "Work toward the outcomes identified at intake."),
+                        ("Develop skills for independence",
+                         "Build practical skills that support long-term stability."),
+                    ],
+                },
+            ]
+            for s_idx, sec_def in enumerate(generic_sections):
+                section = PlanSection.objects.create(
                     client_file=client,
-                    name=target_name,
-                    description=target_desc,
-                    sort_order=t_idx,
+                    name=sec_def["name"],
+                    program=program,
+                    sort_order=s_idx,
                 )
-                PlanTargetRevision.objects.create(
-                    plan_target=target,
-                    name=target.name,
-                    description=target.description,
-                    status="default",
-                    changed_by=worker,
-                )
-                target_metrics = self._assign_metrics_to_target(
-                    target, metrics, t_idx,
-                )
-                all_targets.append((target, target_metrics))
+                for t_idx, (target_name, target_desc) in enumerate(sec_def["targets"]):
+                    target = PlanTarget.objects.create(
+                        plan_section=section,
+                        client_file=client,
+                        name=target_name,
+                        description=target_desc,
+                        sort_order=t_idx,
+                    )
+                    PlanTargetRevision.objects.create(
+                        plan_target=target,
+                        name=target.name,
+                        description=target.description,
+                        status="default",
+                        changed_by=worker,
+                    )
+                    target_metrics = self._assign_metrics_to_target(
+                        target, metrics, len(all_targets),
+                    )
+                    all_targets.append((target, target_metrics))
 
         # Set client goal on the first target
         if all_targets:
@@ -1639,9 +1681,9 @@ class DemoDataEngine:
                             answer = SurveyAnswer(**answer_kwargs)
                             answer.value = random.choice([
                                 "Everything has been really helpful. Thank you.",
-                                "Tout a été très utile. Merci.",
                                 "I feel more confident about my situation now.",
-                                "Je me sens plus en confiance par rapport à ma situation maintenant.",
+                                "The support I've received has made a real difference.",
+                                "I appreciate how much my worker listens and understands.",
                             ])
                             answer.save()
                         elif question.question_type == "yes_no":
@@ -1743,6 +1785,9 @@ class DemoDataEngine:
         programs = self.discover_programs()
         if not programs:
             return False
+
+        # 1b. Ensure metrics used in demo plans are portal-visible
+        self._ensure_portal_visible_metrics(programs)
 
         # 2. Create demo users
         users = self.create_demo_users(programs, profile)
