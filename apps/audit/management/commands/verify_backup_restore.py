@@ -8,9 +8,11 @@ Usage:
     python manage.py verify_backup_restore
     python manage.py verify_backup_restore --database default
     python manage.py verify_backup_restore --sample-size 25
+    python manage.py verify_backup_restore --pre-restore /path/to/backup.sql
+    python manage.py verify_backup_restore --full
 """
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.db import connections
@@ -22,6 +24,7 @@ from apps.audit.models import AuditLog
 from apps.programs.models import Program
 
 import io
+import os
 import sys
 
 User = get_user_model()
@@ -43,10 +46,29 @@ class Command(BaseCommand):
             default=10,
             help="Number of encrypted client records to test (default: 10).",
         )
+        parser.add_argument(
+            "--pre-restore",
+            metavar="DUMP_FILE",
+            help="Validate a backup dump file before restoring. "
+                 "Checks that the file exists, is non-empty, and looks like a pg_dump output.",
+        )
+        parser.add_argument(
+            "--full",
+            action="store_true",
+            help="Test ALL encrypted records instead of just a sample.",
+        )
 
     def handle(self, *args, **options):
+        # Handle --pre-restore mode: validate the dump file and exit.
+        if options["pre_restore"]:
+            ok = self._validate_dump_file(options["pre_restore"])
+            if not ok:
+                raise CommandError("Pre-restore validation failed. Do not proceed with restore.")
+            return
+
         db_choice = options["database"]
         sample_size = options["sample_size"]
+        full_check = options["full"]
         results = {}
 
         check_default = db_choice in ("default", "both")
@@ -60,7 +82,7 @@ class Command(BaseCommand):
 
         # ── 2. Encryption health ───────────────────────────────────
         if check_default:
-            results["encryption"] = self._check_encryption(sample_size)
+            results["encryption"] = self._check_encryption(sample_size, full_check)
 
         # ── 3. Audit DB connectivity ───────────────────────────────
         if check_audit:
@@ -93,34 +115,74 @@ class Command(BaseCommand):
         self.stdout.write("")
         return True
 
-    def _check_encryption(self, sample_size):
+    def _check_encryption(self, sample_size, full_check=False):
         self.stdout.write(self.style.MIGRATE_HEADING("2. Encryption Health"))
-        total = ClientFile.objects.using("default").count()
+        all_passed = True
+
+        # Check ClientFile (first_name, last_name)
+        all_passed = self._check_encrypted_model(
+            model=ClientFile,
+            model_label="ClientFile",
+            fields=["first_name", "last_name"],
+            error_sentinel="[DECRYPTION ERROR]",
+            sample_size=sample_size,
+            full_check=full_check,
+        ) and all_passed
+
+        # Check ProgressNote (notes_text, summary)
+        all_passed = self._check_encrypted_model(
+            model=ProgressNote,
+            model_label="ProgressNote",
+            fields=["notes_text", "summary"],
+            error_sentinel="[DECRYPTION ERROR]",
+            sample_size=sample_size,
+            full_check=full_check,
+            # Only check notes that actually have encrypted content
+            filter_kwargs={"_notes_text_encrypted__gt": b""},
+        ) and all_passed
+
+        self.stdout.write("")
+        return all_passed
+
+    def _check_encrypted_model(self, model, model_label, fields, error_sentinel,
+                               sample_size, full_check=False, filter_kwargs=None):
+        """Check decryption health for a single model's encrypted fields."""
+        qs = model.objects.using("default")
+        if filter_kwargs:
+            qs = qs.filter(**filter_kwargs)
+        total = qs.count()
+
         if total == 0:
-            self.stdout.write("   No client records found — skipping encryption check.")
-            self.stdout.write("")
+            self.stdout.write(f"   {model_label}: no records — skipped.")
             return True
 
-        sample = list(ClientFile.objects.using("default").order_by("pk")[:sample_size])
+        if full_check:
+            records = qs.order_by("pk").iterator()
+            limit_label = f"all {total:,}"
+        else:
+            records = list(qs.order_by("pk")[:sample_size])
+            limit_label = f"sample of {min(sample_size, total)}/{total:,}"
+
         passed = 0
         failed = 0
-        for client in sample:
+        for record in records:
             try:
-                # Access the property accessors — these decrypt under the hood
-                _ = client.first_name
-                _ = client.last_name
-                if client.first_name == "[DECRYPTION ERROR]" or client.last_name == "[DECRYPTION ERROR]":
+                has_error = False
+                for field in fields:
+                    val = getattr(record, field)
+                    if val == error_sentinel:
+                        has_error = True
+                        break
+                if has_error:
                     failed += 1
                 else:
                     passed += 1
             except Exception as exc:
                 failed += 1
-                self.stdout.write(self.style.ERROR(f"   Client #{client.pk}: {exc}"))
+                self.stdout.write(self.style.ERROR(f"   {model_label} #{record.pk}: {exc}"))
 
         tested = passed + failed
-        self.stdout.write(f"   Tested {tested} of {total:,} client records.")
-        self.stdout.write(f"   Decrypted OK: {passed}   Failed: {failed}")
-        self.stdout.write("")
+        self.stdout.write(f"   {model_label}: tested {tested} ({limit_label}). OK: {passed}  Failed: {failed}")
 
         return failed == 0
 
@@ -215,6 +277,49 @@ class Command(BaseCommand):
 
         self.stdout.write("")
         return len(issues) == 0
+
+    # ── Pre-restore validation ──────────────────────────────────────
+
+    def _validate_dump_file(self, dump_path):
+        """Validate a pg_dump file before restoring."""
+        self.stdout.write(self.style.MIGRATE_HEADING("\n=== Pre-Restore Validation ===\n"))
+        ok = True
+
+        # Check file exists
+        if not os.path.exists(dump_path):
+            self.stdout.write(self.style.ERROR(f"   FAIL: File not found: {dump_path}"))
+            return False
+        self.stdout.write(self.style.SUCCESS(f"   File exists: {dump_path}"))
+
+        # Check file size > 0
+        file_size = os.path.getsize(dump_path)
+        if file_size == 0:
+            self.stdout.write(self.style.ERROR("   FAIL: File is empty (0 bytes)."))
+            return False
+        size_mb = file_size / (1024 * 1024)
+        self.stdout.write(self.style.SUCCESS(f"   File size: {size_mb:.1f} MB ({file_size:,} bytes)"))
+
+        # Check first line contains pg_dump signature
+        try:
+            with open(dump_path, "r", errors="replace") as f:
+                first_line = f.readline(1024)
+            if "PostgreSQL" in first_line or "pg_dump" in first_line:
+                self.stdout.write(self.style.SUCCESS("   File header looks like a pg_dump output."))
+            else:
+                self.stdout.write(self.style.ERROR(
+                    "   FAIL: First line does not contain 'PostgreSQL' or 'pg_dump'. "
+                    "This may not be a valid database dump."
+                ))
+                self.stdout.write(f"   First line: {first_line.strip()[:120]}")
+                ok = False
+        except Exception as exc:
+            self.stdout.write(self.style.ERROR(f"   FAIL: Could not read file: {exc}"))
+            ok = False
+
+        self.stdout.write("")
+        if ok:
+            self.stdout.write(self.style.SUCCESS("Pre-restore validation passed. Safe to proceed with restore."))
+        return ok
 
     # ── Summary ────────────────────────────────────────────────────
 
