@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("programs", "0009_program_cids_sector_code_program_description_fr_and_more"),
-        ("reports", "0006_reporttemplate_layout_preset"),
+        ("reports", "0006_rename_funder_profile_to_report_template"),
     ]
 
     operations = [
