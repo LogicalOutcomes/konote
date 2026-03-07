@@ -150,6 +150,17 @@
     </p>
     {% endif %}
 
+    <label for="{{ form.taxonomy_lens.id_for_label }}">
+        {{ form.taxonomy_lens.label }}
+        {{ form.taxonomy_lens }}
+        {% if form.taxonomy_lens.help_text %}
+        <small>{{ form.taxonomy_lens.help_text }}</small>
+        {% endif %}
+        {% if form.taxonomy_lens.errors %}
+        <small class="error" role="alert">{{ form.taxonomy_lens.errors.0 }}</small>
+        {% endif %}
+    </label>
+
     {# Export format #}
     <fieldset>
         <legend>{{ form.format.label }}</legend>

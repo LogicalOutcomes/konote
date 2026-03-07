@@ -32,6 +32,7 @@ from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.models import UserProgramRole
 from .achievements import get_achievement_summary, format_achievement_summary
 from .funder_report import generate_funder_report_data, generate_funder_report_csv_rows
+from .cids_jsonld import build_cids_jsonld_document
 from .csv_utils import sanitise_csv_row, sanitise_filename
 from .demographics import (
     aggregate_by_demographic, get_age_range, group_clients_by_age,
@@ -1234,6 +1235,7 @@ def funder_report_form(request):
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
     report_template = form.cleaned_data.get("report_template")
+    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
 
     # Store form parameters in session for the preview/approve flow
     request.session["funder_report_preview"] = {
@@ -1243,6 +1245,7 @@ def funder_report_form(request):
         "date_to": str(date_to),
         "fiscal_year_label": fiscal_year_label,
         "export_format": export_format,
+        "taxonomy_lens": taxonomy_lens,
         "report_template_id": report_template.pk if report_template else None,
         "recipient": form.get_recipient_display(),
     }
@@ -1263,6 +1266,7 @@ def _generate_funder_preview_data(session_params, user):
     date_from = dt.date.fromisoformat(session_params["date_from"])
     date_to = dt.date.fromisoformat(session_params["date_to"])
     fiscal_year_label = session_params["fiscal_year_label"]
+    taxonomy_lens = session_params.get("taxonomy_lens") or "iris_plus"
     report_template = None
     if session_params.get("report_template_id"):
         report_template = ReportTemplate.objects.filter(
@@ -1278,6 +1282,7 @@ def _generate_funder_preview_data(session_params, user):
                 ap, date_from=date_from, date_to=date_to,
                 fiscal_year_label=fiscal_year_label,
                 user=user, report_template=report_template,
+                taxonomy_lens=taxonomy_lens,
             )
             total_raw_client_count += rd.get("total_individuals_served", 0)
             if ap.is_confidential:
@@ -1302,6 +1307,7 @@ def _generate_funder_preview_data(session_params, user):
             fiscal_year_label=fiscal_year_label,
             user=user,
             report_template=report_template,
+            taxonomy_lens=taxonomy_lens,
         )
         raw_client_count = report_data.get("total_individuals_served", 0)
 
@@ -1396,6 +1402,12 @@ def funder_report_preview(request):
             ReportTemplate.objects.filter(pk=session_params["report_template_id"]).values_list("name", flat=True).first()
             if session_params.get("report_template_id") else None
         ),
+        "taxonomy_lens": session_params.get("taxonomy_lens") or "iris_plus",
+        "taxonomy_lens_label": (
+            data_or_sections[0][1]["cids_alignment"].get("taxonomy_lens_label", "")
+            if all_programs_mode and data_or_sections
+            else data_or_sections.get("cids_alignment", {}).get("taxonomy_lens_label", "")
+        ),
         "approval_form": approval_form,
         **preview_context,
     }
@@ -1436,6 +1448,7 @@ def funder_report_approve(request):
     date_to = session_params["date_to"]
     fiscal_year_label = session_params["fiscal_year_label"]
     export_format = session_params["export_format"]
+    taxonomy_lens = session_params.get("taxonomy_lens") or "iris_plus"
     recipient = session_params["recipient"]
     report_template_id = session_params.get("report_template_id")
 
@@ -1488,6 +1501,15 @@ def funder_report_approve(request):
                 writer.writerow([])
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
             content = csv_buffer.getvalue()
+        elif all_programs_mode and export_format == "cids_json":
+            document = build_cids_jsonld_document(
+                programs=[program for program, _report_data in data_or_sections],
+                taxonomy_lens=taxonomy_lens,
+                date_from=dt.date.fromisoformat(date_from),
+                date_to=dt.date.fromisoformat(date_to),
+            )
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.jsonld"
+            content = json.dumps(document, indent=2, ensure_ascii=False)
         elif all_programs_mode:
             # Unsupported format for all-programs (form should block this)
             raise ValueError(f"Unsupported export format for All Programs: {export_format}")
@@ -1508,6 +1530,17 @@ def funder_report_approve(request):
             }
             content = render_html_string("reports/html_report.html", html_context)
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.html"
+        elif export_format == "cids_json":
+            from apps.programs.models import Program
+
+            document = build_cids_jsonld_document(
+                programs=[Program.objects.get(pk=session_params["program_id"])],
+                taxonomy_lens=taxonomy_lens,
+                date_from=dt.date.fromisoformat(date_from),
+                date_to=dt.date.fromisoformat(date_to),
+            )
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.jsonld"
+            content = json.dumps(document, indent=2, ensure_ascii=False)
         else:
             report_data = data_or_sections
             csv_buffer = io.StringIO()
@@ -1543,6 +1576,7 @@ def funder_report_approve(request):
             "fiscal_year": fiscal_year_label,
             "date_from": date_from,
             "date_to": date_to,
+            "taxonomy_lens": taxonomy_lens,
         },
         contains_pii=False,
     )
@@ -1580,6 +1614,7 @@ def funder_report_approve(request):
             "agency_notes": agency_notes[:200] if agency_notes else "",
             "report_template": report_template.name if report_template else None,
             "partner": report_template.partner.name if report_template and report_template.partner else None,
+            "taxonomy_lens": taxonomy_lens,
         },
     )
 
@@ -1662,6 +1697,7 @@ def generate_report_form(request):
     period_label = form.cleaned_data.get("period_label", f"{date_from} to {date_to}")
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
+    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
 
     # Warn if template spans multiple programs (only first is used)
     template_programs = list(template.partner.get_programs())
@@ -1685,6 +1721,7 @@ def generate_report_form(request):
             user=request.user,
             export_format=export_format,
             request=request,
+            taxonomy_lens=taxonomy_lens,
         )
     except Exception:
         logger.exception("Failed to generate template report")
@@ -1712,6 +1749,7 @@ def generate_report_form(request):
             "period": period_label,
             "date_from": str(date_from),
             "date_to": str(date_to),
+            "taxonomy_lens": taxonomy_lens,
         },
         contains_pii=False,
     )
