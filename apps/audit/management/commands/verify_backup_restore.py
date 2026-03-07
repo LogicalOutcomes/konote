@@ -80,7 +80,11 @@ class Command(BaseCommand):
         if check_default:
             results["table_counts"] = self._check_table_counts()
 
-        # ── 2. Encryption health ───────────────────────────────────
+        # ── 2a. Encryption key round-trip ────────────────────────────
+        if check_default:
+            results["encryption_key"] = self._check_encryption_roundtrip()
+
+        # ── 2b. Encryption health ───────────────────────────────────
         if check_default:
             results["encryption"] = self._check_encryption(sample_size, full_check)
 
@@ -114,6 +118,29 @@ class Command(BaseCommand):
             self.stdout.write(f"   {label}: {count:,}")
         self.stdout.write("")
         return True
+
+    def _check_encryption_roundtrip(self):
+        """Verify FIELD_ENCRYPTION_KEY can round-trip encrypt and decrypt."""
+        self.stdout.write(self.style.MIGRATE_HEADING("2a. Encryption Key Round-Trip"))
+        try:
+            from apps.clients.encryption import encrypt_field, decrypt_field
+            test_value = "verify-backup-restore-test"
+            encrypted = encrypt_field(test_value)
+            decrypted = decrypt_field(encrypted)
+            if decrypted == test_value:
+                self.stdout.write(self.style.SUCCESS("   FIELD_ENCRYPTION_KEY round-trip OK."))
+                self.stdout.write("")
+                return True
+            else:
+                self.stdout.write(self.style.ERROR(
+                    f"   FAIL: Round-trip mismatch. Expected '{test_value}', got '{decrypted}'."
+                ))
+                self.stdout.write("")
+                return False
+        except Exception as exc:
+            self.stdout.write(self.style.ERROR(f"   FAIL: Encryption round-trip error: {exc}"))
+            self.stdout.write("")
+            return False
 
     def _check_encryption(self, sample_size, full_check=False):
         self.stdout.write(self.style.MIGRATE_HEADING("2. Encryption Health"))
@@ -304,11 +331,15 @@ class Command(BaseCommand):
             with open(dump_path, "r", errors="replace") as f:
                 first_line = f.readline(1024)
             if "PostgreSQL" in first_line or "pg_dump" in first_line:
-                self.stdout.write(self.style.SUCCESS("   File header looks like a pg_dump output."))
+                self.stdout.write(self.style.SUCCESS(
+                    "   Text-format pg_dump detected (header contains PostgreSQL/pg_dump signature)."
+                ))
             else:
                 self.stdout.write(self.style.ERROR(
                     "   FAIL: First line does not contain 'PostgreSQL' or 'pg_dump'. "
-                    "This may not be a valid database dump."
+                    "This may not be a valid text-format database dump. "
+                    "Note: binary/custom-format dumps are not supported by this check — "
+                    "use 'pg_restore --list <file>' to validate those."
                 ))
                 self.stdout.write(f"   First line: {first_line.strip()[:120]}")
                 ok = False

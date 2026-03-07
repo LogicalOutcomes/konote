@@ -10,6 +10,16 @@ Usage:
         --domain youth-services.konote.ca \\
         --admin-username admin \\
         --admin-password <secure-password>
+
+Recovery:
+    If provisioning fails, rerun with --skip-to <phase> where <phase> is
+    the phase that failed. All phases use get_or_create and are idempotent.
+
+    Note: transaction.atomic() wraps steps 1-3 (schema, domain, key) but
+    django-tenants may issue CREATE SCHEMA as DDL, which causes an implicit
+    commit in PostgreSQL. This means the transaction cannot truly roll back
+    schema creation. However, since all operations are idempotent, re-running
+    the command safely reuses existing objects.
 """
 from django.core.management.base import BaseCommand, CommandError
 
