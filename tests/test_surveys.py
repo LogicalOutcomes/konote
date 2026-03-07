@@ -1284,6 +1284,19 @@ class PublicSurveyViewTests(TestCase):
             section=self.section, question_text="How was your experience?",
             question_type="short_text", sort_order=1, required=True,
         )
+        self.q2 = SurveyQuestion.objects.create(
+            section=self.section,
+            question_text="Rate accessibility",
+            question_type="rating_scale",
+            sort_order=2,
+            required=True,
+            min_value=1,
+            max_value=5,
+            options_json=[
+                {"value": "1", "label": "Poor", "label_fr": "Faible"},
+                {"value": "5", "label": "Excellent", "label_fr": "Excellent"},
+            ],
+        )
         self.link = SurveyLink.objects.create(
             survey=self.survey, created_by=self.staff,
         )
@@ -1292,6 +1305,13 @@ class PublicSurveyViewTests(TestCase):
         resp = self.client.get(f"/s/{self.link.token}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Public Survey")
+
+    def test_public_rating_scale_uses_fieldset_and_legend(self):
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, '<fieldset class="survey-question-group">', html=False)
+        self.assertContains(resp, "<legend>")
+        self.assertContains(resp, "Rate accessibility")
 
     def test_public_form_submit_creates_response(self):
         resp = self.client.post(

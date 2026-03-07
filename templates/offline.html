@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<!-- Served by the service worker — no Django context is available. Hardcode lang="en". -->
-<html lang="en">
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,12 +23,12 @@
     </style>
 </head>
 <body>
-    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
     <main id="main-content" tabindex="-1">
         <div class="icon" aria-hidden="true">&#128268;</div>
-        <h1>You're offline</h1>
-        <p>This page requires an internet connection. Please check your network and try again.</p>
-        <button type="button" data-reload-page="true">Try again</button>
+        <h1>{% trans "You're offline" %}</h1>
+        <p>{% trans "This page requires an internet connection. Please check your network and try again." %}</p>
+        <button type="button" data-reload-page="true">{% trans "Try again" %}</button>
     </main>
 </body>
 </html>

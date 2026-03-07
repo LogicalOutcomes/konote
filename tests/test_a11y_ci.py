@@ -37,6 +37,7 @@ SMOKE_PAGES = [
     ("/auth/login/", "Login page", False),
     ("/", "Dashboard", True),
     ("/participants/", "Participant list", True),
+    ("/admin/settings/features/", "Admin feature settings", True),
 ]
 
 

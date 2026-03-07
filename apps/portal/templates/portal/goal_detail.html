@@ -93,6 +93,7 @@
 <script nonce="{{ request.csp_nonce }}">
 (function() {
     var allData = JSON.parse(document.getElementById('chart-data').textContent);
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var descContainer = document.getElementById('chart-descriptions');
     var chartContainer = document.querySelector('.portal-chart-container');
 
@@ -145,6 +146,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: {
                     legend: { display: allData.length > 1 },
                     tooltip: {

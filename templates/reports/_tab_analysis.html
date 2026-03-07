@@ -124,6 +124,7 @@
 <script nonce="{{ request.csp_nonce }}">
 {# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 (function() {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function initAnalysisCharts() {
         var chartData = JSON.parse(document.getElementById('chart-data').textContent);
         if (!Array.isArray(chartData)) {
@@ -172,6 +173,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: { legend: { position: 'bottom' } },
                 scales: {
                     y: { beginAtZero: false, title: { display: true, text: chart.unit || '{% trans "Value" %}' } },

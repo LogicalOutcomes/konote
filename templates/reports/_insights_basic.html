@@ -471,6 +471,7 @@
 {% trans "Something's shifting" as lbl_shifting %}
 {% trans "In a good place" as lbl_good %}
 (function() {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function initDescriptorTrendChart() {
         var rawData = JSON.parse(document.getElementById('descriptor-trend-data').textContent);
         if (!Array.isArray(rawData) || rawData.length === 0) return;
@@ -520,6 +521,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: {
                     legend: { position: 'bottom' },
                     tooltip: {
@@ -559,6 +563,7 @@
 {% trans "More support needed" as lbl_band_low %}
 {% trans "Goals within reach" as lbl_band_high %}
 (function() {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function initDistributionTrendCharts() {
         var trendsData = JSON.parse(document.getElementById('metric-trends-data').textContent);
         if (!trendsData) return;
@@ -594,6 +599,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: prefersReducedMotion ? 0 : undefined
+                    },
                     plugins: {
                         legend: { position: 'bottom' },
                         tooltip: {

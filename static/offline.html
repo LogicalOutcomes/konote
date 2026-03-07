@@ -6,18 +6,73 @@
     <title>Offline — KoNote</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .offline-card { text-align: center; max-width: 28rem; padding: 2rem; }
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1rem; }
+        .offline-card { text-align: center; max-width: 32rem; padding: 2rem; }
         .offline-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .visually-hidden-focusable {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .visually-hidden-focusable:focus {
+            position: static;
+            width: auto;
+            height: auto;
+            padding: .5rem 1rem;
+            margin: 0 0 1rem;
+            overflow: visible;
+            clip: auto;
+            white-space: normal;
+            background: #3176aa;
+            color: #fff;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
-    <main class="offline-card">
+    <a id="skip-link" href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+    <main id="main-content" tabindex="-1" class="offline-card">
         <div class="offline-icon" aria-hidden="true">&#x1F4E1;</div>
-        <h1>You're offline</h1>
-        <p>It looks like your internet connection was lost. Your data is safe — any unsaved work is stored locally.</p>
-        <p>Check your connection and try again.</p>
-        <button onclick="window.location.reload()">Try again</button>
+        <h1 id="offline-title">You're offline</h1>
+        <p id="offline-body-1">It looks like your internet connection was lost. Your data is safe and any unsaved work is stored locally.</p>
+        <p id="offline-body-2">Check your connection and try again.</p>
+        <button id="offline-retry" type="button" onclick="window.location.reload()">Try again</button>
     </main>
+    <script>
+    (function() {
+        var isFrench = ((navigator.language || navigator.userLanguage || 'en').toLowerCase().indexOf('fr') === 0);
+        var copy = isFrench ? {
+            lang: 'fr',
+            title: 'Hors ligne — KoNote',
+            skip: 'Aller au contenu principal',
+            heading: 'Vous êtes hors ligne',
+            body1: 'Il semble que votre connexion Internet ait été interrompue. Vos données sont en sécurité et tout travail non enregistré reste stocké localement.',
+            body2: 'Vérifiez votre connexion et réessayez.',
+            retry: 'Réessayer'
+        } : {
+            lang: 'en',
+            title: 'Offline — KoNote',
+            skip: 'Skip to main content',
+            heading: "You're offline",
+            body1: 'It looks like your internet connection was lost. Your data is safe and any unsaved work is stored locally.',
+            body2: 'Check your connection and try again.',
+            retry: 'Try again'
+        };
+
+        document.documentElement.lang = copy.lang;
+        document.title = copy.title;
+        document.getElementById('skip-link').textContent = copy.skip;
+        document.getElementById('offline-title').textContent = copy.heading;
+        document.getElementById('offline-body-1').textContent = copy.body1;
+        document.getElementById('offline-body-2').textContent = copy.body2;
+        document.getElementById('offline-retry').textContent = copy.retry;
+    })();
+    </script>
 </body>
 </html>
