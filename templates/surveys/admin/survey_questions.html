@@ -35,6 +35,9 @@
         {% if section.instructions %}
         <br><small>{{ section.instructions }}</small>
         {% endif %}
+        {% if section.source %}
+        <br><small>{% trans "Source:" %} {{ section.source }}</small>
+        {% endif %}
     </header>
 
     {# Existing questions in this section #}

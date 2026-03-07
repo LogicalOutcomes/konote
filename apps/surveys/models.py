@@ -27,6 +27,10 @@ class Survey(models.Model):
     name_fr = models.CharField(max_length=255, blank=True, default="")
     description = models.TextField(default="", blank=True)
     description_fr = models.TextField(default="", blank=True)
+    source = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_("Source or citation for the whole survey, e.g. 'PHQ-9 (Kroenke et al., 2001)'."),
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
     is_anonymous = models.BooleanField(
         default=False,
@@ -110,6 +114,10 @@ class SurveySection(models.Model):
         help_text=_("Section only shows when this question has the condition value."),
     )
     condition_value = models.CharField(max_length=255, blank=True, default="")
+    source = models.CharField(
+        max_length=500, blank=True, default="",
+        help_text=_("Source or citation for this section's questions, e.g. 'WHO-5 (WHO, 1998)'."),
+    )
     is_active = models.BooleanField(default=True)
     skip_for_identified = models.BooleanField(
         default=False,
