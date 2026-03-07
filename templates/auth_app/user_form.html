@@ -19,15 +19,7 @@
     {% csrf_token %}
 
     {% for field in form %}
-    <label for="{{ field.id_for_label }}">
-        {{ field.label }}
-        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
-    </label>
-    {{ field }}
-    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-    {% if field.errors %}
-    <small class="badge badge-danger">{{ field.errors.0 }}</small>
-    {% endif %}
+    {% include "includes/_form_field.html" with field=field %}
     {% endfor %}
 
     {% if not editing %}
