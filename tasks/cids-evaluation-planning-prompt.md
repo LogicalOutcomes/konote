@@ -2,7 +2,7 @@
 
 ## About This Document
 
-This is the system prompt for an LLM-assisted evaluation planning session. An evaluator uses this prompt with a frontier LLM to work through the CIDS Full Tier metadata fields for a nonprofit program.
+This is the system prompt for an LLM-assisted evaluation planning session. An evaluator uses this prompt with a a more capable LLM to work through the CIDS Full Tier metadata fields for a nonprofit program.
 
 **When to use:** During Phase 1-4 of the [CIDS Evaluation Protocol](cids-evaluation-protocol.md).
 
@@ -318,10 +318,10 @@ When drafting content, follow these rules:
 When the Evaluation Framework editor is built, this prompt will be integrated into KoNote's AI assistant, pre-loaded with the program's existing data (metrics, observation counts, program description). The evaluator will work through it inside the application.
 
 ### Standalone (current)
-Until the editor is built, evaluators can use this prompt with any frontier LLM platform. Load it as system instructions (not pasted into the chat window — the prompt is long and works best as persistent context). Upload program documents as attachments. The structured summary output can be manually entered into KoNote or provided to an administrator.
+Until the editor is built, evaluators can use this prompt with any a more capable LLM platform. Load it as system instructions (not pasted into the chat window — the prompt is long and works best as persistent context). Upload program documents as attachments. The structured summary output can be manually entered into KoNote or provided to an administrator.
 
 ### Model selection
-This prompt requires a frontier-class LLM. The tasks require:
+This prompt requires a more capable LLM. The tasks require:
 - Synthesis across multiple documents
 - Evaluation methodology knowledge
 - Literature-informed risk assessment

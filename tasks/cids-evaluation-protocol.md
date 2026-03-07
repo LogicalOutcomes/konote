@@ -12,7 +12,19 @@ The output is a complete evaluation framework that maps directly to CIDS Full Ti
 |------|--------|---------------|
 | **Evaluator** | Professional evaluator (internal or contracted) | Leads the process, makes judgement calls, signs attestation |
 | **Program lead** | Program manager or coordinator | Provides program knowledge, validates descriptions, confirms stakeholder groups |
-| **LLM assistant** | Frontier LLM (via KoNote or external platform) | Drafts descriptions, suggests risks, synthesises literature, checks completeness |
+| **LLM assistant** | A more capable LLM (via external platform) | Drafts descriptions, suggests risks, synthesises literature, checks completeness |
+
+## Where this fits in KoNote's AI architecture
+
+This protocol uses **Tier 3 (Evaluation AI)** — one of three tiers in KoNote's AI architecture. See the [AI Feature Toggles DRR](design-rationale/ai-feature-toggles.md#three-tier-ai-architecture-added-2026-03-07) for the full picture.
+
+| Tier | What it does | Provider | Data it sees |
+|------|-------------|----------|-------------|
+| **1 — Operational** | Theme summarisation, suggestion categorisation | Self-hosted model on Canadian VPS | Scrubbed participant content (never leaves the VPS) |
+| **2 — Tools** | Metric suggestions, goal builder, CIDS code mapping | Cloud AI API | Program metadata only (zero participant data) |
+| **3 — Evaluation** (this protocol) | Evaluation framework planning, literature review, Full Tier metadata | A more capable model via external platform | Non-PII program documentation (evaluator-controlled) |
+
+Tier 3 operates outside KoNote's toggle system. The evaluator manages the LLM session directly, uploading only program-level documentation. No participant data is involved.
 
 ## What gets filled in
 
