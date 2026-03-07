@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_create %}{% trans "Add Component" %}{% else %}{% trans "Edit Component" %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% if is_create %}{% trans "Add Component" %}{% else %}{% trans "Edit Component" %}{% endif %}</h1>
+    <p>{{ framework.name }} — {{ framework.program.name }}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    {% include "includes/_form_field.html" with field=field %}
+    {% endfor %}
+
+    <fieldset role="group">
+        <button type="submit">{% if is_create %}{% trans "Add" %}{% else %}{% trans "Save" %}{% endif %}</button>
+        <a href="{% url 'programs:framework_detail' framework_id=framework.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </fieldset>
+</form>
+{% endblock %}

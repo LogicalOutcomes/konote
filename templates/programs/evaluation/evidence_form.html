@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Add Evidence" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Add Evidence" %}</h1>
+    <p>{{ framework.name }} — {{ framework.program.name }}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    {% include "includes/_form_field.html" with field=field %}
+    {% endfor %}
+
+    <fieldset role="group">
+        <button type="submit">{% trans "Add" %}</button>
+        <a href="{% url 'programs:framework_detail' framework_id=framework.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </fieldset>
+</form>
+{% endblock %}
