@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "CIDS Export Status" %} — {{ program.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "CIDS Export Status" %}</h1>
+    <p>{{ program.name }} — {{ present }} / {{ total }} {% trans "classes" %} ({{ pct }}%)</p>
+</hgroup>
+
+<progress value="{{ present }}" max="{{ total }}"></progress>
+
+{% if framework %}
+<article>
+    <header>{% trans "Evaluation Framework" %}</header>
+    <p><a href="{% url 'programs:framework_detail' framework_id=framework.pk %}">{{ framework.name }}</a> — {{ framework.get_status_display }}</p>
+    {% if framework.is_attested %}
+    <p><mark>{% trans "Attested" %}</mark> {% trans "by" %} {{ framework.evaluator_attestation_by.display_name }} {% trans "on" %} {{ framework.evaluator_attestation_at|date:"Y-m-d" }}</p>
+    {% else %}
+    <p><a href="{% url 'programs:framework_attest' framework_id=framework.pk %}">{% trans "Record attestation" %}</a></p>
+    {% endif %}
+</article>
+{% else %}
+<article>
+    <header>{% trans "No Evaluation Framework" %}</header>
+    <p>{% trans "Create an evaluation framework to enable Full Tier compliance." %}</p>
+    <a href="{% url 'programs:framework_create' program_id=program.pk %}" role="button">{% trans "Create Framework" %}</a>
+</article>
+{% endif %}
+
+<section>
+    <h2>{% trans "CIDS Class Coverage" %}</h2>
+    <figure>
+    <table role="grid" aria-label="{% trans 'CIDS class coverage' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "CIDS Class" %}</th>
+                <th scope="col">{% trans "Label" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Source" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in coverage %}
+            <tr>
+                <td><code>{{ c.class_uri }}</code></td>
+                <td>{{ c.label }}</td>
+                <td>
+                    {% if c.status == "present" %}
+                    <mark>{% trans "Present" %}</mark>
+                    {% else %}
+                    {% trans "Missing" %}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if c.source == "framework" %}{% trans "Evaluation framework" %}
+                    {% elif c.source == "basic_tier" %}{% trans "Basic Tier export" %}
+                    {% elif c.source == "stub" %}{% trans "Derived stub" %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+</section>
+
+<section>
+    <h2>{% trans "Export" %}</h2>
+    <div class="grid">
+        <a href="{% url 'reports:cids_full_tier_export' %}?program_id={{ program.pk }}&format=download" role="button">{% trans "Download JSON-LD" %}</a>
+        <a href="{% url 'reports:cids_full_tier_export' %}?program_id={{ program.pk }}" role="button" class="outline">{% trans "Preview JSON-LD" %}</a>
+    </div>
+</section>
+
+<p><a href="{% url 'reports:cids_dashboard' %}">{% trans "Back to dashboard" %}</a></p>
+{% endblock %}
