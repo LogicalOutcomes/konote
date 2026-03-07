@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Create Invite" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "New User Invite" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Create Invite" %}</h1>
-    <p>{% trans "Generate a link for a new user to create their account" %}</p>
+    <h1>{% trans "New User Invite" %}</h1>
+    <p>{% trans "Create a one-time link for a new team member. After you save, copy the link and send it to them." %}</p>
 </hgroup>
+
+{% include "admin_settings/_page_help.html" with content=_('Invites are best when you want the person to choose their own username and password. The link can only be used once.') %}
 
 <article>
     <form method="post">
@@ -28,7 +30,7 @@
         {{ form.expires_days }}
         {% if form.expires_days.errors %}<small class="error" role="alert">{{ form.expires_days.errors.0 }}</small>{% endif %}
 
-        <button type="submit">{% trans "Create Invite" %}</button>
+        <button type="submit">{% trans "Create Invite Link" %}</button>
     </form>
 </article>
 

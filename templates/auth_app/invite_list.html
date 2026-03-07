@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "New Users" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "User Invites" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "New Users" %}</h1>
-    <p>{% trans "Manage invite links for new users" %}</p>
+    <h1>{% trans "User Invites" %}</h1>
+    <p>{% trans "Create and manage one-time invite links for new team members." %}</p>
 </hgroup>
 
-<p><a href="{% url 'admin_users:invite_create' %}" role="button">+ {% trans "New Invite" %}</a></p>
+<p><a href="{% url 'admin_users:invite_create' %}" role="button">+ {% trans "New User Invite" %}</a></p>
 
 <figure>
 <table role="grid" aria-label="{% trans 'Invite list' %}">
@@ -64,4 +64,6 @@
     </tbody>
 </table>
 </figure>
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back to Settings" %}</a>
 {% endblock %}

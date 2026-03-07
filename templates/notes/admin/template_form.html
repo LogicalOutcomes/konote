@@ -6,7 +6,16 @@
 {% block content %}
 <hgroup>
     <h1>{% if editing %}{% blocktrans with note=term.progress_note|default:"Note" %}Edit {{ note }} Template{% endblocktrans %}{% else %}{% blocktrans with note=term.progress_note|default:"Note" %}New {{ note }} Template{% endblocktrans %}{% endif %}</h1>
+    <p>
+        {% if editing %}
+            {% trans "Update the note structure staff see when they choose this template." %}
+        {% else %}
+            {% trans "Create the note structure staff will use for a common kind of interaction. Add or reorder sections below to shape the note." %}
+        {% endif %}
+    </p>
 </hgroup>
+
+{% include "admin_settings/_page_help.html" with content=_('Use note templates to guide staff toward consistent documentation. Keep section names short and action-oriented so they are easy to scan during note entry.') %}
 
 <form method="post">
     {% csrf_token %}
@@ -48,7 +57,7 @@
     </fieldset>
 
     <div role="group">
-        <button type="submit">{% trans "Save Template" %}</button>
+        <button type="submit">{% if editing %}{% trans "Save Template" %}{% else %}{% trans "Create Note Template" %}{% endif %}</button>
         <a href="{% url 'note_templates:template_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>

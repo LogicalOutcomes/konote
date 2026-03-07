@@ -18,13 +18,13 @@ There are three ways to create user accounts, depending on the situation:
 
 Invite links are the easiest way to onboard staff. The new person chooses their own username and password.
 
-1. Click **gear icon** -> **User Management**
-2. Click **Invite User**
+1. Open **Admin** -> **User Invites**
+2. Click **New User Invite**
 3. Choose:
    - **Role** -- front desk, staff, program manager, executive, or admin
    - **Programs** -- which programs they'll have access to
    - **Link expiry** -- how many days the invite is valid (default: 7)
-4. Click **Create Invite**
+4. Click **Create Invite Link**
 5. Copy the generated link and send it to the new person
 
 When they open the link, they'll set up their display name, username, and password. They're logged in immediately with the correct role and program access.
@@ -35,7 +35,7 @@ When they open the link, they'll set up their display name, username, and passwo
 
 For quick setup when you want to control the credentials:
 
-1. Click **gear icon** -> **User Management**
+1. Open **Admin** -> **Users**
 2. Click **+ New User**
 3. Fill in:
    - **Display Name:** Full name (shown in reports)
@@ -77,7 +77,7 @@ A single user can hold **different roles in different programs**. This is common
 - The user's current role is shown as a badge in the navigation bar
 
 **To manage per-program roles:**
-1. Go to **User Management**
+1. Go to **Admin** -> **Users**
 2. Click **Roles** next to the user's name
 3. Use the table to see current program assignments
 4. Use the form below the table to add a new program role
@@ -90,7 +90,7 @@ A single user can hold **different roles in different programs**. This is common
 ## Deactivate Users
 
 When someone leaves:
-1. Go to **User Management**
+1. Go to **Admin** -> **Users**
 2. Click user -> **Edit**
 3. Uncheck **Is Active**
 4. Click **Save**

@@ -36,6 +36,8 @@ class AdminSettingsDashboardTest(TestCase):
         resp = self.client.get("/admin/settings/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Terminology")
+        self.assertContains(resp, "Start Setup Wizard")
+        self.assertContains(resp, "User Invites")
 
     def test_staff_cannot_view_dashboard(self):
         self.client.login(username="staff", password="testpass123")

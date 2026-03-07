@@ -9,6 +9,8 @@
     <p>{% if editing %}{% trans "Update metric definition." %}{% else %}{% trans "Add a custom metric to the library." %}{% endif %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Create a custom metric when your organisation tracks something that is not already in the library. Staff will see this metric when recording progress on goals.') %}
+
 <form method="post">
     {% csrf_token %}
     {% for field in form %}

@@ -41,11 +41,14 @@ class RegistrationLinkForm(forms.ModelForm):
             "field_groups": forms.CheckboxSelectMultiple(),
         }
         help_texts = {
-            "title": "A descriptive name shown to registrants (e.g., 'Summer Soccer 2025 Registration').",
-            "description": "Instructions or information displayed on the registration form.",
-            "auto_approve": "If checked, submissions are approved immediately without staff review.",
-            "max_registrations": "Leave blank for unlimited registrations.",
-            "closes_at": "Leave blank for no deadline.",
+            "program": _("People who submit this form will be linked to this program if they are approved."),
+            "title": _("The heading people will see on the public registration form."),
+            "description": _("Use this space for instructions, welcome text, or who the form is for."),
+            "field_groups": _("Choose which custom field groups to ask about on the public form."),
+            "auto_approve": _("Use with care. If checked, submissions create participant records immediately without staff review."),
+            "max_registrations": _("Leave blank if there is no capacity limit."),
+            "closes_at": _("Leave blank if the form should stay open until you turn it off."),
+            "is_active": _("Turn this off to hide the form without deleting it."),
         }
 
     def __init__(self, *args, requesting_user=None, **kwargs):
