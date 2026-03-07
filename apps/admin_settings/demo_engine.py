@@ -1518,21 +1518,28 @@ class DemoDataEngine:
         # Create survey definitions
         surveys = []
         for sdef in survey_defs[:2]:  # Max 2 surveys
-            survey, created = Survey.objects.get_or_create(
-                name=sdef["name"],
-                created_by=creator,
-                defaults={
-                    "name_fr": sdef.get("name_fr", ""),
-                    "description": sdef.get("description", ""),
-                    "description_fr": sdef.get("description_fr", ""),
-                    "status": "active",
-                    "portal_visible": True,
-                    "show_scores_to_participant": True,
-                },
-            )
-            if not created:
+            survey = Survey.objects.filter(name=sdef["name"]).first()
+            if survey:
+                # Ensure existing survey is active and portal-visible
+                Survey.objects.filter(pk=survey.pk).update(
+                    status="active",
+                    portal_visible=True,
+                    show_scores_to_participant=True,
+                )
+                survey.refresh_from_db()
                 surveys.append(survey)
                 continue
+
+            survey = Survey.objects.create(
+                name=sdef["name"],
+                name_fr=sdef.get("name_fr", ""),
+                description=sdef.get("description", ""),
+                description_fr=sdef.get("description_fr", ""),
+                status="active",
+                portal_visible=True,
+                show_scores_to_participant=True,
+                created_by=creator,
+            )
 
             # Create sections and questions
             for s_idx, sec_def in enumerate(sdef.get("sections", [])):
