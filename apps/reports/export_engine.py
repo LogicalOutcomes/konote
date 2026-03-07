@@ -16,6 +16,7 @@ See tasks/design-rationale/reporting-architecture.md for the full spec.
 """
 import csv
 import io
+import json
 import logging
 from datetime import date, datetime, time
 
@@ -26,6 +27,7 @@ from apps.clients.models import ClientProgramEnrolment
 from apps.notes.models import ProgressNote
 
 from .aggregation import compute_template_metrics
+from .cids_jsonld import build_cids_jsonld_document
 from .csv_utils import sanitise_csv_row, sanitise_filename
 from .funder_report import (
     generate_funder_report_csv_rows,
@@ -211,7 +213,7 @@ def generate_template_csv_rows(
 
 
 def generate_template_report(template, date_from, date_to, period_label,
-                             user, export_format, request):
+                             user, export_format, request, taxonomy_lens="iris_plus"):
     """
     Generate a template-driven report.
 
@@ -222,7 +224,7 @@ def generate_template_report(template, date_from, date_to, period_label,
         date_to: End of reporting period (date).
         period_label: Human-readable period (e.g. "Q3 FY2025-26").
         user: Requesting user (for demo/real client filtering).
-        export_format: "csv", "pdf", or "html".
+        export_format: "csv", "pdf", "html", or "cids_json".
         request: HttpRequest (needed by PDF renderer).
 
     Returns:
@@ -256,6 +258,7 @@ def generate_template_report(template, date_from, date_to, period_label,
             fiscal_year_label=period_label,
             user=user,
             report_template=template,
+            taxonomy_lens=taxonomy_lens,
         )
 
         raw_count = report_data.get("total_individuals_served", 0)
@@ -294,7 +297,7 @@ def generate_template_report(template, date_from, date_to, period_label,
         all_report_data.append((program, report_data))
 
         # Compute aggregated metrics per demographic group
-        if has_aggregation:
+        if has_aggregation and export_format != "cids_json":
             active_ids = _get_active_client_ids(program, date_from, date_to, user)
             demo_groups = get_demographic_groups(active_ids, date_to, template)
             metric_results = compute_template_metrics(
@@ -343,6 +346,16 @@ def generate_template_report(template, date_from, date_to, period_label,
         )
         content = render_html_string(html_template, html_context)
         filename = f"Report_{safe_partner}_{safe_period}.html"
+    elif export_format == "cids_json":
+        document = build_cids_jsonld_document(
+            programs=[_program],
+            taxonomy_lens=taxonomy_lens,
+            date_from=date_from,
+            date_to=date_to,
+            metric_definitions=[rm.metric_definition for rm in report_metrics] if report_metrics else None,
+        )
+        content = json.dumps(document, indent=2, ensure_ascii=False)
+        filename = f"Report_{safe_partner}_{safe_period}.jsonld"
     else:
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)

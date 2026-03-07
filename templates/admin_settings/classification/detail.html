@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Review Mapping — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Review Mapping</h1>
+    <p>{{ mapping.subject_display }} · {{ mapping.subject_type|title }} · {{ mapping.taxonomy_list_name|default:mapping.get_taxonomy_system_display }}</p>
+</hgroup>
+
+<article>
+    <header><strong>Current Suggestion</strong></header>
+    <p><strong>Code:</strong> {{ mapping.taxonomy_code }}</p>
+    <p><strong>Label:</strong> {{ mapping.taxonomy_label|default:"(no label)" }}</p>
+    <p><strong>Status:</strong> {{ mapping.get_mapping_status_display }}</p>
+    <p><strong>Confidence:</strong> {% if mapping.confidence_score is not None %}{{ mapping.confidence_score|floatformat:2 }}{% else %}—{% endif %}</p>
+    <p><strong>Reason:</strong> {{ mapping.rationale|default:"No rationale stored." }}</p>
+    {% if mapping.mapping_status == 'draft' %}
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_approve' mapping.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Approve This Mapping</button>
+    </form>
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reject' mapping.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="secondary">Reject This Mapping</button>
+    </form>
+    {% endif %}
+</article>
+
+<section>
+    <h2>Other Suggestions for This Item</h2>
+    {% if related_mappings %}
+    <div class="overflow-auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Label</th>
+                    <th>Status</th>
+                    <th>Confidence</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in related_mappings %}
+                <tr>
+                    <td>{{ item.taxonomy_code }}</td>
+                    <td>{{ item.taxonomy_label }}</td>
+                    <td>{{ item.get_mapping_status_display }}</td>
+                    <td>{% if item.confidence_score is not None %}{{ item.confidence_score|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td>{{ item.rationale }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No sibling suggestions yet.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Rerun Using Another Code List</h2>
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reclassify' mapping.pk %}">
+        {% csrf_token %}
+        {{ reclassify_form.as_p }}
+        <button type="submit" class="secondary">Rerun Suggestions</button>
+    </form>
+</section>
+
+<section>
+    <h2>Manual Code Search</h2>
+    <form method="get">
+        {{ manual_search_form.as_p }}
+        <button type="submit" class="secondary">Search This Code List</button>
+    </form>
+
+    {% if manual_search_results %}
+    <div class="overflow-auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Label</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in manual_search_results %}
+                <tr>
+                    <td>{{ entry.code }}</td>
+                    <td>{{ entry.label }}</td>
+                    <td>{{ entry.description|default:"—" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'admin_settings:taxonomy_mapping_manual_pick' mapping.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="code" value="{{ entry.code }}">
+                            <button type="submit">Use This Code</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif manual_search_form.is_bound %}
+    <p>No matching codes were found in {{ mapping.taxonomy_list_name }}.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Ask the Review Assistant</h2>
+    <form method="post" action="{% url 'admin_settings:taxonomy_mapping_ask' mapping.pk %}">
+        {% csrf_token %}
+        {{ question_form.as_p }}
+        <button type="submit" class="secondary">Ask</button>
+    </form>
+
+    {% if conversation %}
+    {% for message in conversation %}
+    <article>
+        <header><strong>{{ message.role|title }}</strong></header>
+        <p>{{ message.content }}</p>
+    </article>
+    {% endfor %}
+    {% endif %}
+</section>
+
+<p><a href="{% url 'admin_settings:taxonomy_review_queue' %}">← Back to Classification Review</a></p>
+{% endblock %}

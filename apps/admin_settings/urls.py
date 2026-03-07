@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import config_generator_views
+from . import classification_views
 from . import field_access_views
 from . import partner_views
 from . import report_template_views
@@ -28,6 +29,15 @@ urlpatterns = [
     path("demo-directory/", views.demo_directory, name="demo_directory"),
     path("demo-data/", views.demo_data_management, name="demo_data_management"),
     path("config-generator/", config_generator_views.config_generator, name="config_generator"),
+    path("classification/", classification_views.taxonomy_review_queue, name="taxonomy_review_queue"),
+    path("classification/generate/", classification_views.taxonomy_generate_suggestions, name="taxonomy_generate_suggestions"),
+    path("classification/bulk-action/", classification_views.taxonomy_bulk_action, name="taxonomy_bulk_action"),
+    path("classification/<int:mapping_id>/", classification_views.taxonomy_mapping_detail, name="taxonomy_mapping_detail"),
+    path("classification/<int:mapping_id>/approve/", classification_views.taxonomy_mapping_approve, name="taxonomy_mapping_approve"),
+    path("classification/<int:mapping_id>/reject/", classification_views.taxonomy_mapping_reject, name="taxonomy_mapping_reject"),
+    path("classification/<int:mapping_id>/manual-pick/", classification_views.taxonomy_mapping_manual_pick, name="taxonomy_mapping_manual_pick"),
+    path("classification/<int:mapping_id>/reclassify/", classification_views.taxonomy_mapping_reclassify, name="taxonomy_mapping_reclassify"),
+    path("classification/<int:mapping_id>/ask/", classification_views.taxonomy_mapping_ask, name="taxonomy_mapping_ask"),
     # Access grants admin (Tier 3 only)
     path("access-grants/", access_grant_views.access_grant_admin_list, name="access_grant_admin_list"),
     path("access-grant-reasons/", access_grant_views.access_grant_reasons_admin, name="access_grant_reasons"),
