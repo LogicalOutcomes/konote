@@ -37,14 +37,13 @@
 {% endif %}
 
 {% if ai_enabled %}
-<article class="notice" role="note">
-    <small>{% blocktrans with target=term.target|default:"goal" %}Start with the form below. If you want help drafting the {{ target }}, use the helper tools here first.{% endblocktrans %}</small>
+<article class="goal-entry-intro" role="note">
+    <strong>{% trans "Choose how to start" %}</strong>
+    <p>{% blocktrans with target=term.target|default:"target" %}You can ask AI for a draft, pick a similar {{ target }}, or open the full form yourself.{% endblocktrans %}</p>
 </article>
-<details id="goal-helper-tools" class="goal-helper-tools"{% if form.errors %} open{% endif %}>
-    <summary>{% blocktrans with target=term.target|default:"goal" %}Need help drafting this {{ target }}?{% endblocktrans %}</summary>
 
 {# ====== Entry points (AI-assisted page) ====== #}
-<div id="entry-points">
+<div id="entry-points" {% if form.errors %}hidden{% endif %}>
 
     {# R11: Conditional layout — show quick picks first if 3+ common goals #}
     {% if quick_pick_first %}
@@ -63,8 +62,10 @@
     {% include "plans/_goal_quick_pick_entry.html" %}
     {% endif %}{# end quick_pick_first conditional #}
 
+    <p id="manual-entry-row" class="manual-entry-row"><a href="#" id="btn-manual-entry" class="secondary">
+        {% trans "Or fill in the form manually" %}
+    </a></p>
 </div>
-</details>
 
 {# Container for AI suggestion (HTMX swaps here) #}
 <div id="suggestion-container" aria-live="polite"></div>
@@ -73,9 +74,9 @@
 {% comment %}
     UNIFIED FORM (T-4): Single form for both AI and non-AI paths.
     Non-AI path uses phase 1 (listen) + phase 2 (shape) progressive disclosure.
-    AI-enabled path keeps the manual form visible and treats AI/quick-pick tools as optional drafting help.
+    AI-enabled path starts with AI/quick-pick entry points and reveals the manual form only when needed.
 {% endcomment %}
-<form method="post" id="goal-form" novalidate>
+<form method="post" id="goal-form" novalidate {% if ai_enabled and not form.errors %}hidden{% endif %}>
     {% csrf_token %}
 
     {% if not ai_enabled %}
@@ -164,8 +165,6 @@
             {% endif %}
         </fieldset>
         {% else %}
-        {# AI path: hidden field — participant words are captured in the AI
-           entry textarea and copied here by JS (populateForm / manual-entry). #}
         <input type="hidden"
                id="{{ form.client_goal.id_for_label }}"
                name="client_goal"
@@ -380,7 +379,6 @@
 
     var goalForm = document.getElementById("goal-form");
     var entryPoints = document.getElementById("entry-points");
-    var helperTools = document.getElementById("goal-helper-tools");
     var suggestionContainer = document.getElementById("suggestion-container");
     var nameInput = document.getElementById("{{ form.name.id_for_label }}");
     var participantEcho = document.getElementById("participant-echo");
@@ -477,9 +475,9 @@
     // ────────────────────────────────────────
 
     function revealForm() {
-        if (entryPoints) entryPoints.hidden = false;
-        if (helperTools) helperTools.open = false;
+        if (entryPoints) entryPoints.hidden = true;
         if (goalForm) {
+            goalForm.hidden = false;
             var firstInput = goalForm.querySelector("input:not([type=hidden]):not([disabled]), textarea, select");
             if (firstInput) firstInput.focus();
         }
@@ -559,7 +557,7 @@
             if (card) {
                 card.scrollIntoView({ behavior: "smooth" });
                 card.focus();
-                if (helperTools) helperTools.open = false;
+                if (entryPoints) entryPoints.hidden = true;
             }
             // If error partial was loaded, wire up its button
             var showFormBtn = document.getElementById("btn-show-manual-form");
@@ -579,7 +577,6 @@
                 retryBtn.addEventListener("click", function() {
                     suggestionContainer.innerHTML = "";
                     if (entryPoints) entryPoints.hidden = false;
-                    if (helperTools) helperTools.open = true;
                     var pw = document.getElementById("participant-words");
                     if (pw) { pw.value = ""; pw.focus(); }
                 });
@@ -611,7 +608,6 @@
             if (btn.id === "btn-start-over") {
                 suggestionContainer.innerHTML = "";
                 if (entryPoints) entryPoints.hidden = false;
-                if (helperTools) helperTools.open = true;
                 var pw = document.getElementById("participant-words");
                 if (pw) {
                     pw.value = "";

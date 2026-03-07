@@ -4876,6 +4876,18 @@ article[aria-label="notification"].fading-out {
 
 /* ── AI Target Suggestion (redesigned Add Target page) ── */
 
+.goal-entry-intro {
+    background: var(--kn-primary-subtle);
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-base);
+}
+.goal-entry-intro p {
+    margin: var(--kn-space-xs) 0 0;
+    color: var(--kn-text-secondary);
+}
+
 /* Entry point divider ("or") */
 .entry-divider {
     display: flex;
@@ -4890,6 +4902,11 @@ article[aria-label="notification"].fading-out {
     content: "";
     flex: 1;
     border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.manual-entry-row {
+    margin: var(--kn-space-base) 0 0;
+    text-align: center;
 }
 
 /* Non-AI two-phase form layout */
