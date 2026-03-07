@@ -15,6 +15,7 @@ from apps.admin_settings.models import (
 from apps.auth_app.models import User
 from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
 from apps.plans.models import MetricDefinition, PlanTarget, PlanSection, PlanTargetMetric
+from apps.plans.cids import apply_metric_cids_defaults, apply_target_cids_defaults
 from apps.plans.achievement import compute_achievement_status, update_achievement_status
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
@@ -36,11 +37,14 @@ class MetricDefinitionCidsFieldsTest(TestCase):
             name="Test Metric",
             definition="Test definition",
         )
-        self.assertEqual(metric.cids_indicator_uri, "")
+        self.assertEqual(
+            metric.cids_indicator_uri,
+            f"urn:konote:indicator-definition:{metric.pk}",
+        )
         self.assertEqual(metric.iris_metric_code, "")
         self.assertEqual(metric.sdg_goals, [])
         self.assertEqual(metric.cids_unit_description, "")
-        self.assertEqual(metric.cids_defined_by, "")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
         self.assertEqual(metric.cids_has_baseline, "")
         self.assertEqual(metric.cids_theme_override, "")
 
@@ -95,6 +99,66 @@ class MetricDefinitionCidsFieldsTest(TestCase):
         metric.refresh_from_db()
         self.assertEqual(metric.cids_has_baseline, "Median score 4.5 at programme entry")
 
+    def test_helper_populates_local_metric_defaults(self):
+        metric = MetricDefinition.objects.create(
+            name="Local Metric",
+            definition="Local definition",
+            unit="score",
+        )
+        metric.cids_indicator_uri = ""
+        metric.cids_unit_description = ""
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+        self.assertCountEqual(
+            changed,
+            ["cids_indicator_uri", "cids_unit_description", "cids_defined_by"],
+        )
+        self.assertEqual(metric.cids_indicator_uri, f"urn:konote:indicator-definition:{metric.pk}")
+        self.assertEqual(metric.cids_unit_description, "score")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
+
+    def test_helper_uses_giin_for_iris_metric(self):
+        metric = MetricDefinition.objects.create(
+            name="IRIS Metric",
+            definition="IRIS definition",
+            iris_metric_code="PI2061",
+        )
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+        self.assertIn("cids_defined_by", changed)
+        self.assertEqual(metric.cids_defined_by, "https://iris.thegiin.org")
+
+    def test_signal_populates_local_metric_defaults(self):
+        metric = MetricDefinition.objects.create(
+            name="Signal Metric",
+            definition="Signal definition",
+            unit="days",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.cids_indicator_uri, f"urn:konote:indicator-definition:{metric.pk}")
+        self.assertEqual(metric.cids_unit_description, "days")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
+
+    def test_helper_does_not_infer_deferred_taxonomy_fields(self):
+        metric = MetricDefinition.objects.create(
+            name="Deferred Mapping Metric",
+            definition="Local definition",
+            unit="sessions",
+        )
+        metric.cids_indicator_uri = ""
+        metric.cids_unit_description = ""
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+
+        self.assertCountEqual(
+            changed,
+            ["cids_indicator_uri", "cids_unit_description", "cids_defined_by"],
+        )
+        self.assertEqual(metric.iris_metric_code, "")
+        self.assertEqual(metric.sdg_goals, [])
+        self.assertEqual(metric.cids_has_baseline, "")
+        self.assertEqual(metric.cids_theme_override, "")
+
 
 # ── PlanTarget CIDS fields ────────────────────────────────────────────
 
@@ -119,7 +183,10 @@ class PlanTargetCidsFieldsTest(TestCase):
         )
         target.name = "Test Target"
         target.save()
-        self.assertEqual(target.cids_outcome_uri, "")
+        self.assertEqual(
+            target.cids_outcome_uri,
+            f"urn:konote:outcome-definition:{target.pk}",
+        )
 
     def test_cids_outcome_uri_can_be_set(self):
         target = PlanTarget.objects.create(
@@ -131,6 +198,28 @@ class PlanTargetCidsFieldsTest(TestCase):
         target.save()
         target.refresh_from_db()
         self.assertEqual(target.cids_outcome_uri, "urn:cids:outcome:housing-stable")
+
+    def test_helper_populates_local_target_default(self):
+        target = PlanTarget.objects.create(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Target Helper"
+        target.save()
+        target.cids_outcome_uri = ""
+        changed = apply_target_cids_defaults(target)
+        self.assertEqual(changed, ["cids_outcome_uri"])
+        self.assertEqual(target.cids_outcome_uri, f"urn:konote:outcome-definition:{target.pk}")
+
+    def test_signal_populates_local_target_default(self):
+        target = PlanTarget.objects.create(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Signal Target"
+        target.save()
+        target.refresh_from_db()
+        self.assertEqual(target.cids_outcome_uri, f"urn:konote:outcome-definition:{target.pk}")
 
 
 # ── Program CIDS fields ──────────────────────────────────────────────
@@ -392,6 +481,10 @@ class TaxonomyMappingTest(TestCase):
             name="Test Metric", definition="Test",
         )
         self.program = Program.objects.create(name="Test Program")
+        self.reviewer = User.objects.create_user(
+            username="mapping-reviewer",
+            password="testpass123",
+        )
 
     def test_create_metric_mapping(self):
         mapping = TaxonomyMapping.objects.create(
@@ -476,6 +569,78 @@ class TaxonomyMappingTest(TestCase):
             taxonomy_code="PI2061",
         )
         self.assertIn("cids_iris:PI2061", str(mapping))
+
+    def test_review_fields_default_for_manual_mapping(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        self.assertEqual(mapping.mapping_status, "approved")
+        self.assertEqual(mapping.mapping_source, "manual")
+        self.assertIsNone(mapping.confidence_score)
+        self.assertEqual(mapping.rationale, "")
+        self.assertIsNone(mapping.reviewed_by)
+        self.assertIsNone(mapping.reviewed_at)
+
+    def test_draft_ai_mapping_can_store_confidence_and_rationale(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="draft",
+            mapping_source="ai_suggested",
+            confidence_score=0.82,
+            rationale="Matches the metric wording and unit.",
+        )
+        self.assertEqual(mapping.mapping_status, "draft")
+        self.assertEqual(mapping.mapping_source, "ai_suggested")
+        self.assertEqual(mapping.confidence_score, 0.82)
+        self.assertEqual(mapping.rationale, "Matches the metric wording and unit.")
+
+    def test_approved_ai_mapping_requires_reviewed_at(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="approved",
+            mapping_source="ai_suggested",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_rejected_mapping_requires_reviewed_at(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="rejected",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_reviewed_mapping_accepts_reviewer_metadata(self):
+        reviewed_at = timezone.now()
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="approved",
+            reviewed_by=self.reviewer,
+            reviewed_at=reviewed_at,
+        )
+        mapping.clean()
+
+    def test_confidence_score_must_be_between_zero_and_one(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="draft",
+            confidence_score=1.5,
+        )
+        with self.assertRaises(ValidationError):
+            mapping.full_clean()
 
 
 # ── import_cids_codelists management command ─────────────────────────
@@ -645,6 +810,38 @@ class StandardsAlignmentDataTest(TestCase):
         self.assertEqual(data["total_count"], 2)
         self.assertEqual(data["mapped_count"], 1)
         self.assertEqual(data["sdg_summary"], {1: 1, 11: 1})
+
+    def test_alignment_uses_selected_taxonomy_lens(self):
+        from apps.admin_settings.models import TaxonomyMapping
+        from apps.reports.cids_enrichment import get_standards_alignment_data
+
+        metric = MetricDefinition.objects.create(
+            name="Housing outcome",
+            definition="Tracks sustained housing.",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=metric,
+            taxonomy_system="sdg",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_code="11",
+            taxonomy_label="Sustainable Cities and Communities",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+
+        data = get_standards_alignment_data(
+            self.program,
+            metric_definitions=MetricDefinition.objects.filter(pk=metric.pk),
+            taxonomy_lens="sdg",
+        )
+
+        self.assertEqual(data["taxonomy_lens"], "sdg")
+        self.assertEqual(data["mapped_count"], 1)
+        self.assertEqual(data["metrics"][0]["selected_code"], "11")
+        self.assertEqual(
+            data["metrics"][0]["selected_label"],
+            "Sustainable Cities and Communities",
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -1368,7 +1565,6 @@ class CidsJsonLdExportTest(TestCase):
         self.org = OrganizationProfile.get_solo()
         self.org.legal_name = "Test Agency Inc."
         self.org.operating_name = "Test Agency"
-        self.org.legal_status = "Registered charity"
         self.org.save()
 
         self.client_file = ClientFile.objects.create()
@@ -1376,19 +1572,12 @@ class CidsJsonLdExportTest(TestCase):
         self.client_file.last_name = "Client"
         self.client_file.save()
 
-        # Create episode for stakeholder count
-        ServiceEpisode.objects.create(
-            client_file=self.client_file,
-            program=self.program,
-            status="active",
-            episode_type="new_intake",
-        )
-
         self.metric = MetricDefinition.objects.create(
             name="Wellbeing Score",
             definition="1-10 scale",
             cids_indicator_uri="urn:example:indicator:1",
             cids_unit_description="Scale score",
+            cids_theme_override="Education",
         )
         self.section = PlanSection.objects.create(
             client_file=self.client_file, program=self.program,
@@ -1400,6 +1589,35 @@ class CidsJsonLdExportTest(TestCase):
         self.target.name = "Improve wellbeing"
         self.target.achievement_status = "improving"
         self.target.save()
+        PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric)
+
+        self.note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="quick",
+            author=User.objects.create_user(username="note-author", password="testpass123"),
+            author_program=self.program,
+            status="default",
+            backdate=timezone.now(),
+        )
+        self.note.notes_text = "Session note"
+        self.note.save()
+        self.note_target = ProgressNoteTarget.objects.create(
+            progress_note=self.note,
+            plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=self.note_target,
+            metric_def=self.metric,
+            value="7",
+        )
+
+        CidsCodeList.objects.create(
+            list_name="IRISImpactTheme",
+            code="THEME01",
+            label="Education",
+            specification_uri="urn:iris:theme:education",
+            description="Education theme",
+        )
 
     def _run_export(self, **kwargs):
         """Run the export command and return parsed JSON."""
@@ -1430,23 +1648,24 @@ class CidsJsonLdExportTest(TestCase):
         org = org_nodes[0]
         self.assertEqual(org["hasLegalName"], "Test Agency Inc.")
         self.assertEqual(org["hasName"], "Test Agency")
-        self.assertEqual(org["cids:hasOrganizationType"], "Registered charity")
+        self.assertIn("hasOutcome", org)
+        self.assertIn("hasIndicator", org)
 
-    def test_program_node(self):
+    def test_export_uses_program_level_aggregate_outcome(self):
         doc = self._run_export()
-        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
-        self.assertEqual(len(prog_nodes), 1)
-        prog = prog_nodes[0]
-        self.assertEqual(prog["hasName"], "Youth Services")
-        self.assertIn("org:offeredBy", prog)
+        outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
+        self.assertEqual(len(outcome_nodes), 1)
+        outcome = outcome_nodes[0]
+        self.assertEqual(outcome["hasName"], "Youth Services outcomes")
+        self.assertEqual(outcome["forOrganization"]["@id"], "urn:konote:org:1")
 
     def test_outcome_node(self):
         doc = self._run_export()
         outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
         self.assertEqual(len(outcome_nodes), 1)
         outcome = outcome_nodes[0]
-        self.assertEqual(outcome["hasName"], "Improve wellbeing")
-        self.assertEqual(outcome["cids:achievementStatus"], "improving")
+        self.assertIn("hasIndicator", outcome)
+        self.assertIn("forOrganization", outcome)
 
     def test_indicator_node(self):
         doc = self._run_export()
@@ -1454,87 +1673,67 @@ class CidsJsonLdExportTest(TestCase):
         self.assertTrue(len(ind_nodes) >= 1)
         ind = ind_nodes[0]
         self.assertEqual(ind["hasName"], "Wellbeing Score")
-        self.assertEqual(ind["cids:unitDescription"], "Scale score")
-
-    def test_beneficial_stakeholder_is_group_not_individual(self):
-        """BeneficialStakeholder must be a cohort, never an individual client."""
-        doc = self._run_export()
-        sh_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:BeneficialStakeholder"
-        ]
-        self.assertTrue(len(sh_nodes) >= 1)
-        sh = sh_nodes[0]
-        # Must describe a group, not contain PII
-        self.assertIn("Participants in", sh["hasName"])
-        self.assertNotIn("Test", sh["hasName"])  # No client name
-        # Must have stakeholder size as i72:Measure
-        self.assertIn("cids:hasStakeholderSize", sh)
-        self.assertEqual(
-            sh["cids:hasStakeholderSize"]["@type"], "i72:Measure",
-        )
-
-    def test_i72_measure_wrapping(self):
-        """Numerical values must be wrapped in i72:Measure with string values."""
-        doc = self._run_export()
-        sh_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:BeneficialStakeholder"
-        ]
-        measure = sh_nodes[0]["cids:hasStakeholderSize"]
-        self.assertEqual(measure["@type"], "i72:Measure")
-        # Value must be xsd:string, not number literal
-        self.assertIsInstance(measure["i72:hasNumericalValue"], str)
+        self.assertEqual(ind["unitDescription"], "Scale score")
+        self.assertIn("forOrganization", ind)
+        self.assertIn("hasIndicatorReport", ind)
 
     def test_no_individual_pii_in_export(self):
-        """Export must not contain any individual client names."""
+        """Export must not contain client names or client-specific target text."""
         doc = self._run_export()
         export_str = json.dumps(doc)
         self.assertNotIn("Test Client", export_str)
+        self.assertNotIn("Improve wellbeing", export_str)
 
-    def test_stakeholder_outcome_junction(self):
+    def test_indicator_report_uses_measure_and_dates(self):
         doc = self._run_export()
-        so_nodes = [
+        report_nodes = [
             n for n in doc["@graph"]
-            if n.get("@type") == "cids:StakeholderOutcome"
+            if n.get("@type") == "cids:IndicatorReport"
         ]
-        self.assertTrue(len(so_nodes) >= 1)
-        so = so_nodes[0]
-        self.assertIn("cids:forStakeholder", so)
-        self.assertIn("cids:forOutcome", so)
-
-    def test_impact_report_has_scale(self):
-        doc = self._run_export()
-        impact_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:ImpactReport"
-        ]
-        self.assertTrue(len(impact_nodes) >= 1)
-        impact = impact_nodes[0]
-        self.assertIn("cids:hasImpactScale", impact)
-        self.assertEqual(
-            impact["cids:hasImpactScale"]["@type"], "i72:Measure",
-        )
+        self.assertEqual(len(report_nodes), 1)
+        report = report_nodes[0]
+        self.assertEqual(report["value"]["@type"], "i72:Measure")
+        self.assertIsInstance(report["value"]["hasNumericalValue"], str)
+        self.assertIn("startedAtTime", report)
+        self.assertIn("endedAtTime", report)
+        self.assertEqual(report["forIndicator"]["@id"], "urn:konote:indicator:1:1")
 
     def test_program_filter(self):
         """--program-id filters to a single program."""
         Program.objects.create(name="Other Program")
         doc = self._run_export(program_id=self.program.pk)
-        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
-        self.assertEqual(len(prog_nodes), 1)
-        self.assertEqual(prog_nodes[0]["hasName"], "Youth Services")
+        outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
+        self.assertEqual(len(outcome_nodes), 1)
+        self.assertEqual(outcome_nodes[0]["hasName"], "Youth Services outcomes")
 
     def test_theme_nodes_from_code_list(self):
         """Theme nodes are exported from CidsCodeList entries."""
-        CidsCodeList.objects.create(
-            list_name="IRISImpactTheme",
-            code="THEME01",
-            label="Education",
-            specification_uri="urn:iris:theme:education",
-        )
         doc = self._run_export()
         theme_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Theme"]
         self.assertTrue(len(theme_nodes) >= 1)
         theme = theme_nodes[0]
         self.assertEqual(theme["hasName"], "Education")
         self.assertEqual(theme["@id"], "urn:iris:theme:education")
+
+    def test_selected_taxonomy_lens_creates_code_nodes(self):
+        CidsCodeList.objects.create(
+            list_name="SDGImpacts",
+            code="4",
+            label="Quality Education",
+            specification_uri="https://metadata.un.org/sdg/4",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="sdg",
+            taxonomy_code="4",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_label="Quality Education",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+
+        doc = self._run_export(taxonomy_lens="sdg")
+        indicator = next(n for n in doc["@graph"] if n.get("@type") == "cids:Indicator")
+        code_node = next(n for n in doc["@graph"] if n.get("@type") == "cids:Code")
+        self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/4")
+        self.assertEqual(code_node["hasName"], "Quality Education")
