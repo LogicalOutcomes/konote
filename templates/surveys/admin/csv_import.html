@@ -26,7 +26,7 @@
 
     <details>
         <summary>{% trans "Column reference" %}</summary>
-        <p>{% trans "Only <strong>section</strong> and <strong>question</strong> are required. All other columns are optional." %}</p>
+        <p>{% trans "Only section and question are required. All other columns are optional." %}</p>
         <ul>
             <li><strong>section</strong> — {% trans "Section name. Questions with the same section name are grouped together." %}</li>
             <li><strong>question</strong> — {% trans "The question text." %}</li>
@@ -36,6 +36,7 @@
             <li><strong>score_values</strong> — {% trans "Numeric scores matching options: 3;2;1" %}</li>
             <li><strong>instructions</strong> — {% trans "Instructions shown at the top of a section." %}</li>
             <li><strong>page_break</strong> — {% trans "yes to start a new page at this section." %}</li>
+            <li><strong>source</strong> — {% trans "Citation for this section's questions. Only needed on the first row of each section." %}</li>
             <li><strong>section_fr</strong>, <strong>question_fr</strong>, <strong>options_fr</strong> — {% trans "French translations (optional)." %}</li>
         </ul>
     </details>

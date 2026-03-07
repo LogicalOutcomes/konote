@@ -11,7 +11,7 @@ class SurveyForm(forms.ModelForm):
     class Meta:
         model = Survey
         fields = [
-            "name", "name_fr", "description", "description_fr",
+            "name", "name_fr", "description", "description_fr", "source",
             "consent_text", "consent_text_fr",
             "is_anonymous", "show_scores_to_participant", "portal_visible",
         ]
@@ -26,6 +26,7 @@ class SurveyForm(forms.ModelForm):
             "name_fr": _("Survey name (French)"),
             "description": _("Description"),
             "description_fr": _("Description (French)"),
+            "source": _("Source or citation (optional)"),
             "consent_text": _("Consent text (shown before the survey begins)"),
             "consent_text_fr": _("Consent text — French"),
             "is_anonymous": _("Anonymous survey"),
@@ -42,8 +43,13 @@ class SurveyForm(forms.ModelForm):
             "portal_visible": _(
                 "Uncheck to hide this survey from the participant portal."
             ),
+            "source": _(
+                "If this entire survey comes from a single validated instrument, "
+                "note it here. E.g., PHQ-9 (Kroenke et al., 2001). "
+                "For composite surveys, add citations per section instead."
+            ),
             "consent_text": _(
-                "If provided, respondents must agree to this text before "
+                "If provided, respondents must agree to this text before"
                 "they can see the survey questions. Leave blank to skip "
                 "the consent step. Good consent text explains: what data "
                 "is collected, how it will be used, and whether responses "
@@ -62,7 +68,7 @@ class SurveySectionForm(forms.ModelForm):
     class Meta:
         model = SurveySection
         fields = [
-            "title", "title_fr", "instructions", "instructions_fr",
+            "title", "title_fr", "instructions", "instructions_fr", "source",
             "sort_order", "page_break", "skip_for_identified",
             "scoring_method", "max_score",
             "condition_question", "condition_value",
@@ -76,6 +82,7 @@ class SurveySectionForm(forms.ModelForm):
             "title_fr": _("Section title (French)"),
             "instructions": _("Instructions"),
             "instructions_fr": _("Instructions (French)"),
+            "source": _("Source or citation"),
             "sort_order": _("Display order"),
             "page_break": _("Start new page"),
             "skip_for_identified": _("Skip for identified participants"),
@@ -89,6 +96,10 @@ class SurveySectionForm(forms.ModelForm):
                 "Check this for demographics sections. When the survey is "
                 "assigned to a participant or entered by staff, this section "
                 "will be hidden — that data is already on file."
+            ),
+            "source": _(
+                "Where these questions come from, if adapted from a published "
+                "instrument. E.g., WHO-5 (WHO, 1998)."
             ),
             "condition_question": _("Leave blank to always show this section."),
             "condition_value": _("The answer value that makes this section visible."),
@@ -228,4 +239,11 @@ class CSVImportForm(forms.Form):
     survey_name = forms.CharField(max_length=255, label=_("Survey name"))
     survey_name_fr = forms.CharField(
         max_length=255, required=False, label=_("Survey name (French)"),
+    )
+    survey_source = forms.CharField(
+        max_length=500, required=False, label=_("Source or citation (optional)"),
+        help_text=_(
+            "If this entire survey comes from a single instrument, "
+            "note it here. E.g., PHQ-9 (Kroenke et al., 2001)."
+        ),
     )
