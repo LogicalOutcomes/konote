@@ -1,12 +1,13 @@
 """Signals for the plans app.
 
-Handles auto-updating of achievement status and metric records when a
-PlanTarget's status changes (e.g. to completed or deactivated).
+Handles auto-updating of achievement status and default CIDS metadata.
 """
 import logging
 
 from django.db.models.signals import post_init, post_save
 from django.dispatch import receiver
+
+from .cids import apply_metric_cids_defaults, apply_target_cids_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -92,4 +93,24 @@ def _set_achievement_status(plan_target, status, now):
         logger.exception(
             "Failed to update achievement_status for PlanTarget %s",
             plan_target.pk,
+        )
+
+
+@receiver(post_save, sender="plans.PlanTarget")
+def ensure_plan_target_cids_defaults(sender, instance, **kwargs):
+    """Assign a local outcome URI when one was not provided explicitly."""
+    changed_fields = apply_target_cids_defaults(instance)
+    if changed_fields:
+        sender.objects.filter(pk=instance.pk).update(
+            **{field: getattr(instance, field) for field in changed_fields}
+        )
+
+
+@receiver(post_save, sender="plans.MetricDefinition")
+def ensure_metric_cids_defaults(sender, instance, **kwargs):
+    """Assign stable local metric metadata without requiring IRIS+ mappings."""
+    changed_fields = apply_metric_cids_defaults(instance)
+    if changed_fields:
+        sender.objects.filter(pk=instance.pk).update(
+            **{field: getattr(instance, field) for field in changed_fields}
         )
