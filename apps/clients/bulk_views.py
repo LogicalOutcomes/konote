@@ -22,8 +22,8 @@ from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs
 
 from .bulk_forms import BulkDischargeConfirmForm, BulkFilterForm, BulkTransferConfirmForm
-from .models import ClientFile, ClientProgramEnrolment, ServiceEpisodeStatusChange
-from .views import _get_accessible_clients, get_client_queryset
+from .models import ClientProgramEnrolment, ServiceEpisodeStatusChange
+from .views import _get_accessible_clients
 
 
 SESSION_EXPIRY_SECONDS = 30 * 60  # 30 minutes
@@ -62,8 +62,14 @@ def _clear_selection(request, operation):
 
 
 def _get_filtered_clients(request, source_program_id=None, status_filter="active"):
-    """Return accessible clients filtered by program and status."""
+    """Return accessible clients filtered by program and status.
+
+    Always scopes enrolment queries to the user's accessible programs
+    to avoid touching rows from programs the user cannot access.
+    """
     active_ids = getattr(request, "active_program_ids", None)
+    from apps.programs.access import get_user_program_ids
+    user_program_ids = get_user_program_ids(request.user, active_program_ids=active_ids)
     clients = _get_accessible_clients(request.user, active_program_ids=active_ids)
 
     if source_program_id:
@@ -74,6 +80,7 @@ def _get_filtered_clients(request, source_program_id=None, status_filter="active
         clients = clients.filter(pk__in=enrolled_ids)
     elif status_filter != "all":
         enrolled_ids = ClientProgramEnrolment.objects.filter(
+            program_id__in=user_program_ids,
             status=status_filter,
         ).values_list("client_file_id", flat=True)
         clients = clients.filter(pk__in=enrolled_ids)
@@ -153,7 +160,10 @@ def _bulk_transfer_confirm(request, available_programs):
         return redirect("clients:bulk_transfer_wizard")
 
     source_program_id = request.POST.get("source_program_id")
-    source_program_id = int(source_program_id) if source_program_id else None
+    try:
+        source_program_id = int(source_program_id) if source_program_id else None
+    except (ValueError, TypeError):
+        source_program_id = None
 
     # Store in session for the execute step
     _store_selection(request, "transfer", client_ids, source_program_id)
@@ -389,7 +399,11 @@ def _bulk_discharge_confirm(request, available_programs):
     if not source_program_id:
         messages.error(request, _("Please select a program."))
         return redirect("clients:bulk_discharge_wizard")
-    source_program_id = int(source_program_id)
+    try:
+        source_program_id = int(source_program_id)
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid selection."))
+        return redirect("clients:bulk_discharge_wizard")
 
     _store_selection(request, "discharge", client_ids, source_program_id)
 

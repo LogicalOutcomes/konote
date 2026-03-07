@@ -44,8 +44,11 @@
         </div>
     </form>
 
-    <div id="participant-table">
-        {% include "clients/bulk/_participant_table.html" %}
-    </div>
+    <form method="post" id="bulk-select-form">
+        {% csrf_token %}
+        <div id="participant-table">
+            {% include "clients/bulk/_participant_table.html" %}
+        </div>
+    </form>
 </article>
 {% endblock %}
