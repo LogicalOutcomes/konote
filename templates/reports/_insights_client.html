@@ -114,49 +114,6 @@
 {# Chart.js for client descriptor trend #}
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"client-trend-data" }}
-<script nonce="{{ request.csp_nonce }}">
-{# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
-{# Labels use escapejs to safely handle apostrophes in translated strings #}
-{% trans "Harder right now" as lbl_harder %}
-{% trans "Holding steady" as lbl_holding %}
-{% trans "Something's shifting" as lbl_shifting %}
-{% trans "In a good place" as lbl_good %}
-(function() {
-    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function initClientTrendChart() {
-        var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
-        if (!Array.isArray(rawData) || rawData.length === 0) return;
-        var ctx = document.getElementById('client-descriptor-trend');
-        if (!ctx) return;
-        new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: rawData.map(function(r) { return r.month; }),
-                datasets: [
-                    { label: '{{ lbl_harder|escapejs }}', data: rawData.map(function(r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
-                    { label: '{{ lbl_holding|escapejs }}', data: rawData.map(function(r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
-                    { label: '{{ lbl_shifting|escapejs }}', data: rawData.map(function(r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
-                    { label: '{{ lbl_good|escapejs }}', data: rawData.map(function(r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: prefersReducedMotion ? 0 : undefined
-                },
-                plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
-                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
-            },
-        });
-    }
-
-    if (typeof Chart !== 'undefined') {
-        initClientTrendChart();
-    } else {
-        window.addEventListener('load', initClientTrendChart);
-    }
-})();
-</script>
+{# Chart init moved to app.js — inline scripts break when loaded via HTMX due to CSP nonce mismatch #}
 {% endif %}
 
