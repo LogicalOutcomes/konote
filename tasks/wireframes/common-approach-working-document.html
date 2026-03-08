@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KoNote CIDS Implementation — Working Document for Common Approach</title>
+  <style>
+    :root {
+      --text: #2d3748;
+      --text-light: #4a5568;
+      --text-muted: #718096;
+      --bg: #ffffff;
+      --bg-subtle: #f7fafc;
+      --border: #e2e8f0;
+      --accent: #3176aa;
+      --accent-light: #ebf4ff;
+      --green: #276749;
+      --green-bg: #f0fff4;
+      --amber: #975a16;
+      --amber-bg: #fffff0;
+      --red: #9b2c2c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      line-height: 1.65;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      background: var(--bg);
+    }
+
+    h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.25rem; }
+    h2 {
+      font-size: 1.15rem; font-weight: 600;
+      margin: 2.5rem 0 0.75rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+    }
+    h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+    p { margin-bottom: 0.75rem; }
+
+    .doc-meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Status labels */
+    .status {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    .status-deployed { background: var(--green-bg); color: var(--green); }
+    .status-written { background: var(--amber-bg); color: var(--amber); }
+    .status-designed { background: var(--accent-light); color: var(--accent); }
+
+    /* Lists */
+    ul, ol { margin: 0.5rem 0 0.75rem 1.5rem; }
+    li { margin-bottom: 0.35rem; }
+
+    /* Tables */
+    table {
+      width: 100%; border-collapse: collapse;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid var(--border);
+    }
+    th { background: var(--bg-subtle); font-weight: 600; font-size: 0.85rem; }
+
+    /* Callout boxes */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--bg-subtle);
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .question-box {
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+      background: var(--accent-light);
+    }
+    .question-box strong { color: var(--accent); }
+
+    /* Collapsible sections */
+    details {
+      margin: 1rem 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    summary {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: var(--bg-subtle);
+      user-select: none;
+    }
+    summary:hover { background: #edf2f7; }
+    details > div, details > pre { padding: 1rem; }
+
+    /* Demo dashboard (embedded) */
+    .demo-section {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .demo-label {
+      background: var(--bg-subtle);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-style: italic;
+    }
+    .demo-content { padding: 1.25rem; }
+
+    /* Outcome cards (simplified) */
+    .outcome-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+    .outcome-card {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    .outcome-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .outcome-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .outcome-card .context {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      margin-top: 0.35rem;
+    }
+    .val-green { color: var(--green); }
+    .val-blue { color: var(--accent); }
+
+    /* Progress bar */
+    .bar-container {
+      width: 100%; height: 6px;
+      background: #e2e8f0; border-radius: 3px;
+      margin: 0.4rem 0;
+      overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 3px; }
+
+    /* Chain diagram */
+    .chain {
+      display: flex; align-items: center; gap: 0.3rem;
+      flex-wrap: wrap; margin: 0.5rem 0;
+    }
+    .chain-step {
+      background: var(--accent-light); color: var(--accent);
+      padding: 0.25rem 0.5rem; border-radius: 3px;
+      font-size: 0.8rem; font-weight: 500;
+    }
+    .chain-arrow { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Component mapping table */
+    .cids-badge {
+      display: inline-block;
+      background: #edf2f7; color: var(--text-light);
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+      font-size: 0.75rem; font-family: monospace;
+    }
+
+    /* Code block */
+    pre {
+      background: #1a202c;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    /* Risk table */
+    .risk-row td:first-child { font-weight: 500; }
+    .severity { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .sev-high { color: var(--red); }
+    .sev-medium { color: var(--amber); }
+
+    /* Footer */
+    .footer {
+      margin-top: 3rem; padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    @media print {
+      body { max-width: none; padding: 1rem; font-size: 10pt; }
+      details { border: none; }
+      details > div, details > pre { display: block; }
+      summary { background: none; }
+      .demo-section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>KoNote &amp; CIDS Full Tier: Where We Are</h1>
+<div class="doc-meta">
+  Working document for Common Approach colleagues &middot; March 2026<br>
+  Prepared by Gillian Kerr, Logical Outcomes
+</div>
+
+<p>KoNote is a participant outcome management system designed for Canadian nonprofits — each agency runs their own instance. We're building toward CIDS Full Tier compliance and wanted to share where we are and what we've learned mapping the standard so far.</p>
+
+<h2>Where we are right now</h2>
+
+<p>The software supports all 14 CIDS Full Tier classes, but we haven't yet tested the full pipeline with real program data. Here's what's built and what still needs work:</p>
+
+<h3><span class="status status-deployed">Built</span></h3>
+<ul>
+  <li>Programs carry CIDS sector codes and population served codes</li>
+  <li>Metrics and outcome targets carry CIDS indicator fields</li>
+  <li>Code list support for ICNPO, PopulationServed, SDG, and IRIS+ (based on 5.3b — not yet populated on our test instance)</li>
+  <li>Taxonomy classification workflow — AI suggests mappings to code lists; an admin reviews and approves them</li>
+  <li>Secure export with approval flow — exports are reviewed before they leave the instance, and any personally identifiable information is flagged</li>
+  <li>Aggregate reports suppress small groups (k&ge;5) to protect privacy</li>
+  <li>Agency profile for organisation-level CIDS metadata</li>
+  <li>Basic Tier JSON-LD export with SHACL validation</li>
+  <li>Full Tier JSON-LD export — assembles all 14 CIDS classes into one document</li>
+  <li>IndicatorReport computes outcome statistics per metric type: success rates, means, medians, distributions, pre/post change, effect sizes</li>
+  <li>Data quality signals on IndicatorReport using W3C DQV — response rates, instrument validation status, plausibility review, observation volume</li>
+  <li>Evaluation framework editor — agencies define their program's services, activities, outputs, risks, and counterfactuals, which map directly to Full Tier classes</li>
+  <li>Enrichment — derives themes and standards alignment from program data</li>
+  <li>Evaluator attestation — optional step where an evaluator reviews the framework before export</li>
+  <li>Coverage dashboard — shows which programs have class coverage and where gaps remain</li>
+</ul>
+
+<h3><span class="status status-designed">Still to do</span></h3>
+<ul>
+  <li>Test the full pipeline with real program data</li>
+  <li>Full Tier SHACL validation (we'd like to use your improved validation tool when it's available)</li>
+</ul>
+
+<h2>Privacy</h2>
+
+<p>KoNote is designed for Canadian nonprofits that handle data subject to PHIPA (Ontario) and comparable provincial health privacy legislation. All personally identifiable information is encrypted locally and does not leave the instance.</p>
+
+<p>Full Tier CIDS classes describe program models and aggregate outcomes, not individual participants. <code>cids:Stakeholder</code> refers to stakeholder groups (e.g., "youth aged 16-24"), not individuals. <code>cids:StakeholderOutcome</code> describes aggregate outcomes for a group. <code>cids:ImpactModel</code> is the theory of change.</p>
+
+<p>Our exports work in three layers:</p>
+
+<table>
+  <thead>
+    <tr><th>Layer</th><th>What's in it</th><th>Privacy</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Program model</strong></td>
+      <td>ImpactModel, Service, Activity, Output, Stakeholder groups, ImpactRisk, Counterfactual</td>
+      <td>No concern — describes programs, not people</td>
+    </tr>
+    <tr>
+      <td><strong>2. Aggregate measurement</strong></td>
+      <td>IndicatorReport with cohort results, suppressed to k&ge;5</td>
+      <td>Statistical disclosure controls</td>
+    </tr>
+    <tr>
+      <td><strong>3. Case trajectories</strong> (optional)</td>
+      <td>De-identified outcome pathways per cohort</td>
+      <td>k-anonymity, dates generalised to quarters, minimum n&ge;15</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>What the export looks like for funders</h2>
+
+<p>We built a demo using realistic data from a fictional youth employment program. This is what a funder or platform consuming the CIDS export would see — the JSON-LD data rendered as a readable dashboard.</p>
+
+<div class="demo-section">
+  <div class="demo-label">Demo: Funder outcome view rendered from CIDS Full Tier JSON-LD export</div>
+  <div class="demo-content">
+
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Bright Futures Community Services &middot; Toronto, ON</p>
+    <h3 style="margin-top: 0;">Bright Futures Youth Employment Services</h3>
+    <p style="font-size: 0.9rem;">12-week job readiness program for youth aged 16-24. September 2025 cohort, 23 participants.</p>
+
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <div class="value val-green">78%</div>
+        <div class="label">Employment rate</div>
+        <div class="context">18 of 23 employed<br>(target was 65%)</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-blue">3.2 &rarr; 7.8</div>
+        <div class="label">Job readiness score</div>
+        <div class="context">Mean, 1-10 scale<br>87% moved to high band</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-green">83%</div>
+        <div class="label">90-day retention</div>
+        <div class="context">15 of 18 maintained<br>employment 90+ days</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-blue">342</div>
+        <div class="label">Sessions delivered</div>
+        <div class="context">Avg 14.9/participant<br>83% met minimum</div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1rem;">Theory of change</h3>
+    <div class="chain">
+      <span class="chain-step">Training</span>
+      <span class="chain-arrow">&rarr;</span>
+      <span class="chain-step">Skills</span>
+      <span class="chain-arrow">&rarr;</span>
+      <span class="chain-step">Confidence</span>
+      <span class="chain-arrow">&rarr;</span>
+      <span class="chain-step">Interviews</span>
+      <span class="chain-arrow">&rarr;</span>
+      <span class="chain-step">Employment</span>
+      <span class="chain-arrow">&rarr;</span>
+      <span class="chain-step">Income stability</span>
+    </div>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1rem;">Counterfactual</h3>
+    <p style="font-size: 0.9rem;">Without the program, participants would access basic Employment Ontario services (job boards, resume review) but not structured training or mentorship. Comparable GTA youth programs show <strong>23% placement</strong> without structured support, vs. <strong>78%</strong> with this program.</p>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1rem;">Impact risks</h3>
+    <table style="font-size: 0.85rem;">
+      <tbody class="risk-row">
+        <tr>
+          <td>Economic downturn reduces positions</td>
+          <td><span class="severity sev-medium">Medium</span> likelihood / <span class="severity sev-high">High</span> severity</td>
+          <td>12 employer partners across 5 sectors</td>
+        </tr>
+        <tr>
+          <td>Attrition from housing instability</td>
+          <td><span class="severity sev-medium">Medium</span> / <span class="severity sev-medium">Medium</span></td>
+          <td>Shelter partnerships, hybrid attendance</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1rem;">Stakeholder groups</h3>
+    <p style="font-size: 0.85rem;">Youth aged 16-24, unemployed (n=20) &middot; Newcomer youth, arrived &lt;5 years (n=8) &middot; Indigenous youth (n=3)</p>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1rem;">Evaluator attestation</h3>
+    <p style="font-size: 0.85rem; color: var(--green);"><strong>Jennifer Martinez</strong>, March 5, 2026 — "I have reviewed the evaluation framework, outcome chain, risk assessment, and component definitions. The framework accurately reflects our program model and evaluation methodology."</p>
+
+  </div>
+</div>
+
+<p>All of that comes from the CIDS JSON-LD export. No individual participant data is included anywhere — it's all program-level and aggregate.</p>
+
+<h2>But can you trust the numbers?</h2>
+
+<p>Completing all 14 CIDS classes tells a funder that a report is <em>structurally</em> complete. It says nothing about whether the underlying data is reliable. A program could populate every class while having a 20% response rate, unvalidated measurement tools, and self-selected respondents. A funder aggregating across a funding stream needs to know which results to weight heavily and which to interpret with caution.</p>
+
+<p>This is a gap most agencies aren't addressing — and it's arguably the most important question for funders: <strong>how much should I trust these outcomes?</strong></p>
+
+<p>CIDS addresses this through the <a href="https://www.w3.org/TR/vocab-dqv/">W3C Data Quality Vocabulary (DQV)</a>, which provides properties on <code>IndicatorReport</code> for signalling the quality of the data behind the numbers. KoNote uses these to emit five concrete data quality signals alongside every outcome report:</p>
+
+<table>
+  <thead>
+    <tr><th>Signal</th><th>What it tells funders</th><th>Example</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Response rate</strong></td>
+      <td>What proportion of eligible participants actually have data?</td>
+      <td>19 of 23 eligible participants reported (83%)</td>
+    </tr>
+    <tr>
+      <td><strong>Data parsability</strong></td>
+      <td>Were recorded values usable, or were many unparseable?</td>
+      <td>98% of values parsed successfully</td>
+    </tr>
+    <tr>
+      <td><strong>Observation volume</strong></td>
+      <td>How much data underpins these statistics?</td>
+      <td>342 observations across 23 participants</td>
+    </tr>
+    <tr>
+      <td><strong>Instrument validation</strong></td>
+      <td>Was a published, validated measurement tool used?</td>
+      <td>Rosenberg Self-Esteem Scale (validated)</td>
+    </tr>
+    <tr>
+      <td><strong>Plausibility review</strong></td>
+      <td>Were outlier values reviewed by staff?</td>
+      <td>3 flagged values confirmed by clinician</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>These signals use standard DQV properties (<code>dqv:hasQualityMeasurement</code> and <code>dqv:hasQualityAnnotation</code> on <code>cids:IndicatorReport</code>), so any system consuming CIDS exports can read them without custom parsing.</p>
+
+<div class="callout">
+  <p><strong>Why this matters for aggregation:</strong> When a funder rolls up outcomes across 15 funded programs, knowing that Program A has an 83% response rate using a validated instrument and Program B has a 25% response rate using ad hoc questions fundamentally changes how you interpret and weight the results. Without data quality signals, all CIDS exports look equally credible.</p>
+</div>
+
+<div class="demo-section">
+  <div class="demo-label">Demo: Data quality signals rendered from CIDS IndicatorReport</div>
+  <div class="demo-content">
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Bright Futures Community Services &middot; Job Readiness Score</p>
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <div class="value val-green">83%</div>
+        <div class="label">Response rate</div>
+        <div class="context">19 of 23 eligible<br>participants reported</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-green">98%</div>
+        <div class="label">Data parsability</div>
+        <div class="context">340 of 342 values<br>parsed successfully</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-blue">342</div>
+        <div class="label">Observations</div>
+        <div class="context">Avg 14.9 per<br>participant</div>
+      </div>
+      <div class="outcome-card" style="border-color: var(--green);">
+        <div class="value" style="font-size: 0.85rem; color: var(--green);">&#10003; Validated</div>
+        <div class="label">Instrument</div>
+        <div class="context">Rosenberg Self-Esteem<br>Scale</div>
+      </div>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">3 outlier values were flagged and confirmed by clinical staff.</p>
+  </div>
+</div>
+
+<h2>How funders aggregate across agencies</h2>
+
+<p>A natural question: if each agency defines their own metrics, how does a funder produce a summary across an entire funding stream? The answer is that CIDS doesn't require agencies to use the same measures — it requires them to tag their measures with shared taxonomy codes. Aggregation happens at the taxonomy level, not the metric level.</p>
+
+<h3>How it would work in practice</h3>
+
+<ol>
+  <li><strong>Funder defines a reporting template</strong> — expressed in CIDS vocabulary: "For this funding stream, report on SDG 8 outcomes, IRIS+ OI4060 indicators, stakeholder breakdowns by PopulationServed codes, and an impact model with risks and counterfactuals." The template specifies which taxonomy codes and CIDS classes the funder wants populated — not what specific metrics to use.</li>
+  <li><strong>Agency maps their existing metrics to the template</strong> — they already track employment outcomes in whatever way makes sense for their program. The mapping step is tagging their indicators with the codes the funder asked for (IRIS+ OI4060, SDG 8.5, etc.). KoNote's taxonomy classification workflow supports this.</li>
+  <li><strong>System generates a report against the template</strong> — the export filters to what the funder asked for, structured the way they asked for it.</li>
+  <li><strong>Funder receives structured data they can aggregate</strong> — because every agency reported against the same template (same codes, same classes), the funder can roll up across their funding stream by taxonomy code.</li>
+</ol>
+
+<p>This means the funder can always answer "how many of our funded programs achieved their own employment targets?" without forcing everyone to measure employment the same way. One agency tracks job placement rates, another tracks hours of paid work, another tracks income change — but they're all tagged SDG 8 and IRIS+ OI4060, so the funder can group and compare them thematically.</p>
+
+<div class="demo-section">
+  <div class="demo-label">Demo: Funder funding-stream summary rendered from multiple CIDS Full Tier exports</div>
+  <div class="demo-content">
+
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Prosper Canada Foundation &middot; Youth Employment Funding Stream &middot; 2025&ndash;26</p>
+    <h3 style="margin-top: 0;">Funding Stream: Youth Employment Ontario</h3>
+    <p style="font-size: 0.9rem;">15 funded programs across Ontario. Reporting period: September 2025 &ndash; February 2026.</p>
+
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <div class="value val-blue">15</div>
+        <div class="label">Programs funded</div>
+        <div class="context">13 Full Tier exports<br>2 Basic Tier</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-blue">412</div>
+        <div class="label">Total participants</div>
+        <div class="context">Across all programs<br>Avg cohort: 27</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-green">80%</div>
+        <div class="label">Met own targets</div>
+        <div class="context">12 of 15 programs<br>met or exceeded</div>
+      </div>
+      <div class="outcome-card">
+        <div class="value val-green">8 of 13</div>
+        <div class="label">Evaluator attested</div>
+        <div class="context">Full Tier programs<br>with attestation</div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">Outcomes by SDG alignment</h3>
+    <table style="font-size: 0.85rem;">
+      <thead>
+        <tr><th>SDG</th><th>Programs</th><th>Met own targets</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>8 — Decent Work</strong></td>
+          <td>15 of 15</td>
+          <td>12 (80%)</td>
+          <td>All programs report employment outcomes; measures vary (placement rate, hours worked, income change)</td>
+        </tr>
+        <tr>
+          <td><strong>1 — No Poverty</strong></td>
+          <td>9 of 15</td>
+          <td>7 (78%)</td>
+          <td>Income stability, financial literacy, benefits access</td>
+        </tr>
+        <tr>
+          <td><strong>10 — Reduced Inequalities</strong></td>
+          <td>6 of 15</td>
+          <td>5 (83%)</td>
+          <td>Programs specifically serving newcomer or Indigenous youth</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">Population served</h3>
+    <table style="font-size: 0.85rem;">
+      <thead>
+        <tr><th>Population group</th><th>Programs</th><th>Participants</th><th>Target achievement</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>General youth (16&ndash;24)</td><td>9</td><td>243</td><td>8 of 9 met targets</td></tr>
+        <tr><td>Newcomer youth (&lt;5 years in Canada)</td><td>6</td><td>104</td><td>5 of 6 met targets</td></tr>
+        <tr><td>Indigenous youth</td><td>3</td><td>65</td><td>2 of 3 met targets</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">Common impact risks across the funding stream</h3>
+    <table style="font-size: 0.85rem;">
+      <tbody class="risk-row">
+        <tr>
+          <td>Economic downturn reduces positions</td>
+          <td>Reported by <strong>9 of 13</strong> programs</td>
+          <td>Most common mitigation: employer sector diversification</td>
+        </tr>
+        <tr>
+          <td>Housing instability &amp; attrition</td>
+          <td>Reported by <strong>7 of 13</strong></td>
+          <td>Mitigations: shelter partnerships, hybrid delivery</td>
+        </tr>
+        <tr>
+          <td>Language barriers limit participation</td>
+          <td>Reported by <strong>5 of 13</strong></td>
+          <td>Mitigations: multilingual facilitators, translated materials</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">CIDS class coverage</h3>
+    <div style="font-size: 0.85rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span style="width: 140px;">Full Tier (14/14)</span>
+        <div class="bar-container" style="flex: 1;">
+          <div class="bar-fill" style="width: 87%; background: var(--green);"></div>
+        </div>
+        <span>13 programs</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+        <span style="width: 140px;">Basic Tier (7/14)</span>
+        <div class="bar-container" style="flex: 1;">
+          <div class="bar-fill" style="width: 13%; background: var(--accent);"></div>
+        </div>
+        <span>2 programs</span>
+      </div>
+    </div>
+
+    <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">Data quality across the funding stream</h3>
+    <table style="font-size: 0.85rem;">
+      <thead>
+        <tr><th>Signal</th><th>Funding stream average</th><th>Range</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Response rate</td>
+          <td><strong>76%</strong> of eligible participants</td>
+          <td>42%–95%</td>
+        </tr>
+        <tr>
+          <td>Using validated instruments</td>
+          <td><strong>11 of 15</strong> programs (73%)</td>
+          <td>&mdash;</td>
+        </tr>
+        <tr>
+          <td>Avg observations per participant</td>
+          <td><strong>12.3</strong></td>
+          <td>3.1–19.8</td>
+        </tr>
+        <tr>
+          <td>Plausibility review done</td>
+          <td><strong>9 of 15</strong> programs (60%)</td>
+          <td>&mdash;</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Data quality signals from <code>dqv:hasQualityMeasurement</code> and <code>dqv:hasQualityAnnotation</code> on each program's IndicatorReport nodes.</p>
+
+  </div>
+</div>
+
+<p>Notice what the funder <em>can</em> see: which programs met their own targets, which populations are being served, which risks are common across the stream, and how complete the reporting is. What the funder <em>doesn't</em> need is for every agency to measure employment the same way — the taxonomy codes make programs comparable thematically without forcing a common metric.</p>
+
+<div class="callout">
+  <p><strong>Open question for Common Approach:</strong> Does the standard envision funders publishing reporting templates as CIDS documents — a set of required Indicators, Themes, and Codes without values filled in? This would be the contract between funder and grantee: the funder defines <em>what</em> to report on (taxonomy codes, CIDS classes), and the agency returns it with their data. That "reporting template" concept is the missing bridge between individual agency exports and funder aggregation.</p>
+</div>
+
+<h2>How the data maps to CIDS classes</h2>
+
+<p>Our planned Evaluation Framework editor maps directly to Full Tier classes. When an agency defines their program's components, they're also populating the CIDS export:</p>
+
+<table>
+  <thead>
+    <tr><th>What the agency enters</th><th>CIDS class it becomes</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Who we serve</td><td><span class="cids-badge">cids:Stakeholder</span></td><td>Population served codes on program</td></tr>
+    <tr><td>What we do (service)</td><td><span class="cids-badge">cids:Service</span></td><td>Evaluation component</td></tr>
+    <tr><td>Specific activities</td><td><span class="cids-badge">cids:Activity</span></td><td>Evaluation component</td></tr>
+    <tr><td>What we produce</td><td><span class="cids-badge">cids:Output</span></td><td>Metric observation counts</td></tr>
+    <tr><td>What changes for people</td><td><span class="cids-badge">cids:StakeholderOutcome</span></td><td>Aggregate PlanTarget achievement</td></tr>
+    <tr><td>Our theory of change</td><td><span class="cids-badge">cids:ImpactModel</span></td><td>Program description + framework</td></tr>
+    <tr><td>What could go wrong</td><td><span class="cids-badge">cids:ImpactRisk</span></td><td>Evaluation component</td></tr>
+    <tr><td>What would happen without us</td><td><span class="cids-badge">cids:Counterfactual</span></td><td>Evaluation component</td></tr>
+    <tr><td>How we measure</td><td><span class="cids-badge">cids:Indicator</span></td><td>MetricDefinition</td></tr>
+    <tr><td>What the numbers say</td><td><span class="cids-badge">cids:IndicatorReport</span></td><td>Aggregate MetricValue data</td></tr>
+  </tbody>
+</table>
+
+<h2>CIDS class coverage</h2>
+
+<table>
+  <thead>
+    <tr><th>How we get there</th><th>CIDS classes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Basic Tier export with SHACL validation</td>
+      <td>7 of 14: Organization, Outcome, Indicator, IndicatorReport, Theme, Code, Address</td>
+    </tr>
+    <tr>
+      <td>Generated from existing program data</td>
+      <td>+4: ImpactModel, Stakeholder, StakeholderOutcome, Output</td>
+    </tr>
+    <tr>
+      <td>Evaluation framework editor</td>
+      <td>+3: Service, Activity, ImpactRisk, Counterfactual</td>
+    </tr>
+    <tr>
+      <td>Full Tier JSON-LD assembly</td>
+      <td>All 14 classes in one document</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Our mapping and modelling experience</h2>
+
+<p>You asked for detail on our experience mapping the CIDS classes and properties. Here's what we found:</p>
+
+<ul>
+  <li><strong>Organization, Outcome, Indicator, IndicatorReport</strong> — mapped directly to our existing data (agency profile, outcome targets, metric definitions, aggregated observations)</li>
+  <li><strong>Theme and Code</strong> — we can import the ICNPO, SDG, IRIS+, and PopulationServed code lists and link metrics and programs to specific codes</li>
+  <li><strong>Stakeholder</strong> — maps to population served codes on our programs, which already describe the groups served (e.g., "youth aged 16-24")</li>
+  <li><strong>ImpactModel, Service, Activity, ImpactRisk, Counterfactual</strong> — these don't exist as standalone entities in a case management system, so we built an evaluation framework editor where agencies define structured components that map to these classes. An agency creating their evaluation framework is simultaneously populating their CIDS export.</li>
+  <li><strong>StakeholderOutcome</strong> — derived from group-level outcome statistics (success rates, means, distributions, percentiles) rather than individual records</li>
+  <li><strong>IndicatorReport values</strong> — we store individual observations in a flexible format (to handle scales, achievement status, and open text), so we compute aggregates per metric type: success rates for achievement metrics, means for scale metrics</li>
+</ul>
+
+<h2>Next steps</h2>
+
+<ul>
+  <li>Test the full pipeline with real program data, including data quality signals</li>
+  <li>Validate our JSON-LD output against your improved validation tool when it's available</li>
+  <li>Explore funder-side aggregation of data quality signals across a funding stream (e.g., average response rate, % of programs using validated instruments)</li>
+</ul>
+
+<details>
+  <summary>Technical detail: sample CIDS JSON-LD export (click to expand)</summary>
+  <div>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">This is what the machine-readable export looks like — a JSON-LD document containing all 14 CIDS classes. The funder dashboard above is rendered from this data.</p>
+    <pre>{
+  "@context": "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
+  "@graph": [
+    {
+      "@type": "cids:Organization",
+      "hasLegalName": "Bright Futures Community Services",
+      "hasOutcome": [{"@id": "urn:konote:program-outcome:5"}],
+      "hasIndicator": [...]
+    },
+    {
+      "@type": "cids:IndicatorReport",
+      "hasName": "Employment Status report",
+      "value": {
+        "@type": "i72:Measure",
+        "hasNumericalValue": "18",
+        "hasUnit": {"@value": "of 23 participants"}
+      },
+      "hasComment": "18 of 23 participants achieved employment (78%)",
+      "dqv:hasQualityMeasurement": [
+        {
+          "@type": "dqv:QualityMeasurement",
+          "dqv:isMeasurementOf": "completeness",
+          "dqv:value": 82.6,
+          "konote:numerator": 19,
+          "konote:denominator": 23,
+          "konote:dimensionLabel": "Response rate"
+        },
+        {
+          "@type": "dqv:QualityMeasurement",
+          "dqv:isMeasurementOf": "precision",
+          "dqv:value": 342,
+          "konote:dimensionLabel": "Total observations"
+        }
+      ],
+      "dqv:hasQualityAnnotation": [
+        {
+          "@type": "dqv:QualityAnnotation",
+          "oa:hasBody": {
+            "rdf:value": "Collected using validated instrument: Rosenberg Self-Esteem Scale"
+          },
+          "konote:annotationType": "instrument_validation"
+        }
+      ]
+    },
+    {
+      "@type": "cids:ImpactModel",
+      "hasName": "Impact Model: Youth Employment Services",
+      "hasDescription": "Youth aged 16-24 participate in a 12-week program...",
+      "hasStakeholder": [...],
+      "hasService": [...],
+      "hasActivity": [...],
+      "hasImpactRisk": [...],
+      "hasCounterfactual": [...]
+    },
+    {
+      "@type": "cids:Stakeholder",
+      "hasName": "Youth aged 16-24, unemployed",
+      "hasDescription": "Stakeholder group, not individuals"
+    },
+    {
+      "@type": "cids:ImpactRisk",
+      "hasName": "Economic downturn reduces available positions",
+      "hasLikelihood": "medium",
+      "hasSeverity": "high",
+      "hasMitigation": "Diversify employer partnerships across sectors..."
+    },
+    {
+      "@type": "cids:Counterfactual",
+      "hasName": "Baseline: Employment Ontario services only",
+      "hasDescription": "23% placement without structured support vs. 78%..."
+    }
+  ],
+  "cids:complianceTier": "Full",
+  "cids:evaluatorAttestation": {
+    "attestedBy": "Jennifer Martinez",
+    "attestedAt": "2026-03-05T14:30:00-05:00",
+    "attestationNote": "I have reviewed the evaluation framework..."
+  }
+}</pre>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Abbreviated for readability. The full demo export contains 30 nodes across all 14 CIDS classes.</p>
+  </div>
+</details>
+
+<div class="footer">
+  <p>Prepared by Logical Outcomes / KoNote &middot; March 2026</p>
+  <p>This is a working document shared with Common Approach colleagues. Not for public distribution.</p>
+</div>
+
+</body>
+</html>
