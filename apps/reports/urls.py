@@ -9,6 +9,8 @@ from . import preview_views
 
 app_name = "reports"
 urlpatterns = [
+    # Root redirect - /reports/ -> /reports/generate/
+    path("", RedirectView.as_view(pattern_name="reports:generate_report", permanent=False), name="root"),
     # Legacy URL redirect (QA-R8-UX11)
     path("funder/", RedirectView.as_view(pattern_name="reports:funder_report", permanent=True)),
     # Outcome Insights
