@@ -1081,3 +1081,85 @@ def _validate_focused_analysis(response, total_suggestions):
         response["suggestion"] = ""
 
     return response
+
+
+def suggest_taxonomy_mappings(subject_type, subject_title, subject_text, taxonomy_list_name, candidates, max_suggestions=3):
+    """Rank a constrained set of taxonomy candidates for a local item.
+
+    Returns a list of dicts {code, label, confidence, reason} or None.
+    """
+    system = (
+        "You help nonprofit reporting leads map local metrics, targets, and programs "
+        "to external reporting code lists. You will receive one local item, the code list "
+        "being used, and a constrained list of candidate entries. Return the best matches "
+        f"as a JSON object with a suggestions array of up to {max_suggestions} items. "
+        "Each item must use one of the provided candidate codes and follow this shape: "
+        '{"code":"...","label":"...","confidence":0.0,"reason":"..."}. '
+        "Confidence must be between 0 and 1. Return ONLY JSON."
+    )
+    user_msg = (
+        f"Item type: {subject_type}\n"
+        f"Item title: {subject_title}\n"
+        f"Item text:\n{subject_text}\n\n"
+        f"Code list: {taxonomy_list_name}\n"
+        f"Candidates:\n{json.dumps(candidates, indent=2)}"
+    )
+    result = _call_openrouter(system, user_msg, max_tokens=900)
+    if result is None:
+        return None
+    parsed = _parse_ai_json(result, "taxonomy suggestions")
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("suggestions"), list):
+        return None
+
+    valid = []
+    allowed_codes = {candidate.get("code") for candidate in candidates}
+    for item in parsed["suggestions"]:
+        if not isinstance(item, dict):
+            continue
+        if item.get("code") not in allowed_codes:
+            continue
+        confidence = item.get("confidence", 0.5)
+        try:
+            confidence = float(confidence)
+        except (TypeError, ValueError):
+            confidence = 0.5
+        valid.append({
+            "code": item.get("code", ""),
+            "label": item.get("label", ""),
+            "confidence": max(0.0, min(1.0, confidence)),
+            "reason": item.get("reason", ""),
+        })
+    return valid or None
+
+
+def answer_taxonomy_review_question(
+    subject_type,
+    subject_title,
+    subject_text,
+    taxonomy_system,
+    taxonomy_list_name,
+    current_mapping,
+    alternatives,
+    question,
+    history=None,
+):
+    """Answer an admin's review question about taxonomy classification."""
+    system = (
+        "You help a nonprofit reporting lead review taxonomy classifications. "
+        "Answer questions about why an item was mapped a certain way, what alternatives exist, "
+        "and when another taxonomy lens might be better. Stay grounded in the provided local item, "
+        "current mapping, and alternatives. Be concise and practical."
+    )
+    messages = list(history or [])
+    context_message = (
+        f"Item type: {subject_type}\n"
+        f"Item title: {subject_title}\n"
+        f"Item text:\n{subject_text}\n\n"
+        f"Taxonomy system: {taxonomy_system}\n"
+        f"Code list: {taxonomy_list_name}\n"
+        f"Current mapping: {json.dumps(current_mapping)}\n"
+        f"Alternatives: {json.dumps(alternatives)}"
+    )
+    messages.append({"role": "user", "content": context_message})
+    messages.append({"role": "user", "content": question})
+    return _call_openrouter(system, messages=messages, max_tokens=700)

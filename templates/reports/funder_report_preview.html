@@ -30,6 +30,11 @@
         <dt>{% trans "Export Format" %}</dt>
         <dd>{{ export_format|upper }}</dd>
 
+        {% if taxonomy_lens_label %}
+        <dt>{% trans "Standards Lens" %}</dt>
+        <dd>{{ taxonomy_lens_label }}</dd>
+        {% endif %}
+
         {% if report_template_name %}
         <dt>{% trans "Report Template" %}</dt>
         <dd>{{ report_template_name }}</dd>

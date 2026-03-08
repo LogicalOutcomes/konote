@@ -104,8 +104,12 @@ class BrowserTestBase(StaticLiveServerTestCase):
 
         # Create tables in the file-based databases
         from django.core.management import call_command
-        call_command("migrate", "--run-syncdb", verbosity=0)
-        call_command("migrate", "--database=audit", "--run-syncdb", verbosity=0)
+        from django.core.management.commands.migrate import Command as DjangoMigrate
+
+        # Bypass django-tenants' migrate override, which expects PostgreSQL
+        # schema methods that are not available on SQLite test databases.
+        call_command(DjangoMigrate(), run_syncdb=True, verbosity=0)
+        call_command(DjangoMigrate(), database="audit", run_syncdb=True, verbosity=0)
 
         # Launch Playwright browser once for the entire class
         start = _get_pw()

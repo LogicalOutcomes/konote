@@ -5600,6 +5600,9 @@ msgstr ""
 "Votre rapport HTML est prêt à télécharger. Vous pouvez l'ouvrir dans "
 "n'importe quel navigateur web ou le partager directement."
 
+msgid "Your JSON-LD file is ready to download."
+msgstr "Votre fichier JSON-LD est prêt à télécharger."
+
 msgid ""
 "Your CSV file is ready to download. You can open it in Excel or Google "
 "Sheets."
@@ -5612,6 +5615,9 @@ msgstr "Télécharger le rapport PDF"
 
 msgid "Download HTML Report"
 msgstr "Télécharger le rapport HTML"
+
+msgid "Download JSON-LD File"
+msgstr "Télécharger le fichier JSON-LD"
 
 msgid "Download CSV File"
 msgstr "Télécharger le fichier CSV"
@@ -20387,8 +20393,14 @@ msgid "AI-assisted %(target)s drafting is available"
 msgstr "La rédaction assistée par l’IA de %(target)s est disponible"
 
 #, python-format
-msgid "KoNote can use AI to turn a participant's own words into a structured, measurable %(target)s with suggested metrics. To enable it, add an OpenRouter API key in"
-msgstr "KoNote peut utiliser l’IA pour transformer les propres mots d’un participant en %(target)s structuré(e) et mesurable avec des mesures suggérées. Pour l’activer, ajoutez une clé API OpenRouter dans"
+msgid ""
+"KoNote can use AI to turn a participant's own words into a structured, "
+"measurable %(target)s with suggested metrics. To enable it, add an "
+"OpenRouter API key in"
+msgstr ""
+"KoNote peut utiliser l’IA pour transformer les propres mots d’un participant"
+" en %(target)s structuré(e) et mesurable avec des mesures suggérées. Pour "
+"l’activer, ajoutez une clé API OpenRouter dans"
 
 #, python-format
 msgid "%(target)s name suggestions"
@@ -20399,8 +20411,12 @@ msgid "Tips for writing a good %(target)s"
 msgstr "Conseils pour rédiger un bon %(target)s"
 
 #, python-format
-msgid "Try turning their words into a %(target)s that is Specific, Measurable, Achievable, Relevant, and Time-bound (SMART)."
-msgstr "Essayez de transformer leurs mots en %(target)s qui soit Spécifique, Mesurable, Atteignable, Réaliste et Temporellement défini(e) (SMART)."
+msgid ""
+"Try turning their words into a %(target)s that is Specific, Measurable, "
+"Achievable, Relevant, and Time-bound (SMART)."
+msgstr ""
+"Essayez de transformer leurs mots en %(target)s qui soit Spécifique, "
+"Mesurable, Atteignable, Réaliste et Temporellement défini(e) (SMART)."
 
 #, python-format
 msgid "Commonly used for %(targets)s like this"
@@ -20408,11 +20424,14 @@ msgstr "Couramment utilisées pour des %(targets)s comme celui-ci"
 
 #, python-format
 msgid "You can revise this %(target)s later as things become clearer."
-msgstr "Vous pourrez réviser ce ou cette %(target)s plus tard, au fur et à mesure que les choses se précisent."
+msgstr ""
+"Vous pourrez réviser ce ou cette %(target)s plus tard, au fur et à mesure "
+"que les choses se précisent."
 
 #, python-format
 msgid "Form expanded — complete the %(target)s details below."
-msgstr "Formulaire développé — complétez ci-dessous les détails de %(target)s."
+msgstr ""
+"Formulaire développé — complétez ci-dessous les détails de %(target)s."
 
 #, python-format
 msgid "Saving your %(target)s…"
@@ -21141,59 +21160,698 @@ msgstr ""
 "puis approuvez pour générer le fichier d'exportation."
 
 msgid "AI-suggested draft"
-msgstr ""
+msgstr "Ébauche suggérée par l'IA"
 
 msgid "Choose a Primary Metric"
-msgstr ""
+msgstr "Choisir une métrique principale"
 
 msgid ""
 "Choose one primary metric for this target. Start with the section-relevant "
 "options below, then browse the full library only if you need something else."
 msgstr ""
+"Choisissez une métrique principale pour cet objectif. Commencez par les "
+"options pertinentes pour cette section ci-dessous, puis parcourez la "
+"bibliothèque complète seulement si vous avez besoin d'autre chose."
 
 msgid ""
 "Choose the faster Log Contact flow for brief updates, or Detailed Note for a"
 " full session note."
 msgstr ""
+"Choisissez le flux rapide Journal de contact pour les mises à jour brèves, "
+"ou Note détaillée pour une note de séance complète."
 
 msgid "Create a note"
-msgstr ""
+msgstr "Créer une note"
 
 msgid "Filter metrics"
-msgstr ""
+msgstr "Filtrer les métriques"
 
 msgid ""
 "Here's a draft based on what they shared. Adjust it to fit what you know "
 "about them."
 msgstr ""
+"Voici une ébauche basée sur ce qu'ils ont partagé. Ajustez-la selon ce que "
+"vous savez d'eux."
 
 msgid ""
 "Optional overall reflections after you have captured the target-specific "
 "details you need."
 msgstr ""
+"Réflexions générales facultatives après avoir saisi les détails spécifiques "
+"à l'objectif dont vous avez besoin."
 
 msgid "Recommended for this section"
-msgstr ""
+msgstr "Recommandé pour cette section"
 
 msgid "Review in the form"
-msgstr ""
+msgstr "Réviser dans le formulaire"
 
 msgid "Select a target to begin"
-msgstr ""
+msgstr "Sélectionnez un objectif pour commencer"
 
 msgid "Session reflections and follow-up"
-msgstr ""
+msgstr "Réflexions de séance et suivi"
 
 msgid "Suggest a draft"
-msgstr ""
+msgstr "Suggérer une ébauche"
 
 msgid "Suggested name"
-msgstr ""
+msgstr "Nom suggéré"
 
 msgid "The full library is grouped by category below."
-msgstr ""
+msgstr "La bibliothèque complète est regroupée par catégorie ci-dessous."
 
 msgid ""
 "Use Log Contact for a fast update, or Detailed Note when you need target-by-"
 "target progress and session reflections."
 msgstr ""
+"Utilisez Journal de contact pour une mise à jour rapide, ou Note détaillée "
+"lorsque vous avez besoin du progrès objectif par objectif et des réflexions "
+"de séance."
+
+msgid "Choose how to start"
+msgstr ""
+
+#: templates/clients/bulk/transfer.html
+#: templates/clients/bulk/discharge.html
+#, python-format
+msgid "Transfer %(client)s"
+msgid_plural "Transfer %(client)s"
+msgstr[0] "Transférer %(client)s"
+msgstr[1] "Transférer %(client)s"
+
+#: templates/clients/bulk/discharge.html
+#, python-format
+msgid "Discharge %(client)s"
+msgid_plural "Discharge %(client)s"
+msgstr[0] "Retirer %(client)s"
+msgstr[1] "Retirer %(client)s"
+
+#: templates/clients/bulk/_participant_table.html
+#, python-format
+msgid "%(counter)s participant found."
+msgid_plural "%(counter)s participants found."
+msgstr[0] "%(counter)s participant trouvé."
+msgstr[1] "%(counter)s participants trouvés."
+
+#: templates/clients/bulk/_participant_table.html
+#, python-format
+msgid "Select %(name)s"
+msgstr "Sélectionner %(name)s"
+
+#: templates/clients/bulk/transfer_confirm.html
+#, python-format
+msgid "Transfer %(counter)s participant to a new program."
+msgid_plural "Transfer %(counter)s participants to a new program."
+msgstr[0] "Transférer %(counter)s participant vers un nouveau programme."
+msgstr[1] "Transférer %(counter)s participants vers un nouveau programme."
+
+#: templates/clients/bulk/discharge_confirm.html
+#, python-format
+msgid "Discharge %(counter)s participant from %(program)s."
+msgid_plural "Discharge %(counter)s participants from %(program)s."
+msgstr[0] "Retirer %(counter)s participant de %(program)s."
+msgstr[1] "Retirer %(counter)s participants de %(program)s."
+
+#: templates/base.html
+msgid "Bulk Transfer"
+msgstr "Transfert groupé"
+
+msgid "Bulk Discharge"
+msgstr "Retrait groupé"
+
+msgid "Move multiple participants from one program to another."
+msgstr "Déplacer plusieurs participants d'un programme à un autre."
+
+msgid "Discharge multiple participants from a program at once."
+msgstr "Retirer plusieurs participants d'un programme en une seule fois."
+
+msgid "Step 1: Filter"
+msgstr "Étape 1 : Filtrer"
+
+msgid "Step 1: Select a program"
+msgstr "Étape 1 : Sélectionner un programme"
+
+msgid "From program"
+msgstr "Du programme"
+
+msgid "— All programs —"
+msgstr "— Tous les programmes —"
+
+msgid "— Select program —"
+msgstr "— Sélectionner un programme —"
+
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+msgid "Select all participants"
+msgstr "Sélectionner tous les participants"
+
+msgid "Continue to Confirmation"
+msgstr "Continuer vers la confirmation"
+
+msgid "No participants match the selected filters."
+msgstr "Aucun participant ne correspond aux filtres sélectionnés."
+
+msgid "Confirm Transfer"
+msgstr "Confirmer le transfert"
+
+msgid "Confirm Discharge"
+msgstr "Confirmer le retrait"
+
+msgid "Consent Notice"
+msgstr "Avis de consentement"
+
+msgid "The following participants have restricted cross-program note sharing. After transfer, their notes from the source program will not be visible to staff in the destination program."
+msgstr "Les participants suivants ont un partage de notes inter-programmes restreint. Après le transfert, leurs notes du programme d'origine ne seront pas visibles par le personnel du programme de destination."
+
+msgid "Selected Participants"
+msgstr "Participants sélectionnés"
+
+msgid "Destination"
+msgstr "Destination"
+
+msgid "Transfer to program"
+msgstr "Transférer vers le programme"
+
+msgid "This will be recorded in the audit log for each participant."
+msgstr "Ceci sera enregistré dans le journal d'audit pour chaque participant."
+
+msgid "Transfer Participants"
+msgstr "Transférer les participants"
+
+msgid "Discharge Participants"
+msgstr "Retirer les participants"
+
+msgid "Reason for Discharge"
+msgstr "Raison du retrait"
+
+msgid "Program Closure"
+msgstr "Fermeture du programme"
+
+msgid "Cohort Ended"
+msgstr "Cohorte terminée"
+
+msgid "Your selection has expired. Please start again."
+msgstr "Votre sélection a expiré. Veuillez recommencer."
+
+msgid "None of the selected participants are accessible."
+msgstr "Aucun des participants sélectionnés n'est accessible."
+
+msgid "No participants selected."
+msgstr "Aucun participant sélectionné."
+
+msgid "Invalid selection."
+msgstr "Sélection invalide."
+
+msgid "Please select a program."
+msgstr "Veuillez sélectionner un programme."
+
+#. from reports/html_report_multi_program.html
+msgid "Multi-Program Outcome Report"
+msgstr "Rapport de résultats multiprogramme"
+
+#. blocktrans from reports/html_report_multi_program.html (title)
+#, python-format
+msgid "Multi-Program Outcome Report \u2014 %(name)s"
+msgstr "Rapport de résultats multiprogramme \u2014 %(name)s"
+
+#. from reports/html_report_multi_program.html
+msgid "Metric Charts"
+msgstr "Graphiques des indicateurs"
+
+#. from reports/html_report_multi_program.html
+msgid "This report was generated using KoNote's Multi-Program Outcome Report Template."
+msgstr "Ce rapport a été généré à l'aide du modèle de rapport de résultats multiprogramme de KoNote."
+
+#. blocktrans from reports/html_report_multi_program.html
+#, python-format
+msgid "Bar chart showing %(label)s across demographic groups"
+msgstr "Diagramme à barres montrant %(label)s par groupes démographiques"
+
+#. Page help — contextual tips (from konote/page_help.py and base.html)
+#. Terminology placeholders like {client} are replaced at runtime.
+
+#. from base.html
+msgid "Page help"
+msgstr "Aide de la page"
+
+#. from base.html
+msgid "Here are a few things you can do from anywhere in KoNote:"
+msgstr "Voici quelques actions possibles depuis n’importe quelle page de KoNote :"
+
+#. from base.html
+msgid "Read more in the Help Guide"
+msgstr "En savoir plus dans le guide d’aide"
+
+#. from base.html
+msgid "Open Help Guide"
+msgstr "Ouvrir le guide d’aide"
+
+#. page_help.py
+msgid "Your dashboard showing active {client_plural}, alerts, and recent activity."
+msgstr "Votre tableau de bord affichant les {client_plural} actifs, les alertes et l’activité récente."
+
+#. page_help.py
+msgid "Use the search bar to find a {client} by name or record ID."
+msgstr "Utilisez la barre de recherche pour trouver un(e) {client} par nom ou numéro de dossier."
+
+#. page_help.py
+msgid "Priority items show {client_plural} who need attention — overdue notes or active alerts."
+msgstr "Les éléments prioritaires montrent les {client_plural} qui nécessitent une attention — notes en retard ou alertes actives."
+
+#. page_help.py
+msgid "Recently viewed gives you quick links to {client_plural} you've been working with."
+msgstr "Consultés récemment vous donne un accès rapide aux {client_plural} avec lesquels vous avez travaillé."
+
+#. page_help.py
+msgid "{client} {file}"
+msgstr "{client} — {file}"
+
+#. page_help.py
+msgid "Everything about this {client} in one place — their {plan}, notes, events, and documents."
+msgstr "Tout sur ce(tte) {client} au même endroit — {plan}, notes, événements et documents."
+
+#. page_help.py
+msgid "Use the tabs to switch between notes, {plan}s, events, and documents."
+msgstr "Utilisez les onglets pour naviguer entre les notes, les {plan}s, les événements et les documents."
+
+#. page_help.py
+msgid "Click 'Quick note' to add a short {progress_note} without leaving this page."
+msgstr "Cliquez sur « Note rapide » pour ajouter une courte {progress_note} sans quitter cette page."
+
+#. page_help.py
+msgid "The status banner shows their current program enrolment and any active alerts."
+msgstr "La bannière d’état affiche leur inscription au programme actuel et les alertes actives."
+
+#. page_help.py
+msgid "{progress_note_plural}"
+msgstr "{progress_note_plural}"
+
+#. page_help.py
+msgid "All {progress_note_plural} for this {client}, newest first."
+msgstr "Toutes les {progress_note_plural} pour ce(tte) {client}, les plus récentes en premier."
+
+#. page_help.py
+msgid "Click 'New note' to record a session or interaction."
+msgstr "Cliquez sur « Nouvelle note » pour enregistrer une séance ou une interaction."
+
+#. page_help.py
+msgid "Each note has two parts — your clinical observations and the {client}'s perspective."
+msgstr "Chaque note a deux volets — vos observations cliniques et la perspective du/de la {client}."
+
+#. page_help.py
+msgid "Notes are linked to program enrolments, so they stay with the right program."
+msgstr "Les notes sont liées aux inscriptions de programme et restent dans le bon programme."
+
+#. page_help.py
+msgid "New {progress_note}"
+msgstr "Nouvelle {progress_note}"
+
+#. page_help.py
+msgid "Record a session or interaction with this {client}."
+msgstr "Enregistrer une séance ou une interaction avec ce(tte) {client}."
+
+#. page_help.py
+msgid "Fill in the practitioner lens (your observations) and the {client} lens (their perspective)."
+msgstr "Remplissez le volet intervenant (vos observations) et le volet {client} (leur perspective)."
+
+#. page_help.py
+msgid "Rate the working alliance if your agency uses alliance tracking."
+msgstr "Évaluez l’alliance de travail si votre organisme utilise le suivi d’alliance."
+
+#. page_help.py
+msgid "You can record {metric} scores at the bottom to update outcome tracking."
+msgstr "Vous pouvez enregistrer les scores d’{metric} au bas pour mettre à jour le suivi des résultats."
+
+#. page_help.py
+msgid "Ctrl+S saves the form."
+msgstr "Ctrl+S enregistre le formulaire."
+
+#. page_help.py
+msgid "{progress_note}"
+msgstr "{progress_note}"
+
+#. page_help.py
+msgid "Viewing a completed {progress_note}."
+msgstr "Consultation d’une {progress_note} complétée."
+
+#. page_help.py
+msgid "If AI summaries are enabled, you can generate a summary of this note."
+msgstr "Si les résumés IA sont activés, vous pouvez générer un résumé de cette note."
+
+#. page_help.py
+msgid "You can cancel (retract) a note if it was entered in error."
+msgstr "Vous pouvez annuler (rétracter) une note si elle a été entrée par erreur."
+
+#. page_help.py
+msgid "{quick_note}"
+msgstr "{quick_note}"
+
+#. page_help.py
+msgid "A short note for brief interactions — phone calls, check-ins, or quick updates."
+msgstr "Une note courte pour les interactions brèves — appels, suivis rapides ou mises à jour."
+
+#. page_help.py
+msgid "{quick_note_plural} are shorter than full {progress_note_plural} — just a description and optional {metric_plural}."
+msgstr "Les {quick_note_plural} sont plus courtes que les {progress_note_plural} complètes — juste une description et des {metric_plural} optionnels."
+
+#. page_help.py
+msgid "Outcome {plan}"
+msgstr "{plan} de résultats"
+
+#. page_help.py
+msgid "This {client}'s goals and the {metric_plural} tracking their progress."
+msgstr "Les objectifs de ce(tte) {client} et les {metric_plural} qui suivent leur progrès."
+
+#. page_help.py
+msgid "Goals are grouped into {section_plural} (life areas or themes)."
+msgstr "Les objectifs sont regroupés en {section_plural} (domaines de vie ou thèmes)."
+
+#. page_help.py
+msgid "Click a {metric} to see the progress chart over time."
+msgstr "Cliquez sur un(e) {metric} pour voir le graphique de progrès au fil du temps."
+
+#. page_help.py
+msgid "Add new goals using the button at the top — AI suggestions are available if enabled."
+msgstr "Ajoutez de nouveaux objectifs avec le bouton en haut — des suggestions IA sont disponibles si activées."
+
+#. page_help.py
+msgid "New Goal"
+msgstr "Nouvel objectif"
+
+#. page_help.py
+msgid "Add a new goal to this {client}'s outcome {plan}."
+msgstr "Ajouter un nouvel objectif au {plan} de résultats de ce(tte) {client}."
+
+#. page_help.py
+msgid "If AI suggestions are enabled, start typing and suggestions will appear."
+msgstr "Si les suggestions IA sont activées, commencez à taper et des suggestions apparaîtront."
+
+#. page_help.py
+msgid "Each goal gets one or more {metric_plural} to track progress over time."
+msgstr "Chaque objectif reçoit un ou plusieurs {metric_plural} pour suivre le progrès au fil du temps."
+
+#. page_help.py
+msgid "New {metric}"
+msgstr "Nouvel(le) {metric}"
+
+#. page_help.py
+msgid "Add a {metric} to track progress on a goal."
+msgstr "Ajouter un(e) {metric} pour suivre le progrès d’un objectif."
+
+#. page_help.py
+msgid "Choose from your agency's {metric} library, or create a custom one."
+msgstr "Choisissez dans la bibliothèque d’{metric} de votre organisme, ou créez-en un(e) personnalisé(e)."
+
+#. page_help.py
+msgid "{metric_plural} are scored during {progress_note_plural} — you don't need to enter scores separately."
+msgstr "Les {metric_plural} sont évalués pendant les {progress_note_plural} — pas besoin d’entrer les scores séparément."
+
+#. page_help.py
+msgid "{event_plural}"
+msgstr "{event_plural}"
+
+#. page_help.py
+msgid "Significant {event_plural} and alerts for this {client}."
+msgstr "{event_plural} significatifs et alertes pour ce(tte) {client}."
+
+#. page_help.py
+msgid "{event_plural} record things that happened — incidents, milestones, referrals."
+msgstr "Les {event_plural} consignent ce qui s’est passé — incidents, jalons, références."
+
+#. page_help.py
+msgid "Alerts flag things that need follow-up — they stay visible until resolved."
+msgstr "Les alertes signalent ce qui nécessite un suivi — elles restent visibles jusqu’à leur résolution."
+
+#. page_help.py
+msgid "New {event}"
+msgstr "Nouvel {event}"
+
+#. page_help.py
+msgid "Record a significant {event} for this {client}."
+msgstr "Enregistrer un {event} significatif pour ce(tte) {client}."
+
+#. page_help.py
+msgid "Choose a category that best describes what happened."
+msgstr "Choisissez une catégorie qui décrit le mieux ce qui s’est passé."
+
+#. page_help.py
+msgid "Add details in the description — this becomes part of the {client}'s record."
+msgstr "Ajoutez des détails dans la description — ceci fait partie du dossier du/de la {client}."
+
+#. page_help.py
+msgid "Upcoming and past meetings across all your {client_plural}."
+msgstr "Rencontres à venir et passées pour tous vos {client_plural}."
+
+#. page_help.py
+msgid "Meetings can be linked to {client_plural} or stand alone (like team meetings)."
+msgstr "Les rencontres peuvent être liées à des {client_plural} ou être indépendantes (comme les réunions d’équipe)."
+
+#. page_help.py
+msgid "Overdue meetings (past date, not completed) appear at the top."
+msgstr "Les rencontres en retard (date passée, non complétées) apparaissent en haut."
+
+#. page_help.py
+msgid "Create an alert that flags something needing follow-up for this {client}."
+msgstr "Créer une alerte signalant quelque chose qui nécessite un suivi pour ce(tte) {client}."
+
+#. page_help.py
+msgid "Alerts stay visible on the {client}'s {file} and in priority lists until resolved."
+msgstr "Les alertes restent visibles dans le {file} du/de la {client} et dans les listes prioritaires jusqu’à leur résolution."
+
+#. page_help.py
+msgid "Choose a severity level — high-severity alerts appear in the executive dashboard."
+msgstr "Choisissez un niveau de gravité — les alertes de haute gravité apparaissent dans le tableau de bord exécutif."
+
+#. page_help.py
+msgid "Progress Analysis"
+msgstr "Analyse des progrès"
+
+#. page_help.py
+msgid "Charts and summaries showing how this {client}'s {metric_plural} have changed over time."
+msgstr "Graphiques et résumés montrant comment les {metric_plural} de ce(tte) {client} ont évolué au fil du temps."
+
+#. page_help.py
+msgid "Each chart shows one {metric} — look for trends, not single data points."
+msgstr "Chaque graphique montre un(e) {metric} — cherchez les tendances, pas les points isolés."
+
+#. page_help.py
+msgid "You can export this as a PDF to share with the {client} or their team."
+msgstr "Vous pouvez l’exporter en PDF pour le partager avec le/la {client} ou son équipe."
+
+#. page_help.py
+msgid "Program-level view of how outcomes are tracking across all {client_plural}."
+msgstr "Vue au niveau du programme montrant comment les résultats évoluent pour tous les {client_plural}."
+
+#. page_help.py
+msgid "Use the program filter to compare outcomes across different programs."
+msgstr "Utilisez le filtre de programme pour comparer les résultats entre différents programmes."
+
+#. page_help.py
+msgid "Distribution charts show how {client_plural} are spread across score ranges."
+msgstr "Les graphiques de distribution montrent comment les {client_plural} sont répartis dans les plages de scores."
+
+#. page_help.py
+msgid "Create a formatted report using one of your agency's report templates."
+msgstr "Créez un rapport formaté en utilisant l’un des modèles de rapport de votre organisme."
+
+#. page_help.py
+msgid "Choose a template, select the date range and programs, then preview before exporting."
+msgstr "Choisissez un modèle, sélectionnez la période et les programmes, puis prévisualisez avant d’exporter."
+
+#. page_help.py
+msgid "Reports can be exported as Word documents or PDFs."
+msgstr "Les rapports peuvent être exportés en documents Word ou PDF."
+
+#. page_help.py
+msgid "High-level summary of agency activity — {client} counts, note volumes, and alerts."
+msgstr "Résumé de haut niveau de l’activité de l’organisme — nombre de {client}, volume de notes et alertes."
+
+#. page_help.py
+msgid "Use the date range and program filters to focus on specific time periods or programs."
+msgstr "Utilisez les filtres de période et de programme pour cibler des périodes ou programmes spécifiques."
+
+#. page_help.py
+msgid "You can export the dashboard data for board reports or funder updates."
+msgstr "Vous pouvez exporter les données du tableau de bord pour les rapports au conseil ou les mises à jour aux bailleurs de fonds."
+
+#. page_help.py
+msgid "Sessions Report"
+msgstr "Rapport des séances"
+
+#. page_help.py
+msgid "See session counts and dates by {client} across your programs."
+msgstr "Consultez le nombre de séances et les dates par {client} dans vos programmes."
+
+#. page_help.py
+msgid "Filter by program and date range to focus on a specific period."
+msgstr "Filtrez par programme et période pour cibler une période spécifique."
+
+#. page_help.py
+msgid "Use this to check which {client_plural} haven't had recent sessions."
+msgstr "Utilisez ceci pour vérifier quels {client_plural} n’ont pas eu de séances récentes."
+
+#. page_help.py
+msgid "Communication Log"
+msgstr "Journal des communications"
+
+#. page_help.py
+msgid "Email and communication history for this {client}."
+msgstr "Historique des courriels et communications pour ce(tte) {client}."
+
+#. page_help.py
+msgid "Use 'Quick log' to record a phone call or in-person conversation."
+msgstr "Utilisez « Entrée rapide » pour enregistrer un appel téléphonique ou une conversation en personne."
+
+#. page_help.py
+msgid "Emails sent through KoNote are automatically logged here."
+msgstr "Les courriels envoyés par KoNote sont automatiquement consignés ici."
+
+#. page_help.py
+msgid "Staff messages assigned to you or your team."
+msgstr "Messages du personnel qui vous sont assignés ou assignés à votre équipe."
+
+#. page_help.py
+msgid "Unread messages show a badge in the navigation bar."
+msgstr "Les messages non lus affichent un badge dans la barre de navigation."
+
+#. page_help.py
+msgid "You can leave messages for other staff on any {client}'s {file}."
+msgstr "Vous pouvez laisser des messages pour d’autres membres du personnel dans le {file} de n’importe quel(le) {client}."
+
+#. page_help.py
+msgid "New {client}"
+msgstr "Nouveau/Nouvelle {client}"
+
+#. page_help.py
+msgid "Register a new {client} in the system."
+msgstr "Inscrire un(e) nouveau/nouvelle {client} dans le système."
+
+#. page_help.py
+msgid "Required fields are marked with an asterisk (*)."
+msgstr "Les champs obligatoires sont marqués d’un astérisque (*)."
+
+#. page_help.py
+msgid "After creating, you'll be taken to their {file} to set up their {plan}."
+msgstr "Après la création, vous serez dirigé(e) vers leur {file} pour configurer leur {plan}."
+
+#. page_help.py
+msgid "Edit {client}"
+msgstr "Modifier {client}"
+
+#. page_help.py
+msgid "Update this {client}'s personal information."
+msgstr "Mettre à jour les renseignements personnels de ce(tte) {client}."
+
+#. page_help.py
+msgid "Changes are logged in the audit trail."
+msgstr "Les modifications sont consignées dans le journal de vérification."
+
+#. page_help.py
+msgid "End this {client}'s active enrolment."
+msgstr "Mettre fin à l’inscription active de ce(tte) {client}."
+
+#. page_help.py
+msgid "You can add a discharge reason and closing notes."
+msgstr "Vous pouvez ajouter une raison de congé et des notes de clôture."
+
+#. page_help.py
+msgid "Discharged {client_plural} can be re-enrolled later if needed."
+msgstr "Les {client_plural} ayant reçu leur congé peuvent être réinscrits ultérieurement si nécessaire."
+
+#. page_help.py
+msgid "Move this {client} to a different program."
+msgstr "Transférer ce(tte) {client} vers un programme différent."
+
+#. page_help.py
+msgid "Select the destination program — the {client}'s {file} and history stay intact."
+msgstr "Sélectionnez le programme de destination — le {file} et l’historique du/de la {client} restent intacts."
+
+#. page_help.py
+msgid "The {client}'s {worker} assignment will be updated to match the new program."
+msgstr "L’affectation du/de la {worker} du/de la {client} sera mise à jour selon le nouveau programme."
+
+#. page_help.py
+msgid "{group_plural}"
+msgstr "{group_plural}"
+
+#. page_help.py
+msgid "All active {group_plural} in your programs."
+msgstr "Tous les {group_plural} actifs dans vos programmes."
+
+#. page_help.py
+msgid "Click a {group} to see its {member_plural}, {session_plural}, and attendance."
+msgstr "Cliquez sur un {group} pour voir ses {member_plural}, {session_plural} et la présence."
+
+#. page_help.py
+msgid "Use the program filter to see {group_plural} for a specific program."
+msgstr "Utilisez le filtre de programme pour voir les {group_plural} d’un programme spécifique."
+
+#. page_help.py
+msgid "Agency-wide settings — terminology, features, branding, and system configuration."
+msgstr "Paramètres à l’échelle de l’organisme — terminologie, fonctionnalités, image de marque et configuration du système."
+
+#. page_help.py
+msgid "Changes to terminology update labels across the entire system."
+msgstr "Les changements de terminologie mettent à jour les libellés dans tout le système."
+
+#. page_help.py
+msgid "Feature toggles let you enable or disable optional features like AI suggestions."
+msgstr "Les bascules de fonctionnalités vous permettent d’activer ou de désactiver des fonctions optionnelles comme les suggestions IA."
+
+#. page_help.py
+msgid "User Management"
+msgstr "Gestion des utilisateurs"
+
+#. page_help.py
+msgid "Manage staff accounts, roles, and program assignments."
+msgstr "Gérer les comptes du personnel, les rôles et les affectations de programme."
+
+#. page_help.py
+msgid "Each user needs at least one program role to access {client} {file_plural}."
+msgstr "Chaque utilisateur a besoin d’au moins un rôle de programme pour accéder aux {file_plural} des {client}."
+
+#. page_help.py
+msgid "Admins can see all programs; other roles only see their assigned programs."
+msgstr "Les administrateurs peuvent voir tous les programmes; les autres rôles ne voient que leurs programmes assignés."
+
+#. page_help.py
+msgid "Record of all significant actions taken in the system."
+msgstr "Registre de toutes les actions significatives effectuées dans le système."
+
+#. page_help.py
+msgid "Use the filters to narrow by user, action type, or date range."
+msgstr "Utilisez les filtres pour affiner par utilisateur, type d’action ou période."
+
+#. page_help.py
+msgid "Audit logs are stored in a separate database and cannot be edited."
+msgstr "Les journaux de vérification sont stockés dans une base de données séparée et ne peuvent pas être modifiés."
+
+#. page_help.py
+msgid "CIDS Dashboard"
+msgstr "Tableau de bord CIDS"
+
+#. page_help.py
+msgid "Common Impact Data Standard compliance — see how your data maps to CIDS fields."
+msgstr "Conformité à la Norme commune de données d’impact — voyez comment vos données correspondent aux champs CIDS."
+
+#. page_help.py
+msgid "Green items are complete; yellow items need attention."
+msgstr "Les éléments verts sont complétés; les éléments jaunes nécessitent une attention."
+
+#. page_help.py
+msgid "Click a section to see which fields need to be filled in."
+msgstr "Cliquez sur une section pour voir quels champs doivent être remplis."
+
+#. page_help.py — fallback
+msgid "Use the search bar at the top to find a {client} by name or ID."
+msgstr "Utilisez la barre de recherche en haut pour trouver un(e) {client} par nom ou numéro."
+
+#. page_help.py — fallback
+msgid "Press the Help link in the footer to open the full Help Guide."
+msgstr "Appuyez sur le lien Aide dans le pied de page pour ouvrir le guide d’aide complet."
+
+#. page_help.py — fallback
+msgid "Use your browser's back button or the navigation menu to return to the home page."
+msgstr "Utilisez le bouton retour de votre navigateur ou le menu de navigation pour revenir à la page d’accueil."

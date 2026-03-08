@@ -105,6 +105,7 @@ def template_report_preview(request):
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
     period_label = form.cleaned_data.get("period_label", f"{date_from} to {date_to}")
+    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
 
     # Generate report data using the same pipeline as the download path
     programs = list(template.partner.get_programs())
@@ -126,6 +127,7 @@ def template_report_preview(request):
             fiscal_year_label=period_label,
             user=request.user,
             report_template=template,
+            taxonomy_lens=taxonomy_lens,
         )
     except Exception:
         logger.exception("Failed to generate template report preview data")

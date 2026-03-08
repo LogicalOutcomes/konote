@@ -15,6 +15,7 @@ from apps.admin_settings.models import (
 from apps.auth_app.models import User
 from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
 from apps.plans.models import MetricDefinition, PlanTarget, PlanSection, PlanTargetMetric
+from apps.plans.cids import apply_metric_cids_defaults, apply_target_cids_defaults
 from apps.plans.achievement import compute_achievement_status, update_achievement_status
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
@@ -36,11 +37,14 @@ class MetricDefinitionCidsFieldsTest(TestCase):
             name="Test Metric",
             definition="Test definition",
         )
-        self.assertEqual(metric.cids_indicator_uri, "")
+        self.assertEqual(
+            metric.cids_indicator_uri,
+            f"urn:konote:indicator-definition:{metric.pk}",
+        )
         self.assertEqual(metric.iris_metric_code, "")
         self.assertEqual(metric.sdg_goals, [])
         self.assertEqual(metric.cids_unit_description, "")
-        self.assertEqual(metric.cids_defined_by, "")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
         self.assertEqual(metric.cids_has_baseline, "")
         self.assertEqual(metric.cids_theme_override, "")
 
@@ -95,6 +99,66 @@ class MetricDefinitionCidsFieldsTest(TestCase):
         metric.refresh_from_db()
         self.assertEqual(metric.cids_has_baseline, "Median score 4.5 at programme entry")
 
+    def test_helper_populates_local_metric_defaults(self):
+        metric = MetricDefinition.objects.create(
+            name="Local Metric",
+            definition="Local definition",
+            unit="score",
+        )
+        metric.cids_indicator_uri = ""
+        metric.cids_unit_description = ""
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+        self.assertCountEqual(
+            changed,
+            ["cids_indicator_uri", "cids_unit_description", "cids_defined_by"],
+        )
+        self.assertEqual(metric.cids_indicator_uri, f"urn:konote:indicator-definition:{metric.pk}")
+        self.assertEqual(metric.cids_unit_description, "score")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
+
+    def test_helper_uses_giin_for_iris_metric(self):
+        metric = MetricDefinition.objects.create(
+            name="IRIS Metric",
+            definition="IRIS definition",
+            iris_metric_code="PI2061",
+        )
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+        self.assertIn("cids_defined_by", changed)
+        self.assertEqual(metric.cids_defined_by, "https://iris.thegiin.org")
+
+    def test_signal_populates_local_metric_defaults(self):
+        metric = MetricDefinition.objects.create(
+            name="Signal Metric",
+            definition="Signal definition",
+            unit="days",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.cids_indicator_uri, f"urn:konote:indicator-definition:{metric.pk}")
+        self.assertEqual(metric.cids_unit_description, "days")
+        self.assertTrue(metric.cids_defined_by.startswith("urn:konote:organization:"))
+
+    def test_helper_does_not_infer_deferred_taxonomy_fields(self):
+        metric = MetricDefinition.objects.create(
+            name="Deferred Mapping Metric",
+            definition="Local definition",
+            unit="sessions",
+        )
+        metric.cids_indicator_uri = ""
+        metric.cids_unit_description = ""
+        metric.cids_defined_by = ""
+        changed = apply_metric_cids_defaults(metric)
+
+        self.assertCountEqual(
+            changed,
+            ["cids_indicator_uri", "cids_unit_description", "cids_defined_by"],
+        )
+        self.assertEqual(metric.iris_metric_code, "")
+        self.assertEqual(metric.sdg_goals, [])
+        self.assertEqual(metric.cids_has_baseline, "")
+        self.assertEqual(metric.cids_theme_override, "")
+
 
 # ── PlanTarget CIDS fields ────────────────────────────────────────────
 
@@ -119,7 +183,10 @@ class PlanTargetCidsFieldsTest(TestCase):
         )
         target.name = "Test Target"
         target.save()
-        self.assertEqual(target.cids_outcome_uri, "")
+        self.assertEqual(
+            target.cids_outcome_uri,
+            f"urn:konote:outcome-definition:{target.pk}",
+        )
 
     def test_cids_outcome_uri_can_be_set(self):
         target = PlanTarget.objects.create(
@@ -131,6 +198,28 @@ class PlanTargetCidsFieldsTest(TestCase):
         target.save()
         target.refresh_from_db()
         self.assertEqual(target.cids_outcome_uri, "urn:cids:outcome:housing-stable")
+
+    def test_helper_populates_local_target_default(self):
+        target = PlanTarget.objects.create(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Target Helper"
+        target.save()
+        target.cids_outcome_uri = ""
+        changed = apply_target_cids_defaults(target)
+        self.assertEqual(changed, ["cids_outcome_uri"])
+        self.assertEqual(target.cids_outcome_uri, f"urn:konote:outcome-definition:{target.pk}")
+
+    def test_signal_populates_local_target_default(self):
+        target = PlanTarget.objects.create(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Signal Target"
+        target.save()
+        target.refresh_from_db()
+        self.assertEqual(target.cids_outcome_uri, f"urn:konote:outcome-definition:{target.pk}")
 
 
 # ── Program CIDS fields ──────────────────────────────────────────────
@@ -392,6 +481,10 @@ class TaxonomyMappingTest(TestCase):
             name="Test Metric", definition="Test",
         )
         self.program = Program.objects.create(name="Test Program")
+        self.reviewer = User.objects.create_user(
+            username="mapping-reviewer",
+            password="testpass123",
+        )
 
     def test_create_metric_mapping(self):
         mapping = TaxonomyMapping.objects.create(
@@ -476,6 +569,78 @@ class TaxonomyMappingTest(TestCase):
             taxonomy_code="PI2061",
         )
         self.assertIn("cids_iris:PI2061", str(mapping))
+
+    def test_review_fields_default_for_manual_mapping(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+        )
+        self.assertEqual(mapping.mapping_status, "approved")
+        self.assertEqual(mapping.mapping_source, "manual")
+        self.assertIsNone(mapping.confidence_score)
+        self.assertEqual(mapping.rationale, "")
+        self.assertIsNone(mapping.reviewed_by)
+        self.assertIsNone(mapping.reviewed_at)
+
+    def test_draft_ai_mapping_can_store_confidence_and_rationale(self):
+        mapping = TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="draft",
+            mapping_source="ai_suggested",
+            confidence_score=0.82,
+            rationale="Matches the metric wording and unit.",
+        )
+        self.assertEqual(mapping.mapping_status, "draft")
+        self.assertEqual(mapping.mapping_source, "ai_suggested")
+        self.assertEqual(mapping.confidence_score, 0.82)
+        self.assertEqual(mapping.rationale, "Matches the metric wording and unit.")
+
+    def test_approved_ai_mapping_requires_reviewed_at(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="approved",
+            mapping_source="ai_suggested",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_rejected_mapping_requires_reviewed_at(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="rejected",
+        )
+        with self.assertRaises(ValidationError):
+            mapping.clean()
+
+    def test_reviewed_mapping_accepts_reviewer_metadata(self):
+        reviewed_at = timezone.now()
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="approved",
+            reviewed_by=self.reviewer,
+            reviewed_at=reviewed_at,
+        )
+        mapping.clean()
+
+    def test_confidence_score_must_be_between_zero_and_one(self):
+        mapping = TaxonomyMapping(
+            metric_definition=self.metric,
+            taxonomy_system="cids_iris",
+            taxonomy_code="PI2061",
+            mapping_status="draft",
+            confidence_score=1.5,
+        )
+        with self.assertRaises(ValidationError):
+            mapping.full_clean()
 
 
 # ── import_cids_codelists management command ─────────────────────────
@@ -645,6 +810,38 @@ class StandardsAlignmentDataTest(TestCase):
         self.assertEqual(data["total_count"], 2)
         self.assertEqual(data["mapped_count"], 1)
         self.assertEqual(data["sdg_summary"], {1: 1, 11: 1})
+
+    def test_alignment_uses_selected_taxonomy_lens(self):
+        from apps.admin_settings.models import TaxonomyMapping
+        from apps.reports.cids_enrichment import get_standards_alignment_data
+
+        metric = MetricDefinition.objects.create(
+            name="Housing outcome",
+            definition="Tracks sustained housing.",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=metric,
+            taxonomy_system="sdg",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_code="11",
+            taxonomy_label="Sustainable Cities and Communities",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+
+        data = get_standards_alignment_data(
+            self.program,
+            metric_definitions=MetricDefinition.objects.filter(pk=metric.pk),
+            taxonomy_lens="sdg",
+        )
+
+        self.assertEqual(data["taxonomy_lens"], "sdg")
+        self.assertEqual(data["mapped_count"], 1)
+        self.assertEqual(data["metrics"][0]["selected_code"], "11")
+        self.assertEqual(
+            data["metrics"][0]["selected_label"],
+            "Sustainable Cities and Communities",
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -1368,7 +1565,6 @@ class CidsJsonLdExportTest(TestCase):
         self.org = OrganizationProfile.get_solo()
         self.org.legal_name = "Test Agency Inc."
         self.org.operating_name = "Test Agency"
-        self.org.legal_status = "Registered charity"
         self.org.save()
 
         self.client_file = ClientFile.objects.create()
@@ -1376,19 +1572,12 @@ class CidsJsonLdExportTest(TestCase):
         self.client_file.last_name = "Client"
         self.client_file.save()
 
-        # Create episode for stakeholder count
-        ServiceEpisode.objects.create(
-            client_file=self.client_file,
-            program=self.program,
-            status="active",
-            episode_type="new_intake",
-        )
-
         self.metric = MetricDefinition.objects.create(
             name="Wellbeing Score",
             definition="1-10 scale",
             cids_indicator_uri="urn:example:indicator:1",
             cids_unit_description="Scale score",
+            cids_theme_override="Education",
         )
         self.section = PlanSection.objects.create(
             client_file=self.client_file, program=self.program,
@@ -1400,6 +1589,35 @@ class CidsJsonLdExportTest(TestCase):
         self.target.name = "Improve wellbeing"
         self.target.achievement_status = "improving"
         self.target.save()
+        PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric)
+
+        self.note = ProgressNote.objects.create(
+            client_file=self.client_file,
+            note_type="quick",
+            author=User.objects.create_user(username="note-author", password="testpass123"),
+            author_program=self.program,
+            status="default",
+            backdate=timezone.now(),
+        )
+        self.note.notes_text = "Session note"
+        self.note.save()
+        self.note_target = ProgressNoteTarget.objects.create(
+            progress_note=self.note,
+            plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=self.note_target,
+            metric_def=self.metric,
+            value="7",
+        )
+
+        CidsCodeList.objects.create(
+            list_name="IRISImpactTheme",
+            code="THEME01",
+            label="Education",
+            specification_uri="urn:iris:theme:education",
+            description="Education theme",
+        )
 
     def _run_export(self, **kwargs):
         """Run the export command and return parsed JSON."""
@@ -1414,10 +1632,11 @@ class CidsJsonLdExportTest(TestCase):
 
     def test_export_has_cids_context(self):
         doc = self._run_export()
-        self.assertEqual(
-            doc["@context"],
-            "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
-        )
+        context = doc["@context"]
+        self.assertIsInstance(context, list)
+        self.assertEqual(context[0], "https://ontology.commonapproach.org/contexts/cidsContext.jsonld")
+        # Second entry is the konote extensions namespace
+        self.assertIn("konote", context[1])
 
     def test_export_has_version(self):
         doc = self._run_export()
@@ -1430,23 +1649,24 @@ class CidsJsonLdExportTest(TestCase):
         org = org_nodes[0]
         self.assertEqual(org["hasLegalName"], "Test Agency Inc.")
         self.assertEqual(org["hasName"], "Test Agency")
-        self.assertEqual(org["cids:hasOrganizationType"], "Registered charity")
+        self.assertIn("hasOutcome", org)
+        self.assertIn("hasIndicator", org)
 
-    def test_program_node(self):
+    def test_export_uses_program_level_aggregate_outcome(self):
         doc = self._run_export()
-        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
-        self.assertEqual(len(prog_nodes), 1)
-        prog = prog_nodes[0]
-        self.assertEqual(prog["hasName"], "Youth Services")
-        self.assertIn("org:offeredBy", prog)
+        outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
+        self.assertEqual(len(outcome_nodes), 1)
+        outcome = outcome_nodes[0]
+        self.assertEqual(outcome["hasName"], "Youth Services outcomes")
+        self.assertEqual(outcome["forOrganization"]["@id"], "urn:konote:org:1")
 
     def test_outcome_node(self):
         doc = self._run_export()
         outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
         self.assertEqual(len(outcome_nodes), 1)
         outcome = outcome_nodes[0]
-        self.assertEqual(outcome["hasName"], "Improve wellbeing")
-        self.assertEqual(outcome["cids:achievementStatus"], "improving")
+        self.assertIn("hasIndicator", outcome)
+        self.assertIn("forOrganization", outcome)
 
     def test_indicator_node(self):
         doc = self._run_export()
@@ -1454,87 +1674,521 @@ class CidsJsonLdExportTest(TestCase):
         self.assertTrue(len(ind_nodes) >= 1)
         ind = ind_nodes[0]
         self.assertEqual(ind["hasName"], "Wellbeing Score")
-        self.assertEqual(ind["cids:unitDescription"], "Scale score")
-
-    def test_beneficial_stakeholder_is_group_not_individual(self):
-        """BeneficialStakeholder must be a cohort, never an individual client."""
-        doc = self._run_export()
-        sh_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:BeneficialStakeholder"
-        ]
-        self.assertTrue(len(sh_nodes) >= 1)
-        sh = sh_nodes[0]
-        # Must describe a group, not contain PII
-        self.assertIn("Participants in", sh["hasName"])
-        self.assertNotIn("Test", sh["hasName"])  # No client name
-        # Must have stakeholder size as i72:Measure
-        self.assertIn("cids:hasStakeholderSize", sh)
-        self.assertEqual(
-            sh["cids:hasStakeholderSize"]["@type"], "i72:Measure",
-        )
-
-    def test_i72_measure_wrapping(self):
-        """Numerical values must be wrapped in i72:Measure with string values."""
-        doc = self._run_export()
-        sh_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:BeneficialStakeholder"
-        ]
-        measure = sh_nodes[0]["cids:hasStakeholderSize"]
-        self.assertEqual(measure["@type"], "i72:Measure")
-        # Value must be xsd:string, not number literal
-        self.assertIsInstance(measure["i72:hasNumericalValue"], str)
+        self.assertEqual(ind["unitDescription"], "Scale score")
+        self.assertIn("forOrganization", ind)
+        self.assertIn("hasIndicatorReport", ind)
 
     def test_no_individual_pii_in_export(self):
-        """Export must not contain any individual client names."""
+        """Export must not contain client names or client-specific target text."""
         doc = self._run_export()
         export_str = json.dumps(doc)
         self.assertNotIn("Test Client", export_str)
+        self.assertNotIn("Improve wellbeing", export_str)
 
-    def test_stakeholder_outcome_junction(self):
+    def test_indicator_report_uses_measure_list_and_dates(self):
         doc = self._run_export()
-        so_nodes = [
+        report_nodes = [
             n for n in doc["@graph"]
-            if n.get("@type") == "cids:StakeholderOutcome"
+            if n.get("@type") == "cids:IndicatorReport"
         ]
-        self.assertTrue(len(so_nodes) >= 1)
-        so = so_nodes[0]
-        self.assertIn("cids:forStakeholder", so)
-        self.assertIn("cids:forOutcome", so)
-
-    def test_impact_report_has_scale(self):
-        doc = self._run_export()
-        impact_nodes = [
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:ImpactReport"
-        ]
-        self.assertTrue(len(impact_nodes) >= 1)
-        impact = impact_nodes[0]
-        self.assertIn("cids:hasImpactScale", impact)
-        self.assertEqual(
-            impact["cids:hasImpactScale"]["@type"], "i72:Measure",
-        )
+        self.assertEqual(len(report_nodes), 1)
+        report = report_nodes[0]
+        # value is now a list of i72:Measure dicts
+        self.assertIsInstance(report["value"], list)
+        self.assertTrue(len(report["value"]) >= 1)
+        for measure in report["value"]:
+            self.assertEqual(measure["@type"], "i72:Measure")
+        self.assertIn("startedAtTime", report)
+        self.assertIn("endedAtTime", report)
+        self.assertEqual(report["forIndicator"]["@id"], "urn:konote:indicator:1:1")
 
     def test_program_filter(self):
         """--program-id filters to a single program."""
         Program.objects.create(name="Other Program")
         doc = self._run_export(program_id=self.program.pk)
-        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
-        self.assertEqual(len(prog_nodes), 1)
-        self.assertEqual(prog_nodes[0]["hasName"], "Youth Services")
+        outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
+        self.assertEqual(len(outcome_nodes), 1)
+        self.assertEqual(outcome_nodes[0]["hasName"], "Youth Services outcomes")
 
     def test_theme_nodes_from_code_list(self):
         """Theme nodes are exported from CidsCodeList entries."""
-        CidsCodeList.objects.create(
-            list_name="IRISImpactTheme",
-            code="THEME01",
-            label="Education",
-            specification_uri="urn:iris:theme:education",
-        )
         doc = self._run_export()
         theme_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Theme"]
         self.assertTrue(len(theme_nodes) >= 1)
         theme = theme_nodes[0]
         self.assertEqual(theme["hasName"], "Education")
         self.assertEqual(theme["@id"], "urn:iris:theme:education")
+
+    # ── DQV data quality tests ────────────────────────────────────
+
+    def test_dqv_namespace_in_context(self):
+        """Export context includes dqv and oa namespaces."""
+        doc = self._run_export()
+        ctx = doc["@context"][1]
+        self.assertEqual(ctx["dqv"], "http://www.w3.org/ns/dqv#")
+        self.assertEqual(ctx["oa"], "http://www.w3.org/ns/oa#")
+
+    def test_indicator_report_has_dqv_quality_measurements(self):
+        """IndicatorReport nodes include dqv:hasQualityMeasurement."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityMeasurement", report)
+        measurements = report["dqv:hasQualityMeasurement"]
+        self.assertIsInstance(measurements, list)
+        self.assertTrue(len(measurements) >= 1)
+        # Should include observation density
+        density = next(
+            (m for m in measurements if m.get("dqv:isMeasurementOf") == "precision"),
+            None,
+        )
+        self.assertIsNotNone(density)
+        self.assertEqual(density["dqv:value"], 1.0)  # 1 observation / 1 participant
+
+    def test_response_rate_calculation(self):
+        """Reporting rate = reported / eligible participants."""
+        # Add a second eligible participant who did NOT report
+        client2 = ClientFile.objects.create()
+        client2.first_name = "Second"
+        client2.last_name = "Client"
+        client2.save()
+        section2 = PlanSection.objects.create(
+            client_file=client2, program=self.program,
+        )
+        target2 = PlanTarget(
+            plan_section=section2,
+            client_file=client2,
+        )
+        target2.name = "Second target"
+        target2.save()
+        PlanTargetMetric.objects.create(plan_target=target2, metric_def=self.metric)
+        # Now: 2 eligible, 1 reported → 50% reporting rate
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        measurements = report["dqv:hasQualityMeasurement"]
+        completeness = next(
+            (m for m in measurements
+             if m.get("dqv:isMeasurementOf") == "completeness"
+             and "numerator" in str(m)),
+            None,
+        )
+        self.assertIsNotNone(completeness)
+        self.assertEqual(completeness["dqv:value"], 50.0)
+        self.assertEqual(completeness["konote:numerator"], 1)
+        self.assertEqual(completeness["konote:denominator"], 2)
+
+    def test_evidence_type_annotation(self):
+        """Evidence type annotation describes how data is generated."""
+        self.metric.evidence_type = "staff_observed"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityAnnotation", report)
+        annotations = report["dqv:hasQualityAnnotation"]
+        ev_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "evidence_type"),
+            None,
+        )
+        self.assertIsNotNone(ev_ann)
+        self.assertEqual(ev_ann["konote:annotationCategory"], "staff_observed")
+
+    def test_measure_basis_with_instrument_name(self):
+        """Published validated measure includes instrument name in body."""
+        self.metric.measure_basis = "published_validated"
+        self.metric.instrument_name = "PHQ-9"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report["dqv:hasQualityAnnotation"]
+        basis_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "measure_basis"),
+            None,
+        )
+        self.assertIsNotNone(basis_ann)
+        self.assertEqual(basis_ann["konote:annotationCategory"], "published_validated")
+        self.assertIn("PHQ-9", basis_ann["oa:hasBody"]["rdf:value"])
+
+    def test_derivation_method_annotation(self):
+        """Derivation method annotation appears for coded qualitative."""
+        self.metric.derivation_method = "coded_from_qualitative"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report["dqv:hasQualityAnnotation"]
+        deriv_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "derivation_method"),
+            None,
+        )
+        self.assertIsNotNone(deriv_ann)
+        self.assertEqual(deriv_ann["konote:annotationCategory"], "coded_from_qualitative")
+
+    def test_no_annotations_when_fields_empty(self):
+        """No quality annotations when DQV descriptor fields are blank."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        # Default metric has no evidence_type, measure_basis, or derivation_method
+        self.assertNotIn("dqv:hasQualityAnnotation", report)
+
+    def test_selected_taxonomy_lens_creates_code_nodes(self):
+        CidsCodeList.objects.create(
+            list_name="SDGImpacts",
+            code="4",
+            label="Quality Education",
+            specification_uri="https://metadata.un.org/sdg/4",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=self.metric,
+            taxonomy_system="sdg",
+            taxonomy_code="4",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_label="Quality Education",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+
+        doc = self._run_export(taxonomy_lens="sdg")
+        indicator = next(n for n in doc["@graph"] if n.get("@type") == "cids:Indicator")
+        code_node = next(n for n in doc["@graph"] if n.get("@type") == "cids:Code")
+        self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/4")
+        self.assertEqual(code_node["hasName"], "Quality Education")
+
+
+# ── IndicatorReport Aggregation Unit Tests ─────────────────────────
+
+
+class _MockMetricValue:
+    """Lightweight stand-in for MetricValue with related objects."""
+
+    def __init__(self, value, client_id, backdate, created_at=None):
+        self.value = value
+        note = MagicMock()
+        note.backdate = backdate
+        note.created_at = created_at or backdate
+        target = MagicMock()
+        target.client_file_id = client_id
+        target.progress_note = note
+        pnt = MagicMock()
+        pnt.plan_target = target
+        pnt.progress_note = note
+        self.progress_note_target = pnt
+
+
+def _make_metric(**kwargs):
+    """Return a MagicMock that looks like a MetricDefinition."""
+    defaults = {
+        "name": "Test Metric",
+        "metric_type": "scale",
+        "unit": "score",
+        "threshold_low": None,
+        "threshold_high": None,
+        "target_band_high_pct": None,
+        "higher_is_better": True,
+        "achievement_options": None,
+        "achievement_success_values": None,
+        "target_rate": None,
+        "is_standardized_instrument": False,
+        "instrument_name": "",
+        "evidence_type": "",
+        "measure_basis": "",
+        "derivation_method": "",
+    }
+    defaults.update(kwargs)
+    m = MagicMock(**defaults)
+    m.name = defaults["name"]
+    m.configure_mock(**defaults)
+    return m
+
+
+def _make_program(name="Youth Services"):
+    p = MagicMock()
+    p.name = name
+    return p
+
+
+class ParseNumericValuesTest(TestCase):
+    """Tests for _parse_numeric_values helper."""
+
+    def test_all_parseable(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        mvs = [_MockMetricValue("3.5", 1, timezone.now()), _MockMetricValue("7", 2, timezone.now())]
+        nums, skipped = _parse_numeric_values(mvs)
+        self.assertEqual(nums, [3.5, 7.0])
+        self.assertEqual(skipped, 0)
+
+    def test_mixed_parseable_and_unparseable(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        mvs = [
+            _MockMetricValue("5", 1, timezone.now()),
+            _MockMetricValue("N/A", 2, timezone.now()),
+            _MockMetricValue("", 3, timezone.now()),
+            _MockMetricValue("8.2", 4, timezone.now()),
+        ]
+        nums, skipped = _parse_numeric_values(mvs)
+        self.assertEqual(nums, [5.0, 8.2])
+        self.assertEqual(skipped, 2)
+
+    def test_empty_queryset(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        nums, skipped = _parse_numeric_values([])
+        self.assertEqual(nums, [])
+        self.assertEqual(skipped, 0)
+
+
+class ComputeScaleReportTest(TestCase):
+    """Tests for _compute_scale_report helper."""
+
+    def _call(self, metric, values, observation_count, program=None):
+        from apps.reports.cids_jsonld import _compute_scale_report
+        return _compute_scale_report(metric, values, observation_count, program or _make_program())
+
+    def test_basic_stats_with_multiple_values(self):
+        """Mean, median, SD, min, max with known inputs."""
+        now = timezone.now()
+        metric = _make_metric(unit="points")
+        values = [
+            _MockMetricValue("2", 1, now),
+            _MockMetricValue("4", 2, now),
+            _MockMetricValue("6", 3, now),
+        ]
+        measures, comment = self._call(metric, values, 3)
+        by_type = {m["measureType"]: m for m in measures}
+
+        self.assertEqual(by_type["konote:mean"]["hasNumericalValue"], "4.0")
+        self.assertEqual(by_type["konote:median"]["hasNumericalValue"], "4.0")
+        self.assertIn("konote:standard_deviation", by_type)
+        self.assertEqual(by_type["konote:minimum"]["hasNumericalValue"], "2.0")
+        self.assertEqual(by_type["konote:maximum"]["hasNumericalValue"], "6.0")
+
+    def test_single_value_omits_sd(self):
+        """With only 1 value, SD measure should not be emitted."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [_MockMetricValue("5", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        types = [m["measureType"] for m in measures]
+        self.assertNotIn("konote:standard_deviation", types)
+        self.assertIn("konote:mean", types)
+
+    def test_no_parseable_values(self):
+        """When all values are unparseable, return observation count only."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [_MockMetricValue("N/A", 1, now), _MockMetricValue("", 2, now)]
+        measures, comment = self._call(metric, values, 2)
+        self.assertEqual(len(measures), 1)
+        self.assertEqual(measures[0]["measureType"], "konote:observation_count")
+        self.assertIn("no parseable values", comment)
+
+    def test_skipped_count_reported(self):
+        """When some values are unparseable, skipped_unparseable is emitted."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [
+            _MockMetricValue("5", 1, now),
+            _MockMetricValue("bad", 2, now),
+        ]
+        measures, _ = self._call(metric, values, 2)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertIn("konote:skipped_unparseable", by_type)
+        self.assertEqual(by_type["konote:skipped_unparseable"]["hasNumericalValue"], "1")
+
+    def test_band_distribution(self):
+        """Band distribution emitted when thresholds are set."""
+        now = timezone.now()
+        metric = _make_metric(threshold_low=3.0, threshold_high=7.0)
+        values = [
+            _MockMetricValue("1", 1, now),  # low
+            _MockMetricValue("5", 2, now),  # medium
+            _MockMetricValue("9", 3, now),  # high
+        ]
+        measures, _ = self._call(metric, values, 3)
+        band = next(m for m in measures if m["measureType"] == "konote:band_distribution")
+        dist = {d["label"]: d["count"] for d in band["distribution"]}
+        self.assertEqual(dist["Low"], 1)
+        self.assertEqual(dist["Medium"], 1)
+        self.assertEqual(dist["High"], 1)
+
+    def test_pre_post_with_two_observations(self):
+        """Pre/post change computed when participant has 2+ observations."""
+        from datetime import timedelta
+        now = timezone.now()
+        earlier = now - timedelta(days=30)
+        metric = _make_metric(higher_is_better=True)
+        # Same participant (client_id=1) with two observations
+        values = [
+            _MockMetricValue("3", 1, earlier),
+            _MockMetricValue("7", 1, now),
+        ]
+        measures, comment = self._call(metric, values, 2)
+        pre_post = next(
+            (m for m in measures if m["measureType"] == "konote:pre_post_change"), None
+        )
+        self.assertIsNotNone(pre_post)
+        self.assertEqual(pre_post["preMean"], 3.0)
+        self.assertEqual(pre_post["postMean"], 7.0)
+        self.assertEqual(pre_post["improvedCount"], 1)
+        self.assertEqual(pre_post["improvementRate"], 100.0)
+        self.assertIn("Pre/post", comment)
+
+    def test_all_measures_namespaced(self):
+        """Every measureType value should start with konote:."""
+        now = timezone.now()
+        metric = _make_metric(threshold_low=3.0, threshold_high=7.0)
+        values = [_MockMetricValue("5", 1, now), _MockMetricValue("8", 2, now)]
+        measures, _ = self._call(metric, values, 2)
+        for m in measures:
+            self.assertTrue(
+                m["measureType"].startswith("konote:"),
+                f"measureType '{m['measureType']}' missing konote: namespace",
+            )
+
+
+class ComputeAchievementReportTest(TestCase):
+    """Tests for _compute_achievement_report helper."""
+
+    def _call(self, metric, values, observation_count, program=None):
+        from apps.reports.cids_jsonld import _compute_achievement_report
+        return _compute_achievement_report(metric, values, observation_count, program or _make_program())
+
+    def test_basic_success_rate(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            achievement_success_values=["Employed", "In training"],
+        )
+        values = [
+            _MockMetricValue("Employed", 1, now),
+            _MockMetricValue("Unemployed", 2, now),
+            _MockMetricValue("In training", 3, now),
+        ]
+        measures, comment = self._call(metric, values, 3)
+        by_type = {m["measureType"]: m for m in measures}
+
+        # 2 of 3 participants achieved
+        self.assertEqual(by_type["konote:success_rate"]["hasNumericalValue"], "66.7")
+        self.assertEqual(by_type["konote:count_achieved"]["hasNumericalValue"], "2")
+        self.assertIn("2 of 3", comment)
+
+    def test_empty_success_values(self):
+        """When achievement_success_values is None, success rate is 0."""
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["A", "B"],
+            achievement_success_values=None,
+        )
+        values = [_MockMetricValue("A", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertEqual(by_type["konote:success_rate"]["hasNumericalValue"], "0.0")
+
+    def test_distribution_emitted(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Yes", "No"],
+            achievement_success_values=["Yes"],
+        )
+        values = [
+            _MockMetricValue("Yes", 1, now),
+            _MockMetricValue("Yes", 2, now),
+            _MockMetricValue("No", 3, now),
+        ]
+        measures, _ = self._call(metric, values, 3)
+        dist_measure = next(m for m in measures if m["measureType"] == "konote:distribution")
+        dist = {d["label"]: d for d in dist_measure["distribution"]}
+        self.assertEqual(dist["Yes"]["count"], 2)
+        self.assertTrue(dist["Yes"]["isSuccess"])
+        self.assertFalse(dist["No"]["isSuccess"])
+
+    def test_target_rate_emitted(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Done"],
+            achievement_success_values=["Done"],
+            target_rate=80.0,
+        )
+        values = [_MockMetricValue("Done", 1, now)]
+        measures, comment = self._call(metric, values, 1)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertIn("konote:target_rate", by_type)
+        self.assertEqual(by_type["konote:target_rate"]["hasNumericalValue"], "80.0")
+        self.assertIn("target: 80.0%", comment)
+
+    def test_all_measures_namespaced(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["A"],
+            achievement_success_values=["A"],
+        )
+        values = [_MockMetricValue("A", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        for m in measures:
+            self.assertTrue(
+                m["measureType"].startswith("konote:"),
+                f"measureType '{m['measureType']}' missing konote: namespace",
+            )
+
+
+class ComputeIndicatorReportDispatchTest(TestCase):
+    """Tests for _compute_indicator_report dispatch."""
+
+    def test_open_text_fallback(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(metric_type="open_text")
+        values = [_MockMetricValue("Some narrative", 1, now)]
+        measures, comment = _compute_indicator_report(metric, values, 1, _make_program())
+        self.assertEqual(len(measures), 1)
+        self.assertEqual(measures[0]["measureType"], "konote:observation_count")
+        self.assertEqual(measures[0]["hasNumericalValue"], "1")
+        self.assertIn("recorded observations", comment)
+
+    def test_dispatches_to_achievement(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Done"],
+            achievement_success_values=["Done"],
+        )
+        values = [_MockMetricValue("Done", 1, now)]
+        measures, _ = _compute_indicator_report(metric, values, 1, _make_program())
+        types = [m["measureType"] for m in measures]
+        self.assertIn("konote:success_rate", types)
+
+    def test_dispatches_to_scale(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(metric_type="scale")
+        values = [_MockMetricValue("5", 1, now), _MockMetricValue("7", 2, now)]
+        measures, _ = _compute_indicator_report(metric, values, 2, _make_program())
+        types = [m["measureType"] for m in measures]
+        self.assertIn("konote:mean", types)

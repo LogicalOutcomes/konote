@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluation Frameworks" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluation Frameworks" %}</h1>
+    <p>{% trans "Program-level evaluation frameworks for CIDS Full Tier compliance." %}</p>
+</hgroup>
+
+<form method="get" role="search">
+    <fieldset role="group">
+        <select name="program" aria-label="{% trans 'Filter by program' %}">
+            <option value="">{% trans "All programs" %}</option>
+            {% for p in programs %}
+            <option value="{{ p.pk }}" {% if p.pk == selected_program_id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">{% trans "Filter" %}</button>
+    </fieldset>
+</form>
+
+{% if frameworks %}
+<figure>
+<table role="grid" aria-label="{% trans 'Evaluation frameworks' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{{ term.program|default:"Program" }}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "CIDS Coverage" %}</th>
+            <th scope="col">{% trans "Attested" %}</th>
+            <th scope="col">{% trans "Updated" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fw in frameworks %}
+        <tr>
+            <td><a href="{% url 'programs:framework_detail' framework_id=fw.pk %}">{{ fw.name }}</a></td>
+            <td>{{ fw.program.name }}</td>
+            <td>{{ fw.get_status_display }}</td>
+            <td>{{ fw.cids_class_coverage|length }} {% trans "classes" %}</td>
+            <td>{% if fw.is_attested %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+            <td>{{ fw.updated_at|date:"Y-m-d" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<p>{% trans "No evaluation frameworks found." %}
+{% if selected_program_id %}
+    <a href="{% url 'programs:framework_create' program_id=selected_program_id %}">{% trans "Create one" %}</a>
+{% endif %}
+</p>
+{% endif %}
+
+<h3>{% trans "Create Framework" %}</h3>
+<p>{% trans "Select a program to create a new evaluation framework:" %}</p>
+<div class="grid">
+    {% for p in programs %}
+    <a href="{% url 'programs:framework_create' program_id=p.pk %}" role="button" class="outline">{{ p.name }}</a>
+    {% endfor %}
+</div>
+{% endblock %}

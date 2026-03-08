@@ -10,6 +10,16 @@ Usage:
         --domain youth-services.konote.ca \\
         --admin-username admin \\
         --admin-password <secure-password>
+
+Recovery:
+    If provisioning fails, rerun with --skip-to <phase> where <phase> is
+    the phase that failed. All phases use get_or_create and are idempotent.
+
+    Note: transaction.atomic() wraps steps 1-3 (schema, domain, key) but
+    django-tenants may issue CREATE SCHEMA as DDL, which causes an implicit
+    commit in PostgreSQL. This means the transaction cannot truly roll back
+    schema creation. However, since all operations are idempotent, re-running
+    the command safely reuses existing objects.
 """
 from django.core.management.base import BaseCommand, CommandError
 
@@ -26,12 +36,28 @@ class Command(BaseCommand):
         parser.add_argument("--admin-username", default="admin", help="Admin username (default: admin)")
         parser.add_argument("--admin-password", help="Admin password (prompted if not given)")
         parser.add_argument("--no-demo-data", action="store_true", help="Skip loading demo/seed data")
+        parser.add_argument(
+            "--skip-to",
+            choices=["schema", "key", "admin", "config"],
+            default=None,
+            help="Resume provisioning from a specific phase after a failure. "
+                 "Phases: schema (agency + domain), key (encryption key), "
+                 "admin (admin user), config (default config).",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Report what would be done without making any changes.",
+        )
+
+    # Phase ordering for --skip-to
+    PHASES = ["schema", "key", "admin", "config"]
 
     def handle(self, *args, **options):
         import getpass
 
         from django.conf import settings
-        from django.db import connection
+        from django.db import connection, transaction
 
         from apps.tenants.models import Agency, AgencyDomain, TenantKey
 
@@ -41,76 +67,138 @@ class Command(BaseCommand):
         admin_username = options["admin_username"]
         admin_password = options.get("admin_password")
         schema_name = short_code.replace("-", "_")
+        skip_to = options["skip_to"]
+        dry_run = options["dry_run"]
 
-        if not admin_password:
+        # Determine which phases to run
+        if skip_to:
+            skip_index = self.PHASES.index(skip_to)
+            phases_to_run = set(self.PHASES[skip_index:])
+            skipped = self.PHASES[:skip_index]
+            if skipped:
+                self.stdout.write(
+                    self.style.WARNING(f"Resuming from '{skip_to}' — skipping: {', '.join(skipped)}")
+                )
+        else:
+            phases_to_run = set(self.PHASES)
+
+        if dry_run:
+            self.stdout.write(self.style.WARNING("[DRY RUN] No changes will be made.\n"))
+            self.stdout.write(f"Would provision agency '{name}' (schema: {schema_name})")
+            self.stdout.write(f"Phases to run: {', '.join(p for p in self.PHASES if p in phases_to_run)}")
+            if "schema" in phases_to_run:
+                self.stdout.write(f"  [schema] Create/reuse agency '{short_code}' and domain '{domain}'")
+            if "key" in phases_to_run:
+                self.stdout.write(f"  [key]    Generate encryption key for tenant")
+            if "admin" in phases_to_run:
+                self.stdout.write(f"  [admin]  Create/update admin user '{admin_username}'")
+            if "config" in phases_to_run:
+                self.stdout.write(f"  [config] Load default terminology and feature toggles")
+            return
+
+        if not admin_password and "admin" in phases_to_run:
             admin_password = getpass.getpass("Admin password: ")
             if not admin_password:
                 raise CommandError("Admin password is required.")
 
         self.stdout.write(f"Provisioning agency '{name}' (schema: {schema_name})...")
 
-        # Step 1: Create or reuse the tenant row.
-        agency, created = Agency.objects.get_or_create(
-            short_code=short_code,
-            defaults={"name": name, "schema_name": schema_name},
-        )
-        if agency.schema_name != schema_name:
-            raise CommandError(
-                f"Agency '{short_code}' already exists with schema '{agency.schema_name}', "
-                f"expected '{schema_name}'. Resolve the mismatch before rerunning.",
-            )
-        if created:
-            self.stdout.write(self.style.SUCCESS(f"  Schema '{agency.schema_name}' created."))
-        else:
-            updated_fields = []
-            if agency.name != name:
-                agency.name = name
-                updated_fields.append("name")
-            if updated_fields:
-                agency.save(update_fields=updated_fields)
-            self.stdout.write(self.style.WARNING(f"  Schema '{agency.schema_name}' already exists; reusing tenant."))
+        # Steps 1-3 (schema, domain, key) are wrapped in a transaction so they
+        # either all succeed or all roll back, preventing partial state.
+        agency = None
+        with transaction.atomic():
+            # Step 1-2: Create or reuse the tenant row and domain routing.
+            if "schema" in phases_to_run:
+                self.stdout.write(self.style.MIGRATE_HEADING("[phase: schema] Creating agency and domain..."))
+                agency, created = Agency.objects.get_or_create(
+                    short_code=short_code,
+                    defaults={"name": name, "schema_name": schema_name},
+                )
+                if agency.schema_name != schema_name:
+                    raise CommandError(
+                        f"Agency '{short_code}' already exists with schema '{agency.schema_name}', "
+                        f"expected '{schema_name}'. Resolve the mismatch before rerunning.",
+                    )
+                if created:
+                    self.stdout.write(self.style.SUCCESS(f"  Schema '{agency.schema_name}' created."))
+                else:
+                    updated_fields = []
+                    if agency.name != name:
+                        agency.name = name
+                        updated_fields.append("name")
+                    if updated_fields:
+                        agency.save(update_fields=updated_fields)
+                    self.stdout.write(self.style.WARNING(f"  Schema '{agency.schema_name}' already exists; reusing tenant."))
 
-        # Step 2: Create or reuse domain routing.
-        domain_record, domain_created = AgencyDomain.objects.get_or_create(
-            domain=domain,
-            defaults={"tenant": agency, "is_primary": True},
-        )
-        if domain_record.tenant_id != agency.pk:
-            raise CommandError(
-                f"Domain '{domain}' already belongs to tenant '{domain_record.tenant.short_code}'. "
-                "Resolve the domain conflict before rerunning.",
-            )
-        if not domain_record.is_primary:
-            domain_record.is_primary = True
-            domain_record.save(update_fields=["is_primary"])
-        if domain_created:
-            self.stdout.write(self.style.SUCCESS(f"  Domain '{domain}' configured."))
-        else:
-            self.stdout.write(self.style.WARNING(f"  Domain '{domain}' already exists; keeping it attached to this tenant."))
+                # Step 2: Create or reuse domain routing.
+                domain_record, domain_created = AgencyDomain.objects.get_or_create(
+                    domain=domain,
+                    defaults={"tenant": agency, "is_primary": True},
+                )
+                if domain_record.tenant_id != agency.pk:
+                    raise CommandError(
+                        f"Domain '{domain}' already belongs to tenant '{domain_record.tenant.short_code}'. "
+                        "Resolve the domain conflict before rerunning.",
+                    )
+                if not domain_record.is_primary:
+                    domain_record.is_primary = True
+                    domain_record.save(update_fields=["is_primary"])
+                if domain_created:
+                    self.stdout.write(self.style.SUCCESS(f"  Domain '{domain}' configured."))
+                else:
+                    self.stdout.write(self.style.WARNING(f"  Domain '{domain}' already exists; keeping it attached to this tenant."))
+                self.stdout.write(self.style.SUCCESS("[phase: schema] DONE"))
+            else:
+                # Resuming — look up the existing agency
+                agency = Agency.objects.filter(short_code=short_code).first()
+                if not agency:
+                    raise CommandError(
+                        f"Cannot resume: agency '{short_code}' not found. "
+                        "Run without --skip-to first to create the agency."
+                    )
 
-        # Step 3: Create or reuse the tenant encryption key.
-        tenant_key, key_created = TenantKey.objects.get_or_create(
-            tenant=agency,
-            defaults={"encrypted_key": self._generate_encrypted_tenant_key(settings.FIELD_ENCRYPTION_KEY)},
-        )
-        if key_created:
-            self.stdout.write(self.style.SUCCESS("  Encryption key generated and stored."))
-        else:
-            self.stdout.write(self.style.WARNING("  Encryption key already exists; reusing existing key."))
+            # Step 3: Create or reuse the tenant encryption key.
+            if "key" in phases_to_run:
+                self.stdout.write(self.style.MIGRATE_HEADING("[phase: key] Generating encryption key..."))
+                tenant_key, key_created = TenantKey.objects.get_or_create(
+                    tenant=agency,
+                    defaults={"encrypted_key": self._generate_encrypted_tenant_key(settings.FIELD_ENCRYPTION_KEY)},
+                )
+                if key_created:
+                    self.stdout.write(self.style.SUCCESS("  Encryption key generated and stored."))
+                else:
+                    self.stdout.write(self.style.WARNING("  Encryption key already exists; reusing existing key."))
+                self.stdout.write(self.style.SUCCESS("[phase: key] DONE"))
+
+        # If agency wasn't set in the transaction block (skipping schema + key),
+        # look it up now for steps 4-5.
+        if agency is None:
+            agency = Agency.objects.filter(short_code=short_code).first()
+            if not agency:
+                raise CommandError(
+                    f"Cannot resume: agency '{short_code}' not found. "
+                    "Run without --skip-to first to create the agency."
+                )
 
         # Step 4: Create or update the admin user within the tenant schema.
-        self._run_tenant_phase(
-            agency,
-            "admin user creation",
-            lambda: self._ensure_admin_user(admin_username, admin_password, name),
-        )
+        if "admin" in phases_to_run:
+            self.stdout.write(self.style.MIGRATE_HEADING("[phase: admin] Creating admin user..."))
+            self._run_tenant_phase(
+                agency,
+                "admin user creation",
+                lambda: self._ensure_admin_user(admin_username, admin_password, name),
+            )
+            self.stdout.write(self.style.SUCCESS("[phase: admin] DONE"))
 
         # Step 5: Load default configuration.
-        self._run_tenant_phase(
-            agency,
-            "default configuration",
-            lambda: self._load_defaults(),
-        )
+        if "config" in phases_to_run:
+            self.stdout.write(self.style.MIGRATE_HEADING("[phase: config] Loading default configuration..."))
+            self._run_tenant_phase(
+                agency,
+                "default configuration",
+                lambda: self._load_defaults(),
+            )
+            self.stdout.write(self.style.SUCCESS("[phase: config] DONE"))
 
         # Output summary
         self.stdout.write("")

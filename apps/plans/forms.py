@@ -2,6 +2,7 @@
 import json
 
 from django import forms
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
@@ -184,6 +185,13 @@ class MetricDefinitionForm(forms.ModelForm):
         self.fields["assessment_at_discharge"].help_text = _("Administer this assessment at discharge.")
         self.fields["assessment_interval_days"].label = _("Assessment interval (days)")
         self.fields["assessment_interval_days"].help_text = _("Days between scheduled administrations (e.g. 90 for quarterly). Leave blank for no schedule.")
+        self.fields["iris_metric_code"].help_text = _("Optional external IRIS+ mapping. Usually reviewed later by an admin or reporting lead unless you already know the exact code.")
+        self.fields["sdg_goals"].help_text = _("Optional reporting classification. Usually assigned later during reporting review, not required when creating the metric.")
+        self.fields["cids_indicator_uri"].help_text = _("Stable identifier for this metric in CIDS exports. KoNote will create a local one automatically if you leave this blank.")
+        self.fields["cids_unit_description"].help_text = _("Human-readable unit label for export. KoNote usually copies this from the plain-language unit automatically.")
+        self.fields["cids_defined_by"].help_text = _("Who defined this indicator. KoNote fills this automatically unless you need to record a known external source.")
+        self.fields["cids_has_baseline"].help_text = _("Optional baseline wording for reporting. This is usually added later, once reporting definitions are settled.")
+        self.fields["cids_theme_override"].help_text = _("Optional reporting override when later classification needs a different theme. Usually left blank at creation time.")
 
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole
@@ -397,6 +405,7 @@ class MetricImportForm(forms.Form):
     csv_file = forms.FileField(
         label=_("CSV File"),
         help_text=_("Upload a CSV with columns: name, definition, category, min_value, max_value, unit. Optional French columns: name_fr, definition_fr, unit_fr"),
+        validators=[FileExtensionValidator(allowed_extensions=["csv"])],
     )
 
     def clean_csv_file(self):
