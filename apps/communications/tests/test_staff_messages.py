@@ -1,4 +1,5 @@
 """Tests for staff message functionality (UXP-RECEP)."""
+from django.core.cache import cache
 from django.test import TestCase, Client as TestClient
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -102,6 +103,24 @@ class StaffMessagePermissionTests(TestCase):
         msg.refresh_from_db()
         self.assertEqual(msg.status, "read")
         self.assertIsNotNone(msg.read_at)
+
+    def test_mark_read_clears_unread_cache_and_returns_updated_count(self):
+        msg = StaffMessage(client_file=self.client_file, left_by=self.receptionist, for_user=self.staff, author_program=self.program)
+        msg.content = "Cached"
+        msg.save()
+
+        cache.set(f"unread_message_count_{self.staff.pk}", 99, 60)
+
+        self.test_client.login(username="staff", password="pass")
+        response = self.test_client.post(
+            reverse("communications:mark_message_read", args=[self.client_file.pk, msg.pk]),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_CURRENT_URL="/communications/my-messages/",
+        )
+
+        self.assertEqual(cache.get(f"unread_message_count_{self.staff.pk}"), 0)
+        self.assertIn("messageRead", response.headers.get("HX-Trigger-After-Swap", ""))
+        self.assertIn('"unreadCount": 0', response.headers.get("HX-Trigger-After-Swap", ""))
 
     def test_leave_message_without_for_user(self):
         self.test_client.login(username="recep", password="pass")

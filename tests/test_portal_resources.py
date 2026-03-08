@@ -144,6 +144,14 @@ class PortalResourcesViewTests(TestCase):
         response = self.client.get("/my/resources/")
         self.assertEqual(response.status_code, 404)
 
+    def test_resources_page_uses_default_enabled_flag_when_toggle_missing(self):
+        """Resources page stays available when the DB row is missing but the default is on."""
+        FeatureToggle.objects.filter(feature_key="portal_resources").delete()
+        self._portal_login()
+        response = self.client.get("/my/resources/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Crisis Line")
+
     def test_unauthenticated_redirects_to_login(self):
         """Unauthenticated request redirects to portal login."""
         response = self.client.get("/my/resources/")
