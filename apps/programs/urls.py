@@ -6,7 +6,7 @@ from apps.portal.staff_views import (
     program_resources_manage,
 )
 
-from . import views
+from . import evaluation_views, views
 
 app_name = "programs"
 urlpatterns = [
@@ -22,4 +22,15 @@ urlpatterns = [
     path("<int:program_id>/resources/", program_resources_manage, name="program_resources"),
     path("<int:program_id>/resources/<int:resource_id>/edit/", program_resource_edit, name="program_resource_edit"),
     path("<int:program_id>/resources/<int:resource_id>/deactivate/", program_resource_deactivate, name="program_resource_deactivate"),
+    # Evaluation frameworks (CIDS Full Tier)
+    path("evaluation/", evaluation_views.framework_list, name="framework_list"),
+    path("<int:program_id>/evaluation/create/", evaluation_views.framework_create, name="framework_create"),
+    path("evaluation/<int:framework_id>/", evaluation_views.framework_detail, name="framework_detail"),
+    path("evaluation/<int:framework_id>/edit/", evaluation_views.framework_edit, name="framework_edit"),
+    path("evaluation/<int:framework_id>/attest/", evaluation_views.framework_attest, name="framework_attest"),
+    path("evaluation/<int:framework_id>/components/add/", evaluation_views.component_add, name="component_add"),
+    path("evaluation/<int:framework_id>/components/<int:component_id>/edit/", evaluation_views.component_edit, name="component_edit"),
+    path("evaluation/<int:framework_id>/components/<int:component_id>/deactivate/", evaluation_views.component_deactivate, name="component_deactivate"),
+    path("evaluation/<int:framework_id>/evidence/add/", evaluation_views.evidence_add, name="evidence_add"),
+    path("evaluation/<int:framework_id>/evidence/<int:evidence_id>/delete/", evaluation_views.evidence_delete, name="evidence_delete"),
 ]

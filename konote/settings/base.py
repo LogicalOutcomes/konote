@@ -150,6 +150,7 @@ TEMPLATES = [
                 "konote.context_processors.active_program_context",
                 "konote.context_processors.organization_profile",
                 "konote.context_processors.portal_context",
+                "konote.context_processors.page_help",
             ],
         },
     },

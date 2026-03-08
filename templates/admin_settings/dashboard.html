@@ -226,6 +226,12 @@
         <footer><a href="{% url 'admin_settings:partner_list' %}" role="button" class="outline">{% trans "Manage Partners" %}</a></footer>
     </article>
 
+    <article>
+        <header>Classification Review</header>
+        <p>Generate draft code-list mappings for metrics, targets, and programs, then review and approve them for reporting.</p>
+        <footer><a href="{% url 'admin_settings:taxonomy_review_queue' %}" role="button" class="outline">Open Review Queue</a></footer>
+    </article>
+
     {# ---- Oversight & Privacy ---- #}
     <h2>{% trans "Oversight & Privacy" %}</h2>
 

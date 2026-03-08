@@ -67,6 +67,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from django.db import transaction
+
         from apps.tenants.models import Agency, AgencyDomain
 
         domain = options["domain"]
@@ -87,49 +89,52 @@ class Command(BaseCommand):
             )
             return
 
-        # Check whether a 'public' agency already exists (rare edge case where
-        # the agency was created but the domain insert failed).
-        agency = Agency.objects.filter(schema_name=schema_name).first()
-        if not agency:
-            self.stdout.write(
-                f"Creating agency '{name}' (schema: {schema_name})..."
-            )
-            agency = Agency(
-                name=name,
-                short_code=short_code,
-                schema_name=schema_name,
-            )
-            # Disable auto-create: the 'public' schema already exists.
-            agency.auto_create_schema = False
-            agency.save()
-            self.stdout.write(self.style.SUCCESS(f"  Agency '{name}' created."))
-        else:
-            self.stdout.write(
-                f"Reusing existing agency '{agency.name}' (schema: {schema_name})."
-            )
+        # Wrap agency creation + domain registration + localhost registration
+        # in a single transaction so partial state can't happen.
+        with transaction.atomic():
+            # Check whether a 'public' agency already exists (rare edge case where
+            # the agency was created but the domain insert failed).
+            agency = Agency.objects.filter(schema_name=schema_name).first()
+            if not agency:
+                self.stdout.write(
+                    f"Creating agency '{name}' (schema: {schema_name})..."
+                )
+                agency = Agency(
+                    name=name,
+                    short_code=short_code,
+                    schema_name=schema_name,
+                )
+                # Disable auto-create: the 'public' schema already exists.
+                agency.auto_create_schema = False
+                agency.save()
+                self.stdout.write(self.style.SUCCESS(f"  Agency '{name}' created."))
+            else:
+                self.stdout.write(
+                    f"Reusing existing agency '{agency.name}' (schema: {schema_name})."
+                )
 
-        AgencyDomain.objects.create(
-            domain=domain,
-            tenant=agency,
-            is_primary=True,
-        )
-        self.stdout.write(
-            self.style.SUCCESS(f"  Domain '{domain}' registered.")
-        )
-
-        # Register 'localhost' as a secondary domain so Docker health checks
-        # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
-        if domain != "localhost" and not AgencyDomain.objects.filter(
-            domain="localhost"
-        ).exists():
             AgencyDomain.objects.create(
-                domain="localhost",
+                domain=domain,
                 tenant=agency,
-                is_primary=False,
+                is_primary=True,
             )
             self.stdout.write(
-                "  Secondary domain 'localhost' registered (for health checks)."
+                self.style.SUCCESS(f"  Domain '{domain}' registered.")
             )
+
+            # Register 'localhost' as a secondary domain so Docker health checks
+            # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
+            if domain != "localhost" and not AgencyDomain.objects.filter(
+                domain="localhost"
+            ).exists():
+                AgencyDomain.objects.create(
+                    domain="localhost",
+                    tenant=agency,
+                    is_primary=False,
+                )
+                self.stdout.write(
+                    "  Secondary domain 'localhost' registered (for health checks)."
+                )
 
         self.stdout.write(
             self.style.SUCCESS(

@@ -334,6 +334,7 @@
 <p style="font-size: 0.85rem; color: #718096; margin-bottom: 0.8rem;">
     {% blocktrans with version=report_data.cids_alignment.cids_version %}Aligned with Common Impact Data Standard (CIDS) v{{ version }}.{% endblocktrans %}
 </p>
+<p><strong>{% trans "Reporting Lens:" %}</strong> {{ report_data.cids_alignment.taxonomy_lens_label }}</p>
 {% if report_data.cids_alignment.program_cids.sector_code %}
 <p><strong>{% trans "Sector:" %}</strong> {{ report_data.cids_alignment.program_cids.sector_code }}</p>
 {% endif %}
@@ -345,31 +346,33 @@
     <thead>
         <tr>
             <th scope="col">{% trans "Indicator" %}</th>
-            <th scope="col">{% trans "IRIS+ Code" %}</th>
-            <th scope="col">{% trans "SDG Goals" %}</th>
-            <th scope="col">{% trans "CIDS Theme" %}</th>
+            <th scope="col">{% trans "Selected Code" %}</th>
+            <th scope="col">{% trans "Selected Label" %}</th>
+            <th scope="col">{% trans "Code List" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for m in report_data.cids_alignment.metrics %}
+        {% if m.selected_code %}
         <tr>
             <td>{{ m.name }}</td>
-            <td>{{ m.iris_code|default:"—" }}</td>
-            <td>{% for g in m.sdg_goals %}{{ g }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
-            <td>{{ m.theme|default:"—" }}</td>
+            <td>{{ m.selected_code|default:"—" }}</td>
+            <td>{{ m.selected_label|default:"—" }}</td>
+            <td>{{ m.selected_list_name|default:"—" }}</td>
         </tr>
+        {% endif %}
         {% endfor %}
     </tbody>
 </table>
 <p style="font-size: 0.85rem; color: #718096;">
-    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped to CIDS standards.{% endblocktrans %}
+    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.{% endblocktrans %}
 </p>
 {% endif %}
-{% if report_data.cids_alignment.sdg_summary %}
-<h4 style="margin-top: 0.8rem;">{% trans "SDG Alignment" %}</h4>
+{% if report_data.cids_alignment.lens_summary %}
+<h4 style="margin-top: 0.8rem;">{{ report_data.cids_alignment.taxonomy_lens_label }} {% trans "Summary" %}</h4>
 <ul>
-    {% for goal, count in report_data.cids_alignment.sdg_summary.items %}
-    <li>{% blocktrans with goal=goal count=count %}SDG {{ goal }}: {{ count }} indicator(s){% endblocktrans %}</li>
+    {% for label, count in report_data.cids_alignment.lens_summary.items %}
+    <li>{{ label }}: {{ count }}</li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -570,6 +573,7 @@
 <p style="font-size: 0.85rem; color: #718096; margin-bottom: 0.8rem;">
     {% blocktrans with version=report_data.cids_alignment.cids_version %}Aligned with Common Impact Data Standard (CIDS) v{{ version }}.{% endblocktrans %}
 </p>
+<p><strong>{% trans "Reporting Lens:" %}</strong> {{ report_data.cids_alignment.taxonomy_lens_label }}</p>
 {% if report_data.cids_alignment.program_cids.sector_code %}
 <p><strong>{% trans "Sector:" %}</strong> {{ report_data.cids_alignment.program_cids.sector_code }}</p>
 {% endif %}
@@ -577,32 +581,32 @@
     <thead>
         <tr>
             <th scope="col">{% trans "Indicator" %}</th>
-            <th scope="col">{% trans "IRIS+ Code" %}</th>
-            <th scope="col">{% trans "SDG Goals" %}</th>
-            <th scope="col">{% trans "CIDS Theme" %}</th>
+            <th scope="col">{% trans "Selected Code" %}</th>
+            <th scope="col">{% trans "Selected Label" %}</th>
+            <th scope="col">{% trans "Code List" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for m in report_data.cids_alignment.metrics %}
-        {% if m.iris_code or m.sdg_goals or m.theme %}
+        {% if m.selected_code %}
         <tr>
             <td>{{ m.name }}</td>
-            <td>{{ m.iris_code|default:"—" }}</td>
-            <td>{% for g in m.sdg_goals %}{{ g }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
-            <td>{{ m.theme|default:"—" }}</td>
+            <td>{{ m.selected_code|default:"—" }}</td>
+            <td>{{ m.selected_label|default:"—" }}</td>
+            <td>{{ m.selected_list_name|default:"—" }}</td>
         </tr>
         {% endif %}
         {% endfor %}
     </tbody>
 </table>
 <p style="font-size: 0.85rem; color: #718096;">
-    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped to CIDS standards.{% endblocktrans %}
+    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.{% endblocktrans %}
 </p>
-{% if report_data.cids_alignment.sdg_summary %}
-<h4 style="margin-top: 0.8rem;">{% trans "SDG Alignment" %}</h4>
+{% if report_data.cids_alignment.lens_summary %}
+<h4 style="margin-top: 0.8rem;">{{ report_data.cids_alignment.taxonomy_lens_label }} {% trans "Summary" %}</h4>
 <ul>
-    {% for goal, count in report_data.cids_alignment.sdg_summary.items %}
-    <li>{% blocktrans with goal=goal count=count %}SDG {{ goal }}: {{ count }} indicator(s){% endblocktrans %}</li>
+    {% for label, count in report_data.cids_alignment.lens_summary.items %}
+    <li>{{ label }}: {{ count }}</li>
     {% endfor %}
 </ul>
 {% endif %}

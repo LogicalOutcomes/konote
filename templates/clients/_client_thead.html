@@ -1,11 +1,5 @@
 {% load i18n %}<thead>
     <tr>
-        {% if show_bulk %}
-        <th scope="col" class="bulk-col">
-            <label class="visually-hidden" for="{{ bulk_select_id|default:'bulk-select-all' }}">{% trans "Select all" %}</label>
-            <input type="checkbox" id="{{ bulk_select_id|default:'bulk-select-all' }}" class="bulk-select-all" aria-label="{% trans 'Select all visible rows' %}">
-        </th>
-        {% endif %}
         <th scope="col">
             {% if sort_by == "name" or not sort_by %}
                 <strong>{% trans "Name" %}</strong>

@@ -23,6 +23,9 @@
 {% if survey.description %}
 <p>{{ survey.description }}</p>
 {% endif %}
+{% if survey.source %}
+<p><small>{% trans "Source:" %} {{ survey.source }}</small></p>
+{% endif %}
 
 {# Status actions #}
 <div role="group">

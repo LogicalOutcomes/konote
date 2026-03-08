@@ -234,6 +234,7 @@ def generate_funder_report_data(
     fiscal_year_label: str | None = None,
     user=None,
     report_template=None,
+    taxonomy_lens: str = "iris_plus",
 ) -> dict[str, Any]:
     """
     Build the complete report template data structure for a program.
@@ -254,6 +255,8 @@ def generate_funder_report_data(
               matching the user's demo status will be included.
         report_template: Optional ReportTemplate instance providing custom
                        demographic breakdown definitions.
+        taxonomy_lens: Which approved taxonomy family to surface in the
+            standards appendix.
 
     Returns:
         Dict with report data structure ready for rendering.
@@ -426,7 +429,7 @@ def generate_funder_report_data(
 
     # CIDS standards alignment data
     from apps.reports.cids_enrichment import get_standards_alignment_data
-    cids_alignment = get_standards_alignment_data(program)
+    cids_alignment = get_standards_alignment_data(program, taxonomy_lens=taxonomy_lens)
 
     return {
         # Report metadata
@@ -592,19 +595,24 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     cids = report_data.get("cids_alignment")
     if cids and cids.get("mapped_count", 0) > 0:
         rows.append([_("STANDARDS ALIGNMENT (CIDS v%(version)s)") % {"version": cids["cids_version"]}])
+        rows.append([_("Reporting Lens"), cids.get("taxonomy_lens_label", "")])
         if cids["program_cids"].get("sector_code"):
             rows.append([_("Sector"), cids["program_cids"]["sector_code"]])
         if cids["program_cids"].get("funder_code"):
             rows.append([_("Funder Program Code"), cids["program_cids"]["funder_code"]])
         rows.append([])
-        rows.append([_("Indicator"), _("IRIS+ Code"), _("SDG Goals"), _("CIDS Theme")])
+        rows.append([_("Indicator"), _("Selected Code"), _("Selected Label"), _("Code List")])
         for m in cids["metrics"]:
-            if m.get("iris_code") or m.get("sdg_goals") or m.get("theme"):
-                sdg_str = ", ".join(str(g) for g in m.get("sdg_goals", []))
-                rows.append([m["name"], m.get("iris_code", ""), sdg_str, m.get("theme", "")])
+            if m.get("selected_code"):
+                rows.append([
+                    m["name"],
+                    m.get("selected_code", ""),
+                    m.get("selected_label", ""),
+                    m.get("selected_list_name", ""),
+                ])
         rows.append([])
         rows.append([
-            _("%(mapped)s of %(total)s indicators mapped to CIDS standards.")
+            _("%(mapped)s of %(total)s indicators mapped for the selected reporting lens.")
             % {"mapped": cids["mapped_count"], "total": cids["total_count"]}
         ])
 

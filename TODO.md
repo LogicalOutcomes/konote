@@ -2,7 +2,6 @@
 
 ## Flagged
 
-- [ ] Fix VPS dev repo divergent branches — `/opt/konote-dev` has diverged from `origin/develop`, causing deploy script to skip pulling latest code. Reset with `sudo git -C /opt/konote-dev reset --hard origin/develop`. Due 2026-03-07 — GK (OPS-DEVFIX1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -23,8 +22,6 @@
 
 ### Phase: Deep Review Fixes (2026-03-06)
 
-- [ ] Clean up translation catalog health: remove duplicate `msgid`s, fill missing and empty French strings, and rebuild `django.mo` (REV26-I18N2)
-- [ ] Make tenant provisioning and backup recovery paths more resumable and consistent (REV26-DEP3)
 - [ ] Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
 - [ ] Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
 - [ ] Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
@@ -86,6 +83,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
 
+### Phase: Evaluation Planning & CIDS Full Tier
+
+- [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
+- [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a more capable LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
+- [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
+- [x] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) — 2026-03-07 (EVAL-ENRICH-SPEC1)
+- [x] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — PR #422, deployed and validated on dev VPS — 2026-03-07 (EVAL-EDITOR1)
+
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
@@ -105,14 +110,12 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
-- [ ] Add smoke test for all-programs HTML export path (CHORE-RPT-TEST1)
 
 ## Parking Lot: Needs Review
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
-- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
+- [ ] Add CIDS conformance badge and SHACL validation reporting — `validate_cids_jsonld` management command now works (pyshacl installed as test dep). Consider adding badge UI after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
@@ -122,6 +125,11 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] CIDS Full Tier + Evaluation Framework deployed to dev VPS — PR #422 merged, migration dependency fix PR #423, all exports pass SHACL validation, coverage dashboard live at 8/14 classes, evaluation framework CRUD working end-to-end — 2026-03-07 (CIDS-DEPLOY1)
+- [x] Translation catalog cleanup — filled 16 remaining empty French entries, 0 empty remain — PR #414 — 2026-03-07 (REV26-I18N2)
+- [x] Tenant provisioning + backup recovery resumability — --skip-to, --dry-run, --pre-restore, --full, transaction wrapping, expanded encryption checks — PR #414 — 2026-03-07 (REV26-DEP3)
+- [x] Extract role string constants into auth_app/constants.py — 5 PRs merged, 107 files updated — 2026-03-07 (REFACTOR1)
+- [x] Add smoke test for all-programs HTML export path — PR #340 — 2026-03-07 (CHORE-RPT-TEST1)
 - [x] Deep review follow-up hardening pass — AI scrubber expanded, focused analysis and note-structure flows scrubbed, insecure remote insights HTTP blocked, Docker build inputs tightened, tenant-key rotation disabled, `/health/` healthcheck wired, production startup fails closed on public-tenant bootstrap, French survey/export fixes landed, public survey page-step validation improved, registration intake/review audit coverage added — 2026-03-06 (REV26-SEC1, REV26-DEP1, REV26-DEP2, REV26-AI1, REV26-AI2, REV26-AI3, REV26-I18N1)
 - [x] Graduated privacy threshold + focused theme analysis — N=5 self-hosted / N=15 external, Ask a Question UI, AI-powered suggestion search, DRR updates — 2026-03-05 (AI-FOCUSED-THEME1)
 

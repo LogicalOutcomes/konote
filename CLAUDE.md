@@ -252,6 +252,7 @@ Current DRRs (read the file before modifying related features — all in `tasks/
 - `document-integration.md` — SharePoint + Google Drive integration
 - `no-live-api-individual-data.md` — No live API for individual PII
 - `self-hosted-llm-infrastructure.md` — Self-hosted LLM (Ollama/OVHcloud)
+- `encryption-key-rotation.md` — Encryption key rotation procedures
 
 ### How Claude Manages Tasks
 

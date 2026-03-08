@@ -611,6 +611,43 @@ Not all items appear for all users — what you see depends on your role and per
 
 ---
 
+## Common Issues
+
+### "My changes didn't save"
+
+- Check your internet connection. KoNote needs a connection to save.
+- Try clicking **Save** again. If you see an error message, note what it says.
+- If the page timed out, log in again -- your session may have expired.
+
+### "I can't find a client"
+
+- Check the **Status filter** -- it may be set to "Active" and the client is discharged or inactive.
+- Try searching by **record ID** instead of name (useful if the name was entered with a typo).
+- If the client is in a different program, you may not have access. Ask your supervisor.
+
+### "My session expired"
+
+- KoNote logs you out after a period of inactivity (set by your admin, typically 30-60 minutes).
+- Log in again. Any unsaved work on a form will be lost -- write notes promptly.
+
+### "I don't see a feature (surveys, portal, messaging)"
+
+- Some features are turned off by default. Ask your admin if the feature is enabled for your agency.
+- Some actions are restricted by role. See [What you can't do](#what-you-cant-do-and-who-can) for the permissions table.
+
+### "The page looks wrong or buttons aren't working"
+
+- Try a **hard refresh**: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac).
+- Try a different browser. KoNote works best in Chrome, Firefox, or Edge.
+- Clear your browser cache if the issue persists.
+
+### "I made a note on the wrong client"
+
+- You can **cancel** a note within 24 hours (see [Cancelling a note](#cancelling-a-note)).
+- Cancelled notes remain visible but are marked as cancelled. They cannot be deleted.
+
+---
+
 ## Getting Help
 
 - **Forgot your password?** Contact your supervisor or admin.
