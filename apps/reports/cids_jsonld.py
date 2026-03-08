@@ -325,6 +325,125 @@ def _compute_indicator_report(metric, values_qs, observation_count, program):
         )
 
 
+def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
+    """Build DQV quality measurements and annotations for an IndicatorReport.
+
+    Uses W3C Data Quality Vocabulary to signal data reliability:
+    - Response rate (completeness): participants who reported / eligible
+    - Data parsability (completeness): % of values successfully parsed
+    - Observation volume (precision): total observations recorded
+    - Instrument validation (annotation): whether a validated instrument was used
+    - Plausibility review (annotation): outliers reviewed by staff
+    """
+    quality_measurements = []
+    quality_annotations = []
+
+    # ── Response rate (completeness) ────────────────────────────────
+    # Numerator: distinct participants with values
+    participant_measure = next(
+        (m for m in measures if m.get("measureType") == "konote:participant_count"),
+        None,
+    )
+    if participant_measure:
+        reported = int(participant_measure["hasNumericalValue"])
+    else:
+        # Achievement metrics use count_achieved; fall back to counting from queryset
+        reported = (
+            values_qs
+            .values_list(
+                "progress_note_target__plan_target__client_file_id", flat=True,
+            )
+            .distinct()
+            .count()
+        )
+
+    # Denominator: participants with active plan targets for this metric
+    eligible = (
+        PlanTargetMetric.objects.filter(
+            plan_target__plan_section__program=program,
+            metric_def=metric,
+            plan_target__status__in=["default", "completed"],
+        )
+        .values_list("plan_target__client_file_id", flat=True)
+        .distinct()
+        .count()
+    )
+
+    if eligible > 0 and reported > 0:
+        response_rate = round(reported / eligible * 100, 1)
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "completeness",
+            "dqv:value": response_rate,
+            "konote:numerator": reported,
+            "konote:denominator": eligible,
+            "konote:dimensionLabel": "Response rate (participants reported / eligible)",
+        })
+
+    # ── Data parsability (completeness, scale metrics only) ─────────
+    skipped_measure = next(
+        (m for m in measures if m.get("measureType") == "konote:skipped_unparseable"),
+        None,
+    )
+    if skipped_measure and observation_count > 0:
+        skipped = int(skipped_measure["hasNumericalValue"])
+        parseable = observation_count - skipped
+        parsability_rate = round(parseable / observation_count * 100, 1)
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "completeness",
+            "dqv:value": parsability_rate,
+            "konote:dimensionLabel": "Data parsability (% of values successfully parsed)",
+        })
+
+    # ── Observation volume (precision) ──────────────────────────────
+    if observation_count > 0:
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "precision",
+            "dqv:value": observation_count,
+            "konote:dimensionLabel": "Total observations recorded",
+        })
+
+    # ── Instrument validation (annotation) ──────────────────────────
+    if getattr(metric, "is_standardized_instrument", False):
+        instrument = getattr(metric, "instrument_name", None) or metric.name
+        quality_annotations.append({
+            "@type": "dqv:QualityAnnotation",
+            "oa:hasBody": {
+                "@type": "oa:TextualBody",
+                "rdf:value": f"Collected using validated instrument: {instrument}",
+            },
+            "oa:motivatedBy": "dqv:qualityAssessment",
+            "konote:annotationType": "instrument_validation",
+        })
+
+    # ── Plausibility review (annotation) ────────────────────────────
+    confirmed_count = values_qs.filter(plausibility_confirmed=True).count()
+    if confirmed_count > 0 and observation_count > 0:
+        confirmation_rate = round(confirmed_count / observation_count * 100, 1)
+        quality_annotations.append({
+            "@type": "dqv:QualityAnnotation",
+            "oa:hasBody": {
+                "@type": "oa:TextualBody",
+                "rdf:value": (
+                    f"{confirmed_count} of {observation_count} values "
+                    f"({confirmation_rate}%) were flagged as outliers "
+                    f"and confirmed by staff."
+                ),
+            },
+            "oa:motivatedBy": "dqv:qualityAssessment",
+            "konote:annotationType": "plausibility_confirmation",
+            "konote:confirmationRate": confirmation_rate,
+            "konote:confirmedCount": confirmed_count,
+        })
+
+    return {
+        "dqv:hasQualityMeasurement": quality_measurements,
+        "dqv:hasQualityAnnotation": quality_annotations,
+    }
+
+
 def _build_address_node(org, org_id):
     if not all([
         org.street_address,
@@ -675,6 +794,15 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                     "value": measures,
                     "hasComment": comment,
                 }
+                # Add DQV data quality signals
+                dqv = _build_dqv_quality(
+                    metric, values_qs, observation_count, program, measures,
+                )
+                if dqv.get("dqv:hasQualityMeasurement"):
+                    report_node["dqv:hasQualityMeasurement"] = dqv["dqv:hasQualityMeasurement"]
+                if dqv.get("dqv:hasQualityAnnotation"):
+                    report_node["dqv:hasQualityAnnotation"] = dqv["dqv:hasQualityAnnotation"]
+
                 indicator_node["hasIndicatorReport"] = [{"@id": report_id}]
                 add_node(report_node)
 
@@ -742,6 +870,8 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         "@context": [
             CIDS_CONTEXT,
             {
+                "dqv": "http://www.w3.org/ns/dqv#",
+                "oa": "http://www.w3.org/ns/oa#",
                 "konote": "https://konote.ca/cids/extensions#",
                 "konote:mean": {"@id": "konote:mean", "@type": "@id"},
                 "konote:median": {"@id": "konote:median", "@type": "@id"},
@@ -758,6 +888,12 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 "konote:target_rate": {"@id": "konote:target_rate", "@type": "@id"},
                 "konote:target_high_band_percent": {"@id": "konote:target_high_band_percent", "@type": "@id"},
                 "konote:skipped_unparseable": {"@id": "konote:skipped_unparseable", "@type": "@id"},
+                "konote:numerator": {"@id": "konote:numerator"},
+                "konote:denominator": {"@id": "konote:denominator"},
+                "konote:dimensionLabel": {"@id": "konote:dimensionLabel"},
+                "konote:annotationType": {"@id": "konote:annotationType"},
+                "konote:confirmationRate": {"@id": "konote:confirmationRate"},
+                "konote:confirmedCount": {"@id": "konote:confirmedCount"},
             },
         ],
         "@graph": graph,
