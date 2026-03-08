@@ -1719,6 +1719,127 @@ class CidsJsonLdExportTest(TestCase):
         self.assertEqual(theme["hasName"], "Education")
         self.assertEqual(theme["@id"], "urn:iris:theme:education")
 
+    # ── DQV data quality tests ────────────────────────────────────
+
+    def test_dqv_namespace_in_context(self):
+        """Export context includes dqv and oa namespaces."""
+        doc = self._run_export()
+        ctx = doc["@context"][1]
+        self.assertEqual(ctx["dqv"], "http://www.w3.org/ns/dqv#")
+        self.assertEqual(ctx["oa"], "http://www.w3.org/ns/oa#")
+
+    def test_indicator_report_has_dqv_quality_measurements(self):
+        """IndicatorReport nodes include dqv:hasQualityMeasurement."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityMeasurement", report)
+        measurements = report["dqv:hasQualityMeasurement"]
+        self.assertIsInstance(measurements, list)
+        self.assertTrue(len(measurements) >= 1)
+        # Should include observation volume
+        volume = next(
+            (m for m in measurements if m.get("dqv:isMeasurementOf") == "precision"),
+            None,
+        )
+        self.assertIsNotNone(volume)
+        self.assertEqual(volume["dqv:value"], 1)
+
+    def test_response_rate_calculation(self):
+        """Response rate = reported / eligible participants."""
+        # Add a second eligible participant who did NOT report
+        client2 = ClientFile.objects.create()
+        client2.first_name = "Second"
+        client2.last_name = "Client"
+        client2.save()
+        section2 = PlanSection.objects.create(
+            client_file=client2, program=self.program,
+        )
+        target2 = PlanTarget(
+            plan_section=section2,
+            client_file=client2,
+        )
+        target2.name = "Second target"
+        target2.save()
+        PlanTargetMetric.objects.create(plan_target=target2, metric_def=self.metric)
+        # Now: 2 eligible, 1 reported → 50% response rate
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        measurements = report["dqv:hasQualityMeasurement"]
+        completeness = next(
+            (m for m in measurements
+             if m.get("dqv:isMeasurementOf") == "completeness"
+             and "numerator" in str(m)),
+            None,
+        )
+        self.assertIsNotNone(completeness)
+        self.assertEqual(completeness["dqv:value"], 50.0)
+        self.assertEqual(completeness["konote:numerator"], 1)
+        self.assertEqual(completeness["konote:denominator"], 2)
+
+    def test_instrument_annotation_when_standardized(self):
+        """Validated instrument annotation appears when is_standardized_instrument=True."""
+        self.metric.is_standardized_instrument = True
+        self.metric.instrument_name = "PHQ-9"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityAnnotation", report)
+        annotations = report["dqv:hasQualityAnnotation"]
+        instrument_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "instrument_validation"),
+            None,
+        )
+        self.assertIsNotNone(instrument_ann)
+        self.assertIn("PHQ-9", instrument_ann["oa:hasBody"]["rdf:value"])
+
+    def test_no_instrument_annotation_when_not_standardized(self):
+        """No instrument annotation when is_standardized_instrument=False."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report.get("dqv:hasQualityAnnotation", [])
+        instrument_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "instrument_validation"),
+            None,
+        )
+        self.assertIsNone(instrument_ann)
+
+    def test_plausibility_confirmation_annotation(self):
+        """Plausibility annotation appears when values have been confirmed."""
+        mv = MetricValue.objects.first()
+        mv.plausibility_confirmed = True
+        mv.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityAnnotation", report)
+        annotations = report["dqv:hasQualityAnnotation"]
+        plaus_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "plausibility_confirmation"),
+            None,
+        )
+        self.assertIsNotNone(plaus_ann)
+        self.assertEqual(plaus_ann["konote:confirmedCount"], 1)
+
     def test_selected_taxonomy_lens_creates_code_nodes(self):
         CidsCodeList.objects.create(
             list_name="SDGImpacts",
@@ -1776,6 +1897,8 @@ def _make_metric(**kwargs):
         "achievement_options": None,
         "achievement_success_values": None,
         "target_rate": None,
+        "is_standardized_instrument": False,
+        "instrument_name": "",
     }
     defaults.update(kwargs)
     m = MagicMock(**defaults)
