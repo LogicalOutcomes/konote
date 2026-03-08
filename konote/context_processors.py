@@ -511,8 +511,13 @@ def active_program_context(request):
 
 
 def page_help(request):
-    """Inject contextual help content for the current page."""
+    """Inject contextual help content for the current page.
+
+    Passes terminology so help text uses the agency's configured terms
+    (e.g. "client" instead of "participant" if customised).
+    """
     from konote.page_help import get_page_help
 
-    help_content = get_page_help(request)
+    terms = terminology(request).get("term")
+    help_content = get_page_help(request, terms=terms)
     return {"page_help": help_content}
