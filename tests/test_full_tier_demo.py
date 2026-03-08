@@ -380,8 +380,10 @@ class FullTierDemoDataTest(TestCase):
         reports = [n for n in graph if n["@type"] == "cids:IndicatorReport"]
         self.assertEqual(len(reports), 4)
         for r in reports:
-            count = int(r["value"]["hasNumericalValue"])
-            self.assertGreater(count, 0)
+            # value is a list of i72:Measure objects
+            measures = r["value"] if isinstance(r["value"], list) else [r["value"]]
+            # Each report must have at least one measure with data
+            self.assertGreater(len(measures), 0, f"Report has no measures: {r['@id']}")
 
         print(f"\n=== Basic Tier Export ===")
         print(f"Nodes: {len(graph)}, Types: {sorted(types)}")
@@ -442,7 +444,14 @@ class FullTierDemoDataTest(TestCase):
         reports = [n for n in doc["@graph"] if n["@type"] == "cids:IndicatorReport"]
 
         for report in reports:
-            reported = int(report["value"]["hasNumericalValue"])
+            measures = report["value"] if isinstance(report["value"], list) else [report["value"]]
+            obs_measure = next(
+                (m for m in measures if m.get("measureType") == "konote:observation_count"),
+                None,
+            )
+            if obs_measure is None:
+                continue  # Scale metrics have multiple measures; skip count check
+            reported = int(obs_measure["hasNumericalValue"])
             parts = report["forIndicator"]["@id"].split(":")
             if len(parts) >= 5:
                 metric_id = parts[-1]

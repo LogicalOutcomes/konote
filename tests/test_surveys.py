@@ -1316,7 +1316,7 @@ class PublicSurveyViewTests(TestCase):
     def test_public_form_submit_creates_response(self):
         resp = self.client.post(
             f"/s/{self.link.token}/",
-            {f"q_{self.q1.pk}": "Great!"},
+            {f"q_{self.q1.pk}": "Great!", f"q_{self.q2.pk}": "4"},
         )
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(SurveyResponse.objects.filter(channel="link").count(), 1)

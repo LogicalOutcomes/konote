@@ -1,4 +1,5 @@
 """Tests for the executive dashboard view and metric helpers."""
+import re
 from datetime import date, timedelta
 
 from cryptography.fernet import Fernet
@@ -528,8 +529,13 @@ class ProgramLearningCardTest(TestCase):
         self.assertNotIn("band_mid_count", content)
         self.assertNotIn("band_high_count", content)
         # Also verify "More support needed" (band label) does not appear
-        # on the executive dashboard cards — per DRR anti-pattern
-        self.assertNotIn("More support needed", content)
+        # in the rendered card HTML — per DRR anti-pattern.
+        # Strip inline <script> blocks first since window.KN includes JS
+        # translation strings that legitimately reference these labels.
+        content_no_scripts = re.sub(
+            r"<script[^>]*>.*?</script>", "", content, flags=re.DOTALL
+        )
+        self.assertNotIn("More support needed", content_no_scripts)
 
     # ── Test 6: Link to insights page with program pre-selected ──
 

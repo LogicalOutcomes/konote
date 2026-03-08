@@ -77,9 +77,8 @@ class Command(BaseCommand):
             user_display="system (manage.py)",
             ip_address="127.0.0.1",
             action="export",
-            object_type="CIDSBasicTierExport",
-            object_id=0,
-            description=f"CIDS Basic Tier export via management command: {program_names}",
+            resource_type="export",
+            metadata={"export_type": "CIDSBasicTierExport", "programs": program_names},
         )
 
         if options["output"]:
