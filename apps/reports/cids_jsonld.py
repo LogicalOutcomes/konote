@@ -12,7 +12,7 @@ import json
 import math
 from statistics import mean, median, stdev
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.admin_settings.models import CidsCodeList, OrganizationProfile, TaxonomyMapping
@@ -325,7 +325,8 @@ def _compute_indicator_report(metric, values_qs, observation_count, program):
         )
 
 
-def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
+def _build_dqv_quality(metric, values_qs, observation_count, program, measures,
+                       eligible_count=None):
     """Build DQV quality measurements and annotations for an IndicatorReport.
 
     Follows the "describe, don't rank" principle: quality signals tell funders
@@ -340,6 +341,10 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
       - Evidence type: how data is generated (self-report, staff-observed, etc.)
       - Measure basis: how the measure was developed (published, custom, etc.)
       - Derivation method: how the value was produced (when not a direct response)
+
+    Args:
+        eligible_count: Pre-computed eligible participant count for this metric.
+            Pass from a batched query to avoid per-metric DB hits.
     """
     quality_measurements = []
     quality_annotations = []
@@ -347,10 +352,9 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
     # ── Tier 1: Quantitative measurements ───────────────────────────
 
     # Reporting rate (completeness)
-    participant_measure = next(
-        (m for m in measures if m.get("measureType") == "konote:participant_count"),
-        None,
-    )
+    measures_by_type = {m.get("measureType"): m for m in measures}
+
+    participant_measure = measures_by_type.get("konote:participant_count")
     if participant_measure:
         reported = int(participant_measure["hasNumericalValue"])
     else:
@@ -364,7 +368,7 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
             .count()
         )
 
-    eligible = (
+    eligible = eligible_count if eligible_count is not None else (
         PlanTargetMetric.objects.filter(
             plan_target__plan_section__program=program,
             metric_def=metric,
@@ -387,10 +391,7 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
         })
 
     # Data parsability (completeness, scale metrics only)
-    skipped_measure = next(
-        (m for m in measures if m.get("measureType") == "konote:skipped_unparseable"),
-        None,
-    )
+    skipped_measure = measures_by_type.get("konote:skipped_unparseable")
     if skipped_measure and observation_count > 0:
         skipped = int(skipped_measure["hasNumericalValue"])
         parseable = observation_count - skipped
@@ -416,60 +417,32 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
 
     # ── Tier 2: Structured descriptors ──────────────────────────────
 
-    # Evidence type — how data is generated
-    evidence_type = getattr(metric, "evidence_type", "")
-    if evidence_type:
-        label = dict(getattr(metric, "EVIDENCE_TYPE_CHOICES", [])).get(
-            evidence_type, evidence_type,
-        )
+    _DESCRIPTOR_FIELDS = [
+        ("evidence_type", MetricDefinition.EVIDENCE_TYPE_CHOICES),
+        ("measure_basis", MetricDefinition.MEASURE_BASIS_CHOICES),
+        ("derivation_method", MetricDefinition.DERIVATION_METHOD_CHOICES),
+    ]
+    for field_name, choices in _DESCRIPTOR_FIELDS:
+        value = getattr(metric, field_name, "")
+        if not value:
+            continue
+        label = str(dict(choices).get(value, value))
+        # Include instrument name for published measures
+        if field_name == "measure_basis" and value in (
+            "published_validated", "published_adapted",
+        ):
+            instrument = getattr(metric, "instrument_name", "")
+            if instrument:
+                label = f"{label}: {instrument}"
         quality_annotations.append({
             "@type": "dqv:QualityAnnotation",
             "oa:hasBody": {
                 "@type": "oa:TextualBody",
-                "rdf:value": str(label),
+                "rdf:value": label,
             },
             "oa:motivatedBy": "dqv:qualityAssessment",
-            "konote:annotationType": "evidence_type",
-            "konote:annotationCategory": evidence_type,
-        })
-
-    # Measure basis — how the measure was developed
-    measure_basis = getattr(metric, "measure_basis", "")
-    if measure_basis:
-        label = dict(getattr(metric, "MEASURE_BASIS_CHOICES", [])).get(
-            measure_basis, measure_basis,
-        )
-        # Include instrument name when applicable
-        instrument = getattr(metric, "instrument_name", "")
-        body = str(label)
-        if instrument and measure_basis in ("published_validated", "published_adapted"):
-            body = f"{label}: {instrument}"
-        quality_annotations.append({
-            "@type": "dqv:QualityAnnotation",
-            "oa:hasBody": {
-                "@type": "oa:TextualBody",
-                "rdf:value": body,
-            },
-            "oa:motivatedBy": "dqv:qualityAssessment",
-            "konote:annotationType": "measure_basis",
-            "konote:annotationCategory": measure_basis,
-        })
-
-    # Derivation method — how the value was produced (when not direct)
-    derivation_method = getattr(metric, "derivation_method", "")
-    if derivation_method:
-        label = dict(getattr(metric, "DERIVATION_METHOD_CHOICES", [])).get(
-            derivation_method, derivation_method,
-        )
-        quality_annotations.append({
-            "@type": "dqv:QualityAnnotation",
-            "oa:hasBody": {
-                "@type": "oa:TextualBody",
-                "rdf:value": str(label),
-            },
-            "oa:motivatedBy": "dqv:qualityAssessment",
-            "konote:annotationType": "derivation_method",
-            "konote:annotationCategory": derivation_method,
+            "konote:annotationType": field_name,
+            "konote:annotationCategory": value,
         })
 
     return {
@@ -766,6 +739,19 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         )
 
         program_metrics = list(metric_queryset.filter(pk__in=metric_ids).distinct())
+
+        # Batch eligible participant counts per metric (avoids N+1 in DQV)
+        eligible_by_metric = dict(
+            PlanTargetMetric.objects.filter(
+                plan_target__plan_section__program=program,
+                metric_def__in=program_metrics,
+                plan_target__status__in=["default", "completed"],
+            )
+            .values("metric_def_id")
+            .annotate(eligible=Count("plan_target__client_file_id", distinct=True))
+            .values_list("metric_def_id", "eligible")
+        )
+
         outcome_indicator_refs = []
 
         for metric in program_metrics:
@@ -831,6 +817,7 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 # Add DQV data quality signals
                 dqv = _build_dqv_quality(
                     metric, values_qs, observation_count, program, measures,
+                    eligible_count=eligible_by_metric.get(metric.pk),
                 )
                 if dqv.get("dqv:hasQualityMeasurement"):
                     report_node["dqv:hasQualityMeasurement"] = dqv["dqv:hasQualityMeasurement"]
