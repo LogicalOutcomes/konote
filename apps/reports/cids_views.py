@@ -96,9 +96,8 @@ def cids_full_tier_export(request):
         user_display=str(request.user),
         ip_address=get_client_ip(request),
         action="export",
-        object_type="CIDSFullTierExport",
-        object_id=0,
-        description=f"CIDS Full Tier export ({taxonomy_lens}): {program_names}",
+        resource_type="export",
+        metadata={"export_type": "CIDSFullTierExport", "taxonomy_lens": taxonomy_lens, "programs": program_names},
     )
 
     if request.GET.get("format") == "download":

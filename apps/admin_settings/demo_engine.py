@@ -534,6 +534,18 @@ class DemoDataEngine:
         from apps.registration.models import RegistrationLink, RegistrationSubmission
         from apps.surveys.models import Survey
 
+        # Restore metric portal_visibility first — this must run even if there
+        # are no demo clients/users (e.g. when _ensure_portal_visible_metrics was
+        # called before any demo users were created).
+        originals = getattr(self, "_metric_visibility_originals", {})
+        for metric_pk, original_value in originals.items():
+            MetricDefinition.objects.filter(pk=metric_pk).update(
+                portal_visibility=original_value,
+            )
+        if originals:
+            self.log(f"  Restored portal_visibility on {len(originals)} metrics.")
+        self._metric_visibility_originals = {}
+
         demo_clients = ClientFile.objects.filter(is_demo=True)
         demo_users = User.objects.filter(is_demo=True)
 
@@ -595,16 +607,6 @@ class DemoDataEngine:
         from apps.surveys.models import SurveyAssignment, SurveyResponse
         SurveyResponse.objects.filter(client_file__is_demo=True).delete()
         SurveyAssignment.objects.filter(client_file__is_demo=True).delete()
-
-        # Restore metric portal_visibility to pre-demo values
-        originals = getattr(self, "_metric_visibility_originals", {})
-        for metric_pk, original_value in originals.items():
-            MetricDefinition.objects.filter(pk=metric_pk).update(
-                portal_visibility=original_value,
-            )
-        if originals:
-            self.log(f"  Restored portal_visibility on {len(originals)} metrics.")
-        self._metric_visibility_originals = {}
 
         # Registration submissions for demo links
         counts["registrations"] = RegistrationSubmission.objects.filter(
