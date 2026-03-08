@@ -508,3 +508,11 @@ def active_program_context(request):
         "active_program_role": active_role,
         "active_program_role_display": active_role_display,
     }
+
+
+def page_help(request):
+    """Inject contextual help content for the current page."""
+    from konote.page_help import get_page_help
+
+    help_content = get_page_help(request)
+    return {"page_help": help_content}
