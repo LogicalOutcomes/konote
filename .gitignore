@@ -31,6 +31,9 @@ konote-credentials-*
 *.swp
 *.code-workspace
 
+# Jules (Google AI agent)
+.Jules/
+
 # Claude Code — track shared skills/commands, ignore personal config
 .claude/*
 !.claude/commands/
