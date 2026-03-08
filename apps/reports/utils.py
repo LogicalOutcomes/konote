@@ -248,8 +248,9 @@ def aggregate_all_programs_totals(data_or_sections):
     """Aggregate service metrics across all program reports.
 
     When any program's value has been suppressed (replaced with a string
-    like ``"< 5"``), the corresponding org-level total is also marked as
-    ``"suppressed"`` to avoid misleading undercounts.
+    like ``"< 5"``), that program's contribution is skipped so the
+    org-level total still reflects the available data without including
+    suppressed estimates.
 
     Args:
         data_or_sections: List of (program, report_data) tuples.
@@ -260,9 +261,6 @@ def aggregate_all_programs_totals(data_or_sections):
     total_served = 0
     total_new = 0
     total_contacts = 0
-    any_served_suppressed = False
-    any_new_suppressed = False
-    any_contacts_suppressed = False
     programs = []
     for program, rd in data_or_sections:
         served = rd.get("total_individuals_served")
@@ -270,20 +268,14 @@ def aggregate_all_programs_totals(data_or_sections):
         contacts = rd.get("total_contacts")
         if isinstance(served, int):
             total_served += served
-        elif isinstance(served, str):
-            any_served_suppressed = True
         if isinstance(new, int):
             total_new += new
-        elif isinstance(new, str):
-            any_new_suppressed = True
         if isinstance(contacts, int):
             total_contacts += contacts
-        elif isinstance(contacts, str):
-            any_contacts_suppressed = True
         programs.append({"name": program.name, "report_data": rd})
     return {
-        "total_served": "suppressed" if any_served_suppressed else total_served,
-        "total_new_clients": "suppressed" if any_new_suppressed else total_new,
-        "total_contacts": "suppressed" if any_contacts_suppressed else total_contacts,
+        "total_served": total_served,
+        "total_new_clients": total_new,
+        "total_contacts": total_contacts,
         "programs": programs,
     }
