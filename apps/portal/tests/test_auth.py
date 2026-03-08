@@ -168,6 +168,7 @@ class PortalAuthTests(TestCase):
         from apps.portal.views import SESSION_EMERGENCY_LOGOUT_TOKEN
         token = "testtoken"
         session[SESSION_EMERGENCY_LOGOUT_TOKEN] = token
+        session["_portal_staff_assisted"] = True
         session.save()
 
         response = self.client.post("/my/emergency-logout/", {"token": token})
@@ -177,6 +178,8 @@ class PortalAuthTests(TestCase):
 
         # Session should be cleared
         self.assertNotIn("_portal_participant_id", self.client.session)
+        self.assertNotIn(SESSION_EMERGENCY_LOGOUT_TOKEN, self.client.session)
+        self.assertNotIn("_portal_staff_assisted", self.client.session)
 
     # ------------------------------------------------------------------
     # Access control

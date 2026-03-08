@@ -10,9 +10,11 @@ Sub-objects are always fetched with get_object_or_404(..., client_file=client_fi
 import logging
 import secrets
 from functools import wraps
+from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -47,6 +49,19 @@ def _set_emergency_logout_token(request):
     request.session[SESSION_EMERGENCY_LOGOUT_TOKEN] = secrets.token_urlsafe(32)
 
 
+def _get_feature_flags():
+    """Return feature flags merged with their default enabled/disabled state."""
+    flags = cache.get("feature_toggles")
+    if flags is None:
+        from apps.admin_settings.views import DEFAULT_FEATURES, FEATURES_DEFAULT_ENABLED
+
+        db_flags = FeatureToggle.get_all_flags()
+        flags = {key: key in FEATURES_DEFAULT_ENABLED for key in DEFAULT_FEATURES}
+        flags.update(db_flags)
+        cache.set("feature_toggles", flags, 300)
+    return flags
+
+
 # ---------------------------------------------------------------------------
 # Decorators
 # ---------------------------------------------------------------------------
@@ -61,7 +76,7 @@ def portal_feature_required(view_func):
 
     @wraps(view_func)
     def _wrapped(request, *args, **kwargs):
-        flags = FeatureToggle.get_all_flags()
+        flags = _get_feature_flags()
         if not flags.get("participant_portal"):
             raise Http404
         return view_func(request, *args, **kwargs)
@@ -83,7 +98,7 @@ def portal_login_required(view_func):
     @wraps(view_func)
     def _wrapped(request, *args, **kwargs):
         # Feature gate
-        flags = FeatureToggle.get_all_flags()
+        flags = _get_feature_flags()
         if not flags.get("participant_portal"):
             raise Http404
 
@@ -298,15 +313,25 @@ def emergency_logout(request):
     # Validate the session-bound emergency logout token.
     # The token is set on portal login and sent by portal.js via sendBeacon.
     # We use secrets.compare_digest to prevent timing-based attacks.
+    participant_id = request.session.get("_portal_participant_id")
     expected = request.session.get(SESSION_EMERGENCY_LOGOUT_TOKEN, "")
     submitted = request.POST.get("token", "")
+    if not submitted and request.body:
+        try:
+            submitted = parse_qs(request.body.decode("utf-8")).get("token", [""])[0]
+        except Exception:
+            submitted = ""
     if not expected or not secrets.compare_digest(expected, submitted):
         return HttpResponse(status=403)
 
-    # Token is single-use — remove it before flushing so it cannot be replayed.
-    request.session.pop(SESSION_EMERGENCY_LOGOUT_TOKEN, None)
-    request.session.pop("_portal_participant_id", None)
-    request.session.pop("_portal_mfa_pending_id", None)
+    if participant_id:
+        _audit_portal_event(request, "portal_emergency_logout", metadata={
+            "participant_id": participant_id,
+        })
+
+    # Flush the whole session so the participant cannot remain logged in via
+    # stale portal keys or a reused session cookie.
+    request.session.flush()
     return HttpResponse(status=204)
 
 
@@ -733,7 +758,7 @@ def resources_list(request):
     client_file = _get_client_file(request)
     lang = participant.preferred_language or "en"
 
-    flags = FeatureToggle.get_all_flags()
+    flags = _get_feature_flags()
     if not flags.get("portal_resources"):
         raise Http404
 
