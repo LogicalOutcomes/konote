@@ -2,6 +2,7 @@
 import json
 
 from django import forms
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
@@ -404,6 +405,7 @@ class MetricImportForm(forms.Form):
     csv_file = forms.FileField(
         label=_("CSV File"),
         help_text=_("Upload a CSV with columns: name, definition, category, min_value, max_value, unit. Optional French columns: name_fr, definition_fr, unit_fr"),
+        validators=[FileExtensionValidator(allowed_extensions=["csv"])],
     )
 
     def clean_csv_file(self):
