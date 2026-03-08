@@ -21350,3 +21350,25 @@ msgstr "Sélection invalide."
 
 msgid "Please select a program."
 msgstr "Veuillez sélectionner un programme."
+
+#. from reports/html_report_multi_program.html
+msgid "Multi-Program Outcome Report"
+msgstr "Rapport de résultats multiprogramme"
+
+#. blocktrans from reports/html_report_multi_program.html (title)
+#, python-format
+msgid "Multi-Program Outcome Report \u2014 %(name)s"
+msgstr "Rapport de résultats multiprogramme \u2014 %(name)s"
+
+#. from reports/html_report_multi_program.html
+msgid "Metric Charts"
+msgstr "Graphiques des indicateurs"
+
+#. from reports/html_report_multi_program.html
+msgid "This report was generated using KoNote's Multi-Program Outcome Report Template."
+msgstr "Ce rapport a été généré à l'aide du modèle de rapport de résultats multiprogramme de KoNote."
+
+#. blocktrans from reports/html_report_multi_program.html
+#, python-format
+msgid "Bar chart showing %(label)s across demographic groups"
+msgstr "Diagramme à barres montrant %(label)s par groupes démographiques"
