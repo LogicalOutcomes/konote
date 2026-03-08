@@ -42,10 +42,12 @@
 <article aria-label="{% trans 'Download' %}">
     <h2>{% trans "Download" %}</h2>
     <p>
-        {% if is_pdf %}
+        {% if export_format == "pdf" %}
         {% trans "Your PDF report is ready for download." %}
-        {% elif is_html %}
+        {% elif export_format == "html" %}
         {% trans "Your HTML report is ready for download." %}
+        {% elif export_format == "cids_json" %}
+        {% trans "Your JSON-LD file is ready to download." %}
         {% else %}
         {% trans "Your CSV report is ready for download." %}
         {% endif %}
