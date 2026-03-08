@@ -33,8 +33,9 @@ function _knCallFunction(name, el, rawArgs) {
     return true;
 }
 
-// Enable script execution in HTMX 2.0 swapped content (needed for Chart.js in Analysis tab)
-// This must be set before any HTMX swaps occur
+// Enable script execution in HTMX 2.0 swapped content.
+// Chart.js init is handled in app.js (not inline scripts) to avoid CSP nonce
+// mismatch, but other templates may still use inline scripts on full page loads.
 htmx.config.allowScriptTags = true;
 
 // Tell HTMX to use the loading bar as a global indicator
@@ -1824,4 +1825,223 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             }
         }
     });
+})();
+
+// --- Chart.js initialisation (CSP-safe) ---
+// These functions were moved from inline <script> tags in templates because
+// inline scripts in HTMX-swapped content are blocked by CSP nonce mismatch:
+// the nonce in the HTMX response differs from the nonce in the original page's
+// CSP header. Translated labels come from window.KN (set in base.html).
+(function () {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var animDuration = prefersReducedMotion ? 0 : undefined;
+
+    // 1. Analysis tab — participant metric line charts
+    function initAnalysisCharts() {
+        var el = document.getElementById('chart-data');
+        if (!el) return;
+        var chartData;
+        try { chartData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(chartData)) return;
+
+        var canvases = document.querySelectorAll('canvas[id^="chart-"]');
+        chartData.forEach(function (chart, index) {
+            if (index >= canvases.length) return;
+            // Skip if already initialised (prevents double-init on HTMX re-swap)
+            if (canvases[index].getAttribute('data-chart-init')) return;
+            canvases[index].setAttribute('data-chart-init', '1');
+
+            var ctx = canvases[index].getContext('2d');
+            var datasets = [{
+                label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
+                data: chart.data_points.map(function (p) { return p.value; }),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3,
+            }];
+            if (chart.min_value !== null) {
+                datasets.push({
+                    label: t('chartMinimum', 'Minimum') + ' (' + chart.min_value + ')',
+                    data: Array(chart.data_points.length).fill(chart.min_value),
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                });
+            }
+            if (chart.max_value !== null) {
+                datasets.push({
+                    label: t('chartMaximum', 'Maximum') + ' (' + chart.max_value + ')',
+                    data: Array(chart.data_points.length).fill(chart.max_value),
+                    borderColor: 'rgba(34, 197, 94, 0.5)',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                });
+            }
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chart.data_points.map(function (p) { return p.date; }),
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: animDuration },
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y: { beginAtZero: false, title: { display: true, text: chart.unit || t('chartValue', 'Value') } },
+                        x: { title: { display: true, text: t('chartDate', 'Date') } },
+                    },
+                },
+            });
+        });
+    }
+
+    // 2. Client insights — descriptor trend chart
+    function initClientTrendChart() {
+        var el = document.getElementById('client-trend-data');
+        if (!el) return;
+        var rawData;
+        try { rawData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
+
+        var ctx = document.getElementById('client-descriptor-trend');
+        if (!ctx || ctx.getAttribute('data-chart-init')) return;
+        ctx.setAttribute('data-chart-init', '1');
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function (r) { return r.month; }),
+                datasets: [
+                    { label: t('descriptorHarder', 'Harder right now'), data: rawData.map(function (r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
+                    { label: t('descriptorHolding', 'Holding steady'), data: rawData.map(function (r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
+                    { label: t('descriptorShifting', "Something's shifting"), data: rawData.map(function (r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
+                    { label: t('descriptorGood', 'In a good place'), data: rawData.map(function (r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: animDuration },
+                plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } } },
+            },
+        });
+    }
+
+    // 3. Program insights — descriptor trend chart
+    function initDescriptorTrendChart() {
+        var el = document.getElementById('descriptor-trend-data');
+        if (!el) return;
+        var rawData;
+        try { rawData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
+
+        var ctx = document.getElementById('descriptor-trend-chart');
+        if (!ctx || ctx.getAttribute('data-chart-init')) return;
+        ctx.setAttribute('data-chart-init', '1');
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function (r) { return r.month; }),
+                datasets: [
+                    { label: t('descriptorHarder', 'Harder right now'), data: rawData.map(function (r) { return r.harder; }), borderColor: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorHolding', 'Holding steady'), data: rawData.map(function (r) { return r.holding; }), borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorShifting', "Something's shifting"), data: rawData.map(function (r) { return r.shifting; }), borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorGood', 'In a good place'), data: rawData.map(function (r) { return r.good_place; }), borderColor: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.1)', tension: 0.3, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: animDuration },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: t('chartPercentage', 'Percentage') }, ticks: { callback: function (v) { return v + '%'; } } },
+                    x: { title: { display: true, text: t('chartMonth', 'Month') } },
+                },
+            },
+        });
+    }
+
+    // 4. Program insights — distribution trend charts (one per metric)
+    function initDistributionTrendCharts() {
+        var el = document.getElementById('metric-trends-data');
+        if (!el) return;
+        var trendsData;
+        try { trendsData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!trendsData) return;
+
+        Object.keys(trendsData).forEach(function (metricId) {
+            var points = trendsData[metricId];
+            if (!Array.isArray(points) || points.length === 0) return;
+
+            var ctx = document.getElementById('distribution-trend-' + metricId);
+            if (!ctx || ctx.getAttribute('data-chart-init')) return;
+            ctx.setAttribute('data-chart-init', '1');
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: points.map(function (p) { return p.month; }),
+                    datasets: [
+                        { label: t('distributionLow', 'More support needed'), data: points.map(function (p) { return p.band_low_pct; }), borderColor: '#5e81ac', tension: 0.3, fill: false },
+                        { label: t('distributionHigh', 'Goals within reach'), data: points.map(function (p) { return p.band_high_pct; }), borderColor: '#a3be8c', tension: 0.3, fill: false },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: animDuration },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } },
+                    },
+                },
+            });
+        });
+    }
+
+    // Unified dispatcher — runs all chart initialisers that find their data element
+    function initAllCharts() {
+        if (typeof Chart === 'undefined') return;
+        initAnalysisCharts();
+        initClientTrendChart();
+        initDescriptorTrendChart();
+        initDistributionTrendCharts();
+    }
+
+    // Run on initial page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Chart.js may load after DOMContentLoaded (it's at bottom of base.html),
+            // so also listen for window load as a fallback
+            if (typeof Chart !== 'undefined') {
+                initAllCharts();
+            } else {
+                window.addEventListener('load', initAllCharts);
+            }
+        });
+    } else {
+        // DOM already ready (e.g. script loaded dynamically)
+        if (typeof Chart !== 'undefined') {
+            initAllCharts();
+        } else {
+            window.addEventListener('load', initAllCharts);
+        }
+    }
+
+    // Run after HTMX swaps in new content (e.g. tab navigation, insights load)
+    document.body.addEventListener('htmx:afterSettle', initAllCharts);
 })();
