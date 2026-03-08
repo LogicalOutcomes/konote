@@ -151,6 +151,8 @@ class CoverageHelperTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class CidsViewsTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.program = _create_program()

@@ -215,7 +215,7 @@ class GoalBuilderPIITest(GoalBuilderBaseTest):
     """Test PII scrubbing in the Goal Builder chat."""
 
     @patch("konote.ai.build_goal_chat")
-    @patch("apps.reports.pii_scrub.scrub_pii")
+    @patch("konote.ai_views.scrub_pii")
     def test_pii_scrubbed_before_ai_call(self, mock_scrub, mock_chat):
         mock_scrub.return_value = "Find stable housing for [NAME]"
         mock_chat.return_value = SAMPLE_AI_RESPONSE
@@ -232,7 +232,7 @@ class GoalBuilderPIITest(GoalBuilderBaseTest):
         self.assertEqual(ai_messages[0]["content"], "Find stable housing for [NAME]")
 
     @patch("konote.ai.build_goal_chat")
-    @patch("apps.reports.pii_scrub.scrub_pii")
+    @patch("konote.ai_views.scrub_pii")
     def test_known_names_include_client_names(self, mock_scrub, mock_chat):
         mock_scrub.return_value = "test"
         mock_chat.return_value = SAMPLE_AI_RESPONSE

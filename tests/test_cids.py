@@ -1555,6 +1555,8 @@ class AuthorRoleAutoFillTest(TestCase):
 class CidsJsonLdExportTest(TestCase):
     """Test the CIDS JSON-LD export command."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.program = Program.objects.create(
