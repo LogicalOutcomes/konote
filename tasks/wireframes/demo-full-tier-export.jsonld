@@ -10,6 +10,7 @@
       "postalCode": "M5H 2Y4",
       "addressCountry": "CA"
     },
+
     {
       "@id": "urn:konote:theme:employment",
       "@type": "cids:Theme",
@@ -22,6 +23,7 @@
       "hasName": "Education & Training",
       "hasDescription": "Programs focused on education, skills development, and vocational training."
     },
+
     {
       "@id": "https://iris.thegiin.org/metric/5.8/OI1234",
       "@type": "cids:Code",
@@ -42,68 +44,76 @@
       "@type": "cids:Code",
       "hasName": "ICNPO 6100: Employment & Training"
     },
+
     {
       "@id": "urn:konote:indicator-report:5:12",
       "@type": "cids:IndicatorReport",
-      "hasName": "Employment Status report",
+      "hasName": "Employment Status — September 2025 cohort",
       "forOrganization": {"@id": "urn:konote:org:1"},
       "forIndicator": {"@id": "urn:konote:indicator:5:12"},
-      "startedAtTime": "2025-09-15T09:00:00-04:00",
-      "endedAtTime": "2026-03-01T16:30:00-05:00",
+      "startedAtTime": "2025-09-15T00:00:00-04:00",
+      "endedAtTime": "2026-03-01T00:00:00-05:00",
       "value": {
         "@type": "i72:Measure",
-        "hasNumericalValue": "87"
+        "hasNumericalValue": "78",
+        "hasUnit": "percent"
       },
-      "hasComment": "Observation count for Employment Status in Bright Futures Youth Employment Services"
+      "hasComment": "18 of 23 participants achieved employment (full-time or part-time). Breakdown: 12 full-time, 6 part-time, 3 in training, 2 still seeking. Success rate: 78% (target: 65%).",
+      "hasBaseline": "23% placement rate (Employment Ontario services alone, 2024 GTA youth cohort comparison)"
     },
     {
       "@id": "urn:konote:indicator-report:5:13",
       "@type": "cids:IndicatorReport",
-      "hasName": "Job Readiness Score report",
+      "hasName": "Job Readiness Score — September 2025 cohort",
       "forOrganization": {"@id": "urn:konote:org:1"},
       "forIndicator": {"@id": "urn:konote:indicator:5:13"},
-      "startedAtTime": "2025-09-22T10:00:00-04:00",
-      "endedAtTime": "2026-02-28T14:15:00-05:00",
+      "startedAtTime": "2025-09-22T00:00:00-04:00",
+      "endedAtTime": "2026-02-28T00:00:00-05:00",
       "value": {
         "@type": "i72:Measure",
-        "hasNumericalValue": "184"
+        "hasNumericalValue": "7.8",
+        "hasUnit": "score (1-10 scale)"
       },
-      "hasComment": "Observation count for Job Readiness Score in Bright Futures Youth Employment Services"
+      "hasComment": "Mean score improved from 3.2 (intake) to 7.8 (program end). 23 participants measured at intake and at 4-week intervals. 20 of 23 (87%) moved from low band (1-4) to high band (7-10). Scores suppressed where cohort subgroup < 5.",
+      "hasBaseline": "3.2 (mean intake score, n=23)"
     },
     {
       "@id": "urn:konote:indicator-report:5:14",
       "@type": "cids:IndicatorReport",
-      "hasName": "Sessions Attended report",
+      "hasName": "Sessions Attended — September 2025 cohort",
       "forOrganization": {"@id": "urn:konote:org:1"},
       "forIndicator": {"@id": "urn:konote:indicator:5:14"},
-      "startedAtTime": "2025-09-15T09:00:00-04:00",
-      "endedAtTime": "2026-03-05T11:00:00-05:00",
+      "startedAtTime": "2025-09-15T00:00:00-04:00",
+      "endedAtTime": "2026-03-05T00:00:00-05:00",
       "value": {
         "@type": "i72:Measure",
-        "hasNumericalValue": "342"
+        "hasNumericalValue": "342",
+        "hasUnit": "sessions"
       },
-      "hasComment": "Observation count for Sessions Attended in Bright Futures Youth Employment Services"
+      "hasComment": "342 total sessions across 23 participants (avg 14.9 per participant). Program target: 12 sessions minimum. 19 of 23 (83%) met the minimum attendance threshold. Includes 216 group workshops and 126 mentorship meetings."
     },
     {
       "@id": "urn:konote:indicator-report:5:15",
       "@type": "cids:IndicatorReport",
-      "hasName": "Employment Retention (90-day) report",
+      "hasName": "Employment Retention (90-day) — September 2025 cohort",
       "forOrganization": {"@id": "urn:konote:org:1"},
       "forIndicator": {"@id": "urn:konote:indicator:5:15"},
-      "startedAtTime": "2025-12-15T10:00:00-05:00",
-      "endedAtTime": "2026-03-01T15:00:00-05:00",
+      "startedAtTime": "2025-12-15T00:00:00-05:00",
+      "endedAtTime": "2026-03-01T00:00:00-05:00",
       "value": {
         "@type": "i72:Measure",
-        "hasNumericalValue": "15"
+        "hasNumericalValue": "83",
+        "hasUnit": "percent"
       },
-      "hasComment": "Observation count for Employment Retention (90-day) in Bright Futures Youth Employment Services"
+      "hasComment": "Of the 18 participants who achieved employment, 15 (83%) maintained it for 90+ days. 2 changed employers but remained employed. 1 returned to training. Measurement ongoing for 3 participants who were placed after January 2026."
     },
+
     {
       "@id": "urn:konote:indicator:5:12",
       "@type": "cids:Indicator",
       "hasName": "Employment Status",
-      "hasDescription": "Current employment status of participant (unemployed, part-time, full-time, self-employed).",
-      "unitDescription": "Categorical (4-point scale)",
+      "hasDescription": "Current employment status: unemployed, part-time, full-time, self-employed.",
+      "unitDescription": "Categorical (4 options)",
       "forOrganization": {"@id": "urn:konote:org:1"},
       "forOutcome": [{"@id": "urn:konote:program-outcome:5"}],
       "forTheme": [{"@id": "urn:konote:theme:employment"}],
@@ -144,6 +154,7 @@
       "forTheme": [{"@id": "urn:konote:theme:employment"}],
       "hasIndicatorReport": [{"@id": "urn:konote:indicator-report:5:15"}]
     },
+
     {
       "@id": "urn:konote:program-outcome:5",
       "@type": "cids:Outcome",
@@ -161,6 +172,7 @@
         {"@id": "urn:konote:theme:education-and-training"}
       ]
     },
+
     {
       "@id": "urn:konote:impact-model:5",
       "@type": "cids:ImpactModel",
@@ -176,13 +188,12 @@
       ],
       "cids:hasStakeholder": [
         {"@id": "urn:konote:stakeholder:5-0"},
-        {"@id": "urn:konote:stakeholder:5-1"},
-        {"@id": "urn:konote:stakeholder:5-2"}
+        {"@id": "urn:konote:stakeholder:5-1"}
       ],
       "cids:hasStakeholderOutcome": [{"@id": "urn:konote:stakeholder-outcome:5"}],
       "cids:hasOutput": [
-        {"@id": "urn:konote:output:5-14"},
-        {"@id": "urn:konote:output:5-placement"}
+        {"@id": "urn:konote:output:5-sessions"},
+        {"@id": "urn:konote:output:5-placements"}
       ],
       "cids:hasImpactRisk": [
         {"@id": "urn:konote:impact-risk:101"},
@@ -195,33 +206,22 @@
       ],
       "cids:hasCounterfactual": [{"@id": "urn:konote:counterfactual:401"}]
     },
+
     {
       "@id": "urn:konote:stakeholder:5-0",
       "@type": "cids:Stakeholder",
       "cids:hasName": "Youth aged 16-24, unemployed",
-      "cids:hasDescription": "Unemployed youth in the Greater Toronto Area aged 16-24, including those with no prior work experience and those who have been laid off.",
-      "cids:forOrganization": {"@id": "urn:konote:org:1"},
-      "cids:hasDemographic": "Age 16-24, unemployed or underemployed",
-      "cids:hasSize": 20
+      "cids:hasDescription": "Unemployed youth in the Greater Toronto Area, including those with no prior work experience and those who have been laid off.",
+      "cids:forOrganization": {"@id": "urn:konote:org:1"}
     },
     {
       "@id": "urn:konote:stakeholder:5-1",
       "@type": "cids:Stakeholder",
       "cids:hasName": "Newcomer youth (arrived <5 years)",
       "cids:hasDescription": "Youth who immigrated to Canada within the last 5 years and face additional barriers including language, credential recognition, and limited professional networks.",
-      "cids:forOrganization": {"@id": "urn:konote:org:1"},
-      "cids:hasDemographic": "Newcomer youth, arrived within 5 years",
-      "cids:hasSize": 8
+      "cids:forOrganization": {"@id": "urn:konote:org:1"}
     },
-    {
-      "@id": "urn:konote:stakeholder:5-2",
-      "@type": "cids:Stakeholder",
-      "cids:hasName": "Indigenous youth",
-      "cids:hasDescription": "Indigenous youth participants who may face systemic barriers to employment.",
-      "cids:forOrganization": {"@id": "urn:konote:org:1"},
-      "cids:hasDemographic": "First Nations, Inuit, or M\u00e9tis youth",
-      "cids:hasSize": 3
-    },
+
     {
       "@id": "urn:konote:stakeholder-outcome:5",
       "@type": "cids:StakeholderOutcome",
@@ -230,62 +230,67 @@
       "cids:forOutcome": {"@id": "urn:konote:program-outcome:5"},
       "cids:forOrganization": {"@id": "urn:konote:org:1"}
     },
+
     {
       "@id": "urn:konote:service:201",
       "@type": "cids:Service",
       "cids:hasName": "Job Readiness Training (12 weeks)",
-      "cids:hasDescription": "Structured 12-week program combining group skills workshops, individual mentorship, and supported job search. Delivered in cohorts of 20 participants, three intake periods per year (September, January, April)."
+      "cids:hasDescription": "Structured 12-week program combining group skills workshops, individual mentorship, and supported job search. Delivered in cohorts of 20, three intake periods per year."
     },
     {
       "@id": "urn:konote:activity:301",
       "@type": "cids:Activity",
       "cids:hasName": "Group skills workshops (3x/week)",
-      "cids:hasDescription": "Three 2-hour facilitated workshops per week covering resume writing, interview preparation, workplace communication, digital literacy, and financial literacy. Delivered in-person at the GTA Community Centre."
+      "cids:hasDescription": "Three 2-hour facilitated workshops per week covering resume writing, interview preparation, workplace communication, digital literacy, and financial literacy."
     },
     {
       "@id": "urn:konote:activity:302",
       "@type": "cids:Activity",
       "cids:hasName": "1:1 mentorship sessions (weekly)",
-      "cids:hasDescription": "Weekly 45-minute mentorship sessions pairing each participant with a volunteer mentor who has employment experience in the participant's field of interest. Mentors provide coaching, networking support, and accountability."
+      "cids:hasDescription": "Weekly 45-minute sessions pairing each participant with a volunteer mentor in the participant's field of interest."
     },
+
     {
-      "@id": "urn:konote:output:5-14",
+      "@id": "urn:konote:output:5-sessions",
       "@type": "cids:Output",
-      "cids:hasName": "Observations: Sessions Attended",
-      "cids:hasDescription": "342 recorded observations for Sessions Attended in Bright Futures Youth Employment Services.",
+      "cids:hasName": "Training sessions delivered",
+      "cids:hasDescription": "342 sessions delivered (216 group workshops + 126 mentorship meetings). Average 14.9 per participant against a target of 12 minimum.",
       "cids:forOrganization": {"@id": "urn:konote:org:1"}
     },
     {
-      "@id": "urn:konote:output:5-placement",
+      "@id": "urn:konote:output:5-placements",
       "@type": "cids:Output",
       "cids:hasName": "Job placements achieved",
-      "cids:hasDescription": "18 job placements achieved within 90 days of program completion for the September 2025 cohort. Target was 15-18 placements per cohort of 20.",
+      "cids:hasDescription": "18 of 23 participants placed in employment within 90 days of program completion. 12 full-time, 6 part-time.",
       "cids:forOrganization": {"@id": "urn:konote:org:1"}
     },
+
     {
       "@id": "urn:konote:impact-risk:101",
       "@type": "cids:ImpactRisk",
       "cids:hasName": "Economic downturn reduces available positions",
-      "cids:hasDescription": "An economic recession or sector-specific downturn could reduce the number of available entry-level positions, making job placement more difficult despite participant readiness.",
+      "cids:hasDescription": "A recession could reduce entry-level positions, making placement harder despite participant readiness.",
       "cids:hasLikelihood": "medium",
       "cids:hasSeverity": "high",
-      "cids:hasMitigation": "Diversify employer partnerships across sectors (currently 12 employer partners in retail, hospitality, tech, healthcare, and nonprofit). Maintain relationships with social enterprises willing to create positions."
+      "cids:hasMitigation": "Diversify employer partnerships across sectors (12 partners in retail, hospitality, tech, healthcare, nonprofit). Maintain relationships with social enterprises."
     },
     {
       "@id": "urn:konote:impact-risk:102",
       "@type": "cids:ImpactRisk",
       "cids:hasName": "Participant attrition due to housing instability",
-      "cids:hasDescription": "Youth experiencing housing instability may be unable to maintain consistent attendance in the 12-week program, reducing program completion rates.",
+      "cids:hasDescription": "Youth experiencing housing instability may not maintain consistent attendance in the 12-week program.",
       "cids:hasLikelihood": "medium",
       "cids:hasSeverity": "medium",
-      "cids:hasMitigation": "Partner with 3 local shelters to provide transit passes and flexible scheduling. Offer hybrid attendance (in-person + virtual) for participants in precarious housing situations."
+      "cids:hasMitigation": "Partner with 3 local shelters for transit passes and flexible scheduling. Offer hybrid attendance for participants in precarious housing."
     },
+
     {
       "@id": "urn:konote:counterfactual:401",
       "@type": "cids:Counterfactual",
       "cids:hasName": "Baseline: Employment Ontario services only",
-      "cids:hasDescription": "Without the Bright Futures program, participants would access basic Employment Ontario services (job boards, resume review) but not structured training or mentorship. Comparable youth employment programs in the GTA show a 23% placement rate without structured support, compared to our target of 65% and actual rate of 78% for the September 2025 cohort."
+      "cids:hasDescription": "Without the program, participants would access basic Employment Ontario services (job boards, resume review) but not structured training or mentorship. Comparable GTA youth programs show 23% placement without structured support, vs. our 78%."
     },
+
     {
       "@id": "urn:konote:org:1",
       "@type": "cids:Organization",
@@ -311,6 +316,6 @@
   "cids:evaluatorAttestation": {
     "attestedBy": "Jennifer Martinez",
     "attestedAt": "2026-03-05T14:30:00-05:00",
-    "attestationNote": "I have reviewed the evaluation framework, outcome chain, risk assessment, and component definitions for the Bright Futures program. The framework accurately reflects our program model and evaluation methodology. All data sources referenced are available and the measurement methods described are in active use."
+    "attestationNote": "I have reviewed the evaluation framework and outcome data for the Bright Futures September 2025 cohort. The aggregate results accurately reflect our records. Individual participant data has been excluded from this export."
   }
 }

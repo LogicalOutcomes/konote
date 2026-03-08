@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Funder Outcome Dashboard — KoNote CIDS Export</title>
+  <style>
+    :root {
+      --kn-primary: #3176aa;
+      --kn-primary-dark: #245d8a;
+      --kn-success: #2e7d32;
+      --kn-success-light: #e8f5e9;
+      --kn-warning: #f57f17;
+      --kn-warning-light: #fff8e1;
+      --kn-info: #1565c0;
+      --kn-info-light: #e3f2fd;
+      --kn-muted: #6c757d;
+      --kn-bg: #f8f9fa;
+      --kn-card-bg: #ffffff;
+      --kn-border: #dee2e6;
+      --kn-text: #212529;
+      --kn-text-secondary: #555;
+      --kn-radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--kn-bg);
+      color: var(--kn-text);
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .header {
+      background: var(--kn-primary);
+      color: white;
+      padding: 1.5rem 2rem;
+    }
+    .header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .header p { opacity: 0.85; font-size: 0.9rem; }
+    .header-meta {
+      display: flex; gap: 2rem; margin-top: 0.75rem;
+      font-size: 0.85rem; opacity: 0.8;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* Program header card */
+    .program-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .program-card h2 { font-size: 1.25rem; color: var(--kn-primary); margin-bottom: 0.5rem; }
+    .program-card .org-name { color: var(--kn-muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
+    .program-card p { color: var(--kn-text-secondary); font-size: 0.95rem; }
+    .program-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .tag {
+      display: inline-block; padding: 0.2rem 0.6rem;
+      border-radius: 12px; font-size: 0.75rem; font-weight: 500;
+    }
+    .tag-theme { background: #e3f2fd; color: #1565c0; }
+    .tag-sdg { background: #fce4ec; color: #c62828; }
+    .tag-sector { background: #f3e5f5; color: #6a1b9a; }
+    .tag-stakeholder { background: #fff3e0; color: #e65100; }
+
+    /* Outcome hero row */
+    .outcome-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .outcome-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .outcome-card .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .outcome-card .metric-unit {
+      font-size: 0.85rem;
+      color: var(--kn-muted);
+      margin-bottom: 0.5rem;
+    }
+    .outcome-card .metric-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--kn-text);
+      margin-bottom: 0.25rem;
+    }
+    .outcome-card .metric-detail {
+      font-size: 0.8rem;
+      color: var(--kn-text-secondary);
+      margin-top: 0.5rem;
+    }
+    .outcome-card .vs-target {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    .vs-target.exceeded { background: var(--kn-success-light); color: var(--kn-success); }
+    .vs-target.met { background: #e3f2fd; color: var(--kn-info); }
+
+    .val-green { color: var(--kn-success); }
+    .val-blue { color: var(--kn-info); }
+    .val-amber { color: var(--kn-warning); }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin-top: 0.75rem;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    /* Detail sections */
+    .section { margin-bottom: 1.5rem; }
+    .section h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--kn-primary);
+      color: var(--kn-primary-dark);
+    }
+
+    /* Impact model */
+    .impact-model {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1.25rem;
+    }
+    .impact-chain {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    .chain-step {
+      background: var(--kn-info-light);
+      color: var(--kn-info);
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--kn-radius);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .chain-arrow { color: var(--kn-muted); font-size: 1.2rem; }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+    thead { background: #f1f3f5; }
+    th { text-align: left; padding: 0.6rem 0.75rem; font-weight: 600; color: var(--kn-text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    td { padding: 0.6rem 0.75rem; border-top: 1px solid var(--kn-border); }
+
+    /* Risk cards */
+    .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .risk-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1rem;
+    }
+    .risk-card h4 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .risk-badges { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .badge {
+      padding: 0.15rem 0.5rem; border-radius: 10px;
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-medium { background: var(--kn-warning-light); color: var(--kn-warning); }
+    .badge-high { background: #ffebee; color: #c62828; }
+    .risk-card p { font-size: 0.85rem; color: var(--kn-text-secondary); }
+    .risk-card .mitigation { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--kn-border); font-size: 0.8rem; }
+    .mitigation strong { color: var(--kn-text); }
+
+    /* Counterfactual */
+    .counterfactual-card {
+      background: #fafafa;
+      border: 1px solid var(--kn-border);
+      border-left: 4px solid var(--kn-primary);
+      border-radius: var(--kn-radius);
+      padding: 1rem 1.25rem;
+    }
+    .counterfactual-card h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--kn-primary-dark); }
+    .counterfactual-card p { font-size: 0.9rem; color: var(--kn-text-secondary); }
+    .comparison-highlight {
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      margin-top: 0.75rem; font-size: 0.95rem; font-weight: 600;
+    }
+    .comparison-highlight .vs { color: var(--kn-muted); font-weight: 400; font-size: 0.85rem; }
+
+    /* Attestation */
+    .attestation {
+      background: var(--kn-success-light);
+      border: 1px solid #a5d6a7;
+      border-radius: var(--kn-radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .attestation h4 { color: var(--kn-success); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .attestation p { font-size: 0.85rem; color: var(--kn-text-secondary); }
+    .attestation .reviewer { font-weight: 600; color: var(--kn-text); }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--kn-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--kn-border);
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .risk-grid { grid-template-columns: 1fr; }
+      .outcome-row { grid-template-columns: 1fr 1fr; }
+      .header-meta { flex-direction: column; gap: 0.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Outcome Report: Bright Futures Youth Employment Services</h1>
+  <p>CIDS Full Tier export rendered for funder review</p>
+  <div class="header-meta">
+    <span>Reporting period: Sep 2025 - Mar 2026</span>
+    <span>Exported: March 7, 2026</span>
+    <span>CIDS v3.2.0 — Full Tier</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Organization & Program -->
+  <div class="program-card">
+    <div class="org-name">Bright Futures Community Services &middot; Toronto, ON</div>
+    <h2>Bright Futures Youth Employment Services</h2>
+    <p>A Toronto-based nonprofit providing employment, education, and settlement services to youth and newcomers since 2008. Comprehensive employment readiness program for youth aged 16-24 in the Greater Toronto Area.</p>
+    <div class="program-tags">
+      <span class="tag tag-theme">Employment</span>
+      <span class="tag tag-theme">Education &amp; Training</span>
+      <span class="tag tag-sdg">SDG 8: Decent Work</span>
+      <span class="tag tag-sector">ICNPO 6100</span>
+      <span class="tag tag-stakeholder">Youth 16-24</span>
+      <span class="tag tag-stakeholder">Newcomer youth</span>
+    </div>
+  </div>
+
+  <!-- Headline outcomes -->
+  <div class="outcome-row">
+    <div class="outcome-card">
+      <div class="metric-name">Employment Rate</div>
+      <div class="metric-value val-green">78%</div>
+      <div class="metric-unit">18 of 23 participants employed</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 78%; background: var(--kn-success);"></div>
+      </div>
+      <div class="metric-detail">12 full-time &middot; 6 part-time</div>
+      <span class="vs-target exceeded">Target 65% exceeded</span>
+    </div>
+
+    <div class="outcome-card">
+      <div class="metric-name">Job Readiness Score</div>
+      <div class="metric-value val-blue">3.2 &rarr; 7.8</div>
+      <div class="metric-unit">mean score (1-10 scale)</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 78%; background: var(--kn-info);"></div>
+      </div>
+      <div class="metric-detail">87% moved from low band (1-4) to high band (7-10)</div>
+      <span class="vs-target exceeded">+4.6 point improvement</span>
+    </div>
+
+    <div class="outcome-card">
+      <div class="metric-name">90-Day Retention</div>
+      <div class="metric-value val-green">83%</div>
+      <div class="metric-unit">15 of 18 maintained employment</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 83%; background: var(--kn-success);"></div>
+      </div>
+      <div class="metric-detail">2 changed employers but stayed employed</div>
+      <span class="vs-target exceeded">Strong retention</span>
+    </div>
+
+    <div class="outcome-card">
+      <div class="metric-name">Sessions Delivered</div>
+      <div class="metric-value val-blue">342</div>
+      <div class="metric-unit">avg 14.9 per participant</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 83%; background: var(--kn-info);"></div>
+      </div>
+      <div class="metric-detail">216 group workshops &middot; 126 mentorship</div>
+      <span class="vs-target met">83% met 12-session minimum</span>
+    </div>
+  </div>
+
+  <!-- Aggregate achievement -->
+  <div class="section">
+    <h3>Participant Goal Achievement</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Count</th>
+          <th>Percentage</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Achieved / Sustaining</strong></td>
+          <td>15</td>
+          <td>65%</td>
+          <td>
+            <div class="progress-bar-container" style="width: 120px; display: inline-block;">
+              <div class="progress-bar-fill" style="width: 65%; background: var(--kn-success);"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>In progress / Improving</td>
+          <td>5</td>
+          <td>22%</td>
+          <td>
+            <div class="progress-bar-container" style="width: 120px; display: inline-block;">
+              <div class="progress-bar-fill" style="width: 22%; background: var(--kn-info);"></div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>No change</td>
+          <td>3</td>
+          <td>13%</td>
+          <td>
+            <div class="progress-bar-container" style="width: 120px; display: inline-block;">
+              <div class="progress-bar-fill" style="width: 13%; background: var(--kn-muted);"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Theory of Change -->
+  <div class="section">
+    <h3>Theory of Change</h3>
+    <div class="impact-model">
+      <p style="font-size: 0.9rem; color: var(--kn-text-secondary); margin-bottom: 0.75rem;">
+        Youth aged 16-24 who are unemployed or underemployed participate in a 12-week job readiness program. Through skills training (weeks 1-6), mentorship matching (weeks 4-8), and supported job search (weeks 8-12), participants develop employment competencies.
+      </p>
+      <div class="impact-chain">
+        <span class="chain-step">Training</span>
+        <span class="chain-arrow">&rarr;</span>
+        <span class="chain-step">Skills acquisition</span>
+        <span class="chain-arrow">&rarr;</span>
+        <span class="chain-step">Confidence</span>
+        <span class="chain-arrow">&rarr;</span>
+        <span class="chain-step">Job interviews</span>
+        <span class="chain-arrow">&rarr;</span>
+        <span class="chain-step">Employment</span>
+        <span class="chain-arrow">&rarr;</span>
+        <span class="chain-step">Income stability</span>
+      </div>
+
+      <table style="margin-top: 1rem;">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Description</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Service</strong></td>
+            <td>Job Readiness Training (12 weeks)</td>
+            <td>Cohorts of 20, 3 intakes/year</td>
+          </tr>
+          <tr>
+            <td><strong>Activity</strong></td>
+            <td>Group skills workshops (3x/week)</td>
+            <td>216 sessions delivered</td>
+          </tr>
+          <tr>
+            <td><strong>Activity</strong></td>
+            <td>1:1 mentorship sessions (weekly)</td>
+            <td>126 sessions delivered</td>
+          </tr>
+          <tr>
+            <td><strong>Output</strong></td>
+            <td>Training sessions delivered</td>
+            <td>342 total (avg 14.9/participant)</td>
+          </tr>
+          <tr>
+            <td><strong>Output</strong></td>
+            <td>Job placements achieved</td>
+            <td>18 of 23 placed (12 FT, 6 PT)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Counterfactual -->
+  <div class="section">
+    <h3>Counterfactual: What Would Have Happened Without This Program?</h3>
+    <div class="counterfactual-card">
+      <h4>Baseline: Employment Ontario Services Only</h4>
+      <p>Without the program, participants would access basic Employment Ontario services (job boards, resume review) but not structured training or mentorship. Comparable GTA youth programs show 23% placement without structured support.</p>
+      <div class="comparison-highlight">
+        <span class="val-green" style="font-size: 1.5rem;">78%</span>
+        <span class="vs">with program</span>
+        <span style="font-size: 1.5rem;">vs.</span>
+        <span class="val-amber" style="font-size: 1.5rem;">23%</span>
+        <span class="vs">without</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risks -->
+  <div class="section">
+    <h3>Impact Risks &amp; Mitigations</h3>
+    <div class="risk-grid">
+      <div class="risk-card">
+        <h4>Economic downturn reduces available positions</h4>
+        <div class="risk-badges">
+          <span class="badge badge-medium">Likelihood: Medium</span>
+          <span class="badge badge-high">Severity: High</span>
+        </div>
+        <p>A recession could reduce entry-level positions, making placement harder despite participant readiness.</p>
+        <div class="mitigation">
+          <strong>Mitigation:</strong> Diversify employer partnerships across sectors (12 partners in retail, hospitality, tech, healthcare, nonprofit). Maintain relationships with social enterprises.
+        </div>
+      </div>
+      <div class="risk-card">
+        <h4>Participant attrition due to housing instability</h4>
+        <div class="risk-badges">
+          <span class="badge badge-medium">Likelihood: Medium</span>
+          <span class="badge badge-medium">Severity: Medium</span>
+        </div>
+        <p>Youth experiencing housing instability may not maintain consistent attendance in the 12-week program.</p>
+        <div class="mitigation">
+          <strong>Mitigation:</strong> Partner with 3 local shelters for transit passes and flexible scheduling. Offer hybrid attendance for participants in precarious housing.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stakeholders -->
+  <div class="section">
+    <h3>Who This Program Serves</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Stakeholder Group</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Youth aged 16-24, unemployed</strong></td>
+          <td>Unemployed youth in the Greater Toronto Area, including those with no prior work experience and those who have been laid off.</td>
+        </tr>
+        <tr>
+          <td><strong>Newcomer youth (arrived &lt;5 years)</strong></td>
+          <td>Youth who immigrated to Canada within the last 5 years and face additional barriers including language, credential recognition, and limited professional networks.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Attestation -->
+  <div class="attestation">
+    <h4>Evaluator Attestation</h4>
+    <p>
+      <span class="reviewer">Jennifer Martinez</span> &middot; March 5, 2026
+    </p>
+    <p style="margin-top: 0.5rem;">
+      "I have reviewed the evaluation framework and outcome data for the Bright Futures September 2025 cohort. The aggregate results accurately reflect our records. Individual participant data has been excluded from this export."
+    </p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Generated from CIDS Full Tier JSON-LD export &middot; KoNote &middot; Common Impact Data Standard v3.2.0<br>
+  All data is aggregate. No individual participant information is included in this report.
+</div>
+
+</body>
+</html>
