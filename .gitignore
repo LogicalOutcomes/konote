@@ -23,6 +23,7 @@ venv/
 # Environment
 .env
 *.env.local
+.env.staging
 konote-credentials-*
 
 # IDE

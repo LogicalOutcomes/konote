@@ -130,7 +130,7 @@
             {% endif %}
             {% has_permission "message.view" as can_see_messages %}
             {% if can_see_messages %}
-            <li><a href="{% url 'communications:my_messages' %}"{% if nav_active == "messages" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Messages" %}{% if unread_message_count %} <span class="badge badge-warning">{{ unread_message_count }}</span>{% endif %}</a></li>
+            <li><a id="nav-messages-link" href="{% url 'communications:my_messages' %}"{% if nav_active == "messages" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Messages" %}{% if unread_message_count %} <span id="messages-nav-badge" class="badge badge-warning">{{ unread_message_count }}</span>{% endif %}</a></li>
             {% endif %}
             {% if has_program_roles and not can_see_clients %}
             <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Dashboard" %}</a></li>

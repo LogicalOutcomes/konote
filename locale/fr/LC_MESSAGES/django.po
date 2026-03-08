@@ -15118,6 +15118,91 @@ msgstr "Évaluations du personnel"
 msgid "Staff Assessments Over Time"
 msgstr "Évaluations du personnel au fil du temps"
 
+# NOTE: These are blocktrans strings from templates/reports/_insights_basic.html.
+# translate_strings cannot reliably auto-extract every blocktrans variant, so
+# keep these msgids in sync manually if the English wording changes.
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "Participants: %(self_pct)s%% feel confident"
+msgstr "Participant(e)s : %(self_pct)s%% se sentent confiants"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "Staff: %(staff_pct)s%% rated \"good place\""
+msgstr "Personnel : %(staff_pct)s%% ont évalué \"bonne posture\""
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "Gap: +%(gap)s%% — participants more optimistic"
+msgstr "Écart : +%(gap)s%% — les participant(e)s sont plus optimistes"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "Gap: %(gap)s%% — staff more optimistic"
+msgstr "Écart : %(gap)s%% — le personnel est plus optimiste"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "n=%(n_self)s self-report, n=%(n_staff)s staff"
+msgstr "n=%(n_self)s autoévaluations, n=%(n_staff)s personnel"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "target: %(target)s%%"
+msgstr "cible : %(target)s%%"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(scored)s of %(enrolled)s enrolled have scores"
+msgstr "%(scored)s personnes inscrites sur %(enrolled)s ont des scores"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(count)s urgent"
+msgid_plural "%(count)s urgent"
+msgstr[0] "%(count)s urgent"
+msgstr[1] "%(count)s urgents"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(total)s suggestion this period"
+msgid_plural "%(total)s suggestions this period"
+msgstr[0] "%(total)s suggestion pendant cette période"
+msgstr[1] "%(total)s suggestions pendant cette période"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(addressed)s of %(total)s theme addressed"
+msgid_plural "%(addressed)s of %(total)s themes addressed"
+msgstr[0] "%(addressed)s thème traité sur %(total)s"
+msgstr[1] "%(addressed)s thèmes traités sur %(total)s"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(count)s suggestion not yet grouped into a theme"
+msgid_plural "%(count)s suggestions not yet grouped into a theme"
+msgstr[0] "%(count)s suggestion n'est pas encore regroupée dans un thème"
+msgstr[1] "%(count)s suggestions ne sont pas encore regroupées dans un thème"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(count)s Ungrouped Suggestion"
+msgid_plural "%(count)s Ungrouped Suggestions"
+msgstr[0] "%(count)s suggestion non regroupée"
+msgstr[1] "%(count)s suggestions non regroupées"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "%(count)s Addressed Theme"
+msgid_plural "%(count)s Addressed Themes"
+msgstr[0] "%(count)s thème traité"
+msgstr[1] "%(count)s thèmes traités"
+
+#: templates/reports/_insights_basic.html
+#, python-format
+msgid "Individual quotes are not shown for programs with fewer than %(count)s active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab."
+msgstr "Les citations individuelles ne sont pas affichées pour les programmes comptant moins de %(count)s participant(e)s actifs, afin de protéger la confidentialité. Les citations sont disponibles dans l'onglet Analyse de chaque participant(e)."
+
 msgid "Staff assessment trend data"
 msgstr "Données de tendance des évaluations du personnel"
 

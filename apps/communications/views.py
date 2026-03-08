@@ -4,6 +4,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core import signing
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -427,6 +428,28 @@ def mark_message_read(request, client_id, message_id):
         msg.read_at = timezone.now()
         msg.save(update_fields=["status", "read_at"])
 
+    cache.delete(f"unread_message_count_{request.user.pk}")
+
+    remaining_unread = None
+    if request.headers.get("HX-Request"):
+        from apps.clients.models import ClientProgramEnrolment
+        from apps.programs.access import get_user_program_ids
+
+        user_program_ids = set(get_user_program_ids(request.user))
+        accessible_client_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id__in=user_program_ids,
+                status="active",
+            ).values_list("client_file_id", flat=True)
+        )
+        remaining_unread = StaffMessage.objects.filter(
+            client_file_id__in=accessible_client_ids,
+            status="unread",
+        ).filter(
+            db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+        ).count()
+        cache.set(f"unread_message_count_{request.user.pk}", remaining_unread, 60)
+
     if request.headers.get("HX-Request"):
         # Use the correct card partial based on which page initiated the request
         current_url = request.headers.get("HX-Current-URL", "")
@@ -434,10 +457,15 @@ def mark_message_read(request, client_id, message_id):
             template = "communications/_my_message_card.html"
         else:
             template = "communications/_message_card.html"
-        return render(request, template, {
+        response = render(request, template, {
             "msg": msg,
             "client": client,
         })
+        if remaining_unread is not None:
+            response["HX-Trigger-After-Swap"] = json.dumps({
+                "messageRead": {"unreadCount": remaining_unread},
+            })
+        return response
 
     return redirect("communications:client_messages", client_id=client.pk)
 
