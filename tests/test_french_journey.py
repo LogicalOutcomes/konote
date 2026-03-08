@@ -444,8 +444,9 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
-        # Empty state (uses terminology-aware string)
-        self.assertContains(resp, "Ajouter la premi\u00e8re note")  # "Add the first note"
+        # Empty state — shows Log Contact / Detailed Note buttons in French
+        self.assertContains(resp, "Enregistrer un contact")  # "Log Contact"
+        self.assertContains(resp, "Note d\u00e9taill\u00e9e")  # "Detailed Note"
 
     def test_note_cancel_form_in_french(self):
         """Note cancellation form is in French."""

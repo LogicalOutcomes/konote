@@ -88,8 +88,11 @@ class EditableFilterTest(TestCase):
         self.http.login(username="staffuser", password="testpass123")
         resp = self.http.get("/participants/")
         self.assertEqual(resp.status_code, 200)
-        page_items = resp.context["page"].object_list
-        alice_item = next((i for i in page_items if "Alice" in i["name"]), None)
+        # User has Staff + PM roles → mixed-role layout uses caseload_data for staff programs
+        caseload = resp.context.get("caseload_data") or []
+        page = resp.context.get("page")
+        all_items = list(caseload) + (list(page.object_list) if page else [])
+        alice_item = next((i for i in all_items if "Alice" in i["name"]), None)
         self.assertIsNotNone(alice_item, "Alice should appear in the list")
         self.assertTrue(alice_item["can_edit_plan"], "Alice should have can_edit_plan=True")
 
@@ -97,8 +100,11 @@ class EditableFilterTest(TestCase):
         """Participants in a program where the user is PM have can_edit_plan=False."""
         self.http.login(username="staffuser", password="testpass123")
         resp = self.http.get("/participants/")
-        page_items = resp.context["page"].object_list
-        bob_item = next((i for i in page_items if "Bob" in i["name"]), None)
+        # User has Staff + PM roles → mixed-role layout uses oversight_page for PM programs
+        oversight = resp.context.get("oversight_page")
+        page = resp.context.get("page")
+        all_items = list(oversight.object_list if oversight else []) + (list(page.object_list) if page else [])
+        bob_item = next((i for i in all_items if "Bob" in i["name"]), None)
         self.assertIsNotNone(bob_item, "Bob should appear in the list")
         self.assertFalse(bob_item["can_edit_plan"], "Bob should have can_edit_plan=False (user is PM, not staff)")
 
