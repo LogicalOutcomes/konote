@@ -1719,6 +1719,140 @@ class CidsJsonLdExportTest(TestCase):
         self.assertEqual(theme["hasName"], "Education")
         self.assertEqual(theme["@id"], "urn:iris:theme:education")
 
+    # ── DQV data quality tests ────────────────────────────────────
+
+    def test_dqv_namespace_in_context(self):
+        """Export context includes dqv and oa namespaces."""
+        doc = self._run_export()
+        ctx = doc["@context"][1]
+        self.assertEqual(ctx["dqv"], "http://www.w3.org/ns/dqv#")
+        self.assertEqual(ctx["oa"], "http://www.w3.org/ns/oa#")
+
+    def test_indicator_report_has_dqv_quality_measurements(self):
+        """IndicatorReport nodes include dqv:hasQualityMeasurement."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityMeasurement", report)
+        measurements = report["dqv:hasQualityMeasurement"]
+        self.assertIsInstance(measurements, list)
+        self.assertTrue(len(measurements) >= 1)
+        # Should include observation density
+        density = next(
+            (m for m in measurements if m.get("dqv:isMeasurementOf") == "precision"),
+            None,
+        )
+        self.assertIsNotNone(density)
+        self.assertEqual(density["dqv:value"], 1.0)  # 1 observation / 1 participant
+
+    def test_response_rate_calculation(self):
+        """Reporting rate = reported / eligible participants."""
+        # Add a second eligible participant who did NOT report
+        client2 = ClientFile.objects.create()
+        client2.first_name = "Second"
+        client2.last_name = "Client"
+        client2.save()
+        section2 = PlanSection.objects.create(
+            client_file=client2, program=self.program,
+        )
+        target2 = PlanTarget(
+            plan_section=section2,
+            client_file=client2,
+        )
+        target2.name = "Second target"
+        target2.save()
+        PlanTargetMetric.objects.create(plan_target=target2, metric_def=self.metric)
+        # Now: 2 eligible, 1 reported → 50% reporting rate
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        measurements = report["dqv:hasQualityMeasurement"]
+        completeness = next(
+            (m for m in measurements
+             if m.get("dqv:isMeasurementOf") == "completeness"
+             and "numerator" in str(m)),
+            None,
+        )
+        self.assertIsNotNone(completeness)
+        self.assertEqual(completeness["dqv:value"], 50.0)
+        self.assertEqual(completeness["konote:numerator"], 1)
+        self.assertEqual(completeness["konote:denominator"], 2)
+
+    def test_evidence_type_annotation(self):
+        """Evidence type annotation describes how data is generated."""
+        self.metric.evidence_type = "staff_observed"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        self.assertIn("dqv:hasQualityAnnotation", report)
+        annotations = report["dqv:hasQualityAnnotation"]
+        ev_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "evidence_type"),
+            None,
+        )
+        self.assertIsNotNone(ev_ann)
+        self.assertEqual(ev_ann["konote:annotationCategory"], "staff_observed")
+
+    def test_measure_basis_with_instrument_name(self):
+        """Published validated measure includes instrument name in body."""
+        self.metric.measure_basis = "published_validated"
+        self.metric.instrument_name = "PHQ-9"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report["dqv:hasQualityAnnotation"]
+        basis_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "measure_basis"),
+            None,
+        )
+        self.assertIsNotNone(basis_ann)
+        self.assertEqual(basis_ann["konote:annotationCategory"], "published_validated")
+        self.assertIn("PHQ-9", basis_ann["oa:hasBody"]["rdf:value"])
+
+    def test_derivation_method_annotation(self):
+        """Derivation method annotation appears for coded qualitative."""
+        self.metric.derivation_method = "coded_from_qualitative"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report["dqv:hasQualityAnnotation"]
+        deriv_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "derivation_method"),
+            None,
+        )
+        self.assertIsNotNone(deriv_ann)
+        self.assertEqual(deriv_ann["konote:annotationCategory"], "coded_from_qualitative")
+
+    def test_no_annotations_when_fields_empty(self):
+        """No quality annotations when DQV descriptor fields are blank."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        # Default metric has no evidence_type, measure_basis, or derivation_method
+        self.assertNotIn("dqv:hasQualityAnnotation", report)
+
     def test_selected_taxonomy_lens_creates_code_nodes(self):
         CidsCodeList.objects.create(
             list_name="SDGImpacts",
@@ -1776,6 +1910,11 @@ def _make_metric(**kwargs):
         "achievement_options": None,
         "achievement_success_values": None,
         "target_rate": None,
+        "is_standardized_instrument": False,
+        "instrument_name": "",
+        "evidence_type": "",
+        "measure_basis": "",
+        "derivation_method": "",
     }
     defaults.update(kwargs)
     m = MagicMock(**defaults)

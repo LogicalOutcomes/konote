@@ -12,7 +12,7 @@ import json
 import math
 from statistics import mean, median, stdev
 
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.admin_settings.models import CidsCodeList, OrganizationProfile, TaxonomyMapping
@@ -325,6 +325,132 @@ def _compute_indicator_report(metric, values_qs, observation_count, program):
         )
 
 
+def _build_dqv_quality(metric, values_qs, observation_count, program, measures,
+                       eligible_count=None):
+    """Build DQV quality measurements and annotations for an IndicatorReport.
+
+    Follows the "describe, don't rank" principle: quality signals tell funders
+    *how* the data was generated so they can make contextual judgments.
+
+    Tier 1 — Quantitative measurements (computed automatically):
+      - Reporting rate (completeness): participants who reported / eligible
+      - Data parsability (completeness): % of values successfully parsed
+      - Observation density (precision): observations per participant
+
+    Tier 2 — Structured annotations (from MetricDefinition fields):
+      - Evidence type: how data is generated (self-report, staff-observed, etc.)
+      - Measure basis: how the measure was developed (published, custom, etc.)
+      - Derivation method: how the value was produced (when not a direct response)
+
+    Args:
+        eligible_count: Pre-computed eligible participant count for this metric.
+            Pass from a batched query to avoid per-metric DB hits.
+    """
+    quality_measurements = []
+    quality_annotations = []
+
+    # ── Tier 1: Quantitative measurements ───────────────────────────
+
+    # Reporting rate (completeness)
+    measures_by_type = {m.get("measureType"): m for m in measures}
+
+    participant_measure = measures_by_type.get("konote:participant_count")
+    if participant_measure:
+        reported = int(participant_measure["hasNumericalValue"])
+    else:
+        # Achievement metrics don't emit participant_count; count from queryset
+        reported = (
+            values_qs
+            .values_list(
+                "progress_note_target__plan_target__client_file_id", flat=True,
+            )
+            .distinct()
+            .count()
+        )
+
+    eligible = eligible_count if eligible_count is not None else (
+        PlanTargetMetric.objects.filter(
+            plan_target__plan_section__program=program,
+            metric_def=metric,
+            plan_target__status__in=["default", "completed"],
+        )
+        .values_list("plan_target__client_file_id", flat=True)
+        .distinct()
+        .count()
+    )
+
+    if eligible > 0 and reported > 0:
+        response_rate = round(reported / eligible * 100, 1)
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "completeness",
+            "dqv:value": response_rate,
+            "konote:numerator": reported,
+            "konote:denominator": eligible,
+            "konote:dimensionLabel": "Reporting rate (participants reported / eligible)",
+        })
+
+    # Data parsability (completeness, scale metrics only)
+    skipped_measure = measures_by_type.get("konote:skipped_unparseable")
+    if skipped_measure and observation_count > 0:
+        skipped = int(skipped_measure["hasNumericalValue"])
+        parseable = observation_count - skipped
+        parsability_rate = round(parseable / observation_count * 100, 1)
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "completeness",
+            "dqv:value": parsability_rate,
+            "konote:dimensionLabel": "Data parsability (% of values successfully parsed)",
+        })
+
+    # Observation density (precision)
+    if observation_count > 0 and reported > 0:
+        density = round(observation_count / reported, 1)
+        quality_measurements.append({
+            "@type": "dqv:QualityMeasurement",
+            "dqv:isMeasurementOf": "precision",
+            "dqv:value": density,
+            "konote:dimensionLabel": "Observation density (observations per participant)",
+            "konote:totalObservations": observation_count,
+            "konote:totalParticipants": reported,
+        })
+
+    # ── Tier 2: Structured descriptors ──────────────────────────────
+
+    _DESCRIPTOR_FIELDS = [
+        ("evidence_type", MetricDefinition.EVIDENCE_TYPE_CHOICES),
+        ("measure_basis", MetricDefinition.MEASURE_BASIS_CHOICES),
+        ("derivation_method", MetricDefinition.DERIVATION_METHOD_CHOICES),
+    ]
+    for field_name, choices in _DESCRIPTOR_FIELDS:
+        value = getattr(metric, field_name, "")
+        if not value:
+            continue
+        label = str(dict(choices).get(value, value))
+        # Include instrument name for published measures
+        if field_name == "measure_basis" and value in (
+            "published_validated", "published_adapted",
+        ):
+            instrument = getattr(metric, "instrument_name", "")
+            if instrument:
+                label = f"{label}: {instrument}"
+        quality_annotations.append({
+            "@type": "dqv:QualityAnnotation",
+            "oa:hasBody": {
+                "@type": "oa:TextualBody",
+                "rdf:value": label,
+            },
+            "oa:motivatedBy": "dqv:qualityAssessment",
+            "konote:annotationType": field_name,
+            "konote:annotationCategory": value,
+        })
+
+    return {
+        "dqv:hasQualityMeasurement": quality_measurements,
+        "dqv:hasQualityAnnotation": quality_annotations,
+    }
+
+
 def _build_address_node(org, org_id):
     if not all([
         org.street_address,
@@ -613,6 +739,19 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         )
 
         program_metrics = list(metric_queryset.filter(pk__in=metric_ids).distinct())
+
+        # Batch eligible participant counts per metric (avoids N+1 in DQV)
+        eligible_by_metric = dict(
+            PlanTargetMetric.objects.filter(
+                plan_target__plan_section__program=program,
+                metric_def__in=program_metrics,
+                plan_target__status__in=["default", "completed"],
+            )
+            .values("metric_def_id")
+            .annotate(eligible=Count("plan_target__client_file_id", distinct=True))
+            .values_list("metric_def_id", "eligible")
+        )
+
         outcome_indicator_refs = []
 
         for metric in program_metrics:
@@ -675,6 +814,16 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                     "value": measures,
                     "hasComment": comment,
                 }
+                # Add DQV data quality signals
+                dqv = _build_dqv_quality(
+                    metric, values_qs, observation_count, program, measures,
+                    eligible_count=eligible_by_metric.get(metric.pk),
+                )
+                if dqv.get("dqv:hasQualityMeasurement"):
+                    report_node["dqv:hasQualityMeasurement"] = dqv["dqv:hasQualityMeasurement"]
+                if dqv.get("dqv:hasQualityAnnotation"):
+                    report_node["dqv:hasQualityAnnotation"] = dqv["dqv:hasQualityAnnotation"]
+
                 indicator_node["hasIndicatorReport"] = [{"@id": report_id}]
                 add_node(report_node)
 
@@ -742,6 +891,8 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
         "@context": [
             CIDS_CONTEXT,
             {
+                "dqv": "http://www.w3.org/ns/dqv#",
+                "oa": "http://www.w3.org/ns/oa#",
                 "konote": "https://konote.ca/cids/extensions#",
                 "konote:mean": {"@id": "konote:mean", "@type": "@id"},
                 "konote:median": {"@id": "konote:median", "@type": "@id"},
@@ -758,6 +909,13 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 "konote:target_rate": {"@id": "konote:target_rate", "@type": "@id"},
                 "konote:target_high_band_percent": {"@id": "konote:target_high_band_percent", "@type": "@id"},
                 "konote:skipped_unparseable": {"@id": "konote:skipped_unparseable", "@type": "@id"},
+                "konote:numerator": {"@id": "konote:numerator"},
+                "konote:denominator": {"@id": "konote:denominator"},
+                "konote:dimensionLabel": {"@id": "konote:dimensionLabel"},
+                "konote:annotationType": {"@id": "konote:annotationType"},
+                "konote:annotationCategory": {"@id": "konote:annotationCategory"},
+                "konote:totalObservations": {"@id": "konote:totalObservations"},
+                "konote:totalParticipants": {"@id": "konote:totalParticipants"},
             },
         ],
         "@graph": graph,
