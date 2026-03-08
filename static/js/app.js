@@ -86,10 +86,11 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 })();
 
 // --- Link form error messages to their inputs (aria-describedby) ---
-// Scans for <small class="error"> and links the preceding input/select/textarea
+// Scans for <small class="error"> and <small class="badge-danger"> elements
+// and links the preceding input/select/textarea
 (function () {
     function linkErrorMessages() {
-        var errors = document.querySelectorAll("small.error");
+        var errors = document.querySelectorAll("small.error, small.badge-danger");
         errors.forEach(function (errorEl) {
             // Walk backwards through siblings to find the form control
             var sibling = errorEl.previousElementSibling;
