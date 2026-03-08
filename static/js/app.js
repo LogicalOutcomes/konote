@@ -1105,7 +1105,7 @@ document.addEventListener("click", function (event) {
     }
 
     function setup() {
-        watchModal("shortcuts-modal");
+        watchModal("page-help-modal");
     }
 
     if (document.readyState === "loading") {
@@ -1128,9 +1128,9 @@ document.addEventListener("click", function (event) {
         return tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable;
     }
 
-    function showShortcutsModal() {
-        var modal = document.getElementById("shortcuts-modal");
-        var backdrop = document.getElementById("shortcuts-backdrop");
+    function showPageHelpModal() {
+        var modal = document.getElementById("page-help-modal");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (modal && backdrop) {
             lastFocusedElement = document.activeElement;
             modal.hidden = false;
@@ -1139,9 +1139,9 @@ document.addEventListener("click", function (event) {
         }
     }
 
-    function hideShortcutsModal() {
-        var modal = document.getElementById("shortcuts-modal");
-        var backdrop = document.getElementById("shortcuts-backdrop");
+    function hidePageHelpModal() {
+        var modal = document.getElementById("page-help-modal");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (modal && backdrop) {
             modal.hidden = true;
             backdrop.hidden = true;
@@ -1202,7 +1202,7 @@ document.addEventListener("click", function (event) {
                 break;
 
             case "?":
-                showShortcutsModal();
+                showPageHelpModal();
                 return true;
         }
 
@@ -1218,7 +1218,7 @@ document.addEventListener("click", function (event) {
 
             // Escape closes modals
             if (e.key === "Escape") {
-                hideShortcutsModal();
+                hidePageHelpModal();
                 return;
             }
 
@@ -1242,22 +1242,22 @@ document.addEventListener("click", function (event) {
             }
         });
 
-        // Button to show shortcuts modal
-        var showBtn = document.getElementById("show-shortcuts");
+        // Button to show page help modal
+        var showBtn = document.getElementById("show-page-help");
         if (showBtn) {
-            showBtn.addEventListener("click", showShortcutsModal);
+            showBtn.addEventListener("click", showPageHelpModal);
         }
 
-        // Close shortcuts modal
-        var closeBtn = document.getElementById("close-shortcuts");
+        // Close page help modal
+        var closeBtn = document.getElementById("close-page-help");
         if (closeBtn) {
-            closeBtn.addEventListener("click", hideShortcutsModal);
+            closeBtn.addEventListener("click", hidePageHelpModal);
         }
 
         // Close modal when clicking backdrop
-        var backdrop = document.getElementById("shortcuts-backdrop");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (backdrop) {
-            backdrop.addEventListener("click", hideShortcutsModal);
+            backdrop.addEventListener("click", hidePageHelpModal);
         }
     }
 

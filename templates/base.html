@@ -314,7 +314,7 @@
                 <a href="https://github.com/gilliankerr/KoNote" target="_blank" rel="noopener">GitHub</a>
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
-                <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
+                <button type="button" class="keyboard-shortcuts-btn" id="show-page-help" aria-label="{% trans 'Page help' %}">?</button>
                 {% include "_lang_toggle.html" with inline=True form_class="footer-lang-form" %}
             </div>
             {% if user.is_authenticated %}
@@ -329,27 +329,26 @@
         </div>
     </footer>
 
-    <!-- Keyboard shortcuts modal -->
-    <div class="modal-backdrop" id="shortcuts-backdrop" hidden></div>
-    <div class="keyboard-shortcuts-modal" id="shortcuts-modal" hidden role="dialog" aria-labelledby="shortcuts-title" aria-modal="true" tabindex="-1">
-        <button type="button" class="modal-close" id="close-shortcuts" aria-label="{% trans 'Close' %}">&times;</button>
-        <h2 id="shortcuts-title">{% trans "Keyboard Shortcuts" %}</h2>
-        <dl>
-            <dt>/</dt>
-            <dd>{% trans "Focus search" %}</dd>
-            <dt>g h</dt>
-            <dd>{% trans "Go to Home" %}</dd>
-            <dt>g m</dt>
-            <dd>{% trans "Go to Meetings" %}</dd>
-            <dt>n</dt>
-            <dd>{% blocktrans with client=term.client %}New quick note (on {{ client }} page){% endblocktrans %}</dd>
-            <dt>Ctrl+S</dt>
-            <dd>{% trans "Save current form" %}</dd>
-            <dt>Esc</dt>
-            <dd>{% trans "Close modal / Cancel" %}</dd>
-            <dt>?</dt>
-            <dd>{% trans "Show this help" %}</dd>
-        </dl>
+    <!-- Contextual page help modal -->
+    <div class="modal-backdrop" id="page-help-backdrop" hidden></div>
+    <div class="page-help-modal" id="page-help-modal" hidden role="dialog" aria-labelledby="page-help-title" aria-modal="true" tabindex="-1">
+        <button type="button" class="modal-close" id="close-page-help" aria-label="{% trans 'Close' %}">&times;</button>
+        {% if page_help %}
+        <h2 id="page-help-title">{{ page_help.title }}</h2>
+        <p class="page-help-description">{{ page_help.description }}</p>
+        <ul class="page-help-tips">
+            {% for tip in page_help.tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+        {% if page_help.help_section %}
+        <p class="page-help-more"><a href="{% url 'help' %}#{{ page_help.help_section }}">{% trans "Read more in the Help Guide" %} &rarr;</a></p>
+        {% endif %}
+        {% else %}
+        <h2 id="page-help-title">{% trans "Help" %}</h2>
+        <p class="page-help-description">{% trans "Visit the Help Guide for detailed information about using KoNote." %}</p>
+        <p class="page-help-more"><a href="{% url 'help' %}">{% trans "Open Help Guide" %} &rarr;</a></p>
+        {% endif %}
     </div>
 
     <!-- HTMX — dynamic interactions without a JS framework -->

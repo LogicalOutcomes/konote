@@ -3866,8 +3866,8 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-primary);
 }
 
-/* Keyboard shortcuts modal */
-.keyboard-shortcuts-modal {
+/* Page help modal */
+.page-help-modal {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -3878,41 +3878,49 @@ article[aria-label="notification"].fading-out {
     box-shadow: var(--kn-shadow-card-hover);
     padding: var(--kn-space-lg);
     z-index: 10000;
-    max-width: 400px;
+    max-width: 420px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
 }
 
-.keyboard-shortcuts-modal h2 {
+.page-help-modal h2 {
+    margin: 0 0 var(--kn-space-sm) 0;
+    font-size: 1.1rem;
+}
+
+.page-help-description {
     margin: 0 0 var(--kn-space-base) 0;
-    font-size: 1rem;
-}
-
-.keyboard-shortcuts-modal dl {
-    margin: 0;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--kn-space-xs) var(--kn-space-base);
-    align-items: baseline;
-}
-
-.keyboard-shortcuts-modal dt {
-    font-family: monospace;
-    font-size: 0.8125rem;
-    background: var(--kn-primary-subtle);
-    padding: 0.125rem 0.375rem;
-    border-radius: 3px;
-    white-space: nowrap;
-}
-
-.keyboard-shortcuts-modal dd {
-    margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--kn-text-secondary);
 }
 
-.keyboard-shortcuts-modal .modal-close {
+.page-help-tips {
+    margin: 0 0 var(--kn-space-base) 0;
+    padding-left: 1.25rem;
+}
+
+.page-help-tips li {
+    font-size: 0.875rem;
+    margin-bottom: var(--kn-space-xs);
+    color: var(--kn-text);
+}
+
+.page-help-more {
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.page-help-more a {
+    color: var(--kn-primary);
+    text-decoration: none;
+}
+
+.page-help-more a:hover {
+    text-decoration: underline;
+}
+
+.page-help-modal .modal-close {
     position: absolute;
     top: var(--kn-space-sm);
     right: var(--kn-space-sm);
@@ -3925,7 +3933,7 @@ article[aria-label="notification"].fading-out {
     line-height: 1;
 }
 
-.keyboard-shortcuts-modal .modal-close:hover {
+.page-help-modal .modal-close:hover {
     color: var(--kn-text);
 }
 
@@ -3937,7 +3945,7 @@ article[aria-label="notification"].fading-out {
 }
 
 .modal-backdrop[hidden],
-.keyboard-shortcuts-modal[hidden] {
+.page-help-modal[hidden] {
     display: none;
 }
 
