@@ -5600,6 +5600,9 @@ msgstr ""
 "Votre rapport HTML est prêt à télécharger. Vous pouvez l'ouvrir dans "
 "n'importe quel navigateur web ou le partager directement."
 
+msgid "Your JSON-LD file is ready to download."
+msgstr "Votre fichier JSON-LD est prêt à télécharger."
+
 msgid ""
 "Your CSV file is ready to download. You can open it in Excel or Google "
 "Sheets."
@@ -5612,6 +5615,9 @@ msgstr "Télécharger le rapport PDF"
 
 msgid "Download HTML Report"
 msgstr "Télécharger le rapport HTML"
+
+msgid "Download JSON-LD File"
+msgstr "Télécharger le fichier JSON-LD"
 
 msgid "Download CSV File"
 msgstr "Télécharger le fichier CSV"

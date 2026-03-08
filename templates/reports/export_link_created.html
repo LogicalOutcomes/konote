@@ -36,6 +36,8 @@
         {% trans "Your PDF report is ready to download." %}
         {% elif is_html %}
         {% trans "Your HTML report is ready to download. You can open it in any web browser or share it directly." %}
+        {% elif is_json %}
+        {% trans "Your JSON-LD file is ready to download." %}
         {% else %}
         {% trans "Your CSV file is ready to download. You can open it in Excel or Google Sheets." %}
         {% endif %}
@@ -48,6 +50,8 @@
     <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF Report" %}
     {% elif is_html %}
     <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download HTML Report" %}
+    {% elif is_json %}
+    <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download JSON-LD File" %}
     {% else %}
     <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV File" %}
     {% endif %}

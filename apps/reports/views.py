@@ -1000,6 +1000,7 @@ def export_form(request):
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
         "is_html": export_format == "html",
+        "is_json": export_format == "cids_json",
     })
 
 
@@ -1642,6 +1643,7 @@ def funder_report_approve(request):
         "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
         "is_html": export_format == "html",
+        "is_json": export_format == "cids_json",
         "agency_notes": agency_notes,
     })
 
@@ -1785,6 +1787,7 @@ def generate_report_form(request):
         "program_name": template.partner.translated_name,
         "is_pdf": export_format == "pdf",
         "is_html": export_format == "html",
+        "is_json": export_format == "cids_json",
     })
 
 
