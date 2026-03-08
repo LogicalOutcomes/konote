@@ -21597,10 +21597,6 @@ msgid "Overdue meetings (past date, not completed) appear at the top."
 msgstr "Les rencontres en retard (date passée, non complétées) apparaissent en haut."
 
 #. page_help.py
-msgid "New Alert"
-msgstr "Nouvelle alerte"
-
-#. page_help.py
 msgid "Create an alert that flags something needing follow-up for this {client}."
 msgstr "Créer une alerte signalant quelque chose qui nécessite un suivi pour ce(tte) {client}."
 
@@ -21629,10 +21625,6 @@ msgid "You can export this as a PDF to share with the {client} or their team."
 msgstr "Vous pouvez l’exporter en PDF pour le partager avec le/la {client} ou son équipe."
 
 #. page_help.py
-msgid "Outcome Insights"
-msgstr "Aperçu des résultats"
-
-#. page_help.py
 msgid "Program-level view of how outcomes are tracking across all {client_plural}."
 msgstr "Vue au niveau du programme montrant comment les résultats évoluent pour tous les {client_plural}."
 
@@ -21645,10 +21637,6 @@ msgid "Distribution charts show how {client_plural} are spread across score rang
 msgstr "Les graphiques de distribution montrent comment les {client_plural} sont répartis dans les plages de scores."
 
 #. page_help.py
-msgid "Generate Report"
-msgstr "Générer un rapport"
-
-#. page_help.py
 msgid "Create a formatted report using one of your agency's report templates."
 msgstr "Créez un rapport formaté en utilisant l’un des modèles de rapport de votre organisme."
 
@@ -21659,10 +21647,6 @@ msgstr "Choisissez un modèle, sélectionnez la période et les programmes, puis
 #. page_help.py
 msgid "Reports can be exported as Word documents or PDFs."
 msgstr "Les rapports peuvent être exportés en documents Word ou PDF."
-
-#. page_help.py
-msgid "Executive Dashboard"
-msgstr "Tableau de bord exécutif"
 
 #. page_help.py
 msgid "High-level summary of agency activity — {client} counts, note volumes, and alerts."
@@ -21749,10 +21733,6 @@ msgid "Changes are logged in the audit trail."
 msgstr "Les modifications sont consignées dans le journal de vérification."
 
 #. page_help.py
-msgid "Discharge"
-msgstr "Congé"
-
-#. page_help.py
 msgid "End this {client}'s active enrolment."
 msgstr "Mettre fin à l’inscription active de ce(tte) {client}."
 
@@ -21763,10 +21743,6 @@ msgstr "Vous pouvez ajouter une raison de congé et des notes de clôture."
 #. page_help.py
 msgid "Discharged {client_plural} can be re-enrolled later if needed."
 msgstr "Les {client_plural} ayant reçu leur congé peuvent être réinscrits ultérieurement si nécessaire."
-
-#. page_help.py
-msgid "Transfer"
-msgstr "Transfert"
 
 #. page_help.py
 msgid "Move this {client} to a different program."
@@ -21823,10 +21799,6 @@ msgstr "Chaque utilisateur a besoin d’au moins un rôle de programme pour acc�
 #. page_help.py
 msgid "Admins can see all programs; other roles only see their assigned programs."
 msgstr "Les administrateurs peuvent voir tous les programmes; les autres rôles ne voient que leurs programmes assignés."
-
-#. page_help.py
-msgid "Audit Log"
-msgstr "Journal de vérification"
 
 #. page_help.py
 msgid "Record of all significant actions taken in the system."
