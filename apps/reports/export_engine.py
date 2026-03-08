@@ -309,15 +309,7 @@ def generate_template_report(template, date_from, date_to, period_label,
             if not all_demographic_labels:
                 all_demographic_labels = list(demo_groups.keys())
 
-    # Use the first program's data for now (multi-program merge is future work)
-    if len(programs) > 1:
-        logger.warning(
-            "Template %r spans %d programs but only %r is included in report. "
-            "Multi-program aggregation is not yet implemented.",
-            template.name, len(programs), programs[0].name,
-        )
-    _program, report_data = all_report_data[0]
-    metric_results = all_metric_results[0] if all_metric_results else []
+    is_multi_program = len(programs) > 1
 
     safe_partner = sanitise_filename(template.partner.name.replace(" ", "_"))
     safe_period = sanitise_filename(period_label.replace(" ", "_"))
@@ -329,26 +321,177 @@ def generate_template_report(template, date_from, date_to, period_label,
         ).order_by("sort_order")
     )
 
-    if export_format == "pdf":
-        from .pdf_views import generate_funder_report_pdf
-        pdf_response = generate_funder_report_pdf(
-            request, report_data,
-            sections=sections if sections else None,
-            metric_results=metric_results if metric_results else None,
+    if is_multi_program:
+        content, filename = _render_multi_program(
+            template=template,
+            all_report_data=all_report_data,
+            all_metric_results=all_metric_results,
+            all_demographic_labels=all_demographic_labels,
+            sections=sections,
+            has_aggregation=has_aggregation,
+            period_label=period_label,
+            date_from=date_from,
+            date_to=date_to,
+            user=user,
+            request=request,
+            export_format=export_format,
+            taxonomy_lens=taxonomy_lens,
+            report_metrics=report_metrics,
+            safe_partner=safe_partner,
+            safe_period=safe_period,
         )
-        filename = f"Report_{safe_partner}_{safe_period}.pdf"
-        content = pdf_response.content
-    elif export_format == "html":
+    else:
+        _program, report_data = all_report_data[0]
+        metric_results = all_metric_results[0] if all_metric_results else []
+
+        if export_format == "pdf":
+            from .pdf_views import generate_funder_report_pdf
+            pdf_response = generate_funder_report_pdf(
+                request, report_data,
+                sections=sections if sections else None,
+                metric_results=metric_results if metric_results else None,
+            )
+            filename = f"Report_{safe_partner}_{safe_period}.pdf"
+            content = pdf_response.content
+        elif export_format == "html":
+            from .pdf_utils import render_html_string
+            html_template = _get_html_template_name(template)
+            html_context = _build_html_context(
+                report_data, sections, metric_results, template, user,
+            )
+            content = render_html_string(html_template, html_context)
+            filename = f"Report_{safe_partner}_{safe_period}.html"
+        elif export_format == "cids_json":
+            document = build_cids_jsonld_document(
+                programs=[_program],
+                taxonomy_lens=taxonomy_lens,
+                date_from=date_from,
+                date_to=date_to,
+                metric_definitions=[rm.metric_definition for rm in report_metrics] if report_metrics else None,
+            )
+            content = json.dumps(document, indent=2, ensure_ascii=False)
+            filename = f"Report_{safe_partner}_{safe_period}.jsonld"
+        else:
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+
+            if has_aggregation and metric_results:
+                csv_rows = generate_template_csv_rows(
+                    template, report_data, metric_results,
+                    all_demographic_labels, period_label, user,
+                )
+            else:
+                csv_rows = generate_funder_report_csv_rows(report_data)
+
+            for row in csv_rows:
+                writer.writerow(sanitise_csv_row(row))
+            filename = f"Report_{safe_partner}_{safe_period}.csv"
+            content = csv_buffer.getvalue()
+
+    return content, filename, total_client_count
+
+
+def _render_multi_program(
+    *,
+    template,
+    all_report_data,
+    all_metric_results,
+    all_demographic_labels,
+    sections,
+    has_aggregation,
+    period_label,
+    date_from,
+    date_to,
+    user,
+    request,
+    export_format,
+    taxonomy_lens,
+    report_metrics,
+    safe_partner,
+    safe_period,
+):
+    """Render a report that spans multiple programs.
+
+    Produces per-program sections with an organisation-level summary.
+    """
+    from .utils import aggregate_all_programs_totals
+
+    display_name = getattr(user, "display_name", str(user)) if user else ""
+    threshold = getattr(template, "suppression_threshold", SMALL_CELL_THRESHOLD)
+
+    # Build programs list with metric_results attached
+    programs_with_data = []
+    for i, (prog, rd) in enumerate(all_report_data):
+        entry = {"name": prog.name, "report_data": rd}
+        if all_metric_results and i < len(all_metric_results):
+            entry["metric_results"] = all_metric_results[i]
+        programs_with_data.append(entry)
+
+    totals = aggregate_all_programs_totals(all_report_data)
+    # Remove 'programs' from totals to avoid overwriting programs_with_data
+    # (which includes metric_results and chart_images)
+    totals.pop("programs", None)
+
+    if sections:
+        logger.info(
+            "Template %r has %d ReportSection(s); multi-program reports "
+            "use a summary layout — section-driven content (narrative, "
+            "standards alignment) is included per program.",
+            template.name, len(sections),
+        )
+
+    if export_format in ("html", "pdf"):
         from .pdf_utils import render_html_string
-        html_template = _get_html_template_name(template)
-        html_context = _build_html_context(
-            report_data, sections, metric_results, template, user,
-        )
-        content = render_html_string(html_template, html_context)
-        filename = f"Report_{safe_partner}_{safe_period}.html"
+        from .chart_utils import generate_metric_charts, is_chart_available
+
+        # Generate charts per program
+        if is_chart_available():
+            for prog_entry in programs_with_data:
+                mr = prog_entry.get("metric_results")
+                if mr:
+                    prog_entry["chart_images"] = generate_metric_charts(mr)
+
+        html_context = {
+            "partner_name": template.partner.translated_name,
+            "template_name": template.name,
+            "period_label": period_label,
+            "generated_at": timezone.now().strftime("%Y-%m-%d"),
+            "generated_by": display_name,
+            "programs": programs_with_data,
+            "sections": sections,
+            "suppression_threshold": threshold,
+            **totals,
+        }
+
+        if export_format == "pdf":
+            from .pdf_utils import is_pdf_available
+            if is_pdf_available():
+                from weasyprint import HTML as WeasyHTML
+                html_str = render_html_string(
+                    "reports/html_report_multi_program.html", html_context,
+                )
+                pdf_bytes = WeasyHTML(string=html_str).write_pdf()
+                content = pdf_bytes
+                filename = f"Report_{safe_partner}_{safe_period}.pdf"
+            else:
+                # WeasyPrint not available — fall back to HTML with correct extension
+                content = render_html_string(
+                    "reports/html_report_multi_program.html", html_context,
+                )
+                filename = f"Report_{safe_partner}_{safe_period}.html"
+                logger.warning(
+                    "WeasyPrint not available; multi-program PDF exported as HTML.",
+                )
+        else:
+            content = render_html_string(
+                "reports/html_report_multi_program.html", html_context,
+            )
+            filename = f"Report_{safe_partner}_{safe_period}.html"
+
     elif export_format == "cids_json":
+        all_programs = [prog for prog, _rd in all_report_data]
         document = build_cids_jsonld_document(
-            programs=[_program],
+            programs=all_programs,
             taxonomy_lens=taxonomy_lens,
             date_from=date_from,
             date_to=date_to,
@@ -356,26 +499,50 @@ def generate_template_report(template, date_from, date_to, period_label,
         )
         content = json.dumps(document, indent=2, ensure_ascii=False)
         filename = f"Report_{safe_partner}_{safe_period}.jsonld"
+
     else:
+        # CSV: per-program sections
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
 
-        if has_aggregation and metric_results:
-            # Use DRR-specified metric-rows × demographic-columns format
-            csv_rows = generate_template_csv_rows(
-                template, report_data, metric_results,
-                all_demographic_labels, period_label, user,
-            )
-        else:
-            # Fall back to legacy format when no ReportMetric records
-            csv_rows = generate_funder_report_csv_rows(report_data)
+        # Organisation summary header
+        writer.writerow(sanitise_csv_row([
+            f"{_('Report')}: {template.partner.translated_name} — {template.name}",
+        ]))
+        writer.writerow(sanitise_csv_row([
+            f"{_('Period')}: {period_label}",
+        ]))
+        writer.writerow(sanitise_csv_row([
+            f"{_('Programs')}: {len(all_report_data)}",
+        ]))
+        writer.writerow(sanitise_csv_row([
+            f"{_('Total Individuals Served')}: {totals['total_served']}",
+        ]))
+        writer.writerow([])
 
-        for row in csv_rows:
-            writer.writerow(sanitise_csv_row(row))
+        for i, (prog, rd) in enumerate(all_report_data):
+            metric_results = all_metric_results[i] if all_metric_results and i < len(all_metric_results) else []
+
+            if has_aggregation and metric_results:
+                csv_rows = generate_template_csv_rows(
+                    template, rd, metric_results,
+                    all_demographic_labels, period_label, user,
+                )
+            else:
+                csv_rows = generate_funder_report_csv_rows(rd)
+
+            # Override the program name row
+            writer.writerow(sanitise_csv_row([
+                f"{'=' * 40} {prog.name} {'=' * 40}",
+            ]))
+            for row in csv_rows:
+                writer.writerow(sanitise_csv_row(row))
+            writer.writerow([])
+
         filename = f"Report_{safe_partner}_{safe_period}.csv"
         content = csv_buffer.getvalue()
 
-    return content, filename, total_client_count
+    return content, filename
 
 
 def _get_html_template_name(template):

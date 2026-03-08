@@ -998,8 +998,7 @@ def export_form(request):
         "download_url": download_url,
         "download_path": download_path,
         "program_name": str(program_display_name),
-        "is_pdf": export_format == "pdf",
-        "is_html": export_format == "html",
+        "export_format": export_format,
     })
 
 
@@ -1640,8 +1639,7 @@ def funder_report_approve(request):
         "download_url": download_url,
         "download_path": download_path,
         "program_name": str(program_display_name),
-        "is_pdf": export_format == "pdf",
-        "is_html": export_format == "html",
+        "export_format": export_format,
         "agency_notes": agency_notes,
     })
 
@@ -1698,18 +1696,6 @@ def generate_report_form(request):
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
     taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
-
-    # Warn if template spans multiple programs (only first is used)
-    template_programs = list(template.partner.get_programs())
-    if len(template_programs) > 1:
-        from django.contrib import messages as msg
-        msg.warning(
-            request,
-            _("This report covers multiple programs but currently "
-              "only includes data from %(program)s. Multi-program reports "
-              "are coming soon.")
-            % {"program": template_programs[0].name},
-        )
 
     from .export_engine import generate_template_report
     try:
@@ -1783,8 +1769,7 @@ def generate_report_form(request):
         "download_url": download_url,
         "download_path": download_path,
         "program_name": template.partner.translated_name,
-        "is_pdf": export_format == "pdf",
-        "is_html": export_format == "html",
+        "export_format": export_format,
     })
 
 

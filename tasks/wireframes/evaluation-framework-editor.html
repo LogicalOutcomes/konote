@@ -38,7 +38,8 @@
     }
     body { background: var(--kn-page-bg); }
 
-    .breadcrumb { list-style: none; display: flex; gap: 0.5rem; padding: 0; margin-bottom: 1rem; font-size: 0.9rem; }
+    .breadcrumb { list-style: none !important; display: flex; gap: 0.5rem; padding: 0 !important; margin-bottom: 1rem; font-size: 0.9rem; }
+    .breadcrumb li { list-style: none; padding: 0; margin: 0; }
     .breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; color: var(--kn-text-muted); }
 
     .wireframe-banner {
