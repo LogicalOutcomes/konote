@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime, time
 import json
+import math
+from statistics import mean, median, stdev
 
 from django.db.models import Q
 from django.utils import timezone
@@ -37,6 +39,290 @@ def _note_date_q(prefix, date_from=None, date_to=None):
 
 def _normalise_note_date(backdate, created_at):
     return backdate or created_at or timezone.now()
+
+
+# ── IndicatorReport aggregation helpers ─────────────────────────────
+
+
+def _parse_numeric_values(values_qs):
+    """Extract numeric values from MetricValue queryset, skipping unparseable.
+
+    Returns (nums, skipped_count) so callers can report data quality.
+    """
+    nums = []
+    skipped = 0
+    for mv in values_qs:
+        try:
+            nums.append(float(mv.value))
+        except (ValueError, TypeError):
+            skipped += 1
+    return nums, skipped
+
+
+def _group_by_participant(values_qs):
+    """Group metric values by participant, ordered by date within each group."""
+    by_participant = defaultdict(list)
+    for mv in values_qs:
+        client_id = mv.progress_note_target.plan_target.client_file_id
+        note_date = _normalise_note_date(
+            mv.progress_note_target.progress_note.backdate,
+            mv.progress_note_target.progress_note.created_at,
+        )
+        by_participant[client_id].append((note_date, mv.value))
+    # Sort each participant's observations by date
+    for client_id in by_participant:
+        by_participant[client_id].sort(key=lambda x: x[0])
+    return by_participant
+
+
+def _compute_achievement_report(metric, values_qs, observation_count, program):
+    """Compute aggregate statistics for achievement metrics.
+
+    Achievement metrics have categorical values (e.g., "Employed", "In training").
+    MetricDefinition.achievement_success_values defines which count as achieved.
+    """
+    success_values = set(metric.achievement_success_values or [])
+    all_values = [mv.value for mv in values_qs]
+
+    # Distribution: count per option
+    distribution = defaultdict(int)
+    for v in all_values:
+        distribution[v] += 1
+
+    # Latest value per participant (most recent observation wins)
+    by_participant = _group_by_participant(values_qs)
+    participants = len(by_participant)
+    latest_values = [observations[-1][1] for observations in by_participant.values()]
+
+    achieved = sum(1 for v in latest_values if v in success_values)
+    success_rate = (achieved / participants * 100) if participants else 0
+
+    measures = [
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(success_rate, 1)),
+            "hasUnit": {"@value": "percent"},
+            "measureType": "konote:success_rate",
+        },
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(achieved),
+            "hasUnit": {"@value": f"of {participants} participants"},
+            "measureType": "konote:count_achieved",
+        },
+    ]
+
+    # Distribution breakdown (for bar/pie charts)
+    distribution_items = []
+    for option in (metric.achievement_options or []):
+        count = distribution.get(option, 0)
+        distribution_items.append({
+            "label": option,
+            "count": count,
+            "percent": round(count / observation_count * 100, 1) if observation_count else 0,
+            "isSuccess": option in success_values,
+        })
+
+    if distribution_items:
+        measures.append({
+            "@type": "i72:Measure",
+            "measureType": "konote:distribution",
+            "distribution": distribution_items,
+        })
+
+    # Target comparison
+    if metric.target_rate is not None:
+        measures.append({
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(metric.target_rate),
+            "hasUnit": {"@value": "percent"},
+            "measureType": "konote:target_rate",
+        })
+
+    comment = (
+        f"{achieved} of {participants} participants achieved "
+        f"({round(success_rate, 1)}%) for {metric.name} in {program.name}"
+    )
+    if metric.target_rate is not None:
+        comment += f" (target: {metric.target_rate}%)"
+
+    return measures, comment
+
+
+def _compute_scale_report(metric, values_qs, observation_count, program):
+    """Compute aggregate statistics for scale metrics.
+
+    Scale metrics have numeric values recorded repeatedly over time.
+    Computes central tendency, spread, band distribution, and pre/post change.
+    """
+    nums, skipped = _parse_numeric_values(values_qs)
+    if not nums:
+        return (
+            [{"@type": "i72:Measure", "hasNumericalValue": str(observation_count),
+              "measureType": "konote:observation_count"}],
+            f"{observation_count} observations for {metric.name} in {program.name} (no parseable values)",
+        )
+
+    avg = mean(nums)
+    med = median(nums)
+    lo = min(nums)
+    hi = max(nums)
+
+    measures = [
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(avg, 2)),
+            "hasUnit": {"@value": metric.unit or "score"},
+            "measureType": "konote:mean",
+        },
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(med, 2)),
+            "hasUnit": {"@value": metric.unit or "score"},
+            "measureType": "konote:median",
+        },
+    ]
+
+    # Only emit SD when there are enough values for it to be meaningful
+    if len(nums) >= 2:
+        sd = stdev(nums)
+        measures.append({
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(sd, 2)),
+            "measureType": "konote:standard_deviation",
+        })
+    else:
+        sd = None
+
+    measures.extend([
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(lo, 2)),
+            "measureType": "konote:minimum",
+        },
+        {
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(round(hi, 2)),
+            "measureType": "konote:maximum",
+        },
+    ])
+
+    # Report skipped (unparseable) values so consumers know about data quality
+    if skipped:
+        measures.append({
+            "@type": "i72:Measure",
+            "hasNumericalValue": str(skipped),
+            "measureType": "konote:skipped_unparseable",
+        })
+
+    # Band distribution (low / medium / high) for stacked bar or donut charts
+    if metric.threshold_low is not None and metric.threshold_high is not None:
+        low_count = sum(1 for v in nums if v < metric.threshold_low)
+        mid_count = sum(1 for v in nums if metric.threshold_low <= v < metric.threshold_high)
+        high_count = sum(1 for v in nums if v >= metric.threshold_high)
+        total = len(nums)
+        measures.append({
+            "@type": "i72:Measure",
+            "measureType": "konote:band_distribution",
+            "distribution": [
+                {"label": "Low", "count": low_count, "percent": round(low_count / total * 100, 1)},
+                {"label": "Medium", "count": mid_count, "percent": round(mid_count / total * 100, 1)},
+                {"label": "High", "count": high_count, "percent": round(high_count / total * 100, 1)},
+            ],
+        })
+        if metric.target_band_high_pct is not None:
+            measures.append({
+                "@type": "i72:Measure",
+                "hasNumericalValue": str(metric.target_band_high_pct),
+                "hasUnit": {"@value": "percent"},
+                "measureType": "konote:target_high_band_percent",
+            })
+
+    # Pre/post analysis: first and last observation per participant
+    by_participant = _group_by_participant(values_qs)
+    participants_with_multiple = {
+        cid: obs for cid, obs in by_participant.items() if len(obs) >= 2
+    }
+    if participants_with_multiple:
+        first_values = []
+        last_values = []
+        improved_count = 0
+        for cid, obs in participants_with_multiple.items():
+            try:
+                first_val = float(obs[0][1])
+                last_val = float(obs[-1][1])
+            except (ValueError, TypeError):
+                continue
+            first_values.append(first_val)
+            last_values.append(last_val)
+            if metric.higher_is_better:
+                if last_val > first_val:
+                    improved_count += 1
+            else:
+                if last_val < first_val:
+                    improved_count += 1
+
+        if first_values:
+            pre_mean = mean(first_values)
+            post_mean = mean(last_values)
+            n_compared = len(first_values)
+            improvement_rate = round(improved_count / n_compared * 100, 1)
+
+            # Effect size (Cohen's d) — useful for bubble charts comparing
+            # programs: x = cohort size, y = effect size, bubble = success rate
+            pooled_sd = None
+            if n_compared >= 2:
+                pre_sd = stdev(first_values) if len(first_values) >= 2 else 0.0
+                post_sd = stdev(last_values) if len(last_values) >= 2 else 0.0
+                pooled_var = (pre_sd ** 2 + post_sd ** 2) / 2
+                pooled_sd = math.sqrt(pooled_var) if pooled_var > 0 else None
+
+            measures.append({
+                "@type": "i72:Measure",
+                "measureType": "konote:pre_post_change",
+                "preMean": round(pre_mean, 2),
+                "postMean": round(post_mean, 2),
+                "participantsCompared": n_compared,
+                "improvedCount": improved_count,
+                "improvementRate": improvement_rate,
+                **({"effectSize": round((post_mean - pre_mean) / pooled_sd, 2)}
+                   if pooled_sd else {}),
+            })
+
+    # Participants count (useful as bubble size dimension)
+    measures.append({
+        "@type": "i72:Measure",
+        "hasNumericalValue": str(len(by_participant)),
+        "measureType": "konote:participant_count",
+    })
+
+    comment_parts = [
+        f"Mean {round(avg, 2)}, median {round(med, 2)}",
+        f"SD {round(sd, 2)}" if sd is not None else None,
+        f"range {round(lo, 2)}–{round(hi, 2)}" if lo != hi else None,
+        f"n={len(by_participant)} participants",
+    ]
+    comment = f"{metric.name} in {program.name}: " + ", ".join(p for p in comment_parts if p)
+
+    if participants_with_multiple and first_values:
+        comment += f". Pre/post: {round(pre_mean, 2)} → {round(post_mean, 2)}, {improvement_rate}% improved"
+
+    return measures, comment
+
+
+def _compute_indicator_report(metric, values_qs, observation_count, program):
+    """Dispatch to the right aggregation based on metric type."""
+    if metric.metric_type == "achievement":
+        return _compute_achievement_report(metric, values_qs, observation_count, program)
+    elif metric.metric_type == "scale":
+        return _compute_scale_report(metric, values_qs, observation_count, program)
+    else:
+        # Open text — count is the only meaningful aggregate
+        return (
+            [{"@type": "i72:Measure", "hasNumericalValue": str(observation_count),
+              "measureType": "konote:observation_count"}],
+            f"{observation_count} recorded observations for {metric.name} in {program.name}",
+        )
 
 
 def _build_address_node(org, org_id):
@@ -356,7 +642,10 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 metric_def=metric,
                 progress_note_target__plan_target__plan_section__program=program,
                 progress_note_target__progress_note__status="default",
-            ).filter(note_filter).select_related("progress_note_target__progress_note")
+            ).filter(note_filter).select_related(
+                "progress_note_target__progress_note",
+                "progress_note_target__plan_target",
+            )
 
             observation_count = values_qs.count()
             if observation_count:
@@ -369,6 +658,11 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 ]
                 started_at = min(note_dates).isoformat()
                 ended_at = max(note_dates).isoformat()
+
+                measures, comment = _compute_indicator_report(
+                    metric, values_qs, observation_count, program,
+                )
+
                 report_id = f"urn:konote:indicator-report:{program.pk}:{metric.pk}"
                 report_node = {
                     "@id": report_id,
@@ -378,13 +672,8 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                     "forIndicator": {"@id": indicator_id},
                     "startedAtTime": started_at,
                     "endedAtTime": ended_at,
-                    "value": {
-                        "@type": "i72:Measure",
-                        "hasNumericalValue": str(observation_count),
-                    },
-                    "hasComment": (
-                        f"Observation count for {metric.name} in {program.name}"
-                    ),
+                    "value": measures,
+                    "hasComment": comment,
                 }
                 indicator_node["hasIndicatorReport"] = [{"@id": report_id}]
                 add_node(report_node)
@@ -450,7 +739,27 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
     add_node(org_node)
 
     doc = {
-        "@context": CIDS_CONTEXT,
+        "@context": [
+            CIDS_CONTEXT,
+            {
+                "konote": "https://konote.ca/cids/extensions#",
+                "konote:mean": {"@id": "konote:mean", "@type": "@id"},
+                "konote:median": {"@id": "konote:median", "@type": "@id"},
+                "konote:standard_deviation": {"@id": "konote:standard_deviation", "@type": "@id"},
+                "konote:minimum": {"@id": "konote:minimum", "@type": "@id"},
+                "konote:maximum": {"@id": "konote:maximum", "@type": "@id"},
+                "konote:success_rate": {"@id": "konote:success_rate", "@type": "@id"},
+                "konote:count_achieved": {"@id": "konote:count_achieved", "@type": "@id"},
+                "konote:distribution": {"@id": "konote:distribution", "@type": "@id"},
+                "konote:band_distribution": {"@id": "konote:band_distribution", "@type": "@id"},
+                "konote:pre_post_change": {"@id": "konote:pre_post_change", "@type": "@id"},
+                "konote:participant_count": {"@id": "konote:participant_count", "@type": "@id"},
+                "konote:observation_count": {"@id": "konote:observation_count", "@type": "@id"},
+                "konote:target_rate": {"@id": "konote:target_rate", "@type": "@id"},
+                "konote:target_high_band_percent": {"@id": "konote:target_high_band_percent", "@type": "@id"},
+                "konote:skipped_unparseable": {"@id": "konote:skipped_unparseable", "@type": "@id"},
+            },
+        ],
         "@graph": graph,
         "cids:version": CIDS_VERSION,
         "cids:exportedAt": timezone.now().isoformat(),

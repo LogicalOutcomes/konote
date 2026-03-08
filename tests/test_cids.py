@@ -1632,10 +1632,11 @@ class CidsJsonLdExportTest(TestCase):
 
     def test_export_has_cids_context(self):
         doc = self._run_export()
-        self.assertEqual(
-            doc["@context"],
-            "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
-        )
+        context = doc["@context"]
+        self.assertIsInstance(context, list)
+        self.assertEqual(context[0], "https://ontology.commonapproach.org/contexts/cidsContext.jsonld")
+        # Second entry is the konote extensions namespace
+        self.assertIn("konote", context[1])
 
     def test_export_has_version(self):
         doc = self._run_export()
@@ -1684,7 +1685,7 @@ class CidsJsonLdExportTest(TestCase):
         self.assertNotIn("Test Client", export_str)
         self.assertNotIn("Improve wellbeing", export_str)
 
-    def test_indicator_report_uses_measure_and_dates(self):
+    def test_indicator_report_uses_measure_list_and_dates(self):
         doc = self._run_export()
         report_nodes = [
             n for n in doc["@graph"]
@@ -1692,8 +1693,11 @@ class CidsJsonLdExportTest(TestCase):
         ]
         self.assertEqual(len(report_nodes), 1)
         report = report_nodes[0]
-        self.assertEqual(report["value"]["@type"], "i72:Measure")
-        self.assertIsInstance(report["value"]["hasNumericalValue"], str)
+        # value is now a list of i72:Measure dicts
+        self.assertIsInstance(report["value"], list)
+        self.assertTrue(len(report["value"]) >= 1)
+        for measure in report["value"]:
+            self.assertEqual(measure["@type"], "i72:Measure")
         self.assertIn("startedAtTime", report)
         self.assertIn("endedAtTime", report)
         self.assertEqual(report["forIndicator"]["@id"], "urn:konote:indicator:1:1")
@@ -1737,3 +1741,315 @@ class CidsJsonLdExportTest(TestCase):
         code_node = next(n for n in doc["@graph"] if n.get("@type") == "cids:Code")
         self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/4")
         self.assertEqual(code_node["hasName"], "Quality Education")
+
+
+# ── IndicatorReport Aggregation Unit Tests ─────────────────────────
+
+
+class _MockMetricValue:
+    """Lightweight stand-in for MetricValue with related objects."""
+
+    def __init__(self, value, client_id, backdate, created_at=None):
+        self.value = value
+        note = MagicMock()
+        note.backdate = backdate
+        note.created_at = created_at or backdate
+        target = MagicMock()
+        target.client_file_id = client_id
+        target.progress_note = note
+        pnt = MagicMock()
+        pnt.plan_target = target
+        pnt.progress_note = note
+        self.progress_note_target = pnt
+
+
+def _make_metric(**kwargs):
+    """Return a MagicMock that looks like a MetricDefinition."""
+    defaults = {
+        "name": "Test Metric",
+        "metric_type": "scale",
+        "unit": "score",
+        "threshold_low": None,
+        "threshold_high": None,
+        "target_band_high_pct": None,
+        "higher_is_better": True,
+        "achievement_options": None,
+        "achievement_success_values": None,
+        "target_rate": None,
+    }
+    defaults.update(kwargs)
+    m = MagicMock(**defaults)
+    m.name = defaults["name"]
+    m.configure_mock(**defaults)
+    return m
+
+
+def _make_program(name="Youth Services"):
+    p = MagicMock()
+    p.name = name
+    return p
+
+
+class ParseNumericValuesTest(TestCase):
+    """Tests for _parse_numeric_values helper."""
+
+    def test_all_parseable(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        mvs = [_MockMetricValue("3.5", 1, timezone.now()), _MockMetricValue("7", 2, timezone.now())]
+        nums, skipped = _parse_numeric_values(mvs)
+        self.assertEqual(nums, [3.5, 7.0])
+        self.assertEqual(skipped, 0)
+
+    def test_mixed_parseable_and_unparseable(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        mvs = [
+            _MockMetricValue("5", 1, timezone.now()),
+            _MockMetricValue("N/A", 2, timezone.now()),
+            _MockMetricValue("", 3, timezone.now()),
+            _MockMetricValue("8.2", 4, timezone.now()),
+        ]
+        nums, skipped = _parse_numeric_values(mvs)
+        self.assertEqual(nums, [5.0, 8.2])
+        self.assertEqual(skipped, 2)
+
+    def test_empty_queryset(self):
+        from apps.reports.cids_jsonld import _parse_numeric_values
+        nums, skipped = _parse_numeric_values([])
+        self.assertEqual(nums, [])
+        self.assertEqual(skipped, 0)
+
+
+class ComputeScaleReportTest(TestCase):
+    """Tests for _compute_scale_report helper."""
+
+    def _call(self, metric, values, observation_count, program=None):
+        from apps.reports.cids_jsonld import _compute_scale_report
+        return _compute_scale_report(metric, values, observation_count, program or _make_program())
+
+    def test_basic_stats_with_multiple_values(self):
+        """Mean, median, SD, min, max with known inputs."""
+        now = timezone.now()
+        metric = _make_metric(unit="points")
+        values = [
+            _MockMetricValue("2", 1, now),
+            _MockMetricValue("4", 2, now),
+            _MockMetricValue("6", 3, now),
+        ]
+        measures, comment = self._call(metric, values, 3)
+        by_type = {m["measureType"]: m for m in measures}
+
+        self.assertEqual(by_type["konote:mean"]["hasNumericalValue"], "4.0")
+        self.assertEqual(by_type["konote:median"]["hasNumericalValue"], "4.0")
+        self.assertIn("konote:standard_deviation", by_type)
+        self.assertEqual(by_type["konote:minimum"]["hasNumericalValue"], "2.0")
+        self.assertEqual(by_type["konote:maximum"]["hasNumericalValue"], "6.0")
+
+    def test_single_value_omits_sd(self):
+        """With only 1 value, SD measure should not be emitted."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [_MockMetricValue("5", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        types = [m["measureType"] for m in measures]
+        self.assertNotIn("konote:standard_deviation", types)
+        self.assertIn("konote:mean", types)
+
+    def test_no_parseable_values(self):
+        """When all values are unparseable, return observation count only."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [_MockMetricValue("N/A", 1, now), _MockMetricValue("", 2, now)]
+        measures, comment = self._call(metric, values, 2)
+        self.assertEqual(len(measures), 1)
+        self.assertEqual(measures[0]["measureType"], "konote:observation_count")
+        self.assertIn("no parseable values", comment)
+
+    def test_skipped_count_reported(self):
+        """When some values are unparseable, skipped_unparseable is emitted."""
+        now = timezone.now()
+        metric = _make_metric()
+        values = [
+            _MockMetricValue("5", 1, now),
+            _MockMetricValue("bad", 2, now),
+        ]
+        measures, _ = self._call(metric, values, 2)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertIn("konote:skipped_unparseable", by_type)
+        self.assertEqual(by_type["konote:skipped_unparseable"]["hasNumericalValue"], "1")
+
+    def test_band_distribution(self):
+        """Band distribution emitted when thresholds are set."""
+        now = timezone.now()
+        metric = _make_metric(threshold_low=3.0, threshold_high=7.0)
+        values = [
+            _MockMetricValue("1", 1, now),  # low
+            _MockMetricValue("5", 2, now),  # medium
+            _MockMetricValue("9", 3, now),  # high
+        ]
+        measures, _ = self._call(metric, values, 3)
+        band = next(m for m in measures if m["measureType"] == "konote:band_distribution")
+        dist = {d["label"]: d["count"] for d in band["distribution"]}
+        self.assertEqual(dist["Low"], 1)
+        self.assertEqual(dist["Medium"], 1)
+        self.assertEqual(dist["High"], 1)
+
+    def test_pre_post_with_two_observations(self):
+        """Pre/post change computed when participant has 2+ observations."""
+        from datetime import timedelta
+        now = timezone.now()
+        earlier = now - timedelta(days=30)
+        metric = _make_metric(higher_is_better=True)
+        # Same participant (client_id=1) with two observations
+        values = [
+            _MockMetricValue("3", 1, earlier),
+            _MockMetricValue("7", 1, now),
+        ]
+        measures, comment = self._call(metric, values, 2)
+        pre_post = next(
+            (m for m in measures if m["measureType"] == "konote:pre_post_change"), None
+        )
+        self.assertIsNotNone(pre_post)
+        self.assertEqual(pre_post["preMean"], 3.0)
+        self.assertEqual(pre_post["postMean"], 7.0)
+        self.assertEqual(pre_post["improvedCount"], 1)
+        self.assertEqual(pre_post["improvementRate"], 100.0)
+        self.assertIn("Pre/post", comment)
+
+    def test_all_measures_namespaced(self):
+        """Every measureType value should start with konote:."""
+        now = timezone.now()
+        metric = _make_metric(threshold_low=3.0, threshold_high=7.0)
+        values = [_MockMetricValue("5", 1, now), _MockMetricValue("8", 2, now)]
+        measures, _ = self._call(metric, values, 2)
+        for m in measures:
+            self.assertTrue(
+                m["measureType"].startswith("konote:"),
+                f"measureType '{m['measureType']}' missing konote: namespace",
+            )
+
+
+class ComputeAchievementReportTest(TestCase):
+    """Tests for _compute_achievement_report helper."""
+
+    def _call(self, metric, values, observation_count, program=None):
+        from apps.reports.cids_jsonld import _compute_achievement_report
+        return _compute_achievement_report(metric, values, observation_count, program or _make_program())
+
+    def test_basic_success_rate(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            achievement_success_values=["Employed", "In training"],
+        )
+        values = [
+            _MockMetricValue("Employed", 1, now),
+            _MockMetricValue("Unemployed", 2, now),
+            _MockMetricValue("In training", 3, now),
+        ]
+        measures, comment = self._call(metric, values, 3)
+        by_type = {m["measureType"]: m for m in measures}
+
+        # 2 of 3 participants achieved
+        self.assertEqual(by_type["konote:success_rate"]["hasNumericalValue"], "66.7")
+        self.assertEqual(by_type["konote:count_achieved"]["hasNumericalValue"], "2")
+        self.assertIn("2 of 3", comment)
+
+    def test_empty_success_values(self):
+        """When achievement_success_values is None, success rate is 0."""
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["A", "B"],
+            achievement_success_values=None,
+        )
+        values = [_MockMetricValue("A", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertEqual(by_type["konote:success_rate"]["hasNumericalValue"], "0.0")
+
+    def test_distribution_emitted(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Yes", "No"],
+            achievement_success_values=["Yes"],
+        )
+        values = [
+            _MockMetricValue("Yes", 1, now),
+            _MockMetricValue("Yes", 2, now),
+            _MockMetricValue("No", 3, now),
+        ]
+        measures, _ = self._call(metric, values, 3)
+        dist_measure = next(m for m in measures if m["measureType"] == "konote:distribution")
+        dist = {d["label"]: d for d in dist_measure["distribution"]}
+        self.assertEqual(dist["Yes"]["count"], 2)
+        self.assertTrue(dist["Yes"]["isSuccess"])
+        self.assertFalse(dist["No"]["isSuccess"])
+
+    def test_target_rate_emitted(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Done"],
+            achievement_success_values=["Done"],
+            target_rate=80.0,
+        )
+        values = [_MockMetricValue("Done", 1, now)]
+        measures, comment = self._call(metric, values, 1)
+        by_type = {m["measureType"]: m for m in measures}
+        self.assertIn("konote:target_rate", by_type)
+        self.assertEqual(by_type["konote:target_rate"]["hasNumericalValue"], "80.0")
+        self.assertIn("target: 80.0%", comment)
+
+    def test_all_measures_namespaced(self):
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["A"],
+            achievement_success_values=["A"],
+        )
+        values = [_MockMetricValue("A", 1, now)]
+        measures, _ = self._call(metric, values, 1)
+        for m in measures:
+            self.assertTrue(
+                m["measureType"].startswith("konote:"),
+                f"measureType '{m['measureType']}' missing konote: namespace",
+            )
+
+
+class ComputeIndicatorReportDispatchTest(TestCase):
+    """Tests for _compute_indicator_report dispatch."""
+
+    def test_open_text_fallback(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(metric_type="open_text")
+        values = [_MockMetricValue("Some narrative", 1, now)]
+        measures, comment = _compute_indicator_report(metric, values, 1, _make_program())
+        self.assertEqual(len(measures), 1)
+        self.assertEqual(measures[0]["measureType"], "konote:observation_count")
+        self.assertEqual(measures[0]["hasNumericalValue"], "1")
+        self.assertIn("recorded observations", comment)
+
+    def test_dispatches_to_achievement(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(
+            metric_type="achievement",
+            achievement_options=["Done"],
+            achievement_success_values=["Done"],
+        )
+        values = [_MockMetricValue("Done", 1, now)]
+        measures, _ = _compute_indicator_report(metric, values, 1, _make_program())
+        types = [m["measureType"] for m in measures]
+        self.assertIn("konote:success_rate", types)
+
+    def test_dispatches_to_scale(self):
+        from apps.reports.cids_jsonld import _compute_indicator_report
+        now = timezone.now()
+        metric = _make_metric(metric_type="scale")
+        values = [_MockMetricValue("5", 1, now), _MockMetricValue("7", 2, now)]
+        measures, _ = _compute_indicator_report(metric, values, 2, _make_program())
+        types = [m["measureType"] for m in measures]
+        self.assertIn("konote:mean", types)
