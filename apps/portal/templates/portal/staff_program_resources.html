@@ -48,9 +48,9 @@
             <td>{{ resource.display_order }}</td>
             <td>
                 <a href="{% url 'programs:program_resource_edit' program_id=program.pk resource_id=resource.pk %}">{% trans "Edit" %}</a>
-                <form method="post" action="{% url 'programs:program_resource_deactivate' program_id=program.pk resource_id=resource.pk %}" style="display:inline">
+                <form method="post" action="{% url 'programs:program_resource_deactivate' program_id=program.pk resource_id=resource.pk %}" style="display:inline" data-confirm="{% trans 'Remove this resource?' %}">
                     {% csrf_token %}
-                    <button type="submit" class="secondary outline" onclick="return confirm('{% trans "Remove this resource?" %}')">{% trans "Remove" %}</button>
+                    <button type="submit" class="secondary outline">{% trans "Remove" %}</button>
                 </form>
             </td>
         </tr>

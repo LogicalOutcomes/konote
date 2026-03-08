@@ -1,6 +1,7 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
+from . import cids_views
 from . import views
 from . import pdf_views
 from . import insights_views
@@ -48,4 +49,8 @@ urlpatterns = [
     path("schedules/", oversight_views.report_schedule_list, name="schedule_list"),
     path("schedules/create/", oversight_views.report_schedule_create, name="schedule_create"),
     path("schedules/<int:schedule_id>/edit/", oversight_views.report_schedule_edit, name="schedule_edit"),
+    # CIDS compliance
+    path("cids/", cids_views.cids_coverage_dashboard, name="cids_dashboard"),
+    path("cids/<int:program_id>/status/", cids_views.cids_export_status, name="cids_export_status"),
+    path("cids/export/", cids_views.cids_full_tier_export, name="cids_full_tier_export"),
 ]

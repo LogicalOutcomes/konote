@@ -96,6 +96,21 @@ These questions were raised as risk-mitigation considerations. After review, GK 
 - [ ] Add to the deployment runbook: access tier classification for each credential
 - [ ] Include standard data-processing terms in contractor and MSP agreements (confidentiality, privacy compliance, incident notification)
 
+## AI Data Flow and Residency
+
+KoNote's three-tier AI architecture (see [AI Feature Toggles DRR](ai-feature-toggles.md#three-tier-ai-architecture-added-2026-03-07)) has different residency implications for each tier:
+
+| AI Tier | Data type | Where processed | Residency implication |
+|---------|-----------|----------------|----------------------|
+| **Tier 1 — Operational** (self-hosted) | Scrubbed participant content | Canadian VPS (Ollama) | No cross-border transfer |
+| **Tier 2 — Tools** (cloud API) | Program metadata only | Cloud API provider | No participant data crosses the border |
+| **Tier 3 — Evaluation** (external LLM) | Program documentation, aggregate stats | External LLM platform | Evaluator-controlled; non-PII only |
+| **Translation** | Static UI strings | Cloud API provider | No personal information |
+
+**Key principle:** Participant data (even scrubbed) never leaves the Canadian VPS. Only institutional metadata and non-PII program documentation are processed by external AI services.
+
+For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles), Tier 2 tools can be disabled via `ai_assist_tools_only`, and Tier 3 is entirely optional.
+
 ## Anti-Patterns
 
 **Do not:**

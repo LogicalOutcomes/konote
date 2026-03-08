@@ -1,5 +1,7 @@
 """Instance customisation: terminology, features, and settings."""
+from django.conf import settings
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.translation import gettext_lazy as _lazy
 
 
@@ -282,12 +284,29 @@ class TaxonomyMapping(models.Model):
     """
 
     TAXONOMY_SYSTEMS = [
+        ("common_approach", _lazy("Common Approach")),
+        ("iris_plus", _lazy("IRIS+")),
+        ("sdg", _lazy("SDG")),
         ("cids_iris", _lazy("CIDS / IRIS+")),
         ("united_way", _lazy("United Way")),
         ("phac", _lazy("Public Health Agency of Canada")),
         ("provincial", _lazy("Provincial")),
         ("esdc", _lazy("ESDC")),
         ("custom", _lazy("Custom")),
+    ]
+
+    MAPPING_STATUSES = [
+        ("draft", _lazy("Draft")),
+        ("approved", _lazy("Approved")),
+        ("rejected", _lazy("Rejected")),
+        ("superseded", _lazy("Superseded")),
+    ]
+
+    MAPPING_SOURCES = [
+        ("manual", _lazy("Manual")),
+        ("imported", _lazy("Imported")),
+        ("system_suggested", _lazy("System suggested")),
+        ("ai_suggested", _lazy("AI suggested")),
     ]
 
     metric_definition = models.ForeignKey(
@@ -317,6 +336,10 @@ class TaxonomyMapping(models.Model):
         max_length=100,
         help_text=_lazy("Code within the taxonomy system."),
     )
+    taxonomy_list_name = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_lazy("Specific code list used for this mapping, e.g. SDGImpacts or IrisMetric53."),
+    )
     taxonomy_label = models.CharField(
         max_length=255, blank=True, default="",
         help_text=_lazy("Display label for the taxonomy code."),
@@ -325,6 +348,38 @@ class TaxonomyMapping(models.Model):
         max_length=100, blank=True, default="",
         help_text=_lazy("Which funder this mapping serves (blank = universal)."),
     )
+    mapping_status = models.CharField(
+        max_length=20,
+        choices=MAPPING_STATUSES,
+        default="approved",
+        help_text=_lazy("Review state for this mapping: draft suggestions remain separate from approved report mappings."),
+    )
+    mapping_source = models.CharField(
+        max_length=20,
+        choices=MAPPING_SOURCES,
+        default="manual",
+        help_text=_lazy("How this mapping was created: manual review, import, or AI suggestion."),
+    )
+    confidence_score = models.FloatField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text=_lazy("Optional confidence score for imported or AI-suggested mappings, from 0.0 to 1.0."),
+    )
+    rationale = models.TextField(
+        blank=True, default="",
+        help_text=_lazy("Why this mapping was suggested or approved."),
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reviewed_taxonomy_mappings",
+        help_text=_lazy("User who last reviewed this mapping."),
+    )
+    reviewed_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_lazy("When this mapping was last reviewed."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -332,6 +387,16 @@ class TaxonomyMapping(models.Model):
         db_table = "taxonomy_mappings"
         ordering = ["taxonomy_system", "taxonomy_code"]
         verbose_name = "Taxonomy Mapping"
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(metric_definition__isnull=False, program__isnull=True, plan_target__isnull=True)
+                    | models.Q(metric_definition__isnull=True, program__isnull=False, plan_target__isnull=True)
+                    | models.Q(metric_definition__isnull=True, program__isnull=True, plan_target__isnull=False)
+                ),
+                name="taxonomy_exactly_one_fk",
+            ),
+        ]
 
     def __str__(self):
         target = (
@@ -342,6 +407,32 @@ class TaxonomyMapping(models.Model):
             else f"Target:{self.plan_target_id}"
         )
         return f"{target} → {self.taxonomy_system}:{self.taxonomy_code}"
+
+    @property
+    def subject_object(self):
+        """Return the mapped object regardless of which FK is populated."""
+        return self.metric_definition or self.program or self.plan_target
+
+    @property
+    def subject_type(self):
+        """Return the mapped object type for queue filtering and labels."""
+        if self.metric_definition_id:
+            return "metric"
+        if self.program_id:
+            return "program"
+        return "target"
+
+    @property
+    def subject_display(self):
+        """Return a short human-readable label for the mapped object."""
+        subject = self.subject_object
+        if subject is None:
+            return _lazy("Unknown item")
+        if self.metric_definition_id:
+            return subject.name
+        if self.program_id:
+            return subject.name
+        return subject.name or _lazy("Untitled target")
 
     def clean(self):
         """Validate that exactly one of the three FKs is set."""
@@ -355,6 +446,23 @@ class TaxonomyMapping(models.Model):
         if fk_count != 1:
             raise ValidationError(
                 _lazy("Exactly one of metric_definition, program, or plan_target must be set.")
+            )
+
+        if self.mapping_status in {"rejected", "superseded"}:
+            if not self.reviewed_at:
+                raise ValidationError(
+                    {"reviewed_at": _lazy("Reviewed mappings must include a reviewed timestamp.")}
+                )
+
+        if self.mapping_status == "approved" and self.mapping_source == "ai_suggested":
+            if not self.reviewed_at:
+                raise ValidationError(
+                    {"reviewed_at": _lazy("Approved AI-suggested mappings must include a reviewed timestamp.")}
+                )
+
+        if self.reviewed_by_id and not self.reviewed_at:
+            raise ValidationError(
+                {"reviewed_at": _lazy("Set reviewed_at when reviewed_by is provided.")}
             )
 
 

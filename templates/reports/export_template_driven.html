@@ -99,6 +99,17 @@
         {% endif %}
     </div>
 
+    <label for="{{ form.taxonomy_lens.id_for_label }}">
+        {{ form.taxonomy_lens.label }}
+        {{ form.taxonomy_lens }}
+        {% if form.taxonomy_lens.help_text %}
+        <small>{{ form.taxonomy_lens.help_text }}</small>
+        {% endif %}
+        {% if form.taxonomy_lens.errors %}
+        <small class="error" role="alert">{{ form.taxonomy_lens.errors.0 }}</small>
+        {% endif %}
+    </label>
+
     {# Export format #}
     <fieldset>
         <legend>{{ form.format.label }}</legend>
@@ -141,7 +152,7 @@
     <input type="hidden" name="preview" id="id_preview" value="">
     <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <button type="submit" id="btn-generate">{% trans "Generate" %}</button>
-        <button type="submit" id="btn-preview" class="secondary outline" onclick="document.getElementById('id_preview').value='1';">
+        <button type="submit" id="btn-preview" class="secondary outline" data-set-value-target="id_preview" data-set-value="1">
             {% trans "Preview on Screen" %}
         </button>
     </div>

@@ -24,7 +24,7 @@
     --kn-info-bg: #d1ecf1;
     --kn-info-fg: #0c5460;
     --kn-warning-bg: #fff3cd;
-    --kn-warning-fg: #856404;
+    --kn-warning-fg: #6c5a1e;   /* Darkened for WCAG AA (6.08:1 on #fff3cd) */
     --kn-danger-bg: #f8d7da;
     --kn-danger-fg: #842029;
     --kn-urgent: #c0392b;

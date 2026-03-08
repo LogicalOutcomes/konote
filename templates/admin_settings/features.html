@@ -7,30 +7,44 @@
 <hgroup>
     <h1>{% trans "Features" %}</h1>
     <p>{% trans "Enable or disable modules for your organisation." %}
-        <a href="{% url 'admin_settings:dashboard' %}">{% trans "Admin guide" %}</a>
+        <a href="{% url 'admin_settings:dashboard' %}">{% trans "Back to Settings" %}</a>
     </p>
 </hgroup>
 
 {% include "admin_settings/_page_help.html" with content=_('Feature toggles turn modules on or off for your whole organisation. Disabling a feature hides it from all users but preserves existing data. Some features depend on others — the confirmation dialog will show you the impact before you commit.') %}
 
 {# -- AI Processing Notice -- #}
-{% if ai_key_set %}
 <article style="background: var(--pico-card-background-color); border-left: 4px solid var(--pico-primary); padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
     <strong style="font-size: 1.1em;">{% trans "AI Processing" %}</strong>
-    <p style="margin: 0.5rem 0 0;">
-        {% blocktrans with model=ai_model %}AI requests are sent to <strong>OpenRouter</strong> (external API) using model: <code>{{ model }}</code>.{% endblocktrans %}
-        <br>
-        <small class="secondary">{% trans "Data sent depends on which AI features are enabled below. Tools-only AI sends program metadata only (no personal information). Participant-data AI sends de-identified quotes." %}</small>
+    <p style="margin: 0.5rem 0 1rem;">
+        {% trans "Use this summary to confirm which provider mode is active before enabling participant-data AI." %}
+    </p>
+    <dl style="margin-bottom: 0.75rem;">
+        <dt><strong>{% trans "Tools-only AI" %}</strong></dt>
+        <dd>
+            {% if ai_processing_summary.tools_enabled %}
+                <span class="badge badge-success">{% trans "Enabled" %}</span>
+            {% else %}
+                <span class="badge badge-neutral">{% trans "Disabled" %}</span>
+            {% endif %}
+            <span style="margin-left: 0.5rem;"><strong>{% trans "Provider:" %}</strong> {{ ai_processing_summary.tools_provider_mode }}</span>
+            <br><small class="secondary">{{ ai_processing_summary.tools_provider_detail }}</small>
+        </dd>
+        <dt style="margin-top: 0.75rem;"><strong>{% trans "Participant-data AI" %}</strong></dt>
+        <dd>
+            {% if ai_processing_summary.participant_enabled %}
+                <span class="badge badge-success">{% trans "Enabled" %}</span>
+            {% else %}
+                <span class="badge badge-neutral">{% trans "Disabled" %}</span>
+            {% endif %}
+            <span style="margin-left: 0.5rem;"><strong>{% trans "Provider mode:" %}</strong> {{ ai_processing_summary.participant_provider_mode }}</span>
+            <br><small class="secondary">{{ ai_processing_summary.participant_provider_detail }}</small>
+        </dd>
+    </dl>
+    <p style="margin: 0;">
+        <small class="secondary">{{ ai_processing_summary.residency_note }}</small>
     </p>
 </article>
-{% else %}
-<article style="background: var(--pico-card-background-color); border-left: 4px solid var(--pico-del-color); padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
-    <strong style="font-size: 1.1em;">{% trans "AI Processing" %}</strong>
-    <p style="margin: 0.5rem 0 0;">
-        {% trans "No AI API key is configured. AI features are unavailable even if enabled below." %}
-    </p>
-</article>
-{% endif %}
 
 <figure>
 <table role="grid" aria-label="{% trans 'Feature toggles' %}">

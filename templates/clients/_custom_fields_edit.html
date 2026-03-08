@@ -53,7 +53,8 @@
                     <select name="custom_{{ item.field_def.pk }}"
                             id="custom_{{ item.field_def.pk }}"
                             {% if item.field_def.is_required %}required aria-required="true"{% endif %}
-                            onchange="document.getElementById('other_wrap_{{ item.field_def.pk }}').style.display = this.value === '__other__' ? '' : 'none';">
+                            data-toggle-display-target="other_wrap_{{ item.field_def.pk }}"
+                            data-toggle-display-value="__other__">
                         <option value="">{% trans "Select…" %}</option>
                         {% for opt in item.field_def.options_json %}
                         <option value="{{ opt }}" {% if item.value == opt %}selected{% endif %}>{{ opt }}</option>

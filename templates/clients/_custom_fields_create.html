@@ -37,7 +37,8 @@
                     id="id_{{ item.key }}"
                     {% if item.def.is_required %}required aria-required="true"{% endif %}
                     {% if bound.errors %}aria-invalid="true" aria-describedby="err_{{ item.key }}"{% endif %}
-                    onchange="document.getElementById('other_wrap_{{ item.def.pk }}').style.display = this.value === '__other__' ? '' : 'none';">
+                    data-toggle-display-target="other_wrap_{{ item.def.pk }}"
+                    data-toggle-display-value="__other__">
                 <option value="">{% trans "Select…" %}</option>
                 {% for opt in item.def.options_json %}
                 <option value="{{ opt }}" {% if bound.value == opt %}selected{% endif %}>{{ opt }}</option>

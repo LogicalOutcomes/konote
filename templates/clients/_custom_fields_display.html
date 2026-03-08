@@ -18,19 +18,21 @@
 
 {% for group in custom_data %}
 <section aria-labelledby="group-{{ group.group.pk }}">
-    <h3 id="group-{{ group.group.pk }}">{{ group.group.title }}</h3>
-    <dl class="info-grid-compact">
-        {% for item in group.fields %}
-        <div class="info-field{% if not item.is_editable %} view-only{% endif %}">
-            <dt>
-                {{ item.field_def.name }}
-                {% if not item.is_editable %}<small class="secondary">({% trans "view only" %})</small>{% endif %}
-                {% if item.field_def.is_sensitive %}<small class="secondary">({% trans "encrypted" %})</small>{% endif %}
-            </dt>
-            <dd>{{ item.display_value|default:item.value }}</dd>
-        </div>
-        {% endfor %}
-    </dl>
+    <details{% if not group.group.collapsed_by_default %} open{% endif %}>
+        <summary><h3 id="group-{{ group.group.pk }}" style="display: inline; margin: 0;">{{ group.group.title }}</h3></summary>
+        <dl class="info-grid-compact" style="margin-top: var(--kn-space-sm);">
+            {% for item in group.fields %}
+            <div class="info-field{% if not item.is_editable %} view-only{% endif %}">
+                <dt>
+                    {{ item.field_def.name }}
+                    {% if not item.is_editable %}<small class="secondary">({% trans "view only" %})</small>{% endif %}
+                    {% if item.field_def.is_sensitive %}<small class="secondary">({% trans "encrypted" %})</small>{% endif %}
+                </dt>
+                <dd>{{ item.display_value|default:item.value }}</dd>
+            </div>
+            {% endfor %}
+        </dl>
+    </details>
 </section>
 {% endfor %}
 

@@ -104,8 +104,12 @@ class BrowserTestBase(StaticLiveServerTestCase):
 
         # Create tables in the file-based databases
         from django.core.management import call_command
-        call_command("migrate", "--run-syncdb", verbosity=0)
-        call_command("migrate", "--database=audit", "--run-syncdb", verbosity=0)
+        from django.core.management.commands.migrate import Command as DjangoMigrate
+
+        # Bypass django-tenants' migrate override, which expects PostgreSQL
+        # schema methods that are not available on SQLite test databases.
+        call_command(DjangoMigrate(), run_syncdb=True, verbosity=0)
+        call_command(DjangoMigrate(), database="audit", run_syncdb=True, verbosity=0)
 
         # Launch Playwright browser once for the entire class
         start = _get_pw()
@@ -134,7 +138,7 @@ class BrowserTestBase(StaticLiveServerTestCase):
     def setUp(self):
         enc_module._fernet = None
         self._create_test_data()
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(bypass_csp=True)
         self.page = self._context.new_page()
 
     def tearDown(self):
@@ -353,7 +357,7 @@ class BrowserTestBase(StaticLiveServerTestCase):
         """Switch to a different user (new browser context)."""
         self.page.close()
         self._context.close()
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(bypass_csp=True)
         self.page = self._context.new_page()
         self.login_via_browser(username)
 
@@ -361,7 +365,10 @@ class BrowserTestBase(StaticLiveServerTestCase):
         """Switch to a different user with a specific colour scheme."""
         self.page.close()
         self._context.close()
-        self._context = self._browser.new_context(color_scheme=color_scheme)
+        self._context = self._browser.new_context(
+            color_scheme=color_scheme,
+            bypass_csp=True,
+        )
         self.page = self._context.new_page()
         self.login_via_browser(username)
 

@@ -196,6 +196,46 @@ class MetricDefinition(models.Model):
         default=False,
         help_text=_("True for published validated instruments (PHQ-9, GAD-7, K10, etc.)."),
     )
+
+    # ── Data quality descriptors (for CIDS DQV export) ────────────────
+    EVIDENCE_TYPE_CHOICES = [
+        ("self_report", _("Self-report (participant completes)")),
+        ("staff_observed", _("Staff-observed (recorded by worker)")),
+        ("administrative_record", _("Administrative record (system data)")),
+        ("third_party_assessed", _("Third-party assessed (external evaluator)")),
+        ("coded_qualitative", _("Coded qualitative (open responses coded to scale)")),
+    ]
+    evidence_type = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=EVIDENCE_TYPE_CHOICES,
+        help_text=_("How the data is generated. Describes the source, not quality."),
+    )
+
+    MEASURE_BASIS_CHOICES = [
+        ("published_validated", _("Published, validated for this population")),
+        ("published_adapted", _("Published, adapted for local context")),
+        ("custom_participatory", _("Custom, developed with participant input")),
+        ("custom_staff_designed", _("Custom, designed by staff")),
+        ("administrative", _("Administrative or system-generated")),
+    ]
+    measure_basis = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=MEASURE_BASIS_CHOICES,
+        help_text=_("How the measure was developed. Not a quality ranking."),
+    )
+
+    DERIVATION_METHOD_CHOICES = [
+        ("direct_response", _("Direct participant response")),
+        ("coded_from_qualitative", _("Coded from qualitative responses")),
+        ("calculated_composite", _("Calculated composite score")),
+        ("staff_rating", _("Staff rating or judgment")),
+    ]
+    derivation_method = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=DERIVATION_METHOD_CHOICES,
+        help_text=_("How the recorded value was produced. Only needed when "
+                    "the value isn't a direct participant response."),
+    )
     scoring_bands = models.JSONField(
         null=True, blank=True,
         help_text=_('Published severity cutoffs, e.g. [{"label": "Minimal", "min": 0, "max": 4}]. Display-only.'),

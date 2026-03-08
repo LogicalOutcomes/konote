@@ -44,7 +44,7 @@
 </form>
 
 {% if editing %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var statusSelect = document.getElementById('id_status');
     var noteField = document.getElementById('addressed-note-field');
@@ -58,3 +58,4 @@
 {% endif %}
 
 {% endblock %}
+

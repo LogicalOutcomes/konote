@@ -44,6 +44,24 @@ _ADDRESS_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Common date formats: 2026-03-06, 03/06/2026, March 6 2026, 6 March 2026
+_DATE_ISO_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_DATE_SLASH_RE = re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b")
+_MONTH_NAMES = (
+    "january|february|march|april|may|june|july|august|september|october|november|december|"
+    "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec"
+)
+_DATE_TEXTUAL_RE = re.compile(
+    rf"\b(?:{_MONTH_NAMES})\s+\d{{1,2}}(?:,)?\s+\d{{4}}\b|\b\d{{1,2}}\s+(?:{_MONTH_NAMES})\s+\d{{4}}\b",
+    re.IGNORECASE,
+)
+
+# Internal identifiers and record references commonly used in notes or prompts
+_RECORD_ID_RE = re.compile(
+    r"\b(?:record\s*id|client\s*id|participant\s*id|note\s*id|file\s*id)\s*[:#-]?\s*[A-Za-z0-9-]{2,}\b",
+    re.IGNORECASE,
+)
+
 
 def scrub_pii(text, known_names=None):
     """Remove PII from text before sending to an external AI service.
@@ -69,6 +87,10 @@ def scrub_pii(text, known_names=None):
     result = _SIN_RE.sub("[SIN]", result)
     result = _ADDRESS_RE.sub("[ADDRESS]", result)
     result = _PHONE_RE.sub("[PHONE]", result)
+    result = _DATE_ISO_RE.sub("[DATE]", result)
+    result = _DATE_SLASH_RE.sub("[DATE]", result)
+    result = _DATE_TEXTUAL_RE.sub("[DATE]", result)
+    result = _RECORD_ID_RE.sub("[RECORD ID]", result)
 
     # Pass 2: Replace known names (longest first to avoid partial matches)
     if known_names:
@@ -77,12 +99,12 @@ def scrub_pii(text, known_names=None):
             key=len,
             reverse=True,
         )
-        for name in sorted_names:
-            # Word-boundary match including possessives: "Hope" and "Hope's"
-            pattern = re.compile(
-                r"\b" + re.escape(name) + r"(?:'s)?\b",
-                re.IGNORECASE,
-            )
-            result = pattern.sub("[NAME]", result)
+        # Build a single combined alternation pattern instead of one regex per name
+        combined = "|".join(re.escape(n) for n in sorted_names)
+        name_pattern = re.compile(
+            rf"\b(?:{combined})(?:'s)?\b",
+            re.IGNORECASE,
+        )
+        result = name_pattern.sub("[NAME]", result)
 
     return result

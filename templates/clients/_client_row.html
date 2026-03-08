@@ -1,14 +1,4 @@
 {% load i18n %}<tr>
-    {% if show_bulk %}
-    <td class="bulk-col">
-        <label class="visually-hidden" for="bulk-cb-{{ item.client.pk }}">{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}</label>
-        <input type="checkbox"
-               class="bulk-select-row"
-               id="bulk-cb-{{ item.client.pk }}"
-               value="{{ item.client.pk }}"
-               aria-label="{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}">
-    </td>
-    {% endif %}
     <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>{% if item.can_edit_plan %} <span class="badge badge-edit-plan" title="{% trans 'You can edit plans for this participant' %}" aria-hidden="true">&#9998;</span><span class="sr-only">{% trans "Editable plan" %}</span>{% endif %}</td>
     <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"&mdash;" }}</td>
     <td data-label="{% trans 'Status' %}">

@@ -20,6 +20,7 @@ from apps.programs.access import get_user_program_ids
 from apps.programs.models import Program, UserProgramRole
 
 from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
+from konote.utils import get_client_ip
 from .decorators import admin_required, requires_permission
 from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
@@ -367,7 +368,7 @@ def _audit_user_change(request, target_user, action_type, old_values, new_values
             event_timestamp=timezone.now(),
             user_id=request.user.id,
             user_display=request.user.get_display_name(),
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             action=action_type,
             resource_type="user",
             resource_id=target_user.id,
@@ -391,7 +392,7 @@ def _audit_role_change(request, target_user, program, role, action_type):
             event_timestamp=timezone.now(),
             user_id=request.user.id,
             user_display=request.user.get_display_name(),
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             action="update",
             resource_type="user_program_role",
             resource_id=target_user.id,
@@ -417,7 +418,7 @@ def _audit_impersonation(request, target_user):
             event_timestamp=timezone.now(),
             user_id=request.user.id,
             user_display=request.user.get_display_name(),
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             action="login",  # Using 'login' as closest match from ACTION_CHOICES
             resource_type="impersonation",
             resource_id=target_user.id,

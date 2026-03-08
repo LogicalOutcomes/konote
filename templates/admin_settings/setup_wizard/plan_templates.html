@@ -34,7 +34,7 @@
         {% endif %}
     </div>
 
-    <button type="button" class="add-btn" onclick="addTemplate()">+ {% trans "Add another template" %}</button>
+    <button type="button" class="add-btn" data-call-function="addTemplate">+ {% trans "Add another template" %}</button>
 
     <div class="wizard-nav">
         <a href="{% url 'admin_settings:setup_wizard_step' step='metrics' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
@@ -45,7 +45,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 function addTemplate() {
     var list = document.getElementById("templates-list");
     var count = list.querySelectorAll(".repeatable-group").length + 1;
@@ -59,3 +59,4 @@ function addTemplate() {
 }
 </script>
 {% endblock %}
+

@@ -50,6 +50,10 @@ class AuditLogListTests(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/manage/audit/")
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(
+            resp,
+            "Review system activity, exports, and permission-sensitive actions.",
+        )
 
     def test_non_admin_gets_403(self):
         self.client.login(username="staff", password="testpass123")

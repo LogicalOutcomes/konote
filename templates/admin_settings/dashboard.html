@@ -6,10 +6,33 @@
 {% block content %}
 <div class="page-header">
     <h1>{% trans "Settings" %}</h1>
-    <p>{% trans "Manage your instance configuration." %}</p>
+    <p>{% trans "Start here for setup, configuration, and core admin tools." %}</p>
 </div>
 
+<div role="group" style="margin-bottom: 1rem;">
+    <a href="{% url 'admin_settings:setup_wizard' %}" role="button">{% trans "Start Setup Wizard" %}</a>
+    <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Open Users" %}</a>
+</div>
+
+<aside class="settings-guide-callout" role="note">
+    <svg class="settings-guide-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <div>
+        <strong>{% trans "Settings Guide" %}</strong>
+        <p>{% trans "What each setting does, when you'd change it, and what's safe to experiment with." %}</p>
+        <a href="{% url 'help' %}#admin-settings-guide">{% trans "Read the Settings Guide" %}</a>
+    </div>
+</aside>
+
 <div class="settings-grid">
+
+    {# ---- Getting Started ---- #}
+    <h2>{% trans "Getting Started" %}</h2>
+
+    <article>
+        <header>{% trans "Setup Wizard" %}</header>
+        <p>{% trans "Guided setup for a new or reconfigured instance. Work through settings, terminology, features, programs, metrics, and templates in order." %}</p>
+        <footer><a href="{% url 'admin_settings:setup_wizard' %}" role="button" class="outline">{% trans "Open Wizard" %}</a></footer>
+    </article>
 
     {# ---- Data & Measurement ---- #}
     <h2>{% trans "Data & Measurement" %}</h2>
@@ -63,6 +86,19 @@
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
         <p class="settings-indicator">{% blocktrans count count=active_users %}{{ count }} active user{% plural %}{{ count }} active users{% endblocktrans %}</p>
         <footer><a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "User Invites" %}</header>
+        <p>{% trans "Create one-time invite links so new team members can set up their own accounts." %}</p>
+        <p class="settings-indicator">
+            {% if active_invites %}
+                {% blocktrans count count=active_invites %}{{ count }} active invite{% plural %}{{ count }} active invites{% endblocktrans %}
+            {% else %}
+                {% trans "No active invites" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_users:invite_list' %}" role="button" class="outline">{% trans "Manage Invites" %}</a></footer>
     </article>
 
     {% if access_tier >= 2 %}
@@ -190,6 +226,46 @@
         <footer><a href="{% url 'admin_settings:partner_list' %}" role="button" class="outline">{% trans "Manage Partners" %}</a></footer>
     </article>
 
+    <article>
+        <header>Classification Review</header>
+        <p>Generate draft code-list mappings for metrics, targets, and programs, then review and approve them for reporting.</p>
+        <footer><a href="{% url 'admin_settings:taxonomy_review_queue' %}" role="button" class="outline">Open Review Queue</a></footer>
+    </article>
+
+    {# ---- Oversight & Privacy ---- #}
+    <h2>{% trans "Oversight & Privacy" %}</h2>
+
+    <article>
+        <header>{% trans "Audit Log" %}</header>
+        <p>{% trans "Review system activity, exports, and permission-sensitive actions." %}</p>
+        <footer><a href="{% url 'audit:audit_log_list' %}" role="button" class="outline">{% trans "Open Audit Log" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Safety Oversight" %}</header>
+        <p>{% trans "Review safety report snapshots and follow-up items that need leadership attention." %}</p>
+        <footer><a href="{% url 'reports:oversight_list' %}" role="button" class="outline">{% trans "Open Oversight" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Merge Duplicates" %}</header>
+        <p>{% trans "Find and merge duplicate participant records before they create reporting or care-coordination issues." %}</p>
+        <footer><a href="{% url 'merge_candidates_list' %}" role="button" class="outline">{% trans "Review Duplicates" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Erasure Requests" %}</header>
+        <p>{% trans "Review pending requests to anonymise or permanently erase participant data." %}</p>
+        <p class="settings-indicator">
+            {% if pending_erasure_requests %}
+                {% blocktrans count count=pending_erasure_requests %}{{ count }} pending request{% plural %}{{ count }} pending requests{% endblocktrans %}
+            {% else %}
+                {% trans "No pending requests" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'erasure_pending_list' %}" role="button" class="outline">{% trans "Review Requests" %}</a></footer>
+    </article>
+
     {# ---- Tools ---- #}
     <h2>{% trans "Tools" %}</h2>
 
@@ -222,10 +298,51 @@
     </article>
 
 </div>
+
+<nav class="settings-guide-footer" aria-label="{% trans 'Settings help' %}">
+    <p>{% trans "Need help with a setting?" %} <a href="{% url 'help' %}#admin-settings-guide">{% trans "Read the Settings Guide" %} &rarr;</a></p>
+</nav>
 {% endblock %}
 
 {% block extra_head %}
 <style>
+    .settings-guide-callout {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background: var(--kn-primary-subtle, #e8f0fe);
+        border-left: 4px solid var(--kn-primary, #3176aa);
+        border-radius: var(--kn-radius, 4px);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .settings-guide-icon {
+        flex-shrink: 0;
+        color: var(--kn-primary, #3176aa);
+        margin-top: 0.125rem;
+    }
+    .settings-guide-callout p {
+        font-size: 0.875rem;
+        color: var(--kn-text-secondary, #555);
+        margin-bottom: 0.5rem;
+    }
+    .settings-guide-callout strong {
+        font-size: 1rem;
+    }
+    .settings-guide-callout a {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    .settings-guide-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--kn-border-light, #e0e0e0);
+    }
+    .settings-guide-footer p {
+        color: var(--kn-text-secondary, #555);
+        font-size: 0.875rem;
+    }
     .settings-indicator {
         font-size: 0.8125rem;
         color: var(--kn-text-secondary);

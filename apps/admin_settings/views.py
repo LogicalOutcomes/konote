@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.utils import timezone as tz
 from django.utils.translation import gettext as _, gettext_lazy as _lazy
+from urllib.parse import urlparse
 
 from apps.auth_app.decorators import admin_required, demo_read_only
 
@@ -23,7 +24,8 @@ from .models import (
 @login_required
 @admin_required
 def dashboard(request):
-    from apps.auth_app.models import User
+    from apps.auth_app.models import Invite, User
+    from apps.clients.models import ErasureRequest
     from apps.notes.models import PlausibilityOverrideLog, ProgressNoteTemplate
     from apps.plans.models import MetricDefinition, PlanTemplate
 
@@ -36,6 +38,7 @@ def dashboard(request):
     )
     terminology_overrides = TerminologyOverride.objects.count()
     active_users = User.objects.filter(is_active=True).count()
+    active_invites = Invite.objects.filter(used_by__isnull=True, expires_at__gt=tz.now()).count()
     note_template_count = ProgressNoteTemplate.objects.count()
 
     # IMPROVE-1b: Instance Settings summary
@@ -43,6 +46,7 @@ def dashboard(request):
 
     # IMPROVE-1b: Demo Accounts summary
     demo_users = User.objects.filter(is_demo=True, is_active=True).count()
+    pending_erasure_requests = ErasureRequest.objects.filter(status="pending").count()
 
     # Partners and report templates count
     from apps.reports.models import Partner, ReportTemplate
@@ -117,9 +121,11 @@ def dashboard(request):
         "total_features": total_features,
         "terminology_overrides": terminology_overrides,
         "active_users": active_users,
+        "active_invites": active_invites,
         "note_template_count": note_template_count,
         "instance_settings_count": instance_settings_count,
         "demo_users": demo_users,
+        "pending_erasure_requests": pending_erasure_requests,
         "partner_count": partner_count,
         "report_template_count": report_template_count,
         "staff_messaging_enabled": staff_messaging_enabled,
@@ -425,6 +431,82 @@ DEFAULT_FEATURES = {
 FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing", "portal_resources", "ai_assist_tools_only"}
 
 
+def _build_ai_processing_summary(current_flags):
+    """Return operator-facing status details for AI processing modes."""
+    from django.conf import settings as django_settings
+
+    tools_enabled = current_flags.get("ai_assist_tools_only", "ai_assist_tools_only" in FEATURES_DEFAULT_ENABLED)
+    participant_enabled = current_flags.get("ai_assist_participant_data", False)
+    openrouter_key = bool(getattr(django_settings, "OPENROUTER_API_KEY", ""))
+    openrouter_model = getattr(django_settings, "OPENROUTER_MODEL", "")
+    insights_api_base = (getattr(django_settings, "INSIGHTS_API_BASE", "") or "").strip()
+    insights_model = getattr(django_settings, "INSIGHTS_MODEL", "")
+    allowed_hosts = getattr(django_settings, "INSIGHTS_ALLOWED_HOSTS", []) or []
+
+    participant_provider_mode = _("Disabled")
+    participant_provider_detail = _("Participant-data AI is turned off.")
+    residency_note = _("No participant text is sent to AI services.")
+
+    if participant_enabled:
+        if insights_api_base:
+            parsed = urlparse(insights_api_base)
+            hostname = (parsed.hostname or "").lower()
+            is_local = hostname in {"localhost", "127.0.0.1", "::1"} or hostname.endswith(".local")
+            if is_local:
+                participant_provider_mode = _("Self-hosted local provider")
+                participant_provider_detail = _(
+                    "Participant-data AI uses a self-hosted OpenAI-compatible endpoint at %(host)s with model %(model)s."
+                ) % {
+                    "host": hostname or insights_api_base,
+                    "model": insights_model or _("configured model"),
+                }
+                residency_note = _("Participant text stays on infrastructure managed by your KoNote operator.")
+            else:
+                participant_provider_mode = _("Approved remote custom provider")
+                participant_provider_detail = _(
+                    "Participant-data AI uses the approved remote host %(host)s with model %(model)s."
+                ) % {
+                    "host": hostname or insights_api_base,
+                    "model": insights_model or _("configured model"),
+                }
+                if allowed_hosts:
+                    residency_note = _(
+                        "Only hosts in INSIGHTS_ALLOWED_HOSTS may be used for participant-data AI."
+                    )
+                else:
+                    residency_note = _("This provider is remote. Confirm residency and contractual requirements separately.")
+        elif openrouter_key:
+            participant_provider_mode = _("OpenRouter fallback")
+            participant_provider_detail = _(
+                "Participant-data AI falls back to OpenRouter using model %(model)s because no custom insights provider is configured."
+            ) % {"model": openrouter_model or _("configured model")}
+            residency_note = _("Participant text is processed by an external provider; confirm your agency policy before enabling this mode.")
+        else:
+            participant_provider_mode = _("Enabled but unavailable")
+            participant_provider_detail = _(
+                "Participant-data AI is enabled in feature toggles, but no usable provider credentials are configured."
+            )
+            residency_note = _("No participant-data AI requests can run until a provider is configured.")
+
+    tools_provider_mode = _("Unavailable")
+    tools_provider_detail = _("Tools-only AI is unavailable because no OpenRouter API key is configured.")
+    if openrouter_key:
+        tools_provider_mode = _("OpenRouter")
+        tools_provider_detail = _(
+            "Tools-only AI uses OpenRouter with model %(model)s and sends only non-participant metadata."
+        ) % {"model": openrouter_model or _("configured model")}
+
+    return {
+        "tools_enabled": tools_enabled,
+        "participant_enabled": participant_enabled,
+        "tools_provider_mode": tools_provider_mode,
+        "tools_provider_detail": tools_provider_detail,
+        "participant_provider_mode": participant_provider_mode,
+        "participant_provider_detail": participant_provider_detail,
+        "residency_note": residency_note,
+    }
+
+
 @login_required
 @admin_required
 @demo_read_only
@@ -462,15 +544,11 @@ def features(request):
             "is_enabled": current_flags.get(key, default_state),
         })
 
-    # AI processing info for admin awareness
-    from django.conf import settings as django_settings
-    ai_key_set = bool(getattr(django_settings, "OPENROUTER_API_KEY", ""))
-    ai_model = getattr(django_settings, "OPENROUTER_MODEL", "")
+    ai_processing_summary = _build_ai_processing_summary(current_flags)
 
     return render(request, "admin_settings/features.html", {
         "feature_rows": feature_rows,
-        "ai_key_set": ai_key_set,
-        "ai_model": ai_model,
+        "ai_processing_summary": ai_processing_summary,
     })
 
 

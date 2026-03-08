@@ -27,6 +27,7 @@ from apps.programs.access import (
     get_user_program_ids,
 )
 from apps.programs.models import UserProgramRole
+from konote.utils import get_client_ip
 
 from django.db import transaction
 from django.http import JsonResponse
@@ -489,6 +490,9 @@ def _create_goal(*, client_file, user, name, description="", client_goal="",
         if section is None:
             raise ValueError("A section or new_section_name is required.")
 
+        if not name or not name.strip():
+            raise ValueError("A goal name is required.")
+
         # 2. Create PlanTarget with encrypted fields
         target = PlanTarget(
             plan_section=section,
@@ -693,14 +697,25 @@ def goal_create(request, client_id):
 
     # Check if AI Goal Builder is available
     from konote.ai_views import _ai_tools_enabled
+    from konote.ai import is_ai_available
     ai_enabled = _can_edit_plan(request.user, client) and _ai_tools_enabled()
+
+    # Nudge admins when AI could be enabled but isn't configured
+    ai_nudge_admin = (
+        not ai_enabled
+        and request.user.is_admin
+        and not is_ai_available()
+    )
 
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": reverse("plans:plan_view", kwargs={"client_id": client.pk}), "label": _("Plan")},
-        {"url": "", "label": _("Add a Goal")},
+        {"url": "", "label": _("Add a %(target)s") % {"target": request.get_term("target")}},
     ]
+    # R11: Show quick picks first if 3+ common goals exist
+    quick_pick_first = len(common_goals) >= 3
+
     context = {
         "form": form,
         "client": client,
@@ -712,9 +727,164 @@ def goal_create(request, client_id):
         "common_goals": common_goals,
         "selected_metric_ids": selected_metric_ids,
         "ai_enabled": ai_enabled,
+        "ai_nudge_admin": ai_nudge_admin,
         "participant_words": request.POST.get("participant_words", ""),
+        "quick_pick_first": quick_pick_first,
     }
     return render(request, "plans/goal_form.html", context)
+
+
+@login_required
+@require_POST
+@requires_permission("plan.edit", _get_program_from_client)
+def goal_create_from_suggestion(request, client_id):
+    """Save a goal directly from an AI suggestion — HTMX POST endpoint.
+
+    Retrieves the validated suggestion from the session (stored by suggest_target_view),
+    resolves section using priority chain, creates goal + metrics atomically.
+    Returns HX-Redirect on success, error partial on failure.
+    """
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if not _can_edit_plan(request.user, client):
+        raise PermissionDenied(_("You don't have permission to edit this plan."))
+
+    suggestion_key = request.POST.get("suggestion_key", "")
+    if suggestion_key and not suggestion_key.startswith("goal_suggestion_"):
+        suggestion_key = ""
+    suggestion = request.session.pop(suggestion_key, None) if suggestion_key else None
+
+    if not suggestion or not isinstance(suggestion, dict) or not suggestion.get("name", "").strip():
+        return render(request, "plans/_goal_save_error.html", {
+            "error": _("Suggestion expired or was already used. Please try again."),
+            "client": client,
+        })
+
+    # Get program from enrolment
+    enrolment = (
+        ClientProgramEnrolment.objects.filter(client_file=client, status="active")
+        .select_related("program")
+        .first()
+    )
+    program = enrolment.program if enrolment else None
+
+    # --- Wrap all DB writes in a transaction so failures don't leave orphans ---
+    with transaction.atomic():
+        # --- Section resolution priority chain (R2) ---
+        section = None
+        suggested_section = (suggestion.get("suggested_section") or "").strip()
+
+        if suggested_section:
+            # Priority 1: Match existing section on THIS participant (case-insensitive)
+            section = PlanSection.objects.filter(
+                client_file=client, status="default",
+                name__iexact=suggested_section,
+            ).first()
+
+            # Priority 2: Match section used by OTHER participants in same program
+            if section is None and program:
+                program_section_name = (
+                    PlanSection.objects.filter(
+                        program=program, status="default",
+                    )
+                    .filter(name__iexact=suggested_section)
+                    .values_list("name", flat=True)
+                    .first()
+                )
+                if program_section_name:
+                    section = PlanSection.objects.create(
+                        client_file=client,
+                        name=program_section_name,
+                        program=program,
+                    )
+
+            # Priority 3: Create new section with AI's suggested name
+            if section is None:
+                section = PlanSection.objects.create(
+                    client_file=client,
+                    name=suggested_section,
+                    program=program,
+                )
+
+        # Priority 4: Fall back to "General"
+        if section is None:
+            section = PlanSection.objects.create(
+                client_file=client,
+                name="General",
+                program=program,
+            )
+
+        # --- Resolve metrics (single query instead of N+1) ---
+        requested_metric_ids = [
+            m["metric_id"] for m in suggestion.get("metrics", [])
+            if m.get("metric_id")
+        ]
+        metric_ids = list(
+            MetricDefinition.objects.filter(
+                pk__in=requested_metric_ids, is_enabled=True, status="active",
+            ).values_list("pk", flat=True)
+        ) if requested_metric_ids else []
+
+        # --- Custom metric (R5: included by default) ---
+        skip_custom = request.POST.get("skip_custom_metric") == "true"
+        custom = suggestion.get("custom_metric")
+        if custom and not skip_custom:
+            custom_metric = MetricDefinition.objects.create(
+                name=custom.get("name", "Custom metric")[:255],
+                definition=custom.get("definition", ""),
+                min_value=custom.get("min_value", 1),
+                max_value=custom.get("max_value", 5),
+                unit=custom.get("unit", "score"),
+                is_library=False,
+                owning_program=program,
+                category="custom",
+            )
+            metric_ids.append(custom_metric.pk)
+
+        # --- Create goal ---
+        try:
+            target = _create_goal(
+                client_file=client,
+                user=request.user,
+                name=suggestion.get("name", ""),
+                description=suggestion.get("description", ""),
+                client_goal=suggestion.get("client_goal", ""),
+                section=section,
+                program=program,
+                metric_ids=metric_ids,
+            )
+        except ValueError as e:
+            return render(request, "plans/_goal_save_error.html", {
+                "error": str(e),
+                "client": client,
+            })
+
+    # --- Success message (R5: include metric names) ---
+    goal_name = suggestion.get("name", "Goal")
+    metric_names = []
+    for m in suggestion.get("metrics", []):
+        if m.get("name"):
+            metric_names.append(m["name"])
+    if custom and not skip_custom:
+        metric_names.append(custom.get("name", "Custom metric"))
+
+    if metric_names:
+        msg = _("Goal added: '%(name)s' with metric%(plural)s %(metrics)s.") % {
+            "name": goal_name,
+            "plural": "s" if len(metric_names) > 1 else "",
+            "metrics": ", ".join(f"'{n}'" for n in metric_names),
+        }
+    else:
+        msg = _("Goal added: '%(name)s'.") % {"name": goal_name}
+
+    messages.success(request, msg)
+
+    # Return HX-Redirect for HTMX
+    redirect_url = reverse("plans:plan_view", kwargs={"client_id": client.pk})
+    response = HttpResponse(status=204)
+    response["HX-Redirect"] = redirect_url
+    return response
 
 
 @login_required
@@ -767,13 +937,21 @@ def goal_name_suggestions(request, client_id):
 @login_required
 @requires_permission("plan.edit", _get_program_from_target)
 def target_metrics(request, target_id):
-    """Assign metrics to a target — checkboxes grouped by category."""
+    """Assign a primary metric to a target with section-relevant options first."""
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
+    current = (
+        PlanTargetMetric.objects.filter(plan_target=target)
+        .select_related("metric_def")
+        .first()
+    )
+    selected_metric_id = str(current.metric_def_id) if current else ""
+
     if request.method == "POST":
         form = MetricAssignmentForm(request.POST)
+        selected_metric_id = request.POST.get("metrics", "")
         if form.is_valid():
             selected = form.cleaned_data["metrics"]
             # Remove old assignments
@@ -786,12 +964,38 @@ def target_metrics(request, target_id):
             messages.success(request, _("Metric updated."))
             return redirect("plans:plan_view", client_id=target.client_file.pk)
     else:
-        current = PlanTargetMetric.objects.filter(plan_target=target).first()
         form = MetricAssignmentForm(initial={"metrics": current.metric_def_id if current else None})
 
-    # Group metrics by category for template display
+    featured_metrics = []
+    featured_ids = set()
+    if current:
+        featured_metrics.append(current.metric_def)
+        featured_ids.add(current.metric_def_id)
+
+    section_metrics = (
+        MetricDefinition.objects.filter(
+            is_enabled=True,
+            status="active",
+            plantargetmetric__plan_target__plan_section=target.plan_section,
+            plantargetmetric__plan_target__status="default",
+        )
+        .exclude(pk__in=featured_ids)
+        .distinct()
+        .order_by("name")
+    )
+    for metric in section_metrics[:6]:
+        featured_metrics.append(metric)
+        featured_ids.add(metric.pk)
+
+    open_category = current.metric_def.get_category_display() if current else None
+
+    # Group the remaining metrics by category for template display
     metrics_by_category = {}
-    for metric in MetricDefinition.objects.filter(is_enabled=True, status="active"):
+    for metric in (
+        MetricDefinition.objects.filter(is_enabled=True, status="active")
+        .exclude(pk__in=featured_ids)
+        .order_by("category", "name")
+    ):
         cat = metric.get_category_display()
         metrics_by_category.setdefault(cat, []).append(metric)
 
@@ -799,7 +1003,10 @@ def target_metrics(request, target_id):
         "form": form,
         "target": target,
         "client": target.client_file,
+        "featured_metrics": featured_metrics,
         "metrics_by_category": metrics_by_category,
+        "open_category": open_category,
+        "selected_metric_id": selected_metric_id,
     })
 
 
@@ -914,7 +1121,7 @@ def metric_export(request):
         user_display=getattr(request.user, "display_name", str(request.user)),
         action="export",
         resource_type="MetricDefinition",
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={"detail": f"Exported {metrics.count()} metric definitions to CSV"},
     )
@@ -1045,7 +1252,7 @@ def metric_rationale_add(request, metric_id):
             action="update",
             resource_type="MetricDefinition",
             resource_id=str(metric.pk),
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             is_demo_context=getattr(request.user, "is_demo", False),
             metadata={"detail": f"Added rationale note to '{metric.name}'"},
         )
@@ -1098,7 +1305,7 @@ def metric_rationale_generate(request, metric_id):
         action="update",
         resource_type="MetricDefinition",
         resource_id=str(metric.pk),
-        ip_address=request.META.get("REMOTE_ADDR", ""),
+        ip_address=get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={"detail": f"Auto-generated rationale ({source}) for '{metric.name}'"},
     )

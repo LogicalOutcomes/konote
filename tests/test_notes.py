@@ -229,6 +229,7 @@ class NoteViewsTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Log Contact")
+        self.assertContains(resp, "Detailed Note")
 
     def test_quick_note_invalid_interaction_type_rejected(self):
         """Invalid interaction type values are rejected by form validation."""
@@ -280,6 +281,7 @@ class NoteViewsTest(TestCase):
         resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test note")
+        self.assertContains(resp, "Detailed Note")
 
     def test_note_list_filter_by_target(self):
         """Target filter shows only notes linked to the selected target."""

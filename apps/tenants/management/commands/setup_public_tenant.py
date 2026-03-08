@@ -16,7 +16,7 @@ Usage:
 """
 import os
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 
 def _pick_domain_from_allowed_hosts():
@@ -67,6 +67,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from django.db import transaction
+
         from apps.tenants.models import Agency, AgencyDomain
 
         domain = options["domain"]
@@ -75,13 +77,10 @@ class Command(BaseCommand):
         schema_name = "public"  # always target the existing public schema
 
         if not domain:
-            self.stderr.write(
-                self.style.ERROR(
-                    "No domain specified and ALLOWED_HOSTS is not set. "
-                    "Re-run with --domain <your-domain>."
-                )
+            raise CommandError(
+                "No domain specified and ALLOWED_HOSTS is not set. "
+                "Re-run with --domain <your-domain>."
             )
-            return
 
         # Idempotent: skip if this domain is already registered.
         if AgencyDomain.objects.filter(domain=domain).exists():
@@ -90,49 +89,52 @@ class Command(BaseCommand):
             )
             return
 
-        # Check whether a 'public' agency already exists (rare edge case where
-        # the agency was created but the domain insert failed).
-        agency = Agency.objects.filter(schema_name=schema_name).first()
-        if not agency:
-            self.stdout.write(
-                f"Creating agency '{name}' (schema: {schema_name})..."
-            )
-            agency = Agency(
-                name=name,
-                short_code=short_code,
-                schema_name=schema_name,
-            )
-            # Disable auto-create: the 'public' schema already exists.
-            agency.auto_create_schema = False
-            agency.save()
-            self.stdout.write(self.style.SUCCESS(f"  Agency '{name}' created."))
-        else:
-            self.stdout.write(
-                f"Reusing existing agency '{agency.name}' (schema: {schema_name})."
-            )
+        # Wrap agency creation + domain registration + localhost registration
+        # in a single transaction so partial state can't happen.
+        with transaction.atomic():
+            # Check whether a 'public' agency already exists (rare edge case where
+            # the agency was created but the domain insert failed).
+            agency = Agency.objects.filter(schema_name=schema_name).first()
+            if not agency:
+                self.stdout.write(
+                    f"Creating agency '{name}' (schema: {schema_name})..."
+                )
+                agency = Agency(
+                    name=name,
+                    short_code=short_code,
+                    schema_name=schema_name,
+                )
+                # Disable auto-create: the 'public' schema already exists.
+                agency.auto_create_schema = False
+                agency.save()
+                self.stdout.write(self.style.SUCCESS(f"  Agency '{name}' created."))
+            else:
+                self.stdout.write(
+                    f"Reusing existing agency '{agency.name}' (schema: {schema_name})."
+                )
 
-        AgencyDomain.objects.create(
-            domain=domain,
-            tenant=agency,
-            is_primary=True,
-        )
-        self.stdout.write(
-            self.style.SUCCESS(f"  Domain '{domain}' registered.")
-        )
-
-        # Register 'localhost' as a secondary domain so Docker health checks
-        # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
-        if domain != "localhost" and not AgencyDomain.objects.filter(
-            domain="localhost"
-        ).exists():
             AgencyDomain.objects.create(
-                domain="localhost",
+                domain=domain,
                 tenant=agency,
-                is_primary=False,
+                is_primary=True,
             )
             self.stdout.write(
-                "  Secondary domain 'localhost' registered (for health checks)."
+                self.style.SUCCESS(f"  Domain '{domain}' registered.")
             )
+
+            # Register 'localhost' as a secondary domain so Docker health checks
+            # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
+            if domain != "localhost" and not AgencyDomain.objects.filter(
+                domain="localhost"
+            ).exists():
+                AgencyDomain.objects.create(
+                    domain="localhost",
+                    tenant=agency,
+                    is_primary=False,
+                )
+                self.stdout.write(
+                    "  Secondary domain 'localhost' registered (for health checks)."
+                )
 
         self.stdout.write(
             self.style.SUCCESS(

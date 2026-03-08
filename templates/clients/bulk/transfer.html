@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Bulk Transfer" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% blocktrans with client=term.client_plural|default:"Participants" %}Transfer {{ client }}{% endblocktrans %}</h1>
+    <p>{% trans "Move multiple participants from one program to another." %}</p>
+</hgroup>
+
+<article>
+    <header>
+        <h2 style="font-size: 1rem; margin-bottom: 0;">{% trans "Step 1: Filter" %}</h2>
+    </header>
+
+    <form method="get"
+          hx-get="{% url 'clients:bulk_transfer_wizard' %}?filter=1"
+          hx-target="#participant-table"
+          hx-swap="innerHTML"
+          hx-push-url="false">
+        <div class="grid">
+            <div>
+                <label for="id_source_program">{% trans "From program" %}</label>
+                <select name="source_program" id="id_source_program">
+                    <option value="">{% trans "— All programs —" %}</option>
+                    {% for p in available_programs %}
+                    <option value="{{ p.pk }}" {% if filter_form.source_program.value|stringformat:"d" == p.pk|stringformat:"d" %}selected{% endif %}>{{ p.translated_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="id_status_filter">{% trans "Status" %}</label>
+                <select name="status_filter" id="id_status_filter">
+                    <option value="active" {% if filter_form.status_filter.value == "active" %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="on_hold" {% if filter_form.status_filter.value == "on_hold" %}selected{% endif %}>{% trans "On Hold" %}</option>
+                    <option value="all" {% if filter_form.status_filter.value == "all" %}selected{% endif %}>{% trans "All accessible" %}</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: end;">
+                <button type="submit">{% trans "Filter" %}</button>
+            </div>
+        </div>
+    </form>
+
+    <form method="post" id="bulk-select-form">
+        {% csrf_token %}
+        <div id="participant-table">
+            {% include "clients/bulk/_participant_table.html" %}
+        </div>
+    </form>
+</article>
+{% endblock %}

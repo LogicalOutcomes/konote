@@ -185,7 +185,7 @@
 <button type="submit" style="margin-top: 1rem;">{% trans "Save Settings" %}</button>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.querySelectorAll('.sms-char-count').forEach(function(counter) {
     var ta = document.getElementById(counter.dataset['for']);
     if (!ta) return;
@@ -208,3 +208,4 @@ document.querySelectorAll('.sms-char-count').forEach(function(counter) {
     }
 </style>
 {% endblock %}
+

@@ -13,7 +13,7 @@
     </div>
 
     <!-- Quick Navigation -->
-    <nav class="privacy-nav" aria-label="{% trans 'Privacy policy navigation' %}">
+    <nav class="pill-nav" aria-label="{% trans 'Privacy policy navigation' %}">
         <ul>
             <li><a href="#encryption">{% trans "Encryption" %}</a></li>
             <li><a href="#access-control">{% trans "Access Control" %}</a></li>
@@ -223,25 +223,7 @@
     margin-bottom: 2rem;
 }
 
-.privacy-nav {
-    background: var(--pico-card-background-color, #f5f5f5);
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-}
-
-.privacy-nav ul {
-    columns: 2;
-    margin-bottom: 0;
-    list-style: none;
-    padding: 0;
-}
-
-@media (max-width: 600px) {
-    .privacy-nav ul {
-        columns: 1;
-    }
-}
+/* pill-nav styles are in main.css */
 
 .privacy-page section {
     margin-bottom: 2rem;

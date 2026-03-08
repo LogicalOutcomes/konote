@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+**Demographics collapsed by default**
+- Sensitive demographic fields (gender identity, racial identity, LGBTQ+ status, Indigenous identity) are now collapsed behind a disclosure toggle on the participant Info tab. Staff can expand with one click when needed, but the data is no longer displayed every time a file is opened.
+- This is a clinical best-practice change — demographic data collected for equity reporting should not be surfaced during routine service interactions.
+- Admins can control which field groups are collapsed via Custom Fields settings (Admin → Custom Fields → Edit Group → "Collapsed by default" checkbox).
+- **Recommendation for agencies:** Consider moving Disability and Caregiver Status into a separate "Service Accommodations" group that stays open, since these fields are relevant to daily service delivery. This can be done in Admin → Custom Fields without any code changes.
+
+---
+
 ## [2.2.0] — 2026-02-18
 
 ### Added

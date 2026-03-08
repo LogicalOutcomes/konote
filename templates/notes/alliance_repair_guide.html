@@ -93,8 +93,8 @@
     #htmx-error-toast,
     #htmx-success-toast,
     #sr-announcer,
-    #shortcuts-modal,
-    #shortcuts-backdrop,
+    #page-help-modal,
+    #page-help-backdrop,
     .loading-bar,
     .visually-hidden-focusable,
     .guide-print-btn,
@@ -201,7 +201,7 @@
         {% trans "Print this guide" %}
     </button>
 </div>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 document.getElementById("guide-print-btn").addEventListener("click", function() { window.print(); });
 </script>
 
@@ -281,3 +281,4 @@ document.getElementById("guide-print-btn").addEventListener("click", function() 
 
 </article>
 {% endblock %}
+

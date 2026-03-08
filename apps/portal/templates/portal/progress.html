@@ -21,7 +21,7 @@
 {% block extra_scripts %}
 {% if chart_data %}
 {{ chart_data|json_script:"chart-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var allData = JSON.parse(document.getElementById('chart-data').textContent);
     var container = document.getElementById('portal-charts');
@@ -164,6 +164,7 @@
             ? chartInfo.max_value : undefined;
 
         var ctx = canvas.getContext('2d');
+        var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -186,6 +187,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -227,3 +231,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

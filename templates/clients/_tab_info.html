@@ -139,24 +139,20 @@
 {# Additional details - only if client has middle name or custom data #}
 {% if client.middle_name or custom_data %}
 <section>
-    <details open>
-        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Details" %}</h2></summary>
-
-        {% if client.middle_name %}
-        <dl class="info-grid-compact" style="margin-top: var(--kn-space-base);">
-            <div class="info-field">
-                <dt>{% trans "Middle Name" %}</dt>
-                <dd>{{ client.middle_name }}</dd>
-            </div>
-        </dl>
-        {% endif %}
-
-        {% if custom_data %}
-        <div id="custom-fields-section">
-            {% include "clients/_custom_fields_display.html" %}
+    {% if client.middle_name %}
+    <dl class="info-grid-compact" style="margin-top: var(--kn-space-base);">
+        <div class="info-field">
+            <dt>{% trans "Middle Name" %}</dt>
+            <dd>{{ client.middle_name }}</dd>
         </div>
-        {% endif %}
-    </details>
+    </dl>
+    {% endif %}
+
+    {% if custom_data %}
+    <div id="custom-fields-section">
+        {% include "clients/_custom_fields_display.html" %}
+    </div>
+    {% endif %}
 </section>
 {% endif %}
 
@@ -181,10 +177,10 @@
             {% if sharing_effective %}
             <p><span class="badge badge-success">{% trans "On" %}</span></p>
             <p class="secondary">{% blocktrans with name=client.display_name %}Notes about {{ name }} are visible to staff in all their programs.{% endblocktrans %}</p>
-            <form method="post" action="{% url 'clients:client_sharing_toggle' client_id=client.pk %}">
+            <form method="post" action="{% url 'clients:client_sharing_toggle' client_id=client.pk %}" data-confirm="{% blocktrans with name=client.display_name %}Stop sharing {{ name }}'s notes across programs? Notes will only be visible to the program that created them.{% endblocktrans %}">
                 {% csrf_token %}
                 <input type="hidden" name="sharing" value="off">
-                <button type="submit" class="outline secondary" style="font-size: 0.875rem;" onclick="return confirm('{% blocktrans with name=client.display_name %}Stop sharing {{ name }}\'s notes across programs? Notes will only be visible to the program that created them.{% endblocktrans %}')">{% trans "Stop sharing" %}</button>
+                <button type="submit" class="outline secondary" style="font-size: 0.875rem;">{% trans "Stop sharing" %}</button>
             </form>
             {% else %}
             <p><span class="badge badge-neutral">{% trans "Off" %}</span></p>
@@ -299,10 +295,9 @@
 
             {% else %}
             <p class="secondary">{% trans "DV safety flag is not active. Enable it to hide sensitive fields from front desk staff." %}</p>
-            <form method="post" action="{% url 'clients:dv_safe_enable' client_id=client.pk %}" style="margin-top: var(--kn-space-sm);">
+            <form method="post" action="{% url 'clients:dv_safe_enable' client_id=client.pk %}" style="margin-top: var(--kn-space-sm);" data-confirm="{% trans 'Enable DV safety flag? Sensitive fields will be hidden from front desk staff immediately.' %}">
                 {% csrf_token %}
-                <button type="submit" class="outline" style="font-size: 0.875rem;"
-                    onclick="return confirm('{% trans "Enable DV safety flag? Sensitive fields will be hidden from front desk staff immediately." %}')">
+                <button type="submit" class="outline" style="font-size: 0.875rem;">
                     {% trans "Enable DV Safety" %}
                 </button>
             </form>

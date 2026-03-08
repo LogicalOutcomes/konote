@@ -141,7 +141,7 @@
     </div>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     'use strict';
 
@@ -188,3 +188,4 @@
 })();
 </script>
 {% endblock %}
+

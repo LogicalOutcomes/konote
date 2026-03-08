@@ -18,7 +18,7 @@ if [ "${OPS_VERIFY_BACKUPS:-true}" != "true" ]; then
 fi
 
 TEMP_DB="_backup_verify_$(date +%Y%m%d)"
-LATEST_BACKUP=$(ls -1t /backups/main_*.dump 2>/dev/null | head -1)
+LATEST_BACKUP=$(ls -1t /backups/main_*.dump 2>/dev/null | head -1 || true)
 
 if [ -z "${LATEST_BACKUP:-}" ]; then
     echo "[$(date)] WARNING: No backup files found in /backups/ -- skipping verification"

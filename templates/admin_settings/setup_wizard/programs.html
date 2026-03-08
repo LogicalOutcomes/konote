@@ -40,7 +40,7 @@
         {% endif %}
     </div>
 
-    <button type="button" class="add-btn" onclick="addProgram()">+ {% trans "Add another program" %}</button>
+    <button type="button" class="add-btn" data-call-function="addProgram">+ {% trans "Add another program" %}</button>
 
     <div class="wizard-nav">
         <a href="{% url 'admin_settings:setup_wizard_step' step='features' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
@@ -51,7 +51,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 function addProgram() {
     var list = document.getElementById("programs-list");
     var count = list.querySelectorAll(".repeatable-group").length + 1;
@@ -66,3 +66,4 @@ function addProgram() {
 }
 </script>
 {% endblock %}
+

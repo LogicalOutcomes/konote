@@ -27,6 +27,10 @@ class SetupWizardAccessTest(TestCase):
         resp = self.client.get("/admin/settings/setup-wizard/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Setup Wizard")
+        self.assertContains(
+            resp,
+            "Guided setup for a new or reconfigured instance. Work through settings, terminology, features, programs, metrics, and templates in order.",
+        )
 
     def test_staff_cannot_access_wizard(self):
         self.client.login(username="staff", password="testpass123")

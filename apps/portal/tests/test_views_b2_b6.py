@@ -258,6 +258,15 @@ class GoalDetailViewTests(PortalViewsB2B6Base):
         self.assertContains(response, "chart-data")
         self.assertContains(response, "Confidence")
 
+    def test_goal_detail_chart_has_accessible_markup(self):
+        """Goal detail chart should expose accessible labels and descriptions."""
+        self._login()
+        response = self.client.get(f"/my/goals/{self.target.pk}/")
+
+        self.assertContains(response, 'aria-label="Chart showing your progress over time"')
+        self.assertContains(response, 'role="img"')
+        self.assertContains(response, 'id="chart-descriptions"')
+
     def test_goal_detail_404_other_client(self):
         """Cannot view another client's goal."""
         other_cf = ClientFile.objects.create(record_id="OTHER-001", status="active")
@@ -290,6 +299,14 @@ class ProgressViewTests(PortalViewsB2B6Base):
         self._login()
         response = self.client.get("/my/progress/")
         self.assertContains(response, "chart-data")
+
+    def test_progress_has_accessible_chart_summary(self):
+        """Progress page should explain the charts in plain language."""
+        self._login()
+        response = self.client.get("/my/progress/")
+
+        self.assertContains(response, "These charts show how your scores have changed over time")
+        self.assertContains(response, 'id="portal-charts"')
 
     def test_progress_empty_state(self):
         """No data should show empty state."""

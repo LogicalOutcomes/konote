@@ -84,14 +84,9 @@
     white-space: nowrap;
     border: 0;
 }
-/* Skip-link target: suppress ALL focus outlines on <main>.
-   WCAG 2.4.11 applies to interactive UI components, not landmark targets.
-   The scroll-to-content action is sufficient visual confirmation.
-   Previous attempts to show outline only for keyboard users kept breaking
-   because Chromium treats programmatic .focus() on tabindex="-1" as
-   :focus-visible, and there are many code paths that can focus <main>. */
 #main-content:focus {
-    outline: none;
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 4px;
 }
 
 /* ---- Demo mode banner ---- */
@@ -440,6 +435,10 @@ nav.breadcrumb [aria-current="page"] {
     border-radius: var(--kn-radius-card);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+/* Override Pico's "ul li { list-style: square }" which targets li directly */
+.actions-dropdown-menu li {
+    list-style: none;
+}
 .actions-dropdown-menu[hidden] {
     display: none;
 }
@@ -498,7 +497,7 @@ nav.breadcrumb [aria-current="page"] {
 .tab-bar {
     list-style: none;
     display: flex;
-    gap: 0;
+    gap: var(--kn-space-2xs, 0.25rem);
     padding: 0;
     margin: 0 0 var(--kn-space-lg) 0;
     border-bottom: 1px solid var(--kn-border-light);
@@ -693,26 +692,7 @@ output.form-output {
     text-decoration: underline;
 }
 
-/* ---- Client table — bulk mode (6 cols: checkbox + Name + ID + Status + Programs + Last Contact) ---- */
-/* :has() shifts nth-child widths right by 1 when the bulk select column is present                    */
-.client-table:has(.bulk-col) th:nth-child(1),
-.client-table:has(.bulk-col) td:nth-child(1) { width: 3rem; }
-.client-table:has(.bulk-col) th:nth-child(2),
-.client-table:has(.bulk-col) td:nth-child(2) { width: 28%; }
-.client-table:has(.bulk-col) th:nth-child(3),
-.client-table:has(.bulk-col) td:nth-child(3) { width: 12%; font-variant-numeric: tabular-nums; }
-.client-table:has(.bulk-col) th:nth-child(4),
-.client-table:has(.bulk-col) td:nth-child(4) { width: 10%; }
-.client-table:has(.bulk-col) th:nth-child(5),
-.client-table:has(.bulk-col) td:nth-child(5) { width: 28%; }
-/* col 6 (Last Contact) gets remaining ~22% — no explicit width needed */
-.client-table:has(.bulk-col) td:nth-child(2) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.client-table:has(.bulk-col) td:nth-child(2) a { text-decoration: none; }
-.client-table:has(.bulk-col) td:nth-child(2) a:hover { text-decoration: underline; }
+
 
 /* ---- Client list section headings (mixed-role grouped view) ---- */
 .client-list-section {
@@ -1170,8 +1150,9 @@ output.form-output {
 .interaction-pills label {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.75rem;
+    justify-content: center;
+    position: relative;
+    padding: 0.5rem 1rem;
     border: 2px solid var(--kn-border-light, #ccc);
     border-radius: 999px;
     cursor: pointer;
@@ -1179,15 +1160,26 @@ output.form-output {
     min-height: 44px;
     transition: border-color 0.15s, background 0.15s;
     user-select: none;
+    color: var(--kn-text);
+    margin-bottom: 0;
 }
 .interaction-pills input[type="radio"] {
-    width: auto;
-    margin: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
-.interaction-pills input[type="radio"]:checked + span,
 .interaction-pills label:has(input:checked) {
     border-color: var(--kn-primary);
     background: var(--kn-primary-subtle, #e8f0fe);
+    font-weight: 500;
+}
+.interaction-pills label:hover {
+    border-color: var(--kn-primary);
+}
+.interaction-pills label:has(input:focus-visible) {
+    outline: 2px solid var(--kn-primary-focus, var(--kn-primary));
+    outline-offset: 2px;
 }
 
 /* ---- Chip buttons (quick-pick pills — shared by meeting picker & follow-up picker) ---- */
@@ -1794,6 +1786,10 @@ button.outline.secondary:hover {
     border-radius: var(--kn-radius, 4px);
     margin-bottom: 1.5rem;
 }
+.page-help summary,
+.page-help summary strong {
+    color: var(--kn-info-fg);
+}
 .page-help-content {
     font-size: 0.875rem;
     color: var(--kn-info-fg);
@@ -1878,6 +1874,7 @@ label {
 }
 .field-engagement { max-width: 20rem; }
 .field-followup { max-width: 12rem; }
+.field-followup:has(.mp-chips) { max-width: 28rem; }
 
 @media (max-width: 768px) {
     .wrapup-grid {
@@ -2351,22 +2348,29 @@ label {
     cursor: pointer;
     padding: var(--kn-space-sm) 0;
     list-style: none;
+    display: flex;
+    align-items: center;
 }
 #tab-content section > details > summary::-webkit-details-marker {
     display: none;
 }
 #tab-content section > details > summary::marker {
     display: none;
+    content: "";
 }
 #tab-content section > details > summary::after {
-    content: "▸";
-    float: right;
-    font-size: 1.2rem;
-    color: var(--kn-text);
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    border-right: 2px solid var(--kn-text-muted);
+    border-bottom: 2px solid var(--kn-text-muted);
+    transform: rotate(-45deg);
     transition: transform 0.2s ease;
 }
 #tab-content section > details[open] > summary::after {
-    transform: rotate(90deg);
+    transform: rotate(45deg);
 }
 
 /* Follow-up Chips */
@@ -2855,9 +2859,10 @@ input[type="radio"] {
     min-width: 24px;
     min-height: 24px;
 }
-/* Enlarge click/tap area for labels containing checkboxes or radios */
-label:has(input[type="checkbox"]),
-label:has(input[type="radio"]) {
+/* Enlarge click/tap area for labels containing checkboxes or radios.
+   :where() keeps specificity at 0 so pill-style radio groups can override. */
+:where(label:has(input[type="checkbox"])),
+:where(label:has(input[type="radio"])) {
     padding: 0.5rem 0;
     cursor: pointer;
 }
@@ -3216,8 +3221,8 @@ article[aria-label="notification"].fading-out {
     }
 }
 
-/* ---- Client table card view on mobile ---- */
-@media (max-width: 600px) {
+/* ---- Client table card view on narrow screens ---- */
+@media (max-width: 768px) {
     .client-table thead {
         display: none;
     }
@@ -3359,6 +3364,7 @@ article[aria-label="notification"].fading-out {
         left: 0;
         right: 0;
         min-width: 0;
+        padding-left: 0;
     }
 }
 
@@ -3460,6 +3466,21 @@ article[aria-label="notification"].fading-out {
     .goal-card-name {
         flex-direction: column;
         align-items: flex-start;
+    }
+    /* Keep goal-card dropdown menu within viewport on mobile */
+    .goal-card-actions .actions-dropdown {
+        position: static;
+    }
+    .goal-card-actions .actions-dropdown-menu {
+        position: relative;
+        left: auto;
+        right: auto;
+        min-width: 0;
+        width: 100%;
+        box-shadow: none;
+        border: 1px solid var(--kn-border-light);
+        margin-top: var(--kn-space-xs);
+        padding-left: 0;
     }
 }
 
@@ -3845,8 +3866,8 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-primary);
 }
 
-/* Keyboard shortcuts modal */
-.keyboard-shortcuts-modal {
+/* Page help modal */
+.page-help-modal {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -3857,41 +3878,49 @@ article[aria-label="notification"].fading-out {
     box-shadow: var(--kn-shadow-card-hover);
     padding: var(--kn-space-lg);
     z-index: 10000;
-    max-width: 400px;
+    max-width: 420px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
 }
 
-.keyboard-shortcuts-modal h2 {
+.page-help-modal h2 {
+    margin: 0 0 var(--kn-space-sm) 0;
+    font-size: 1.1rem;
+}
+
+.page-help-description {
     margin: 0 0 var(--kn-space-base) 0;
-    font-size: 1rem;
-}
-
-.keyboard-shortcuts-modal dl {
-    margin: 0;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--kn-space-xs) var(--kn-space-base);
-    align-items: baseline;
-}
-
-.keyboard-shortcuts-modal dt {
-    font-family: monospace;
-    font-size: 0.8125rem;
-    background: var(--kn-primary-subtle);
-    padding: 0.125rem 0.375rem;
-    border-radius: 3px;
-    white-space: nowrap;
-}
-
-.keyboard-shortcuts-modal dd {
-    margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: var(--kn-text-secondary);
 }
 
-.keyboard-shortcuts-modal .modal-close {
+.page-help-tips {
+    margin: 0 0 var(--kn-space-base) 0;
+    padding-left: 1.25rem;
+}
+
+.page-help-tips li {
+    font-size: 0.875rem;
+    margin-bottom: var(--kn-space-xs);
+    color: var(--kn-text);
+}
+
+.page-help-more {
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.page-help-more a {
+    color: var(--kn-primary);
+    text-decoration: none;
+}
+
+.page-help-more a:hover {
+    text-decoration: underline;
+}
+
+.page-help-modal .modal-close {
     position: absolute;
     top: var(--kn-space-sm);
     right: var(--kn-space-sm);
@@ -3904,7 +3933,7 @@ article[aria-label="notification"].fading-out {
     line-height: 1;
 }
 
-.keyboard-shortcuts-modal .modal-close:hover {
+.page-help-modal .modal-close:hover {
     color: var(--kn-text);
 }
 
@@ -3916,7 +3945,7 @@ article[aria-label="notification"].fading-out {
 }
 
 .modal-backdrop[hidden],
-.keyboard-shortcuts-modal[hidden] {
+.page-help-modal[hidden] {
     display: none;
 }
 
@@ -4339,6 +4368,38 @@ article[aria-label="notification"].fading-out {
     border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
 }
 
+/* ──── Per-goal status (participant analysis) ──── */
+.goal-status-list { margin: 0; padding: 0; }
+.goal-status-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+    border: 0;
+}
+.goal-status-row dt { font-weight: 600; margin: 0; }
+.goal-status-row dd { margin: 0; }
+.goal-was { display: block; font-size: 0.85em; color: var(--kn-text-muted, #888); }
+.descriptor-dot {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    border-radius: 50%;
+    margin-right: 0.3em;
+    vertical-align: middle;
+}
+.descriptor-dot--good_place { background: #27ae60; }
+.descriptor-dot--shifting { background: #3498db; }
+.descriptor-dot--holding { background: #f39c12; }
+.descriptor-dot--harder { background: #e74c3c; }
+@media (prefers-color-scheme: dark) {
+    .descriptor-dot--good_place { background: #2ecc71; }
+    .descriptor-dot--shifting { background: #5dade2; }
+    .descriptor-dot--holding { background: #f5b041; }
+    .descriptor-dot--harder { background: #ec7063; }
+}
+.descriptor-summary { font-style: italic; margin-bottom: 0.5rem; }
+
 /* ──── Goal Builder ──── */
 .goal-builder {
     border: 1px solid var(--pico-muted-border-color);
@@ -4458,7 +4519,7 @@ article[aria-label="notification"].fading-out {
         display: flex !important;
         align-items: center;
         min-height: 44px !important;
-        padding: 8px 8px !important;
+        padding: 8px 12px !important;
     }
 
     /* Actions ▾ dropdown trigger and ✎ Edit button on client pages */
@@ -4501,11 +4562,14 @@ article[aria-label="notification"].fading-out {
         padding: 8px 0 !important;
     }
 
-    /* Actions dropdown menu items */
+    /* Actions dropdown menu items — flex-column keeps <small> descriptions
+       on their own line instead of running into the link text */
     .actions-dropdown-menu li a,
     .actions-dropdown-menu li button {
         display: flex !important;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
         min-height: 44px !important;
         padding: 8px var(--kn-space-base, 16px) !important;
     }
@@ -4692,12 +4756,24 @@ article[aria-label="notification"].fading-out {
 .error-summary ul { margin-bottom: 0; }
 .error-summary a { color: var(--kn-danger-fg); text-decoration: underline; }
 
+/* Softer form validation notice (amber instead of red) */
+.form-notice {
+    background: var(--kn-warning-bg);
+    color: var(--kn-warning-fg);
+    border: 1px solid var(--kn-warning-fg);
+    border-radius: var(--pico-border-radius);
+    padding: var(--kn-space-sm) var(--kn-space-md);
+    margin-bottom: var(--kn-space-md);
+}
+.form-notice ul { margin-bottom: 0; }
+.form-notice a { color: var(--kn-warning-fg); text-decoration: underline; }
+
 /* Common goal cards — tappable quick-pick tiles */
 .goal-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--kn-space-sm);
-    margin: var(--kn-space-sm) 0;
+    gap: var(--kn-space-xs);
+    margin: var(--kn-space-xs) 0;
 }
 .goal-card {
     display: flex;
@@ -4790,12 +4866,24 @@ article[aria-label="notification"].fading-out {
 
 /* ── AI Target Suggestion (redesigned Add Target page) ── */
 
+.goal-entry-intro {
+    background: var(--kn-primary-subtle);
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-base);
+}
+.goal-entry-intro p {
+    margin: var(--kn-space-xs) 0 0;
+    color: var(--kn-text-secondary);
+}
+
 /* Entry point divider ("or") */
 .entry-divider {
     display: flex;
     align-items: center;
     gap: var(--kn-space-base);
-    margin: var(--kn-space-lg) 0;
+    margin: var(--kn-space-sm) 0;
     color: var(--pico-muted-color);
     font-size: 0.9em;
 }
@@ -4804,6 +4892,11 @@ article[aria-label="notification"].fading-out {
     content: "";
     flex: 1;
     border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.manual-entry-row {
+    margin: var(--kn-space-base) 0 0;
+    text-align: center;
 }
 
 /* Non-AI two-phase form layout */
@@ -4823,13 +4916,11 @@ article[aria-label="notification"].fading-out {
     margin: var(--kn-space-xs) 0 0;
 }
 .phase-action {
-    text-align: center;
-    margin: var(--kn-space-lg) 0;
+    margin: var(--kn-space-sm) 0;
 }
 .show-all-link {
     display: block;
-    text-align: center;
-    margin-top: var(--kn-space-lg);
+    margin-top: var(--kn-space-sm);
     font-size: 0.875rem;
     color: var(--kn-text-muted);
 }
@@ -4946,6 +5037,128 @@ article[aria-label="notification"].fading-out {
     border-left: 3px solid var(--kn-danger-fg);
     border-radius: var(--kn-radius-card, 8px);
     margin-bottom: var(--kn-space-base);
+}
+
+/* Sparkle icon on AI button (R3) */
+.btn-sparkle-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    margin-right: 0.3em;
+    fill: currentColor;
+}
+
+/* Save loading state within suggestion card (R1b) */
+.save-loading-state {
+    text-align: center;
+    padding: var(--kn-space-sm) 0;
+}
+.save-loading-state small {
+    animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+/* Loading pulse animation (T-5) */
+@keyframes loading-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* AI loading bar enhanced animation */
+#ai-loading small {
+    display: inline-block;
+    animation: loading-pulse 2s ease-in-out infinite;
+}
+
+/* Suggestion area demoted line (R4) */
+.suggestion-area {
+    display: block;
+    margin-top: var(--kn-space-xs);
+    margin-bottom: var(--kn-space-sm);
+}
+
+/* Custom metric opt-out link (R5) */
+.custom-metric-opt-out {
+    margin-top: var(--kn-space-xs);
+}
+.custom-metric-opt-out a {
+    text-decoration: underline;
+}
+
+/* R24: "Why these metrics?" collapsible */
+.why-suggestion {
+    margin: var(--kn-space-sm) 0;
+    font-size: 0.9rem;
+}
+.why-suggestion summary {
+    cursor: pointer;
+    color: var(--pico-muted-color);
+}
+.why-suggestion ul {
+    margin: var(--kn-space-xs) 0 0;
+    padding-left: 1.25em;
+}
+.why-suggestion li {
+    margin-bottom: var(--kn-space-xs);
+}
+
+/* R21: Persistent participant words echo */
+.participant-words-echo {
+    background: var(--kn-primary-subtle);
+    border-left: 3px solid var(--kn-primary);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-xs) var(--kn-space-base);
+    margin-bottom: var(--kn-space-base);
+    font-size: 0.9rem;
+}
+.participant-words-echo small {
+    color: var(--kn-text-muted);
+    font-size: 0.8125rem;
+}
+.participant-words-echo em {
+    display: block;
+    margin-top: var(--kn-space-xs);
+}
+
+/* R13: Help icon tooltip on legend */
+.help-icon {
+    display: inline-block;
+    cursor: help;
+    font-size: 0.85em;
+    color: var(--pico-muted-color);
+    vertical-align: middle;
+    margin-left: 0.25em;
+}
+
+/* R12: Participant words textarea minimum height */
+#participant-words {
+    min-height: 4.5em;
+}
+
+/* R22: Quick pick words prompt */
+#quick-pick-words {
+    margin: var(--kn-space-base) 0;
+    padding: var(--kn-space-base);
+    background: var(--kn-primary-subtle);
+    border-radius: var(--kn-radius-card, 8px);
+}
+#quick-pick-words label {
+    font-weight: 600;
+    margin-bottom: var(--kn-space-xs);
+}
+#quick-pick-words textarea {
+    margin-bottom: var(--kn-space-sm);
+}
+
+/* Suggestion actions responsive stacking (mobile) */
+@media (max-width: 576px) {
+    .suggestion-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--kn-space-xs);
+    }
+    .suggestion-actions button {
+        width: 100%;
+    }
 }
 
 /* Metric tiers — collapsible sections (Tier 2 & 3) */
@@ -5258,134 +5471,60 @@ article[aria-label="notification"].fading-out {
     margin-right: 0.25rem;
 }
 
-/* ══════════════════════════════════════════════════════════════════ */
-/* ── Bulk Operations (UX17)                                     ── */
-/* ══════════════════════════════════════════════════════════════════ */
-
-/* Checkbox column — narrow, fixed width */
-.bulk-col {
-    width: 3rem;
-    text-align: center;
-    padding-left: var(--kn-space-sm) !important;
-    padding-right: var(--kn-space-xs) !important;
-}
-.bulk-col input[type="checkbox"] {
-    margin: 0;
-    width: 1.125rem;
-    height: 1.125rem;
-    min-height: auto;
-    cursor: pointer;
+/* ---- Pill navigation (shared by help + privacy pages) ---- */
+.pill-nav {
+    background: var(--pico-card-background-color, #f5f5f5);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
 }
 
-/* Sticky action bar at bottom of viewport */
-.bulk-action-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
+.pill-nav ul {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--kn-space-base);
-    padding: var(--kn-space-sm) var(--kn-space-lg);
-    background: var(--kn-card-bg, #fff);
-    border-top: 2px solid var(--kn-primary);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-}
-.bulk-action-bar[hidden] {
-    display: none;
-}
-.bulk-action-bar__count {
-    font-weight: 600;
-    font-size: 0.9375rem;
-    color: var(--kn-text);
-    white-space: nowrap;
-}
-.bulk-action-bar__actions {
-    display: flex;
-    gap: var(--kn-space-sm);
     flex-wrap: wrap;
-}
-.bulk-action-bar__actions .btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-    min-height: 36px;
-}
-
-/* Bulk modal — centred overlay */
-.bulk-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--kn-card-bg, #fff);
-    border-radius: var(--kn-radius-card, 8px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    z-index: 10001;
-    padding: var(--kn-space-lg);
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-.bulk-modal[hidden] {
-    display: none;
-}
-.bulk-modal h2 {
-    margin: 0 0 var(--kn-space-base) 0;
-    font-size: 1.125rem;
-}
-.bulk-client-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid var(--kn-border, #dee2e6);
-    border-radius: var(--kn-radius, 4px);
-    padding: var(--kn-space-sm);
-    margin-bottom: var(--kn-space-base);
-    font-size: 0.875rem;
+    gap: 0.5rem;
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
-.bulk-client-list li {
-    padding: 0.25rem 0;
-    border-bottom: 1px solid var(--kn-border-light, #f0f0f0);
+
+.pill-nav li {
+    margin: 0;
 }
-.bulk-client-list li:last-child {
-    border-bottom: none;
-}
-.bulk-modal__actions {
-    display: flex;
-    gap: var(--kn-space-sm);
-    justify-content: flex-end;
-    margin-top: var(--kn-space-base);
-}
-.bulk-modal .form-group {
-    margin-bottom: var(--kn-space-base);
-}
-.bulk-modal .form-error {
-    color: var(--kn-danger-fg);
+
+.pill-nav a {
     display: block;
-    margin-top: 0.25rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--pico-primary-background, #3176aa);
+    color: var(--pico-primary-inverse, #fff);
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: opacity 0.15s;
 }
 
-@media (max-width: 768px) {
-    .bulk-action-bar {
-        flex-direction: column;
-        gap: var(--kn-space-xs);
-        padding: var(--kn-space-sm);
-    }
-    .bulk-modal {
-        width: 95%;
-        max-width: none;
-    }
+.pill-nav a:hover,
+.pill-nav a:focus {
+    opacity: 0.85;
 }
 
-@media (prefers-color-scheme: dark) {
-    .bulk-action-bar {
-        border-top-color: var(--kn-primary);
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
-    }
-    .bulk-modal {
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
+/* ---- CIDS / classification inline utilities ---- */
+.inline-form {
+    display: inline;
+}
+
+.compact-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.grid-single {
+    grid-template-columns: 1fr;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }

@@ -8,6 +8,8 @@ You add it as a connection in OpenWebUI — point to the server's address in the
 
 ## What It's For
 
+For KoNote operations, assume open-ended participant suggestion categorisation uses this self-hosted open-source model rather than a public AI API.
+
 The main use case is **data cleaning for qualitative analysis** — preparing raw survey responses so they're ready for deep analysis by a frontier model.
 
 ### How the Two-Stage Workflow Works

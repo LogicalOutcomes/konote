@@ -151,7 +151,7 @@
     </div>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     const providerSelect = document.getElementById('id_document_storage_provider');
     const templateInput = document.getElementById('id_document_storage_url_template');
@@ -180,3 +180,4 @@
 })();
 </script>
 {% endblock %}
+

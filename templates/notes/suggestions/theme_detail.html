@@ -83,7 +83,7 @@
         {% endif %}
 
         {% if theme.status != "wont_do" %}
-        <form method="post" style="display:inline;" onsubmit="return confirm('{% trans "Are you sure? This marks the theme as something that won\'t be acted on." %}');">
+        <form method="post" style="display:inline;" data-confirm="{% trans 'Are you sure? This marks the theme as something that won\'t be acted on.' %}">
             {% csrf_token %}
             <input type="hidden" name="action" value="status_update">
             <input type="hidden" name="new_status" value="wont_do">
@@ -125,7 +125,7 @@
 </section>
 {% endif %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var tablist = document.querySelector('[role="tablist"]');
     var tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
@@ -181,3 +181,4 @@
 })();
 </script>
 {% endblock %}
+

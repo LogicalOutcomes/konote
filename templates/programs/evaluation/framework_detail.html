@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ framework.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ framework.name }}</h1>
+    <p>{{ framework.program.name }} — {{ framework.get_status_display }}</p>
+</hgroup>
+
+<div class="grid">
+    <a href="{% url 'programs:framework_edit' framework_id=framework.pk %}" role="button" class="outline">{% trans "Edit Framework" %}</a>
+    <a href="{% url 'programs:component_add' framework_id=framework.pk %}" role="button" class="outline">{% trans "Add Component" %}</a>
+    <a href="{% url 'programs:evidence_add' framework_id=framework.pk %}" role="button" class="outline">{% trans "Add Evidence" %}</a>
+    {% if not framework.is_attested %}
+    <a href="{% url 'programs:framework_attest' framework_id=framework.pk %}" role="button">{% trans "Attest" %}</a>
+    {% endif %}
+</div>
+
+<section>
+    <h2>{% trans "CIDS Class Coverage" %}</h2>
+    <p>{{ cids_coverage|length }} / {{ total_cids_classes }} {% trans "classes mapped" %} ({{ coverage_pct }}%)</p>
+    <progress value="{{ cids_coverage|length }}" max="{{ total_cids_classes }}"></progress>
+
+    {% if framework.is_attested %}
+    <article>
+        <header>{% trans "Evaluator Attestation" %}</header>
+        <p><strong>{% trans "Attested by:" %}</strong> {{ framework.evaluator_attestation_by.display_name }}</p>
+        <p><strong>{% trans "Date:" %}</strong> {{ framework.evaluator_attestation_at|date:"Y-m-d H:i" }}</p>
+        {% if framework.evaluator_attestation_scope %}
+        <p><strong>{% trans "Scope:" %}</strong> {{ framework.evaluator_attestation_scope|join:", " }}</p>
+        {% endif %}
+        {% if framework.evaluator_attestation_text %}
+        <p>{{ framework.evaluator_attestation_text }}</p>
+        {% endif %}
+    </article>
+    {% endif %}
+</section>
+
+{% if framework.summary %}
+<section>
+    <h2>{% trans "Summary" %}</h2>
+    <p>{{ framework.summary|linebreaksbr }}</p>
+</section>
+{% endif %}
+
+{% if component_groups %}
+<section>
+    <h2>{% trans "Components" %}</h2>
+    {% for group_name, components in component_groups.items %}
+    <h3>{{ group_name }}</h3>
+    <figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "CIDS Class" %}</th>
+                <th scope="col">{% trans "Quality" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in components %}
+            <tr>
+                <td>
+                    <strong>{{ comp.name }}</strong>
+                    {% if comp.description %}<br><small>{{ comp.description|truncatewords:20 }}</small>{% endif %}
+                </td>
+                <td><code>{{ comp.cids_class }}</code></td>
+                <td>{{ comp.get_quality_state_display }}</td>
+                <td>
+                    <a href="{% url 'programs:component_edit' framework_id=framework.pk component_id=comp.pk %}">{% trans "Edit" %}</a>
+                    <form method="post" action="{% url 'programs:component_deactivate' framework_id=framework.pk component_id=comp.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="outline contrast compact-btn">{% trans "Remove" %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+    {% endfor %}
+</section>
+{% else %}
+<section>
+    <h2>{% trans "Components" %}</h2>
+    <p>{% trans "No components yet." %} <a href="{% url 'programs:component_add' framework_id=framework.pk %}">{% trans "Add one" %}</a></p>
+</section>
+{% endif %}
+
+{% if evidence %}
+<section>
+    <h2>{% trans "Evidence" %}</h2>
+    <figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Title" %}</th>
+                <th scope="col">{% trans "Source Type" %}</th>
+                <th scope="col">{% trans "PII" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in evidence %}
+            <tr>
+                <td>{{ link.title }}</td>
+                <td>{{ link.get_source_type_display }}</td>
+                <td>{% if link.contains_pii %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                <td>
+                    <form method="post" action="{% url 'programs:evidence_delete' framework_id=framework.pk evidence_id=link.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <button type="submit" class="outline contrast compact-btn">{% trans "Remove" %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+</section>
+{% endif %}
+
+<p><a href="{% url 'programs:framework_list' %}">{% trans "Back to frameworks" %}</a></p>
+{% endblock %}

@@ -14,7 +14,7 @@
     {% csrf_token %}
 
     <!-- Zone 1: Session Setup -->
-    <fieldset class="session-setup" role="group" aria-label="{% trans 'Session setup' %}">
+    <fieldset class="session-setup" aria-label="{% trans 'Session setup' %}">
         <div class="session-setup-grid">
             <div class="field-template">
                 <label for="{{ form.template.id_for_label }}">{% trans "Template" %}</label>
@@ -226,8 +226,12 @@
     <p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %} <a href="{% url 'plans:plan_view' client_id=client.pk %}">{% trans "Create a plan" %}</a> {% trans "first." %}</p>
     {% endif %}
 
+    <details id="session-overall-details" class="session-overall-details"{% if not target_forms %} open{% endif %}>
+        <summary>{% trans "Session reflections and follow-up" %}</summary>
+        <p class="secondary"><small>{% trans "Optional overall reflections after you have captured the target-specific details you need." %}</small></p>
+
     <!-- Zone 3: The Session Overall (Two-Lens Layout) -->
-    <fieldset class="session-overall" role="group" aria-labelledby="session-overall-legend">
+    <fieldset class="session-overall" aria-labelledby="session-overall-legend">
         <legend id="session-overall-legend" class="sr-only">{% trans "The session overall" %}</legend>
         <h2 aria-hidden="true">{% trans "The session overall" %}</h2>
         
@@ -327,12 +331,13 @@
         {% if form.circle.help_text %}<small id="circle-help">{{ form.circle.help_text }}</small>{% endif %}
     </fieldset>
     {% endif %}
+    </details>
 
     <!-- Sticky footer with confirmation and save -->
     <div class="sticky-form-footer" role="region" aria-label="{% trans 'Confirm and save' %}">
         <div class="sticky-form-footer-inner">
             <div class="completeness-indicator" aria-live="polite">
-                <span id="completeness-text">✓ 0 {% trans "of" %} 0 {% trans "targets" %}</span>
+                <span id="completeness-text">{% trans "Select a target to begin" %}</span>
             </div>
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">
                 <span class="status-text">{% trans "Saved" %}</span>
@@ -348,7 +353,7 @@
 
 {% block extra_scripts %}
 {{ template_defaults|json_script:"template-defaults" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 // Show/hide target cards based on checkbox selection
 document.querySelectorAll(".target-selector").forEach(function (cb) {
     cb.addEventListener("change", function () {
@@ -435,6 +440,7 @@ document.querySelectorAll(".expand-btn").forEach(function (btn) {
 // Completeness Indicator Logic
 function updateCompleteness() {
     var indicator = document.getElementById("completeness-text");
+    var overallDetails = document.getElementById("session-overall-details");
     if (!indicator) return;
     
     var selectedTargets = document.querySelectorAll(".target-selector:checked").length;
@@ -449,7 +455,13 @@ function updateCompleteness() {
         }
     });
     
-    indicator.textContent = "✓ " + completedTargets + " {% trans 'of' %} " + selectedTargets + " {% trans 'targets' %}";
+    if (selectedTargets === 0) {
+        indicator.textContent = "{% trans 'Select a target to begin' %}";
+        if (overallDetails) overallDetails.open = false;
+    } else {
+        indicator.textContent = "✓ " + completedTargets + " {% trans 'of' %} " + selectedTargets + " {% trans 'targets' %}";
+        if (overallDetails) overallDetails.open = true;
+    }
     
     var container = indicator.closest(".completeness-indicator");
     if (container) {
@@ -504,3 +516,4 @@ if (templateSelect && interactionSelect && defaultsEl) {
 }
 </script>
 {% endblock %}
+

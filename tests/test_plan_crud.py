@@ -576,17 +576,19 @@ class GoalCreateTest(PlanCRUDBaseTest):
         self.assertEqual(target.name, "Manage anxiety")
         self.assertEqual(PlanTargetMetric.objects.filter(plan_target=target).count(), 0)
 
-    def test_new_section_requires_name(self):
-        """If 'Create new section' is selected, a name must be provided."""
+    def test_new_section_defaults_to_general(self):
+        """If 'Create new section' is selected with no name, defaults to 'General'."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:goal_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
             "name": "Some goal",
             "section_choice": "new",
-            "new_section_name": "",  # empty
+            "new_section_name": "",  # empty — should default to "General"
         })
-        self.assertEqual(resp.status_code, 200)  # form redisplayed with error
-        self.assertEqual(PlanTarget.objects.count(), 0)
+        self.assertEqual(resp.status_code, 302)  # redirect on success
+        self.assertEqual(PlanTarget.objects.count(), 1)
+        section = PlanSection.objects.get(name="General")
+        self.assertEqual(PlanTarget.objects.first().plan_section, section)
 
     def test_manager_cannot_create_goal(self):
         """Program manager has plan.edit: DENY — cannot create goals."""
@@ -733,6 +735,15 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ai_enabled", response.context)
         self.assertTrue(response.context["ai_enabled"])
+        self.assertContains(response, "Suggest a draft")
+        self.assertContains(response, "Or fill in the form manually")
+        self.assertNotContains(response, "Need help drafting this")
+        self.assertContains(response, "Tips for writing a good")
+        self.assertNotContains(response, "Tips for writing a good goal")
+        self.assertContains(response, "You can revise this Target later")
+        self.assertContains(response, "Saving your Target")
+        self.assertContains(response, "id=\"goal-form\" novalidate hidden")
+        self.assertContains(response, 'name="client_goal"')
 
     @patch("apps.plans.views._can_edit_plan", return_value=True)
     @patch("konote.ai_views._ai_tools_enabled", return_value=False)
@@ -744,3 +755,43 @@ class TestGoalCreateView(PlanCRUDBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ai_enabled", response.context)
         self.assertFalse(response.context["ai_enabled"])
+
+    def test_target_metrics_page_shows_primary_metric_guidance(self):
+        """Metric assignment page emphasizes a single primary metric and direct search."""
+        self.http.login(username="counsellor", password="pass")
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Confidence Goals",
+            program=self.program,
+        )
+        metric = MetricDefinition.objects.create(
+            name="Confidence Score",
+            definition="1-5 scale",
+            category="general",
+            is_enabled=True,
+            min_value=1,
+            max_value=5,
+        )
+        MetricDefinition.objects.create(
+            name="Community Participation",
+            definition="Tracks community participation",
+            category="general",
+            is_enabled=True,
+            min_value=1,
+            max_value=5,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section,
+            client_file=self.client_file,
+            name="Build confidence",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        url = reverse("plans:target_metrics", args=[target.pk])
+        response = self.http.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose a Primary Metric")
+        self.assertContains(response, "Choose one primary metric for this target")
+        self.assertContains(response, 'type="radio"')
+        self.assertContains(response, "Filter metrics")

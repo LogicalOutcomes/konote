@@ -219,8 +219,7 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 | Task dashboard (one line per task) | `TODO.md` |
 | Task detail, subtasks, context, notes | `tasks/*.md` |
 | Phase prompts for Claude Code | `tasks/phase-*-prompt.md` |
-| Review prompts (how to run reviews) | `tasks/deep-review-prompt.md`, `tasks/code-review-framework.md` |
-| Review results (findings, vulnerabilities) | `konote-qa-scenarios/reviews/YYYY-MM-DD/` (private repo) |
+| Review prompts, framework, and results | `konote-ops/reviews/` (private repo) |
 | Design rationale for complex features | `tasks/design-rationale/*.md` |
 | Decisions, notes, changelog | `CHANGELOG.md` |
 | How Claude manages tasks | `CLAUDE.md` (this section) |
@@ -253,6 +252,7 @@ Current DRRs (read the file before modifying related features — all in `tasks/
 - `document-integration.md` — SharePoint + Google Drive integration
 - `no-live-api-individual-data.md` — No live API for individual PII
 - `self-hosted-llm-infrastructure.md` — Self-hosted LLM (Ollama/OVHcloud)
+- `encryption-key-rotation.md` — Encryption key rotation procedures
 
 ### How Claude Manages Tasks
 

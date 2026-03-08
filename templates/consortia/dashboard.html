@@ -46,10 +46,10 @@
 {% if is_consortium_lead %}
 <div class="view-toggle">
     <fieldset role="group">
-        <button id="btn-network" class="outline" aria-pressed="true" onclick="toggleView('network')">
+        <button id="btn-network" class="outline" aria-pressed="true" data-call-function="toggleView" data-call-args='["network"]'>
             {% trans "Network View" %}
         </button>
-        <button id="btn-agency" class="outline secondary" aria-pressed="false" onclick="toggleView('agency')">
+        <button id="btn-agency" class="outline secondary" aria-pressed="false" data-call-function="toggleView" data-call-args='["agency"]'>
             {% trans "Agency View" %}
         </button>
     </fieldset>
@@ -178,7 +178,7 @@
 
 {% block extra_scripts %}
 {% if rollup %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 // Colourblind-safe palette — expert panel item #6
 const PALETTE = ['#0077BB','#33BBEE','#009988','#EE7733','#CC3311','#EE3377','#BBBBBB','#AA4499'];
 
@@ -194,6 +194,7 @@ function makeBarChart(canvasId, tableId, dataKey, labelKey) {
     const rows = (rollupData.demographics || {})[dataKey] || [];
     const labels = rows.map(r => r.label || '');
     const counts = rows.map(r => typeof r.count === 'number' ? r.count : 0);
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Chart
     const ctx = document.getElementById(canvasId);
@@ -210,6 +211,9 @@ function makeBarChart(canvasId, tableId, dataKey, labelKey) {
             },
             options: {
                 responsive: true,
+                animation: {
+                    duration: prefersReducedMotion ? 0 : undefined,
+                },
                 plugins: {
                     legend: { display: false },
                     // Data labels for colourblind accessibility
@@ -272,3 +276,4 @@ function toggleView(view) {
 </script>
 {% endif %}
 {% endblock %}
+

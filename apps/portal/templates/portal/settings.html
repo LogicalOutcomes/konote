@@ -10,7 +10,7 @@
 <section aria-labelledby="password-heading">
     <h2 id="password-heading">{% trans "Password" %}</h2>
     <p>{% trans "Keep your account secure by using a strong password." %}</p>
-    <a href="{% url 'portal:change_password' %}" role="button" class="secondary">
+    <a href="{% url 'portal:change_password' %}" class="secondary">
         {% trans "Change my password" %}
     </a>
 </section>
@@ -25,7 +25,7 @@
     <p>{% trans "Two-step verification is turned on. You use an authenticator app to sign in." %}</p>
     {% else %}
     <p>{% trans "Two-step verification is not set up yet. It adds extra security to your account." %}</p>
-    <a href="{% url 'portal:mfa_setup' %}" role="button" class="secondary">
+    <a href="{% url 'portal:mfa_setup' %}" class="secondary">
         {% trans "Set up two-step verification" %}
     </a>
     {% endif %}

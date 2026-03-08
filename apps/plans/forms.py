@@ -2,6 +2,7 @@
 import json
 
 from django import forms
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from apps.auth_app.constants import ROLE_PROGRAM_MANAGER
@@ -162,17 +163,35 @@ class MetricDefinitionForm(forms.ModelForm):
         self.fields["name_fr"].help_text = _("French name, shown when a user's language is French. Leave blank to use the English name.")
         self.fields["definition"].help_text = _("Describe what this metric measures and how to score it. Shown to staff during note entry.")
         self.fields["definition_fr"].help_text = _("French definition. Leave blank to use the English definition.")
+        self.fields["category"].help_text = _("Used to group similar metrics together in the library.")
+        self.fields["metric_type"].help_text = _("Scale = a numeric score. Achievement = named outcomes such as employed or housed. Open text = narrative only.")
+        self.fields["min_value"].help_text = _("Usual minimum score for this metric.")
+        self.fields["max_value"].help_text = _("Usual maximum score for this metric.")
         self.fields["higher_is_better"].help_text = _("Uncheck for metrics where lower scores indicate improvement (e.g. PHQ-9 depression scale).")
-        self.fields["warn_min"].help_text = _("Soft warning minimum. Values below this trigger a plausibility alert.")
-        self.fields["warn_max"].help_text = _("Soft warning maximum. Values above this trigger a plausibility alert.")
+        self.fields["warn_min"].help_text = _("Optional soft warning minimum. Staff can still save lower values, but KoNote will ask them to confirm the score.")
+        self.fields["warn_max"].help_text = _("Optional soft warning maximum. Staff can still save higher values, but KoNote will ask them to confirm the score.")
         self.fields["cadence_sessions"].label = _("Recording cadence (sessions)")
         self.fields["cadence_sessions"].help_text = _("How many sessions between prompts for this metric. Leave blank to prompt every session.")
+        self.fields["threshold_low"].help_text = _("Optional reporting threshold for the low end of the target range.")
+        self.fields["threshold_high"].help_text = _("Optional reporting threshold for the high end of the target range.")
+        self.fields["achievement_options"].help_text = _("For achievement metrics, list the answer choices staff can select.")
+        self.fields["achievement_success_values"].help_text = _("Which of the achievement options count as success in reports.")
+        self.fields["target_rate"].help_text = _("Optional target percentage used for reporting or dashboards.")
+        self.fields["target_band_high_pct"].help_text = _("Optional upper bound for the target percentage band.")
+        self.fields["owning_program"].help_text = _("Leave blank to make this metric available organisation-wide. Choose a program to keep it program-specific.")
         # Assessment fields
         self.fields["is_standardized_instrument"].help_text = _("Check if this is a published, validated instrument (e.g. PHQ-9, GAD-7).")
         self.fields["assessment_at_intake"].help_text = _("Administer this assessment at intake (first session).")
         self.fields["assessment_at_discharge"].help_text = _("Administer this assessment at discharge.")
         self.fields["assessment_interval_days"].label = _("Assessment interval (days)")
         self.fields["assessment_interval_days"].help_text = _("Days between scheduled administrations (e.g. 90 for quarterly). Leave blank for no schedule.")
+        self.fields["iris_metric_code"].help_text = _("Optional external IRIS+ mapping. Usually reviewed later by an admin or reporting lead unless you already know the exact code.")
+        self.fields["sdg_goals"].help_text = _("Optional reporting classification. Usually assigned later during reporting review, not required when creating the metric.")
+        self.fields["cids_indicator_uri"].help_text = _("Stable identifier for this metric in CIDS exports. KoNote will create a local one automatically if you leave this blank.")
+        self.fields["cids_unit_description"].help_text = _("Human-readable unit label for export. KoNote usually copies this from the plain-language unit automatically.")
+        self.fields["cids_defined_by"].help_text = _("Who defined this indicator. KoNote fills this automatically unless you need to record a known external source.")
+        self.fields["cids_has_baseline"].help_text = _("Optional baseline wording for reporting. This is usually added later, once reporting definitions are settled.")
+        self.fields["cids_theme_override"].help_text = _("Optional reporting override when later classification needs a different theme. Usually left blank at creation time.")
 
         if requesting_user and not requesting_user.is_admin:
             from apps.programs.models import Program, UserProgramRole
@@ -296,6 +315,7 @@ class GoalForm(forms.Form):
     )
     name = forms.CharField(
         max_length=255,
+        error_messages={"required": _("Please give this goal a short name.")},
         widget=forms.TextInput(attrs={
             "placeholder": _("e.g., Find stable housing"),
             "autocomplete": "off",
@@ -324,8 +344,8 @@ class GoalForm(forms.Form):
         help_text=_("Choose the one metric most meaningful to both of you. You can change it later."),
     )
 
-    field_order = ["client_goal", "name", "section_choice", "new_section_name",
-                   "description", "metrics"]
+    field_order = ["client_goal", "name", "description", "metrics",
+                   "section_choice", "new_section_name"]
 
     def __init__(self, *args, client_file=None, participant_name="", **kwargs):
         super().__init__(*args, **kwargs)
@@ -354,10 +374,11 @@ class GoalForm(forms.Form):
         )
 
         # Populate section choices from client's active sections
+        # R9: Order by most recently created so the default is the newest section
         if client_file:
             sections = PlanSection.objects.filter(
                 client_file=client_file, status="default",
-            ).order_by("sort_order")
+            ).order_by("-pk")
             choices = [(str(s.pk), s.name) for s in sections]
             choices.append(("new", _("+ Create new section")))
             self.fields["section_choice"].choices = choices
@@ -367,14 +388,12 @@ class GoalForm(forms.Form):
         section_choice = cleaned.get("section_choice", "")
         new_name = cleaned.get("new_section_name", "").strip()
 
+        # R9: If "new" chosen but no name given, default to "General"
         if section_choice == "new" and not new_name:
-            self.add_error(
-                "new_section_name",
-                _("Please enter a name for the new section."),
-            )
+            cleaned["new_section_name"] = str(_("General"))
         elif not section_choice:
             raise forms.ValidationError(
-                _("Please select a section or create a new one.")
+                _("Please choose which area of the plan this goal belongs to.")
             )
 
         return cleaned
@@ -386,6 +405,7 @@ class MetricImportForm(forms.Form):
     csv_file = forms.FileField(
         label=_("CSV File"),
         help_text=_("Upload a CSV with columns: name, definition, category, min_value, max_value, unit. Optional French columns: name_fr, definition_fr, unit_fr"),
+        validators=[FileExtensionValidator(allowed_extensions=["csv"])],
     )
 
     def clean_csv_file(self):

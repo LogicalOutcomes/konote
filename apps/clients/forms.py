@@ -234,6 +234,22 @@ class ClientFileForm(forms.Form):
         return phone
 
 
+DISCHARGE_REASON_CHOICES = [
+    ("completed", _("Completed")),
+    ("goals_met", _("Goals Met")),
+    ("program_closure", _("Program Closure")),
+    ("cohort_ended", _("Cohort Ended")),
+    ("withdrew", _("Withdrew")),
+    ("transferred", _("Transferred")),
+    ("referred_out", _("Referred Out")),
+    ("lost_contact", _("Lost Contact")),
+    ("moved", _("Moved")),
+    ("ineligible", _("Ineligible")),
+    ("deceased", _("Deceased")),
+    ("other", _("Other")),
+]
+
+
 class DischargeForm(forms.Form):
     """Form for discharging a client from a specific program.
 
@@ -242,18 +258,7 @@ class DischargeForm(forms.Form):
     """
 
     end_reason = forms.ChoiceField(
-        choices=[
-            ("completed", _("Completed")),
-            ("goals_met", _("Goals Met")),
-            ("withdrew", _("Withdrew")),
-            ("transferred", _("Transferred")),
-            ("referred_out", _("Referred Out")),
-            ("lost_contact", _("Lost Contact")),
-            ("moved", _("Moved")),
-            ("ineligible", _("Ineligible")),
-            ("deceased", _("Deceased")),
-            ("other", _("Other")),
-        ],
+        choices=DISCHARGE_REASON_CHOICES,
         widget=forms.RadioSelect,
         label=_("Why is this person leaving?"),
     )
@@ -330,10 +335,18 @@ class ClientTransferForm(forms.Form):
 class CustomFieldGroupForm(forms.ModelForm):
     class Meta:
         model = CustomFieldGroup
-        fields = ["title", "sort_order", "status"]
+        fields = ["title", "sort_order", "collapsed_by_default", "status"]
         labels = {
             "sort_order": _("Display order"),
+            "collapsed_by_default": _("Collapsed by default (display only — does not restrict access)"),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].help_text = _("Use groups to bundle related fields together, such as Intake, Demographics, or Accessibility.")
+        self.fields["sort_order"].help_text = _("Lower numbers appear earlier on the participant file.")
+        self.fields["collapsed_by_default"].help_text = _("This only affects whether the group starts open or closed on screen.")
+        self.fields["status"].help_text = _("Archived groups stay on old records but are hidden from new use.")
 
 
 class CustomFieldValuesForm(forms.Form):
@@ -427,8 +440,18 @@ class CustomFieldDefinitionForm(forms.ModelForm):
             "is_dv_sensitive": _("DV-sensitive"),
         }
         help_texts = {
-            "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),
+            "group": _("Choose where this field should appear on the participant file."),
+            "name": _("Question or field label staff will see."),
+            "input_type": _("Pick the kind of answer staff should enter, such as text, date, or dropdown.") ,
+            "placeholder": _("Optional example text shown inside the field before anything is entered."),
+            "is_required": _("Turn this on only when staff must always collect this information."),
+            "is_sensitive": _("Marks the field as sensitive so it can be handled more carefully in the interface and exports."),
+            "front_desk_access": _("Choose what front desk staff can do with this field. Use view/edit only for information they genuinely need at reception."),
             "is_dv_sensitive": _("When checked, this field is hidden from front desk staff for participants with a DV safety flag."),
+            "show_on_create": _("Show this field during new participant intake so staff can collect it right away."),
+            "options_json": _("For dropdowns or multi-select fields, enter a JSON list such as [\"Option 1\", \"Option 2\"]."),
+            "sort_order": _("Lower numbers appear earlier within the group."),
+            "status": _("Archived fields stay on old records but are hidden from new use."),
         }
 
 
@@ -626,81 +649,3 @@ class DataAccessCompleteForm(forms.Form):
         choices=DELIVERY_METHOD_CHOICES,
         label=_("How was the information delivered?"),
     )
-
-
-# --- Bulk operation forms (UX17) ---
-
-class BulkStatusForm(forms.Form):
-    """Form for changing status of multiple clients at once."""
-
-    client_ids = forms.CharField(widget=forms.HiddenInput)
-    status = forms.ChoiceField(
-        choices=ClientFile.STATUS_CHOICES,
-        label=_("New status"),
-    )
-    status_reason = forms.CharField(
-        required=False,
-        label=_("Reason (optional)"),
-        widget=forms.Textarea(attrs={
-            "rows": 2,
-            "placeholder": _("Why is the status being changed?"),
-        }),
-    )
-
-    def clean_client_ids(self):
-        raw = self.cleaned_data["client_ids"]
-        try:
-            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
-        except (ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid participant selection."))
-        if not ids:
-            raise forms.ValidationError(_("No participants selected."))
-        return ids
-
-
-class BulkTransferForm(forms.Form):
-    """Form for adding/removing program enrolments for multiple clients."""
-
-    client_ids = forms.CharField(widget=forms.HiddenInput)
-    add_program = forms.ModelChoiceField(
-        queryset=Program.objects.none(),
-        required=False,
-        label=_("Add to program"),
-        empty_label=_("— None —"),
-    )
-    remove_program = forms.ModelChoiceField(
-        queryset=Program.objects.none(),
-        required=False,
-        label=_("Remove from program"),
-        empty_label=_("— None —"),
-    )
-
-    def __init__(self, *args, available_programs=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        if available_programs is not None:
-            self.fields["add_program"].queryset = available_programs
-            self.fields["remove_program"].queryset = available_programs
-
-    def clean_client_ids(self):
-        raw = self.cleaned_data["client_ids"]
-        try:
-            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
-        except (ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid participant selection."))
-        if not ids:
-            raise forms.ValidationError(_("No participants selected."))
-        return ids
-
-    def clean(self):
-        cleaned = super().clean()
-        add = cleaned.get("add_program")
-        remove = cleaned.get("remove_program")
-        if not add and not remove:
-            raise forms.ValidationError(
-                _("Please select a program to add or remove.")
-            )
-        if add and remove and add.pk == remove.pk:
-            raise forms.ValidationError(
-                _("Cannot add and remove the same program.")
-            )
-        return cleaned

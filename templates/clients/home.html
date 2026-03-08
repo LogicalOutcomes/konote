@@ -285,7 +285,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 // BUG-19: Dismissable priority items (localStorage, expires daily)
 (function () {
     var today = new Date().toISOString().slice(0, 10);
@@ -326,3 +326,4 @@
 })();
 </script>
 {% endblock %}
+

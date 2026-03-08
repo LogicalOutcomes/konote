@@ -9,6 +9,8 @@
     <p>{% blocktrans with client=term.client|default:"participant" %}Define additional fields for {{ client }} files.{% endblocktrans %}</p>
 </hgroup>
 
+{% include "admin_settings/_page_help.html" with content=_('Use custom fields for information your organisation truly needs but KoNote does not already capture. Group related fields together so intake stays easy to follow.') %}
+
 <div role="group">
     <a href="{% url 'clients:custom_field_group_create' %}" role="button">{% trans "New Group" %}</a>
     <a href="{% url 'clients:custom_field_def_create' %}" role="button" class="outline">{% trans "New Field" %}</a>
@@ -20,6 +22,7 @@
     <header>
         <strong>{{ group.title }}</strong>
         {% if group.status == "archived" %}<span class="badge badge-neutral">{% trans "Archived" %}</span>{% endif %}
+        {% if group.collapsed_by_default %}<span class="badge badge-neutral">{% trans "Collapsed by default" %}</span>{% endif %}
         <span style="float: right;">
             <a href="{% url 'clients:custom_field_group_edit' group_id=group.pk %}">{% trans "Edit Group" %}</a>
         </span>
@@ -59,4 +62,6 @@
     <p>{% trans "No custom field groups defined yet." %}</p>
 </div>
 {% endif %}
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back to Settings" %}</a>
 {% endblock %}

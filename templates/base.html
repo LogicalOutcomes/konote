@@ -181,7 +181,7 @@
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
-                        <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "New Users" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "User Invites" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'erasure_pending_list' %}">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
@@ -202,6 +202,12 @@
                 <details class="dropdown">
                     <summary aria-haspopup="menu"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
                     <ul role="menu">
+                        {% has_permission "client.transfer" as can_bulk_ops %}
+                        {% if can_bulk_ops %}
+                        <li role="none"><a role="menuitem" href="{% url 'clients:bulk_transfer_wizard' %}">{% blocktrans with client=term.client_plural|default:"Participants" %}Transfer {{ client }}{% endblocktrans %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'clients:bulk_discharge_wizard' %}">{% blocktrans with client=term.client_plural|default:"Participants" %}Discharge {{ client }}{% endblocktrans %}</a></li>
+                        <li role="separator" aria-hidden="true"><hr style="margin: 0.25rem 0;"></li>
+                        {% endif %}
                         <li role="none"><a role="menuitem" href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
                         {% has_permission "suggestion_theme.view" as can_see_themes %}
                         {% if can_see_themes %}
@@ -308,7 +314,7 @@
                 <a href="https://github.com/gilliankerr/KoNote" target="_blank" rel="noopener">GitHub</a>
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
-                <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
+                <button type="button" class="keyboard-shortcuts-btn" id="show-page-help" aria-label="{% trans 'Page help' %}">?</button>
                 {% include "_lang_toggle.html" with inline=True form_class="footer-lang-form" %}
             </div>
             {% if user.is_authenticated %}
@@ -323,27 +329,27 @@
         </div>
     </footer>
 
-    <!-- Keyboard shortcuts modal -->
-    <div class="modal-backdrop" id="shortcuts-backdrop" hidden></div>
-    <div class="keyboard-shortcuts-modal" id="shortcuts-modal" hidden role="dialog" aria-labelledby="shortcuts-title" aria-modal="true" tabindex="-1">
-        <button type="button" class="modal-close" id="close-shortcuts" aria-label="{% trans 'Close' %}">&times;</button>
-        <h2 id="shortcuts-title">{% trans "Keyboard Shortcuts" %}</h2>
-        <dl>
-            <dt>/</dt>
-            <dd>{% trans "Focus search" %}</dd>
-            <dt>g h</dt>
-            <dd>{% trans "Go to Home" %}</dd>
-            <dt>g m</dt>
-            <dd>{% trans "Go to Meetings" %}</dd>
-            <dt>n</dt>
-            <dd>{% blocktrans with client=term.client %}New quick note (on {{ client }} page){% endblocktrans %}</dd>
-            <dt>Ctrl+S</dt>
-            <dd>{% trans "Save current form" %}</dd>
-            <dt>Esc</dt>
-            <dd>{% trans "Close modal / Cancel" %}</dd>
-            <dt>?</dt>
-            <dd>{% trans "Show this help" %}</dd>
-        </dl>
+    <!-- Contextual page help modal -->
+    <div class="modal-backdrop" id="page-help-backdrop" hidden></div>
+    <div class="page-help-modal" id="page-help-modal" hidden role="dialog" aria-labelledby="page-help-title" aria-modal="true" tabindex="-1">
+        <button type="button" class="modal-close" id="close-page-help" aria-label="{% trans 'Close' %}">&times;</button>
+        {% if page_help.is_default %}
+        <h2 id="page-help-title">{% trans "Help" %}</h2>
+        <p class="page-help-description">{% trans "Here are a few things you can do from anywhere in KoNote:" %}</p>
+        {% else %}
+        <h2 id="page-help-title">{{ page_help.title }}</h2>
+        <p class="page-help-description">{{ page_help.description }}</p>
+        {% endif %}
+        <ul class="page-help-tips">
+            {% for tip in page_help.tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+        {% if page_help.help_section %}
+        <p class="page-help-more"><a href="{% url 'help' %}#{{ page_help.help_section }}">{% trans "Read more in the Help Guide" %} &rarr;</a></p>
+        {% else %}
+        <p class="page-help-more"><a href="{% url 'help' %}">{% trans "Open Help Guide" %} &rarr;</a></p>
+        {% endif %}
     </div>
 
     <!-- HTMX — dynamic interactions without a JS framework -->
@@ -351,7 +357,7 @@
     <!-- Chart.js — for analysis charts (loaded globally for HTMX compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <!-- Translated strings for app.js (I18N-4) -->
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     window.KN = {
         dismissMessage: "{% trans 'Dismiss message' %}",
         errorGeneric: "{% trans 'Something went wrong. Please try again.' %}",
@@ -384,7 +390,19 @@
         plausibility_tier2: "{% trans 'This value ({value}) is extremely unlikely for {metric}. This is almost certainly a data-entry error. Please re-check and confirm twice if correct.' %}",
         plausibility_high: "{% trans 'This value ({value}) is unusually high for {metric}. Please double-check. If correct, click Confirm.' %}",
         plausibility_low: "{% trans 'This value ({value}) is unusually low for {metric}. Please double-check. If correct, click Confirm.' %}",
-        rate_limited: "{% trans 'Too many requests. Please wait a few minutes before trying again.' %}"
+        rate_limited: "{% trans 'Too many requests. Please wait a few minutes before trying again.' %}",
+        chartMinimum: "{% trans 'Minimum' %}",
+        chartMaximum: "{% trans 'Maximum' %}",
+        chartValue: "{% trans 'Value' %}",
+        chartDate: "{% trans 'Date' %}",
+        descriptorHarder: "{% trans 'Harder right now' %}",
+        descriptorHolding: "{% trans 'Holding steady' %}",
+        descriptorShifting: "{% trans "Something's shifting" %}",
+        descriptorGood: "{% trans 'In a good place' %}",
+        chartPercentage: "{% trans 'Percentage' %}",
+        chartMonth: "{% trans 'Month' %}",
+        distributionLow: "{% trans 'More support needed' %}",
+        distributionHigh: "{% trans 'Goals within reach' %}"
     };
     </script>
     <!-- App JS — CSRF handling, error handlers -->
@@ -393,7 +411,7 @@
     <script src="{% static 'js/followup-picker.js' %}"></script>
 
     <!-- Service worker — shows offline page when navigation fails (BUG-6) -->
-    <script>
+    <script nonce="{{ request.csp_nonce }}">
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("/sw.js", { scope: "/" })
             .catch(function() { /* Service worker not critical */ });
@@ -403,3 +421,4 @@
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
+

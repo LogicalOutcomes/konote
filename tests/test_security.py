@@ -12,8 +12,10 @@ Run with:
 """
 
 from django.db import connection
+from csp.constants import NONCE
 from django.test import Client, TestCase, override_settings
 from cryptography.fernet import Fernet
+from django.conf import settings
 
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
@@ -28,6 +30,26 @@ TEST_KEY = Fernet.generate_key().decode()
 # =============================================================================
 # PII Exposure Tests
 # =============================================================================
+
+
+class CSPConfigurationTest(TestCase):
+    """Verify CSP script execution is narrowed to nonced blocks."""
+
+    def test_script_src_uses_nonce_without_unsafe_inline(self):
+        directives = settings.CONTENT_SECURITY_POLICY["DIRECTIVES"]
+        self.assertIn(NONCE, directives["script-src"])
+        self.assertNotIn("'unsafe-inline'", directives["script-src"])
+        self.assertNotIn("script-src-attr", directives)
+
+    def test_login_page_emits_csp_header(self):
+        response = self.client.get("/auth/login/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Content-Security-Policy", response.headers)
+        csp = response.headers["Content-Security-Policy"]
+        self.assertIn("default-src 'self'", csp)
+        self.assertIn("script-src 'self' https://unpkg.com https://cdn.jsdelivr.net", csp)
+        self.assertNotIn("script-src-attr", csp)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

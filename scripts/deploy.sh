@@ -108,6 +108,20 @@ deploy_instance() {
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
+
+    # Ensure dev instance is on the develop branch (not main).
+    # Production stays on whatever branch it's on (typically main).
+    if [ "$is_dev" = "true" ]; then
+        local current_branch
+        current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+        if [ "$current_branch" != "develop" ]; then
+            echo -e "  ${YELLOW}Dev instance on '${current_branch}' — switching to 'develop'${NC}"
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+        fi
+    fi
+
     git pull origin develop
 
     # --- Record after-commit ---
@@ -132,6 +146,21 @@ deploy_instance() {
     # --- Restart ---
     echo "=== Restarting ==="
     docker compose up -d
+
+    # --- Ensure Caddy can reach this instance's web container ---
+    # Caddy runs in the production stack. For the dev instance, Caddy needs to
+    # be connected to the dev frontend network so it can reverse-proxy to
+    # konote-dev-web. This is idempotent — it's a no-op if already connected.
+    if [ "$is_dev" = "true" ]; then
+        local caddy_container="konote-caddy-1"
+        local dev_network="konote-dev_frontend"
+        if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+            if ! docker inspect "$caddy_container" --format '{{json .NetworkSettings.Networks}}' | grep -q "$dev_network"; then
+                echo "=== Connecting Caddy to dev frontend network ==="
+                docker network connect "$dev_network" "$caddy_container" 2>/dev/null || true
+            fi
+        fi
+    fi
 
     # --- Wait for health check (time-based migration failure detection) ---
     echo "=== Waiting for health check ==="

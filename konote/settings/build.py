@@ -6,7 +6,7 @@ import os
 os.environ.setdefault("SECRET_KEY", "build-only-not-for-runtime")
 os.environ.setdefault("DATABASE_URL", "sqlite:///build-dummy.db")
 os.environ.setdefault("AUDIT_DATABASE_URL", "sqlite:///build-dummy-audit.db")
-os.environ.setdefault("FIELD_ENCRYPTION_KEY", "ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=")
+os.environ.setdefault("FIELD_ENCRYPTION_KEY", "build-only-not-for-runtime-placeholder-key=")
 os.environ.setdefault("EMAIL_HASH_KEY", "build-only-not-for-runtime")
 
 from .base import *  # noqa: F401, F403

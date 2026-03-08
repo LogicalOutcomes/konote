@@ -19,12 +19,14 @@ from cryptography.fernet import Fernet
 from django.test import Client as HttpClient, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import override as translation_override
 
 from apps.reports.funder_report import (
     format_number,
     generate_funder_report_csv_rows,
     generate_funder_report_data,
 )
+from apps.reports.export_engine import generate_template_csv_rows
 from apps.reports.utils import get_quarter_range, get_quarter_choices
 from apps.auth_app.constants import ROLE_EXECUTIVE, ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
@@ -200,6 +202,38 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         # Non-suppressed count should have normal percentage
         self.assertEqual(section_rows[1][1], "30")
         self.assertIn("%", section_rows[1][2])
+
+
+class TemplateExportLocalizationTests(SimpleTestCase):
+    """Template export metadata headers should be localized."""
+
+    def test_metadata_headers_localize_in_french(self):
+        class Partner:
+            translated_name = "Partenaire Test"
+
+        class Template:
+            partner = Partner()
+            name = "Rapport trimestriel"
+            suppression_threshold = 5
+
+        class User:
+            display_name = "Gestionnaire"
+
+        report_data = _minimal_report_data(program_name="Programme Test")
+
+        with translation_override("fr"):
+            rows = generate_template_csv_rows(
+                template=Template(),
+                report_data=report_data,
+                metric_results=[],
+                demographic_labels=[],
+                period_label="T1 2026",
+                user=User(),
+            )
+
+        self.assertTrue(rows[0][0].startswith("Rapport:"))
+        self.assertTrue(rows[1][0].startswith("Programme:"))
+        self.assertTrue(rows[2][0].startswith("Période:"))
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -1496,3 +1530,324 @@ class ComplianceBannerIntegrationTests(TestCase):
         resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "privacy-compliance-banner")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ClientInsightsPartialTest(TestCase):
+    """Tests for the participant-level insights HTMX partial (goal status view)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import ProgressNote, ProgressNoteTarget
+        from apps.plans.models import PlanSection, PlanTarget
+        from apps.programs.models import Program, UserProgramRole
+
+        self.http = HttpClient()
+        self.user = User.objects.create_user(
+            username="worker", password="pass", display_name="Worker"
+        )
+        self.program = Program.objects.create(name="Support")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Goal"
+        self.client_file.last_name = "Status"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="active"
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Wellbeing", program=self.program,
+        )
+        self.target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Community",
+        )
+
+        # Create two notes with different descriptors
+        note1 = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=30),
+        )
+        ProgressNoteTarget.objects.create(
+            progress_note=note1, plan_target=self.target,
+            progress_descriptor="holding",
+        )
+        note2 = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=5),
+        )
+        ProgressNoteTarget.objects.create(
+            progress_note=note2, plan_target=self.target,
+            progress_descriptor="good_place",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def _url(self):
+        return f"/reports/participant/{self.client_file.pk}/insights/"
+
+    def test_unauthenticated_redirects(self):
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthorised_user_gets_403(self):
+        from apps.auth_app.models import User
+        User.objects.create_user(username="nobody", password="pass", display_name="Nobody")
+        self.http.login(username="nobody", password="pass")
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_happy_path_shows_goal_status(self):
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(self._url())
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "How they")
+        self.assertContains(resp, "In a good place")
+
+    def test_shows_previous_descriptor_when_changed(self):
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(self._url())
+        self.assertContains(resp, "was:")
+        self.assertContains(resp, "Holding steady")
+
+    def test_empty_client_shows_empty_state(self):
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        empty_cf = ClientFile()
+        empty_cf.first_name = "Empty"
+        empty_cf.last_name = "Client"
+        empty_cf.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=empty_cf, program=self.program, status="active"
+        )
+        self.http.login(username="worker", password="pass")
+        resp = self.http.get(f"/reports/participant/{empty_cf.pk}/insights/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "No notes recorded")
+
+
+# ────────────────────────────────────────────────────────────────────
+# Multi-program report tests
+# ────────────────────────────────────────────────────────────────────
+
+
+class AggregateAllProgramsTotalsTests(SimpleTestCase):
+    """aggregate_all_programs_totals must handle suppressed values."""
+
+    def _make_program(self, name):
+        """Return a simple object with a .name attribute."""
+        class FakeProgram:
+            pass
+        p = FakeProgram()
+        p.name = name
+        return p
+
+    def test_all_numeric(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        data = [
+            (self._make_program("P1"), _minimal_report_data(
+                total_individuals_served=20, new_clients_this_period=5, total_contacts=40,
+            )),
+            (self._make_program("P2"), _minimal_report_data(
+                total_individuals_served=30, new_clients_this_period=8, total_contacts=60,
+            )),
+        ]
+        totals = aggregate_all_programs_totals(data)
+        self.assertEqual(totals["total_served"], 50)
+        self.assertEqual(totals["total_new_clients"], 13)
+        self.assertEqual(totals["total_contacts"], 100)
+        self.assertEqual(len(totals["programs"]), 2)
+
+    def test_any_suppressed_marks_total_suppressed(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        data = [
+            (self._make_program("P1"), _minimal_report_data(
+                total_individuals_served="< 5", new_clients_this_period=5, total_contacts=40,
+            )),
+            (self._make_program("P2"), _minimal_report_data(
+                total_individuals_served=30, new_clients_this_period=8, total_contacts=60,
+            )),
+        ]
+        totals = aggregate_all_programs_totals(data)
+        self.assertEqual(totals["total_served"], "suppressed")
+        self.assertEqual(totals["total_new_clients"], 13)
+        self.assertEqual(totals["total_contacts"], 100)
+
+    def test_all_suppressed(self):
+        from apps.reports.utils import aggregate_all_programs_totals
+        data = [
+            (self._make_program("P1"), _minimal_report_data(
+                total_individuals_served="< 5", new_clients_this_period="< 5", total_contacts="< 5",
+            )),
+            (self._make_program("P2"), _minimal_report_data(
+                total_individuals_served="< 5", new_clients_this_period="< 5", total_contacts="< 5",
+            )),
+        ]
+        totals = aggregate_all_programs_totals(data)
+        self.assertEqual(totals["total_served"], "suppressed")
+        self.assertEqual(totals["total_new_clients"], "suppressed")
+        self.assertEqual(totals["total_contacts"], "suppressed")
+
+
+class MultiProgramCSVRenderTests(SimpleTestCase):
+    """_render_multi_program CSV output must include per-program sections."""
+
+    def _make_program(self, name):
+        class FakeProgram:
+            pass
+        p = FakeProgram()
+        p.name = name
+        p.pk = hash(name)
+        return p
+
+    def _make_template(self, name="Test Report"):
+        class FakePartner:
+            translated_name = "Test Partner"
+            name = "Test Partner"
+        class FakeTemplate:
+            pass
+        t = FakeTemplate()
+        t.partner = FakePartner()
+        t.name = name
+        t.suppression_threshold = 5
+        return t
+
+    def test_csv_has_per_program_headers(self):
+        from apps.reports.export_engine import _render_multi_program
+
+        prog1 = self._make_program("Youth Services")
+        prog2 = self._make_program("Adult Programs")
+        rd1 = _minimal_report_data(program_name="Youth Services")
+        rd2 = _minimal_report_data(program_name="Adult Programs")
+
+        content, filename = _render_multi_program(
+            template=self._make_template(),
+            all_report_data=[(prog1, rd1), (prog2, rd2)],
+            all_metric_results=[],
+            all_demographic_labels=[],
+            sections=[],
+            has_aggregation=False,
+            period_label="Q1 2026",
+            date_from=date(2026, 1, 1),
+            date_to=date(2026, 3, 31),
+            user=None,
+            request=None,
+            export_format="csv",
+            taxonomy_lens="iris_plus",
+            report_metrics=[],
+            safe_partner="Test_Partner",
+            safe_period="Q1_2026",
+        )
+
+        self.assertIn("Youth Services", content)
+        self.assertIn("Adult Programs", content)
+        self.assertIn("Test Partner", content)
+        self.assertTrue(filename.endswith(".csv"))
+
+    def test_html_includes_all_programs(self):
+        from apps.reports.export_engine import _render_multi_program
+
+        prog1 = self._make_program("Program A")
+        prog2 = self._make_program("Program B")
+        rd1 = _minimal_report_data(program_name="Program A")
+        rd2 = _minimal_report_data(program_name="Program B")
+
+        content, filename = _render_multi_program(
+            template=self._make_template(),
+            all_report_data=[(prog1, rd1), (prog2, rd2)],
+            all_metric_results=[],
+            all_demographic_labels=[],
+            sections=[],
+            has_aggregation=False,
+            period_label="Q1 2026",
+            date_from=date(2026, 1, 1),
+            date_to=date(2026, 3, 31),
+            user=None,
+            request=None,
+            export_format="html",
+            taxonomy_lens="iris_plus",
+            report_metrics=[],
+            safe_partner="Test_Partner",
+            safe_period="Q1_2026",
+        )
+
+        self.assertIn("Program A", content)
+        self.assertIn("Program B", content)
+        self.assertIn("Multi-Program", content)
+        self.assertTrue(filename.endswith(".html"))
+
+    def test_totals_pop_does_not_lose_metric_results(self):
+        """Regression: **totals must not overwrite programs_with_data."""
+        from apps.reports.export_engine import _render_multi_program
+
+        prog1 = self._make_program("P1")
+        prog2 = self._make_program("P2")
+        rd1 = _minimal_report_data(program_name="P1")
+        rd2 = _minimal_report_data(program_name="P2")
+
+        fake_metrics = [{"label": "Test Metric", "aggregation": "count",
+                         "values": {"All": {"value": 10, "n": 10}}}]
+
+        content, filename = _render_multi_program(
+            template=self._make_template(),
+            all_report_data=[(prog1, rd1), (prog2, rd2)],
+            all_metric_results=[fake_metrics, fake_metrics],
+            all_demographic_labels=["All"],
+            sections=[],
+            has_aggregation=True,
+            period_label="Q1 2026",
+            date_from=date(2026, 1, 1),
+            date_to=date(2026, 3, 31),
+            user=None,
+            request=None,
+            export_format="html",
+            taxonomy_lens="iris_plus",
+            report_metrics=[],
+            safe_partner="Test_Partner",
+            safe_period="Q1_2026",
+        )
+
+        # Verify metric results appear in the HTML output
+        self.assertIn("Test Metric", content)
+
+    def test_pdf_fallback_uses_html_extension(self):
+        """When WeasyPrint is unavailable, filename should be .html not .pdf."""
+        from apps.reports.export_engine import _render_multi_program
+
+        prog1 = self._make_program("P1")
+        prog2 = self._make_program("P2")
+        rd1 = _minimal_report_data(program_name="P1")
+        rd2 = _minimal_report_data(program_name="P2")
+
+        with patch("apps.reports.export_engine.is_pdf_available", return_value=False):
+            content, filename = _render_multi_program(
+                template=self._make_template(),
+                all_report_data=[(prog1, rd1), (prog2, rd2)],
+                all_metric_results=[],
+                all_demographic_labels=[],
+                sections=[],
+                has_aggregation=False,
+                period_label="Q1 2026",
+                date_from=date(2026, 1, 1),
+                date_to=date(2026, 3, 31),
+                user=None,
+                request=None,
+                export_format="pdf",
+                taxonomy_lens="iris_plus",
+                report_metrics=[],
+                safe_partner="Test_Partner",
+                safe_period="Q1_2026",
+            )
+
+        # When WeasyPrint is unavailable, should fall back to .html
+        self.assertTrue(filename.endswith(".html"),
+                        f"Expected .html extension, got: {filename}")

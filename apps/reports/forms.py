@@ -9,6 +9,7 @@ from django.utils.translation import gettext
 
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
+from .cids_enrichment import get_taxonomy_lens_choices
 from .demographics import get_demographic_field_choices
 from .models import Partner, ReportTemplate
 from .utils import (
@@ -199,6 +200,17 @@ class MetricExportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
         ),
     )
 
+    taxonomy_lens = forms.ChoiceField(
+        choices=get_taxonomy_lens_choices(),
+        required=False,
+        initial="iris_plus",
+        label=_("Standards appendix lens"),
+        help_text=_(
+            "Choose which approved taxonomy family to show in the standards appendix. "
+            "This does not change frontline data entry."
+        ),
+    )
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -271,6 +283,7 @@ class MetricExportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
         ("html", _("HTML (shareable web page)")),
+        ("cids_json", _("CIDS JSON-LD (Common Approach)")),
     ]
 
     format = forms.ChoiceField(
@@ -278,6 +291,16 @@ class MetricExportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
         initial="csv",
         widget=forms.RadioSelect,
         label=_("Export format"),
+    )
+
+    taxonomy_lens = forms.ChoiceField(
+        choices=get_taxonomy_lens_choices(),
+        required=False,
+        initial="iris_plus",
+        label=_("Standards appendix lens"),
+        help_text=_(
+            "Choose which approved taxonomy family to show in the standards appendix."
+        ),
     )
 
     include_achievement_rate = forms.BooleanField(
@@ -400,6 +423,7 @@ class FunderReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
         ("html", _("HTML (shareable web page)")),
+        ("cids_json", _("CIDS JSON-LD (Common Approach)")),
     ]
 
     format = forms.ChoiceField(
@@ -420,6 +444,17 @@ class FunderReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
             "(e.g., age brackets, employment categories). Pick one to format your "
             "report the way that partner expects. You can preview what each template "
             "includes below."
+        ),
+    )
+
+    taxonomy_lens = forms.ChoiceField(
+        choices=get_taxonomy_lens_choices(),
+        required=False,
+        initial="iris_plus",
+        label=_("Standards appendix lens"),
+        help_text=_(
+            "Choose which approved taxonomy family to show in the standards appendix. "
+            "This does not change frontline data entry."
         ),
     )
 
@@ -900,6 +935,7 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
         ("csv", _("CSV (spreadsheet)")),
         ("pdf", _("PDF (printable report)")),
         ("html", _("HTML (shareable web page)")),
+        ("cids_json", _("CIDS JSON-LD (Common Approach)")),
     ]
 
     format = forms.ChoiceField(
@@ -907,6 +943,16 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
         initial="csv",
         widget=forms.RadioSelect,
         label=_("Export format"),
+    )
+
+    taxonomy_lens = forms.ChoiceField(
+        choices=get_taxonomy_lens_choices(),
+        required=False,
+        initial="iris_plus",
+        label=_("Standards appendix lens"),
+        help_text=_(
+            "Choose which approved taxonomy family to show in the standards appendix."
+        ),
     )
 
     def __init__(self, *args, **kwargs):
@@ -952,10 +998,16 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
                 self.fields["period"].choices = build_period_choices(template_obj)
                 # Constrain format if template specifies
                 if template_obj.output_format == "tabular":
-                    self.fields["format"].choices = [("csv", _("CSV (spreadsheet)"))]
+                    self.fields["format"].choices = [
+                        ("csv", _("CSV (spreadsheet)")),
+                        ("cids_json", _("CIDS JSON-LD (Common Approach)")),
+                    ]
                     self.fields["format"].initial = "csv"
                 elif template_obj.output_format == "narrative":
-                    self.fields["format"].choices = [("pdf", _("PDF (printable report)"))]
+                    self.fields["format"].choices = [
+                        ("pdf", _("PDF (printable report)")),
+                        ("cids_json", _("CIDS JSON-LD (Common Approach)")),
+                    ]
                     self.fields["format"].initial = "pdf"
             except ReportTemplate.DoesNotExist:
                 pass

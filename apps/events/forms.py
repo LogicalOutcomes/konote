@@ -24,6 +24,11 @@ class EventTypeForm(forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["name"].help_text = _("Short label staff will choose when adding an event to a participant timeline.")
+        self.fields["description"].help_text = _("Optional explanation to help staff choose the right event type.")
+        self.fields["colour_hex"].help_text = _("Choose the colour used for this event type in timelines and calendars.")
+        self.fields["owning_program"].help_text = _("Leave blank to make this event type available across the whole organisation. Choose a program to keep it program-specific.")
+        self.fields["status"].help_text = _("Archived event types stay on old records but are hidden for new events.")
         if requesting_user and not requesting_user.is_admin:
             pm_program_ids = set(
                 UserProgramRole.objects.filter(

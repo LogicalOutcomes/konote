@@ -46,8 +46,10 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
-# When using SQLite, disable django-tenants components that require PostgreSQL
-_disabled_middleware = {"csp.middleware.CSPMiddleware", "whitenoise.middleware.WhiteNoiseMiddleware"}
+# When using SQLite, disable middleware that depends on tenant schemas or
+# production static-file serving. Keep CSP middleware enabled so tests catch
+# header regressions.
+_disabled_middleware = {"whitenoise.middleware.WhiteNoiseMiddleware"}
 _using_sqlite = "sqlite" in os.environ.get("DATABASE_URL", "sqlite")
 if _using_sqlite:
     _disabled_middleware.add("django_tenants.middleware.main.TenantMainMiddleware")

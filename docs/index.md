@@ -18,25 +18,9 @@ Welcome! Find what you need based on what you're trying to do.
 
 ---
 
-## What's New (v2.3)
+## What's New
 
-- **Surveys** — structured feedback forms with trigger rules (auto-assign based on events, enrolment, or time), shareable public links, auto-save, conditional sections, section scoring, and CSV import
-- **SMS and email sending** — compose and send messages to participants with consent tracking, appointment reminder previews, CASL-compliant unsubscribe links, and safety-first mode
-- **Participant portal completion** — password reset via email code, staff-assisted login with one-time tokens, PWA "Add to Home Screen", portal usage analytics dashboard, auto-deactivation on discharge
-- **Dashboard roles** — coach, program manager, and executive landing pages with role-specific data and summaries
-- **AI Goal Builder** — conversational goal-setting tool on the plan page for defining measurable targets collaboratively
-- **Portal survey completion** — participants fill in assigned surveys with multi-page forms, auto-save, and conditional section visibility
-
-### Previous (v2.2)
-
-- Suggestion tracking & Outcome Insights — automated theme identification, responsiveness tracking, executive dashboard
-- PM self-service administration — manage templates, metrics, event types, and registration links at /manage/
-- Staff messaging — internal messages about participants with unread badges
-- Client transfers — move participants between programs with audit trail
-- Portal staff management — invite, revoke, and reset MFA from client detail page
-- Automated scheduling — meeting reminders via SMS/email, weekly export summary emails
-
-For a full history of changes, see the [Changelog](../CHANGELOG.md).
+See the [Changelog](../CHANGELOG.md) for a full history of changes, including the latest release notes.
 
 ---
 

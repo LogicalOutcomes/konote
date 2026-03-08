@@ -103,15 +103,15 @@
     <fieldset>
         <legend>{% trans "Which record should be the primary (kept) record?" %}</legend>
         <label>
-            <input type="radio" name="primary" value="{{ client_a.pk }}" checked
-                   onchange="document.querySelector('[name=primary]').value=this.value">
+                 <input type="radio" name="primary" value="{{ client_a.pk }}" checked
+                     data-set-value-target="[name=primary]">
             {% blocktrans with name=client_a.display_name last=client_a.last_name id=client_a.pk %}
             Keep Participant A: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}
         </label>
         <label>
-            <input type="radio" name="primary" value="{{ client_b.pk }}"
-                   onchange="document.querySelector('[name=primary]').value=this.value">
+                 <input type="radio" name="primary" value="{{ client_b.pk }}"
+                     data-set-value-target="[name=primary]">
             {% blocktrans with name=client_b.display_name last=client_b.last_name id=client_b.pk %}
             Keep Participant B: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}

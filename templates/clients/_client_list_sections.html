@@ -11,7 +11,7 @@
     {% if caseload_data %}
     <figure class="client-table-wrap" data-total-clients="{{ caseload_data|length }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Your caseload' %}">
-        {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-caseload" %}
+        {% include "clients/_client_thead.html" %}
         <tbody>
             {% for item in caseload_data %}
             {% include "clients/_client_row.html" %}
@@ -32,7 +32,7 @@
     {% if oversight_page.object_list %}
     <figure class="client-table-wrap" data-total-clients="{{ oversight_page.paginator.count }}">
     <table role="grid" class="client-table" aria-label="{% trans 'Programs you manage' %}">
-        {% include "clients/_client_thead.html" with bulk_select_id="bulk-select-oversight" %}
+        {% include "clients/_client_thead.html" %}
         <tbody>
             {% for item in oversight_page %}
             {% include "clients/_client_row.html" %}

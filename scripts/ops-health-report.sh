@@ -37,7 +37,7 @@ if [ "$AUDIT_DB_STATUS" = "OK" ]; then
 fi
 
 # Latest backup info
-LATEST_MAIN=$(ls -1t /backups/main_*.dump 2>/dev/null | head -1)
+LATEST_MAIN=$(ls -1t /backups/main_*.dump 2>/dev/null | head -1 || true)
 if [ -n "${LATEST_MAIN:-}" ]; then
     LATEST_BACKUP_DATE=$(stat -c%y "$LATEST_MAIN" 2>/dev/null | cut -d. -f1)
     LATEST_BACKUP_SIZE=$(du -h "$LATEST_MAIN" | cut -f1)
@@ -46,7 +46,7 @@ else
     LATEST_BACKUP_SIZE="N/A"
 fi
 
-BACKUP_COUNT=$(ls /backups/main_*.dump 2>/dev/null | wc -l)
+BACKUP_COUNT=$(find /backups -maxdepth 1 -name 'main_*.dump' 2>/dev/null | wc -l)
 
 # Disk usage
 DISK_USAGE=$(df -h / 2>/dev/null | tail -1 | awk '{print $5}')

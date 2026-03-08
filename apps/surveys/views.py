@@ -320,6 +320,7 @@ def csv_import(request):
                     survey = Survey.objects.create(
                         name=form.cleaned_data["survey_name"],
                         name_fr=form.cleaned_data.get("survey_name_fr", ""),
+                        source=form.cleaned_data.get("survey_source", ""),
                         status="draft",
                         created_by=request.user,
                     )
@@ -347,8 +348,16 @@ def csv_import(request):
                                 page_break=row.get(
                                     "page_break", "",
                                 ).strip().lower() == "yes",
+                                source=row.get("source", "").strip(),
                             )
                             sections[section_title] = section
+                        else:
+                            # Apply first non-blank source to existing section
+                            row_source = row.get("source", "").strip()
+                            section_obj = sections[section_title]
+                            if row_source and not section_obj.source:
+                                section_obj.source = row_source
+                                section_obj.save(update_fields=["source"])
 
                         section = sections[section_title]
 
@@ -429,6 +438,54 @@ def csv_import(request):
     else:
         form = CSVImportForm()
     return render(request, "surveys/admin/csv_import.html", {"form": form})
+
+
+@login_required
+@admin_required
+def csv_template(request):
+    """Download a template CSV for survey import with example rows."""
+    _surveys_or_404()
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="survey-template.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        "section", "question", "type", "required", "options",
+        "score_values", "instructions", "page_break", "source",
+        "section_fr", "question_fr", "options_fr",
+    ])
+    writer.writerow([
+        "Demographics", "What is your age range?", "single_choice", "yes",
+        "Under 18;18-30;31-50;Over 50", "", "Answer the following about yourself.",
+        "yes", "",
+        "Démographie", "Quelle est votre tranche d'âge?",
+        "Moins de 18 ans;18-30;31-50;Plus de 50 ans",
+    ])
+    writer.writerow([
+        "Demographics", "What is your postal code?", "short_text", "no",
+        "", "", "", "", "",
+        "Démographie", "Quel est votre code postal?", "",
+    ])
+    writer.writerow([
+        "Wellbeing", "I have felt cheerful and in good spirits", "rating_scale",
+        "yes", "At no time;Some of the time;Less than half the time;More than half the time;Most of the time;All of the time",
+        "0;1;2;3;4;5", "Over the last two weeks...", "",
+        "WHO-5 (WHO, 1998)",
+        "Bien-être", "Je me suis senti(e) gai(e) et de bonne humeur",
+        "Jamais;Parfois;Moins de la moitié du temps;Plus de la moitié du temps;La plupart du temps;Tout le temps",
+    ])
+    writer.writerow([
+        "Satisfaction", "How satisfied are you with the program?", "rating_scale",
+        "yes", "Very dissatisfied;Dissatisfied;Neutral;Satisfied;Very satisfied",
+        "1;2;3;4;5", "Rate your experience below.", "", "",
+        "Satisfaction", "Quel est votre niveau de satisfaction avec le programme?",
+        "Très insatisfait;Insatisfait;Neutre;Satisfait;Très satisfait",
+    ])
+    writer.writerow([
+        "Satisfaction", "What could we improve?", "long_text", "no",
+        "", "", "", "", "",
+        "Satisfaction", "Que pourrions-nous améliorer?", "",
+    ])
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -751,6 +808,12 @@ def survey_links(request, survey_id):
         if action == "create":
             expires_days = request.POST.get("expires_days", "")
             expires_at = None
+            # Anonymity enforcement layer 2 of 3 (link creation view).
+            # Also enforced in models.py (save) and public_views.py (submission).
+            collect_name = (
+                request.POST.get("collect_name") == "on"
+                and not survey.is_anonymous
+            )
             if expires_days:
                 try:
                     expires_at = timezone.now() + timezone.timedelta(
@@ -761,7 +824,7 @@ def survey_links(request, survey_id):
             SurveyLink.objects.create(
                 survey=survey,
                 created_by=request.user,
-                collect_name=request.POST.get("collect_name") == "on",
+                collect_name=collect_name,
                 single_response=request.POST.get("single_response") == "on",
                 expires_at=expires_at,
             )
