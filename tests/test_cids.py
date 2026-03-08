@@ -1739,16 +1739,16 @@ class CidsJsonLdExportTest(TestCase):
         measurements = report["dqv:hasQualityMeasurement"]
         self.assertIsInstance(measurements, list)
         self.assertTrue(len(measurements) >= 1)
-        # Should include observation volume
-        volume = next(
+        # Should include observation density
+        density = next(
             (m for m in measurements if m.get("dqv:isMeasurementOf") == "precision"),
             None,
         )
-        self.assertIsNotNone(volume)
-        self.assertEqual(volume["dqv:value"], 1)
+        self.assertIsNotNone(density)
+        self.assertEqual(density["dqv:value"], 1.0)  # 1 observation / 1 participant
 
     def test_response_rate_calculation(self):
-        """Response rate = reported / eligible participants."""
+        """Reporting rate = reported / eligible participants."""
         # Add a second eligible participant who did NOT report
         client2 = ClientFile.objects.create()
         client2.first_name = "Second"
@@ -1764,7 +1764,7 @@ class CidsJsonLdExportTest(TestCase):
         target2.name = "Second target"
         target2.save()
         PlanTargetMetric.objects.create(plan_target=target2, metric_def=self.metric)
-        # Now: 2 eligible, 1 reported → 50% response rate
+        # Now: 2 eligible, 1 reported → 50% reporting rate
 
         doc = self._run_export()
         report = next(
@@ -1783,10 +1783,9 @@ class CidsJsonLdExportTest(TestCase):
         self.assertEqual(completeness["konote:numerator"], 1)
         self.assertEqual(completeness["konote:denominator"], 2)
 
-    def test_instrument_annotation_when_standardized(self):
-        """Validated instrument annotation appears when is_standardized_instrument=True."""
-        self.metric.is_standardized_instrument = True
-        self.metric.instrument_name = "PHQ-9"
+    def test_evidence_type_annotation(self):
+        """Evidence type annotation describes how data is generated."""
+        self.metric.evidence_type = "staff_observed"
         self.metric.save()
 
         doc = self._run_export()
@@ -1796,49 +1795,63 @@ class CidsJsonLdExportTest(TestCase):
         )
         self.assertIn("dqv:hasQualityAnnotation", report)
         annotations = report["dqv:hasQualityAnnotation"]
-        instrument_ann = next(
+        ev_ann = next(
             (a for a in annotations
-             if a.get("konote:annotationType") == "instrument_validation"),
+             if a.get("konote:annotationType") == "evidence_type"),
             None,
         )
-        self.assertIsNotNone(instrument_ann)
-        self.assertIn("PHQ-9", instrument_ann["oa:hasBody"]["rdf:value"])
+        self.assertIsNotNone(ev_ann)
+        self.assertEqual(ev_ann["konote:annotationCategory"], "staff_observed")
 
-    def test_no_instrument_annotation_when_not_standardized(self):
-        """No instrument annotation when is_standardized_instrument=False."""
-        doc = self._run_export()
-        report = next(
-            n for n in doc["@graph"]
-            if n.get("@type") == "cids:IndicatorReport"
-        )
-        annotations = report.get("dqv:hasQualityAnnotation", [])
-        instrument_ann = next(
-            (a for a in annotations
-             if a.get("konote:annotationType") == "instrument_validation"),
-            None,
-        )
-        self.assertIsNone(instrument_ann)
-
-    def test_plausibility_confirmation_annotation(self):
-        """Plausibility annotation appears when values have been confirmed."""
-        mv = MetricValue.objects.first()
-        mv.plausibility_confirmed = True
-        mv.save()
+    def test_measure_basis_with_instrument_name(self):
+        """Published validated measure includes instrument name in body."""
+        self.metric.measure_basis = "published_validated"
+        self.metric.instrument_name = "PHQ-9"
+        self.metric.save()
 
         doc = self._run_export()
         report = next(
             n for n in doc["@graph"]
             if n.get("@type") == "cids:IndicatorReport"
         )
-        self.assertIn("dqv:hasQualityAnnotation", report)
         annotations = report["dqv:hasQualityAnnotation"]
-        plaus_ann = next(
+        basis_ann = next(
             (a for a in annotations
-             if a.get("konote:annotationType") == "plausibility_confirmation"),
+             if a.get("konote:annotationType") == "measure_basis"),
             None,
         )
-        self.assertIsNotNone(plaus_ann)
-        self.assertEqual(plaus_ann["konote:confirmedCount"], 1)
+        self.assertIsNotNone(basis_ann)
+        self.assertEqual(basis_ann["konote:annotationCategory"], "published_validated")
+        self.assertIn("PHQ-9", basis_ann["oa:hasBody"]["rdf:value"])
+
+    def test_derivation_method_annotation(self):
+        """Derivation method annotation appears for coded qualitative."""
+        self.metric.derivation_method = "coded_from_qualitative"
+        self.metric.save()
+
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        annotations = report["dqv:hasQualityAnnotation"]
+        deriv_ann = next(
+            (a for a in annotations
+             if a.get("konote:annotationType") == "derivation_method"),
+            None,
+        )
+        self.assertIsNotNone(deriv_ann)
+        self.assertEqual(deriv_ann["konote:annotationCategory"], "coded_from_qualitative")
+
+    def test_no_annotations_when_fields_empty(self):
+        """No quality annotations when DQV descriptor fields are blank."""
+        doc = self._run_export()
+        report = next(
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:IndicatorReport"
+        )
+        # Default metric has no evidence_type, measure_basis, or derivation_method
+        self.assertNotIn("dqv:hasQualityAnnotation", report)
 
     def test_selected_taxonomy_lens_creates_code_nodes(self):
         CidsCodeList.objects.create(
@@ -1899,6 +1912,9 @@ def _make_metric(**kwargs):
         "target_rate": None,
         "is_standardized_instrument": False,
         "instrument_name": "",
+        "evidence_type": "",
+        "measure_basis": "",
+        "derivation_method": "",
     }
     defaults.update(kwargs)
     m = MagicMock(**defaults)

@@ -328,18 +328,25 @@ def _compute_indicator_report(metric, values_qs, observation_count, program):
 def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
     """Build DQV quality measurements and annotations for an IndicatorReport.
 
-    Uses W3C Data Quality Vocabulary to signal data reliability:
-    - Response rate (completeness): participants who reported / eligible
-    - Data parsability (completeness): % of values successfully parsed
-    - Observation volume (precision): total observations recorded
-    - Instrument validation (annotation): whether a validated instrument was used
-    - Plausibility review (annotation): outliers reviewed by staff
+    Follows the "describe, don't rank" principle: quality signals tell funders
+    *how* the data was generated so they can make contextual judgments.
+
+    Tier 1 — Quantitative measurements (computed automatically):
+      - Reporting rate (completeness): participants who reported / eligible
+      - Data parsability (completeness): % of values successfully parsed
+      - Observation density (precision): observations per participant
+
+    Tier 2 — Structured annotations (from MetricDefinition fields):
+      - Evidence type: how data is generated (self-report, staff-observed, etc.)
+      - Measure basis: how the measure was developed (published, custom, etc.)
+      - Derivation method: how the value was produced (when not a direct response)
     """
     quality_measurements = []
     quality_annotations = []
 
-    # ── Response rate (completeness) ────────────────────────────────
-    # Numerator: distinct participants with values
+    # ── Tier 1: Quantitative measurements ───────────────────────────
+
+    # Reporting rate (completeness)
     participant_measure = next(
         (m for m in measures if m.get("measureType") == "konote:participant_count"),
         None,
@@ -347,7 +354,7 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
     if participant_measure:
         reported = int(participant_measure["hasNumericalValue"])
     else:
-        # Achievement metrics use count_achieved; fall back to counting from queryset
+        # Achievement metrics don't emit participant_count; count from queryset
         reported = (
             values_qs
             .values_list(
@@ -357,7 +364,6 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
             .count()
         )
 
-    # Denominator: participants with active plan targets for this metric
     eligible = (
         PlanTargetMetric.objects.filter(
             plan_target__plan_section__program=program,
@@ -377,10 +383,10 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
             "dqv:value": response_rate,
             "konote:numerator": reported,
             "konote:denominator": eligible,
-            "konote:dimensionLabel": "Response rate (participants reported / eligible)",
+            "konote:dimensionLabel": "Reporting rate (participants reported / eligible)",
         })
 
-    # ── Data parsability (completeness, scale metrics only) ─────────
+    # Data parsability (completeness, scale metrics only)
     skipped_measure = next(
         (m for m in measures if m.get("measureType") == "konote:skipped_unparseable"),
         None,
@@ -396,46 +402,74 @@ def _build_dqv_quality(metric, values_qs, observation_count, program, measures):
             "konote:dimensionLabel": "Data parsability (% of values successfully parsed)",
         })
 
-    # ── Observation volume (precision) ──────────────────────────────
-    if observation_count > 0:
+    # Observation density (precision)
+    if observation_count > 0 and reported > 0:
+        density = round(observation_count / reported, 1)
         quality_measurements.append({
             "@type": "dqv:QualityMeasurement",
             "dqv:isMeasurementOf": "precision",
-            "dqv:value": observation_count,
-            "konote:dimensionLabel": "Total observations recorded",
+            "dqv:value": density,
+            "konote:dimensionLabel": "Observation density (observations per participant)",
+            "konote:totalObservations": observation_count,
+            "konote:totalParticipants": reported,
         })
 
-    # ── Instrument validation (annotation) ──────────────────────────
-    if getattr(metric, "is_standardized_instrument", False):
-        instrument = getattr(metric, "instrument_name", None) or metric.name
+    # ── Tier 2: Structured descriptors ──────────────────────────────
+
+    # Evidence type — how data is generated
+    evidence_type = getattr(metric, "evidence_type", "")
+    if evidence_type:
+        label = dict(getattr(metric, "EVIDENCE_TYPE_CHOICES", [])).get(
+            evidence_type, evidence_type,
+        )
         quality_annotations.append({
             "@type": "dqv:QualityAnnotation",
             "oa:hasBody": {
                 "@type": "oa:TextualBody",
-                "rdf:value": f"Collected using validated instrument: {instrument}",
+                "rdf:value": str(label),
             },
             "oa:motivatedBy": "dqv:qualityAssessment",
-            "konote:annotationType": "instrument_validation",
+            "konote:annotationType": "evidence_type",
+            "konote:annotationCategory": evidence_type,
         })
 
-    # ── Plausibility review (annotation) ────────────────────────────
-    confirmed_count = values_qs.filter(plausibility_confirmed=True).count()
-    if confirmed_count > 0 and observation_count > 0:
-        confirmation_rate = round(confirmed_count / observation_count * 100, 1)
+    # Measure basis — how the measure was developed
+    measure_basis = getattr(metric, "measure_basis", "")
+    if measure_basis:
+        label = dict(getattr(metric, "MEASURE_BASIS_CHOICES", [])).get(
+            measure_basis, measure_basis,
+        )
+        # Include instrument name when applicable
+        instrument = getattr(metric, "instrument_name", "")
+        body = str(label)
+        if instrument and measure_basis in ("published_validated", "published_adapted"):
+            body = f"{label}: {instrument}"
         quality_annotations.append({
             "@type": "dqv:QualityAnnotation",
             "oa:hasBody": {
                 "@type": "oa:TextualBody",
-                "rdf:value": (
-                    f"{confirmed_count} of {observation_count} values "
-                    f"({confirmation_rate}%) were flagged as outliers "
-                    f"and confirmed by staff."
-                ),
+                "rdf:value": body,
             },
             "oa:motivatedBy": "dqv:qualityAssessment",
-            "konote:annotationType": "plausibility_confirmation",
-            "konote:confirmationRate": confirmation_rate,
-            "konote:confirmedCount": confirmed_count,
+            "konote:annotationType": "measure_basis",
+            "konote:annotationCategory": measure_basis,
+        })
+
+    # Derivation method — how the value was produced (when not direct)
+    derivation_method = getattr(metric, "derivation_method", "")
+    if derivation_method:
+        label = dict(getattr(metric, "DERIVATION_METHOD_CHOICES", [])).get(
+            derivation_method, derivation_method,
+        )
+        quality_annotations.append({
+            "@type": "dqv:QualityAnnotation",
+            "oa:hasBody": {
+                "@type": "oa:TextualBody",
+                "rdf:value": str(label),
+            },
+            "oa:motivatedBy": "dqv:qualityAssessment",
+            "konote:annotationType": "derivation_method",
+            "konote:annotationCategory": derivation_method,
         })
 
     return {
@@ -892,8 +926,9 @@ def build_cids_jsonld_document(programs, taxonomy_lens="common_approach", date_f
                 "konote:denominator": {"@id": "konote:denominator"},
                 "konote:dimensionLabel": {"@id": "konote:dimensionLabel"},
                 "konote:annotationType": {"@id": "konote:annotationType"},
-                "konote:confirmationRate": {"@id": "konote:confirmationRate"},
-                "konote:confirmedCount": {"@id": "konote:confirmedCount"},
+                "konote:annotationCategory": {"@id": "konote:annotationCategory"},
+                "konote:totalObservations": {"@id": "konote:totalObservations"},
+                "konote:totalParticipants": {"@id": "konote:totalParticipants"},
             },
         ],
         "@graph": graph,

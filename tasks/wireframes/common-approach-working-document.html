@@ -254,7 +254,7 @@
   <li>Basic Tier JSON-LD export with SHACL validation</li>
   <li>Full Tier JSON-LD export — assembles all 14 CIDS classes into one document</li>
   <li>IndicatorReport computes outcome statistics per metric type: success rates, means, medians, distributions, pre/post change, effect sizes</li>
-  <li>Data quality signals on IndicatorReport using W3C DQV — response rates, instrument validation status, plausibility review, observation volume</li>
+  <li>Data quality signals on IndicatorReport using W3C DQV — reporting rates, observation density, plus structured descriptors for evidence type, measure basis, and derivation method (describe, don't rank)</li>
   <li>Evaluation framework editor — agencies define their program's services, activities, outputs, risks, and counterfactuals, which map directly to Full Tier classes</li>
   <li>Enrichment — derives themes and standards alignment from program data</li>
   <li>Evaluator attestation — optional step where an evaluator reviews the framework before export</li>
@@ -384,7 +384,11 @@
 
 <p>This is a gap most agencies aren't addressing — and it's arguably the most important question for funders: <strong>how much should I trust these outcomes?</strong></p>
 
-<p>CIDS addresses this through the <a href="https://www.w3.org/TR/vocab-dqv/">W3C Data Quality Vocabulary (DQV)</a>, which provides properties on <code>IndicatorReport</code> for signalling the quality of the data behind the numbers. KoNote uses these to emit five concrete data quality signals alongside every outcome report:</p>
+<p>CIDS addresses this through the <a href="https://www.w3.org/TR/vocab-dqv/">W3C Data Quality Vocabulary (DQV)</a>, which provides properties on <code>IndicatorReport</code> for signalling the quality of the data behind the numbers.</p>
+
+<p>Our approach follows a principle from evaluation methodology: <strong>describe, don't rank.</strong> A published instrument isn't inherently better than a custom measure designed with the community it serves. A staff-observed rating isn't inherently more reliable than a self-report. What matters is that funders have enough context to make their own judgment for their specific use case. KoNote emits two types of DQV signals:</p>
+
+<h3>Quantitative measurements (computed automatically)</h3>
 
 <table>
   <thead>
@@ -392,7 +396,7 @@
   </thead>
   <tbody>
     <tr>
-      <td><strong>Response rate</strong></td>
+      <td><strong>Reporting rate</strong></td>
       <td>What proportion of eligible participants actually have data?</td>
       <td>19 of 23 eligible participants reported (83%)</td>
     </tr>
@@ -402,19 +406,36 @@
       <td>98% of values parsed successfully</td>
     </tr>
     <tr>
-      <td><strong>Observation volume</strong></td>
-      <td>How much data underpins these statistics?</td>
-      <td>342 observations across 23 participants</td>
+      <td><strong>Observation density</strong></td>
+      <td>How many data points per participant underpin the statistics?</td>
+      <td>14.9 observations per participant</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Structured descriptors (declared by agency)</h3>
+
+<p>These describe <em>how</em> data is generated — they're set once per metric and don't imply a quality ranking:</p>
+
+<table>
+  <thead>
+    <tr><th>Descriptor</th><th>What it describes</th><th>Options</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Evidence type</strong></td>
+      <td>How is the data generated?</td>
+      <td>Self-report &middot; Staff-observed &middot; Administrative record &middot; Third-party assessed &middot; Coded qualitative</td>
     </tr>
     <tr>
-      <td><strong>Instrument validation</strong></td>
-      <td>Was a published, validated measurement tool used?</td>
-      <td>Rosenberg Self-Esteem Scale (validated)</td>
+      <td><strong>Measure basis</strong></td>
+      <td>How was the measure developed?</td>
+      <td>Published validated &middot; Published adapted &middot; Custom participatory &middot; Custom staff-designed &middot; Administrative</td>
     </tr>
     <tr>
-      <td><strong>Plausibility review</strong></td>
-      <td>Were outlier values reviewed by staff?</td>
-      <td>3 flagged values confirmed by clinician</td>
+      <td><strong>Derivation method</strong></td>
+      <td>How was the value produced?</td>
+      <td>Direct response &middot; Coded from qualitative &middot; Calculated composite &middot; Staff rating</td>
     </tr>
   </tbody>
 </table>
@@ -422,7 +443,7 @@
 <p>These signals use standard DQV properties (<code>dqv:hasQualityMeasurement</code> and <code>dqv:hasQualityAnnotation</code> on <code>cids:IndicatorReport</code>), so any system consuming CIDS exports can read them without custom parsing.</p>
 
 <div class="callout">
-  <p><strong>Why this matters for aggregation:</strong> When a funder rolls up outcomes across 15 funded programs, knowing that Program A has an 83% response rate using a validated instrument and Program B has a 25% response rate using ad hoc questions fundamentally changes how you interpret and weight the results. Without data quality signals, all CIDS exports look equally credible.</p>
+  <p><strong>Why this matters for aggregation:</strong> When a funder rolls up outcomes across 15 funded programs, knowing that Program A has an 83% reporting rate using a staff-observed measure adapted from a published instrument, and Program B has a 25% reporting rate using a custom self-report scale, fundamentally changes how you interpret and weight the results. The signals don't say which is "better" — they give the funder enough context to decide for themselves.</p>
 </div>
 
 <div class="demo-section">
@@ -432,26 +453,25 @@
     <div class="outcome-grid">
       <div class="outcome-card">
         <div class="value val-green">83%</div>
-        <div class="label">Response rate</div>
+        <div class="label">Reporting rate</div>
         <div class="context">19 of 23 eligible<br>participants reported</div>
       </div>
       <div class="outcome-card">
-        <div class="value val-green">98%</div>
-        <div class="label">Data parsability</div>
-        <div class="context">340 of 342 values<br>parsed successfully</div>
+        <div class="value val-blue">14.9</div>
+        <div class="label">Obs. density</div>
+        <div class="context">observations per<br>participant</div>
       </div>
       <div class="outcome-card">
-        <div class="value val-blue">342</div>
-        <div class="label">Observations</div>
-        <div class="context">Avg 14.9 per<br>participant</div>
+        <div class="value" style="font-size: 0.75rem;">Staff-observed</div>
+        <div class="label">Evidence type</div>
+        <div class="context">Recorded by<br>program worker</div>
       </div>
-      <div class="outcome-card" style="border-color: var(--green);">
-        <div class="value" style="font-size: 0.85rem; color: var(--green);">&#10003; Validated</div>
-        <div class="label">Instrument</div>
-        <div class="context">Rosenberg Self-Esteem<br>Scale</div>
+      <div class="outcome-card">
+        <div class="value" style="font-size: 0.7rem;">Published, adapted</div>
+        <div class="label">Measure basis</div>
+        <div class="context">Rosenberg SE Scale<br>adapted for youth</div>
       </div>
     </div>
-    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">3 outlier values were flagged and confirmed by clinical staff.</p>
   </div>
 </div>
 
@@ -582,32 +602,53 @@
     <h3 style="font-size: 0.9rem; margin-top: 1.25rem;">Data quality across the funding stream</h3>
     <table style="font-size: 0.85rem;">
       <thead>
-        <tr><th>Signal</th><th>Funding stream average</th><th>Range</th></tr>
+        <tr><th>Signal</th><th>Funding stream summary</th><th>Range</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td>Response rate</td>
+          <td>Reporting rate</td>
           <td><strong>76%</strong> of eligible participants</td>
           <td>42%–95%</td>
         </tr>
         <tr>
-          <td>Using validated instruments</td>
-          <td><strong>11 of 15</strong> programs (73%)</td>
-          <td>&mdash;</td>
-        </tr>
-        <tr>
-          <td>Avg observations per participant</td>
-          <td><strong>12.3</strong></td>
+          <td>Observation density</td>
+          <td><strong>12.3</strong> per participant</td>
           <td>3.1–19.8</td>
-        </tr>
-        <tr>
-          <td>Plausibility review done</td>
-          <td><strong>9 of 15</strong> programs (60%)</td>
-          <td>&mdash;</td>
         </tr>
       </tbody>
     </table>
-    <p style="font-size: 0.8rem; color: var(--text-muted);">Data quality signals from <code>dqv:hasQualityMeasurement</code> and <code>dqv:hasQualityAnnotation</code> on each program's IndicatorReport nodes.</p>
+    <table style="font-size: 0.85rem; margin-top: 0.5rem;">
+      <thead>
+        <tr><th>Evidence type</th><th>Programs</th><th>Measure basis</th><th>Programs</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Self-report</td>
+          <td>7</td>
+          <td>Published, validated</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td>Staff-observed</td>
+          <td>5</td>
+          <td>Published, adapted</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>Coded qualitative</td>
+          <td>2</td>
+          <td>Custom, participatory</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td>Administrative record</td>
+          <td>1</td>
+          <td>Custom, staff-designed</td>
+          <td>3</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Data quality signals from <code>dqv:hasQualityMeasurement</code> and <code>dqv:hasQualityAnnotation</code> on each program's IndicatorReport nodes. These describe how data is generated — not how "good" it is.</p>
 
   </div>
 </div>
@@ -716,22 +757,29 @@
           "dqv:value": 82.6,
           "konote:numerator": 19,
           "konote:denominator": 23,
-          "konote:dimensionLabel": "Response rate"
+          "konote:dimensionLabel": "Reporting rate (participants reported / eligible)"
         },
         {
           "@type": "dqv:QualityMeasurement",
           "dqv:isMeasurementOf": "precision",
-          "dqv:value": 342,
-          "konote:dimensionLabel": "Total observations"
+          "dqv:value": 14.9,
+          "konote:dimensionLabel": "Observation density (observations per participant)",
+          "konote:totalObservations": 342,
+          "konote:totalParticipants": 23
         }
       ],
       "dqv:hasQualityAnnotation": [
         {
           "@type": "dqv:QualityAnnotation",
-          "oa:hasBody": {
-            "rdf:value": "Collected using validated instrument: Rosenberg Self-Esteem Scale"
-          },
-          "konote:annotationType": "instrument_validation"
+          "oa:hasBody": {"rdf:value": "Staff-observed (recorded by worker)"},
+          "konote:annotationType": "evidence_type",
+          "konote:annotationCategory": "staff_observed"
+        },
+        {
+          "@type": "dqv:QualityAnnotation",
+          "oa:hasBody": {"rdf:value": "Published, adapted for local context: Rosenberg Self-Esteem Scale"},
+          "konote:annotationType": "measure_basis",
+          "konote:annotationCategory": "published_adapted"
         }
       ]
     },
