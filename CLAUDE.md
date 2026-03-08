@@ -253,6 +253,8 @@ Current DRRs (read the file before modifying related features — all in `tasks/
 - `no-live-api-individual-data.md` — No live API for individual PII
 - `self-hosted-llm-infrastructure.md` — Self-hosted LLM (Ollama/OVHcloud)
 - `encryption-key-rotation.md` — Encryption key rotation procedures
+- `access-tiers.md` — Access tiers, PERM-P5/P6/P8, and demographic visibility (DEMO-VIS1)
+- `funder-reporting-profiles.md` — Funder reporting profiles (CIDS template-based reporting)
 
 ### How Claude Manages Tasks
 
