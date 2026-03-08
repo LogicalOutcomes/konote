@@ -14,7 +14,7 @@
     {% csrf_token %}
 
     <!-- Zone 1: Session Setup -->
-    <fieldset class="session-setup" role="group" aria-label="{% trans 'Session setup' %}">
+    <fieldset class="session-setup" aria-label="{% trans 'Session setup' %}">
         <div class="session-setup-grid">
             <div class="field-template">
                 <label for="{{ form.template.id_for_label }}">{% trans "Template" %}</label>
@@ -231,7 +231,7 @@
         <p class="secondary"><small>{% trans "Optional overall reflections after you have captured the target-specific details you need." %}</small></p>
 
     <!-- Zone 3: The Session Overall (Two-Lens Layout) -->
-    <fieldset class="session-overall" role="group" aria-labelledby="session-overall-legend">
+    <fieldset class="session-overall" aria-labelledby="session-overall-legend">
         <legend id="session-overall-legend" class="sr-only">{% trans "The session overall" %}</legend>
         <h2 aria-hidden="true">{% trans "The session overall" %}</h2>
         
