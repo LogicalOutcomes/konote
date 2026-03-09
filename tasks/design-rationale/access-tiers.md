@@ -1,9 +1,9 @@
 # Access Tiers — Design Rationale Record
 
-Task ID: PERM-TIER1 | Date: 2026-02-25 | Status: Draft — GK reviews PERM-P5 and PERM-P6 before implementation
-Expert panel: Privacy & Health Law Specialist (PHIPA/PIPEDA), Nonprofit Operations Director, Security Architect, Clinical Social Worker (RSW), Nonprofit Technology Consultant, Program Evaluator, UX/Onboarding Specialist, Privacy & Risk Analyst (three rounds across two panels)
+Task ID: PERM-TIER1 | Date: 2026-02-25 | Updated: 2026-03-08 | Status: Draft — GK reviews PERM-P5 and PERM-P6 before implementation
+Expert panel: Privacy & Health Law Specialist (PHIPA/PIPEDA), Nonprofit Operations Director, Security Architect, Clinical Social Worker (RSW), Nonprofit Technology Consultant, Program Evaluator, UX/Onboarding Specialist, Privacy & Risk Analyst, Statistical Disclosure Specialist, Trauma-Informed UX Designer, Anti-Oppression Practice Consultant, Evaluation & Funder Reporting Specialist (five rounds across four panels)
 
-Keyword Index: access tier, permission complexity, Open Access, Role-Based, Clinical Safeguards, GATED, PER_FIELD, DV-safe, per-field front desk, proportional privacy, configuration interview, agency sensitivity, PERM-P5, PERM-P6, PERM-P8
+Keyword Index: access tier, permission complexity, Open Access, Role-Based, Clinical Safeguards, GATED, PER_FIELD, DV-safe, per-field front desk, proportional privacy, configuration interview, agency sensitivity, PERM-P5, PERM-P6, PERM-P8, DEMO-VIS1, demographic visibility, admin-only, implicit bias, de-identification, small-sample, re-identification
 
 ---
 
@@ -194,6 +194,92 @@ The agency confirms or overrides. The override and reasoning are recorded in the
 | 5th | Integration (translations, CLAUDE.md, TODO.md) | All above | No |
 
 PERM-P5 depends on PERM-P8 because DV-safe mode overrides per-field access — it needs the per-field infrastructure to exist. PERM-P6 is independent of PERM-P5 and PERM-P8 (it only needs the tier check) but is built last because it's the most complex.
+
+---
+
+## Demographic Visibility Restriction (DEMO-VIS1)
+
+*Added: 2026-03-08 | Status: Implemented*
+
+### The Decision
+
+**Demographics (ethnicity, gender identity, sexual orientation, Indigenous identity, immigration status, disability, caregiver status) are hidden from all non-admin roles.** The fields do not appear in the worker interface — not collapsed, not locked, absent. Only administrators can view and edit individual demographic records.
+
+This applies at all access tiers. It is not a tier-specific feature — it is a baseline restriction like "front desk never sees clinical notes."
+
+### Why (Three Independent Arguments)
+
+**1. Implicit bias prevention.** Visible identity markers activate unconscious bias during service delivery. A worker who sees "Indigenous, Two-Spirit" before reading a progress note filters that note through those categories. The demographic field tells you a CIDS reporting category, not what the person's identity means to them.
+
+**2. Small-sample de-identification.** In programs with 5–15 participants, a worker who knows individual demographics can reverse-engineer aggregate reports. If a worker knows "only Maria and James are Indigenous" and the report says "1 Indigenous participant showed declining outcomes," the report is no longer anonymous. Hiding demographics from workers breaks the re-identification chain regardless of report format.
+
+**3. PHIPA minimum necessary use (s. 30(2)).** Demographics are collected for funder reporting. A worker's duties are service delivery, not reporting. The information is not reasonably necessary for their role.
+
+### Expert Panel Findings (Two Rounds)
+
+**Panel 1:** Privacy & Health Information Specialist, Trauma-Informed UX Designer, Nonprofit Program Director, Anti-Oppression Practice Consultant
+
+- Unanimous: demographics should not appear on the notes page
+- Spatial separation required — a collapsible section on the same page gets opened by habit
+- Pronouns are practice data (Tier 1, always visible); gender identity *category* is reporting data (admin-only)
+- The "shoulder test": if a participant were standing behind the worker, would they be comfortable with what's on screen?
+
+**Panel 2:** Statistical Disclosure Specialist, Health Information Privacy Officer, Frontline Practice Lead, Evaluation & Funder Reporting Specialist
+
+- Unanimous: demographics should be hidden from workers entirely, not just moved to a separate tab
+- The re-identification arithmetic makes the case conclusive for small programs
+- Every practice scenario examined (cultural safety, referrals, incident documentation) is better served by *not* showing demographics
+- Worker-edited demographics create data integrity violations (workers "correcting" self-identification based on perception)
+
+### The Cultural Safety Counter-Argument (Evaluated and Rejected)
+
+**Argument:** "Workers need demographic data for culturally responsive service."
+
+**Why it doesn't hold:**
+1. Cultural safety comes from the relationship, not the database. A CIDS dropdown category tells you nothing about what matters to *this person*.
+2. Demographic fields are often incomplete or approximate (broad categories, "Prefer not to answer").
+3. Best practice (First Nations Health Authority, OCASI) says: ask, don't assume. Hiding the field supports this.
+4. Identity-specific referrals are driven by participant's expressed needs, not worker's knowledge of their category.
+
+### Role-Based Access Model
+
+| Capability | Front Desk | Worker | Program Lead | Admin | Executive |
+|---|---|---|---|---|---|
+| View individual demographics | No | No | No | **Yes** | No |
+| Edit individual demographics | No | No | No | **Yes** | No |
+| View aggregate demographic reports | No | Yes (own program) | Yes | Yes | Yes |
+| Enter demographics at intake | No | No | No | **Yes** | No |
+
+### What Workers Retain (Unchanged)
+
+- Name, preferred name, pronouns (practice data, always visible)
+- Language/communication preferences (practice data)
+- Active programs, goals, plan summary
+- Alert flags (safety, accessibility needs)
+- All non-demographic custom field groups
+
+### Implementation
+
+- `CustomFieldGroup.admin_only` boolean field (migration 0040)
+- Data migration sets Demographics group to `admin_only=True` (migration 0041)
+- `_get_custom_fields_context()` filters out admin-only groups for non-admin users
+- `client_save_custom_fields()` excludes admin-only groups from non-admin saves
+- `_get_create_field_defs()` excludes admin-only groups from non-admin create forms
+- No "Access Restricted" indicators shown — the fields simply don't render for non-admin roles
+
+### Intake Workflow Implication
+
+Demographics are entered by an **administrator** after intake, not by the frontline intake worker. This is intentional:
+- The intake worker focuses on the person, not the reporting categories
+- An admin entering demographics from a self-identification form reduces the risk of worker-observed (rather than self-identified) data
+- Agencies may collect demographics via a separate self-identification survey rather than during the intake conversation
+
+### Anti-Patterns
+
+- **DO NOT add demographics back to the worker view** as a collapsible, toggled, or "click to reveal" section. The expert panels concluded that any presence on the same page gets opened by habit.
+- **DO NOT create "Access Restricted" labels** where demographic fields would be. This signals that restricted information exists and invites curiosity or workarounds.
+- **DO NOT conflate pronouns with demographic data.** Pronouns are communication/practice data (always visible). Gender identity *category* is reporting data (admin-only).
+- **DO NOT allow workers to edit demographics** even if they can't see them in the display view. The save endpoint must enforce the same restriction.
 
 ---
 

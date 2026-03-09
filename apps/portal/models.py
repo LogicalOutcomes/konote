@@ -126,6 +126,12 @@ class ParticipantUser(AbstractBaseUser):
         help_text="True after the participant has seen the journal privacy notice.",
     )
 
+    # One-time self-identification consent disclosure (DEMO-VIS1)
+    selfid_consent_shown = models.BooleanField(
+        default=False,
+        help_text="True after the participant has seen the self-identification consent notice.",
+    )
+
     # Password reset
     password_reset_token_hash = models.CharField(
         max_length=128, blank=True, default="",
