@@ -85,8 +85,7 @@
     border: 0;
 }
 #main-content:focus {
-    outline: 3px solid var(--kn-primary);
-    outline-offset: 4px;
+    outline: none;
 }
 
 /* ---- Demo mode banner ---- */
