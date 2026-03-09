@@ -22220,6 +22220,9 @@ msgstr "Masquer la carte du sondage À propos de moi"
 msgid "No thanks"
 msgstr "Non merci"
 
+msgid "You can re-enable this from Settings anytime."
+msgstr "Vous pouvez réactiver ceci dans les Paramètres à tout moment."
+
 msgid "About Me survey"
 msgstr "Sondage À propos de moi"
 

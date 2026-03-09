@@ -739,7 +739,7 @@ def dashboard(request):
             expires_at__gt=timezone.now(),
         ).order_by("-created_at").first()
     except Exception:
-        pass
+        logger.exception("Error loading pending alliance for dashboard")
 
     # Self-identification survey card (DEMO-VIS1):
     # Show only if admin-only groups exist AND participant hasn't dismissed
@@ -759,7 +759,7 @@ def dashboard(request):
                 ).exists()
                 show_selfid = not has_submitted
     except Exception:
-        pass
+        logger.exception("Error checking self-ID availability for dashboard")
 
     return render(request, "portal/dashboard.html", {
         "participant": participant,
@@ -846,7 +846,7 @@ def settings_view(request):
             status="active", admin_only=True,
         ).filter(fields__status="active").distinct().exists()
     except Exception:
-        pass
+        logger.exception("Error checking self-ID availability for settings")
 
     return render(request, "portal/settings.html", {
         "participant": participant,
@@ -2241,6 +2241,7 @@ def selfid_disclosure(request):
 
 
 @portal_login_required
+@ratelimit(key="ip", rate="10/m", method="POST", block=True)
 def selfid_form(request):
     """Self-identification form for participants to enter their own demographics.
 
@@ -2284,8 +2285,6 @@ def selfid_form(request):
         )
     }
 
-    success = False
-
     if request.method == "POST":
         form = SelfIdForm(request.POST, field_defs=all_field_defs)
         if form.is_valid():
@@ -2317,7 +2316,13 @@ def selfid_form(request):
             _audit_portal_event(request, "selfid_submitted", metadata={
                 "participant_id": str(participant.pk),
             })
-            success = True
+            # Early return — no need to rebuild template context for saved values
+            return render(request, "portal/selfid_form.html", {
+                "participant": participant,
+                "custom_data": [],
+                "success": True,
+                "form": SelfIdForm(field_defs=[]),
+            })
     else:
         # Pre-fill form with existing values
         initial = {}
@@ -2386,7 +2391,7 @@ def selfid_form(request):
     return render(request, "portal/selfid_form.html", {
         "participant": participant,
         "custom_data": custom_data,
-        "success": success,
+        "success": False,
         "form": form,
     })
 

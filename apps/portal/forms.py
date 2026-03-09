@@ -403,6 +403,7 @@ class SelfIdForm(forms.Form):
                 self.fields[key] = forms.CharField(
                     label=fd.name,
                     required=False,
+                    max_length=10000,
                     widget=forms.Textarea(attrs={
                         "rows": 3,
                         "placeholder": fd.placeholder or "",
@@ -423,6 +424,7 @@ class SelfIdForm(forms.Form):
                     self.fields[f"{key}_other"] = forms.CharField(
                         label=_("Other (please specify)"),
                         required=False,
+                        max_length=500,
                     )
             elif fd.input_type in ("multi_select", "multi_select_other"):
                 choices = [(opt, opt) for opt in (fd.options_json or [])]
@@ -436,6 +438,7 @@ class SelfIdForm(forms.Form):
                     self.fields[f"{key}_other"] = forms.CharField(
                         label=_("Other (please specify)"),
                         required=False,
+                        max_length=500,
                     )
             elif fd.input_type == "date":
                 self.fields[key] = forms.DateField(
@@ -455,6 +458,7 @@ class SelfIdForm(forms.Form):
                 self.fields[key] = forms.CharField(
                     label=fd.name,
                     required=False,
+                    max_length=500,
                     widget=forms.TextInput(attrs={
                         "placeholder": fd.placeholder or "",
                     }),

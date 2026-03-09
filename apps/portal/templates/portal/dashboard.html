@@ -114,6 +114,7 @@
             <form method="post" action="{% url 'portal:selfid_dismiss' %}" class="selfid-dismiss">
                 {% csrf_token %}
                 <button type="submit" class="outline secondary" aria-label="{% trans 'Dismiss About Me survey card' %}">{% trans "No thanks" %}</button>
+                <p class="secondary" style="font-size: 0.85em; margin-top: 0.25rem;">{% trans "You can re-enable this from Settings anytime." %}</p>
             </form>
         </div>
         {% endif %}
