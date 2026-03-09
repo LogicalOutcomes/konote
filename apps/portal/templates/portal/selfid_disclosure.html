@@ -1,0 +1,43 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "About This Survey" %}{% endblock %}
+
+{% block content %}
+<article class="portal-disclosure">
+    <header>
+        <h1>{% trans "Self-Identification Survey" %}</h1>
+    </header>
+
+    <p>{% trans "We'd like to invite you to share some information about yourself. This is completely voluntary." %}</p>
+
+    <h2>{% trans "What we're asking" %}</h2>
+    <p>{% trans "Questions about your identity, background, and experiences. These may include ethnicity, gender identity, Indigenous identity, and similar topics." %}</p>
+
+    <h2>{% trans "Why we're asking" %}</h2>
+    <p>{% trans "This information helps the agency understand who they're serving and whether their programs are reaching and working for everyone. It's used in summary reports to funders — for example, 'X% of participants identified as Indigenous.' Your individual answers are never shared in these reports." %}</p>
+
+    <h2>{% trans "Who can see your answers" %}</h2>
+    <ul>
+        <li>{% trans "An administrator at the agency can see your individual responses for data quality purposes." %}</li>
+        <li>{% blocktrans with worker_term=term.worker %}<strong>Your {{ worker_term }} cannot see your answers.</strong> This information is kept separate from your file so it doesn't influence your services.{% endblocktrans %}</li>
+        <li>{% trans "Funders and external parties only see summary numbers, never individual responses." %}</li>
+    </ul>
+
+    <h2>{% trans "Your choices" %}</h2>
+    <ul>
+        <li>{% trans "Every question is optional. You can skip any question or choose 'Prefer not to answer.'" %}</li>
+        <li>{% trans "You can change your answers at any time by coming back to this page." %}</li>
+        <li>{% trans "Choosing not to answer will not affect the services you receive." %}</li>
+    </ul>
+
+    <div class="portal-disclosure-actions">
+        <form method="post" action="{% url 'portal:selfid_disclosure' %}">
+            {% csrf_token %}
+            <button type="submit">{% trans "I understand, continue" %}</button>
+        </form>
+
+        <a href="{% url 'portal:dashboard' %}" role="button" class="secondary">{% trans "Maybe later" %}</a>
+    </div>
+</article>
+{% endblock %}
