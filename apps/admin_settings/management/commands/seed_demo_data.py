@@ -1542,7 +1542,8 @@ class Command(BaseCommand):
         # ParticipantUser AFTER seed_demo_data returns on first run.
         try:
             worker1 = User.objects.get(username="demo-worker-1")
-            workers_early = {"demo-worker-1": worker1}
+            worker2 = User.objects.get(username="demo-worker-2")
+            workers_early = {"demo-worker-1": worker1, "demo-worker-2": worker2}
             self._create_demo_portal_content(workers_early, timezone.now())
         except User.DoesNotExist:
             pass
@@ -3904,9 +3905,9 @@ class Command(BaseCommand):
         )
 
     def _create_sam_portal_content(self, workers, now):
-        """Portal content for Sam Williams (DEMO-014) — housing stability journey."""
+        """Portal content for Sam Williams (DEMO-004) — housing stability journey."""
         participant = ParticipantUser.objects.filter(
-            client_file__record_id="DEMO-014"
+            client_file__record_id="DEMO-004"
         ).first()
         if not participant:
             return
