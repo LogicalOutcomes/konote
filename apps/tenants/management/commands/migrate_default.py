@@ -75,6 +75,91 @@ class Command(DjangoMigrateCommand):
         super().add_arguments(parser)
         parser.set_defaults(database="default")
 
+    def _constraint_exists(self, cursor, table_name, constraint_name):
+        """Return True when a named constraint already exists on a public table."""
+        if cursor.db.vendor != "postgresql":
+            constraints = cursor.db.introspection.get_constraints(cursor, table_name)
+            return constraint_name in constraints
+
+        cursor.execute(
+            """
+            SELECT 1
+            FROM pg_constraint c
+            JOIN pg_class t ON c.conrelid = t.oid
+            JOIN pg_namespace n ON t.relnamespace = n.oid
+            WHERE n.nspname = 'public'
+              AND t.relname = %s
+              AND c.conname = %s
+            """,
+            [table_name, constraint_name],
+        )
+        return bool(cursor.fetchone())
+
+    def _operation_schema_exists(self, cursor, app_label, op):
+        """Return True when the schema change for a migration operation already exists."""
+        from django.apps import apps as django_apps
+        from django.db.migrations.operations.fields import AddField
+        from django.db.migrations.operations.models import AddConstraint, CreateModel
+
+        if isinstance(op, AddField):
+            try:
+                model = django_apps.get_model(app_label, op.model_name)
+                field = model._meta.get_field(op.name)
+                table_name = model._meta.db_table
+                col_name = field.column
+            except Exception:
+                return None
+
+            # M2M fields don't have a column on the source table.
+            if col_name is None:
+                return None
+
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name   = %s
+                  AND column_name  = %s
+                """,
+                [table_name, col_name],
+            )
+            return bool(cursor.fetchone())
+
+        if isinstance(op, CreateModel):
+            # Skip swappable models whose missing table can be legitimate.
+            if getattr(op, 'options', {}).get('swappable'):
+                return None
+
+            try:
+                model = django_apps.get_model(app_label, op.name)
+                table_name = model._meta.db_table
+            except LookupError:
+                return None
+
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_name   = %s
+                """,
+                [table_name],
+            )
+            return bool(cursor.fetchone())
+
+        if isinstance(op, AddConstraint):
+            try:
+                model = django_apps.get_model(app_label, op.model_name)
+                table_name = model._meta.db_table
+                constraint_name = op.constraint.name
+            except Exception:
+                return None
+
+            return self._constraint_exists(cursor, table_name, constraint_name)
+
+        return None
+
     # ------------------------------------------------------------------
     # Ghost-migration healing
     # ------------------------------------------------------------------
@@ -87,12 +172,9 @@ class Command(DjangoMigrateCommand):
         exist on disk), or False if the database is clean.
         """
         import re
-        from django.apps import apps as django_apps
         from django.conf import settings as django_settings
         from django.db.migrations.exceptions import InconsistentMigrationHistory
         from django.db.migrations.loader import MigrationLoader
-        from django.db.migrations.operations.fields import AddField
-        from django.db.migrations.operations.models import CreateModel
         from django.db.migrations.recorder import MigrationRecorder
         from django.db import router as dj_router
 
@@ -127,77 +209,28 @@ class Command(DjangoMigrateCommand):
                         continue
 
                     for op in migration.operations:
-                        if isinstance(op, AddField):
-                            try:
-                                model = django_apps.get_model(app_label, op.model_name)
-                                field = model._meta.get_field(op.name)
-                                table_name = model._meta.db_table
-                                col_name = field.column
-                            except Exception:
-                                continue
+                        exists = self._operation_schema_exists(cursor, app_label, op)
+                        if exists is None:
+                            continue
 
-                            # M2M fields don't have a column on the source
-                            # table — they use a through table instead.
-                            if col_name is None:
-                                continue
+                        if not exists:
+                            to_remove.add((app_label, migration_name))
 
-                            cursor.execute(
-                                """
-                                SELECT 1
-                                FROM information_schema.columns
-                                WHERE table_schema = 'public'
-                                  AND table_name   = %s
-                                  AND column_name  = %s
-                                """,
-                                [table_name, col_name],
-                            )
-                            if not cursor.fetchone():
-                                to_remove.add((app_label, migration_name))
-                                self.stdout.write(
-                                    self.style.WARNING(
-                                        f"  Ghost migration detected:"
-                                        f" {app_label}.{migration_name}"
-                                        f" — column {table_name}.{col_name}"
-                                        f" is missing. Will re-apply."
-                                    )
+                            if hasattr(op, "model_name") and hasattr(op, "name"):
+                                missing_object = f"column {op.model_name}.{op.name}"
+                            elif hasattr(op, "constraint"):
+                                missing_object = f"constraint {op.constraint.name}"
+                            else:
+                                missing_object = "schema object"
+
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"  Ghost migration detected:"
+                                    f" {app_label}.{migration_name}"
+                                    f" — {missing_object} is missing. Will re-apply."
                                 )
-                                break
-
-                        elif isinstance(op, CreateModel):
-                            # Skip swappable models (e.g. auth.User when
-                            # AUTH_USER_MODEL points to a custom model) —
-                            # the table legitimately doesn't exist.
-                            if getattr(op, 'options', {}).get('swappable'):
-                                continue
-
-                            try:
-                                model = django_apps.get_model(app_label, op.name)
-                                table_name = model._meta.db_table
-                            except LookupError:
-                                # Model was removed from the codebase — its
-                                # table not existing is intentional, not a ghost.
-                                continue
-
-                            cursor.execute(
-                                """
-                                SELECT 1
-                                FROM information_schema.tables
-                                WHERE table_schema = 'public'
-                                  AND table_name   = %s
-                                """,
-                                [table_name],
                             )
-                            if not cursor.fetchone():
-                                to_remove.add((app_label, migration_name))
-                                self.stdout.write(
-                                    self.style.WARNING(
-                                        f"  Ghost migration detected:"
-                                        f" {app_label}.{migration_name}"
-                                        f" — table {table_name}"
-                                        f" is missing. Will re-apply."
-                                    )
-                                )
-                                break
+                            break
 
         # --- Phase 2: orphan detection + transitive propagation ---
         #
@@ -336,12 +369,12 @@ class Command(DjangoMigrateCommand):
                 # skip CreateModel when the target table already exists.
                 options["fake_initial"] = True
 
-            # Phase 5: catch duplicate column/table errors and dependency-order
+            # Phase 5: catch duplicate column/table/constraint errors and dependency-order
             # errors during migration application.
             #
             # Two scenarios handled:
             #
-            # (a) DuplicateColumn / DuplicateTable — a pending migration tries to
+            # (a) DuplicateColumn / DuplicateTable / DuplicateObject — a pending migration tries to
             #     ADD schema that already exists.  This means the schema was applied
             #     manually or by a previous run that crashed before recording it.
             #     Fix: find the migration(s) where ALL schema-creating operations
@@ -357,12 +390,9 @@ class Command(DjangoMigrateCommand):
             #     Fix: parse the error to identify the missing dependency and fake it.
             import re as _re
             import psycopg.errors as psycopg_errors
-            from django.apps import apps as django_apps
             from django.db import ProgrammingError as DjProgrammingError
             from django.db.migrations.exceptions import InconsistentMigrationHistory
             from django.db.migrations.executor import MigrationExecutor
-            from django.db.migrations.operations.fields import AddField
-            from django.db.migrations.operations.models import CreateModel
             from django.db.migrations.recorder import MigrationRecorder
 
             connection = connections[db_name]
@@ -394,7 +424,12 @@ class Command(DjangoMigrateCommand):
                 except DjProgrammingError as e:
                     cause = e.__cause__
                     if not isinstance(
-                        cause, (psycopg_errors.DuplicateColumn, psycopg_errors.DuplicateTable)
+                        cause,
+                        (
+                            psycopg_errors.DuplicateColumn,
+                            psycopg_errors.DuplicateTable,
+                            psycopg_errors.DuplicateObject,
+                        ),
                     ):
                         raise
 
@@ -416,33 +451,9 @@ class Command(DjangoMigrateCommand):
                             # Collect pass/fail for every schema-checkable operation.
                             checks: list[bool] = []
                             for op in migration.operations:
-                                if isinstance(op, AddField):
-                                    try:
-                                        model = django_apps.get_model(app, op.model_name)
-                                        col = model._meta.get_field(op.name).column
-                                        tbl = model._meta.db_table
-                                    except Exception:
-                                        continue
-                                    cursor.execute(
-                                        "SELECT 1 FROM information_schema.columns"
-                                        " WHERE table_schema='public'"
-                                        " AND table_name=%s AND column_name=%s",
-                                        [tbl, col],
-                                    )
-                                    checks.append(bool(cursor.fetchone()))
-                                elif isinstance(op, CreateModel):
-                                    try:
-                                        tbl = django_apps.get_model(
-                                            app, op.name
-                                        )._meta.db_table
-                                    except LookupError:
-                                        tbl = f"{app}_{op.name.lower()}"
-                                    cursor.execute(
-                                        "SELECT 1 FROM information_schema.tables"
-                                        " WHERE table_schema='public' AND table_name=%s",
-                                        [tbl],
-                                    )
-                                    checks.append(bool(cursor.fetchone()))
+                                exists = self._operation_schema_exists(cursor, app, op)
+                                if exists is not None:
+                                    checks.append(exists)
 
                             # Fake only when every checkable op already exists
                             # (and there is at least one checkable op).
