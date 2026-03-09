@@ -31,6 +31,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import AccessGrant, AccessGrantReason
 from apps.clients.models import (
     ClientDetailValue,
@@ -1524,7 +1525,7 @@ class Command(BaseCommand):
         # Always ensure demo circles exist (idempotent via get_or_create)
         try:
             worker1 = User.objects.get(username="demo-worker-1")
-            self._create_demo_circles(worker1)
+            self._sync_demo_circles(worker1)
         except User.DoesNotExist:
             pass
 
@@ -1731,7 +1732,7 @@ class Command(BaseCommand):
         self._ensure_pending_alert_recommendation(workers, programs_by_name)
 
         # --- Create demo circles ---
-        self._create_demo_circles(worker1)
+        self._sync_demo_circles(worker1)
 
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
@@ -1824,10 +1825,6 @@ class Command(BaseCommand):
         Circles represent families, households, and support networks.
         Uses get_or_create for idempotency.
         """
-        # Three circles demonstrating different family/network structures:
-        # A: Same-household couple + non-participant child (cross-enrolment)
-        # B: Youth support network with non-participant parent (different households)
-        # C: Newcomer family with participant sibling (same household)
         DEMO_CIRCLES = [
             {
                 "name": "Rivera-Chen Household",
@@ -1857,7 +1854,6 @@ class Command(BaseCommand):
 
         created_count = 0
         for circle_def in DEMO_CIRCLES:
-            # Check if circle already exists by looking for exact name match in demo circles
             existing = [
                 c for c in Circle.objects.demo().filter(status="active")
                 if c.name == circle_def["name"]
@@ -1891,6 +1887,17 @@ class Command(BaseCommand):
 
         if created_count:
             self.stdout.write(f"  Created {created_count} demo circles with members.")
+
+    def _sync_demo_circles(self, created_by):
+        """Create or remove demo circles based on the circles feature toggle."""
+        circles_enabled = FeatureToggle.get_all_flags().get("circles", False)
+        if not circles_enabled:
+            deleted_count = Circle.objects.filter(is_demo=True).delete()[0]
+            if deleted_count:
+                self.stdout.write("  Circles feature is off — removed demo circles.")
+            return
+
+        self._create_demo_circles(created_by)
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,
