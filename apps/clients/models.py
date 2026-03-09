@@ -716,6 +716,14 @@ class CustomFieldGroup(models.Model):
             "This is a display preference — it does not restrict access to the data."
         ),
     )
+    admin_only = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, this group is only visible to administrators. "
+            "Use for demographic data collected for funder reporting that "
+            "frontline workers do not need to see."
+        ),
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],

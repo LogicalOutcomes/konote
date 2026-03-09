@@ -173,3 +173,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Toggle display of "Other" text fields for select_other inputs (DEMO-VIS1)
+// Mirrors the data-toggle-display handler from app.js for the portal context.
+document.addEventListener('change', function(event) {
+    var target = event.target;
+    if (target.matches('[data-toggle-display-target]')) {
+        var toggleTarget = document.getElementById(target.getAttribute('data-toggle-display-target'));
+        var expectedValue = target.getAttribute('data-toggle-display-value') || '';
+        if (toggleTarget) {
+            toggleTarget.style.display = target.value === expectedValue ? '' : 'none';
+        }
+    }
+});

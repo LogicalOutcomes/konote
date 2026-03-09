@@ -434,7 +434,10 @@ def client_list(request):
 
 
 def _get_create_field_defs(user):
-    """Return CustomFieldDefinitions marked show_on_create, respecting role access."""
+    """Return CustomFieldDefinitions marked show_on_create, respecting role access.
+
+    Admin-only groups (DEMO-VIS1) are excluded for non-admin users.
+    """
     qs = CustomFieldDefinition.objects.filter(
         status="active",
         group__status="active",
@@ -443,6 +446,9 @@ def _get_create_field_defs(user):
     user_role = getattr(user, "_program_role", None) or _get_user_highest_role(user)
     if user_role == ROLE_RECEPTIONIST:
         qs = qs.filter(front_desk_access="edit")
+    # Admin-only groups: exclude from non-admin users (DEMO-VIS1)
+    if not getattr(user, "is_admin", False):
+        qs = qs.exclude(group__admin_only=True)
     return list(qs)
 
 
@@ -1110,7 +1116,10 @@ def client_detail(request, client_id):
     has_hidden_programs = all_enrolled_count > visible_count
 
     # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
-    custom_fields_ctx = _get_custom_fields_context(client, user_role, hide_empty=True)
+    custom_fields_ctx = _get_custom_fields_context(
+        client, user_role, hide_empty=True,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
     custom_data = custom_fields_ctx["custom_data"]
     has_editable_fields = custom_fields_ctx["has_editable_fields"]
     # Breadcrumbs: Participants > [Name]
@@ -1257,7 +1266,7 @@ def assessment_due_banner(request, client_id):
     })
 
 
-def _get_custom_fields_context(client, user_role, hide_empty=False):
+def _get_custom_fields_context(client, user_role, hide_empty=False, is_admin_user=False):
     """Build custom fields context for display/edit templates.
 
     Args:
@@ -1265,8 +1274,14 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
         user_role: User's role (front desk, direct service, etc.)
         hide_empty: If True, exclude fields without values (for display mode).
                    If False, include all fields (for edit mode).
+        is_admin_user: If True, user is an administrator (can see admin-only groups).
 
     Returns a dict with custom_data, has_editable_fields, client, and is_receptionist (front desk flag).
+
+    Admin-only groups (DEMO-VIS1): groups marked admin_only are only visible
+    to administrators. Demographic data collected for funder reporting is not
+    displayed to frontline workers to prevent implicit bias and protect
+    small-sample de-identification in aggregate reports.
 
     DV-safe enforcement (PERM-P5): when client.is_dv_safe is True and user
     is a receptionist, fields marked is_dv_sensitive are excluded regardless
@@ -1282,6 +1297,9 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
         except Exception:
             dv_hide = True  # Fail closed
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
+    # Admin-only groups: hide from non-admin users (DEMO-VIS1)
+    if not is_admin_user:
+        groups = groups.filter(admin_only=False)
     custom_data = []
     has_editable_fields = False
 
@@ -1349,7 +1367,10 @@ def client_custom_fields_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    context = _get_custom_fields_context(client, user_role, hide_empty=True)
+    context = _get_custom_fields_context(
+        client, user_role, hide_empty=True,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
     return render(request, "clients/_custom_fields_display.html", context)
 
 
@@ -1359,7 +1380,10 @@ def client_custom_fields_edit(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    context = _get_custom_fields_context(client, user_role)
+    context = _get_custom_fields_context(
+        client, user_role,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
 
     # Only allow edit mode if user has editable fields
     if not context["has_editable_fields"]:
@@ -1388,9 +1412,13 @@ def client_save_custom_fields(request, client_id):
 
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == ROLE_RECEPTIONIST
+    is_admin_user = getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
+        # Admin-only groups: exclude from non-admin users (DEMO-VIS1)
+        if not is_admin_user:
+            groups = groups.filter(admin_only=False)
 
         # Get field definitions the user can edit
         if is_receptionist:
@@ -1462,7 +1490,10 @@ def client_save_custom_fields(request, client_id):
 
     # For HTMX requests, return the read-only display partial
     if request.headers.get("HX-Request"):
-        context = _get_custom_fields_context(client, user_role, hide_empty=True)
+        context = _get_custom_fields_context(
+            client, user_role, hide_empty=True,
+            is_admin_user=is_admin_user,
+        )
         return render(request, "clients/_custom_fields_display.html", context)
 
     return redirect("clients:client_detail", client_id=client.pk)
