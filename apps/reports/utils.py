@@ -261,6 +261,9 @@ def aggregate_all_programs_totals(data_or_sections):
     total_served = 0
     total_new = 0
     total_contacts = 0
+    served_suppressed = False
+    new_suppressed = False
+    contacts_suppressed = False
     programs = []
     for program, rd in data_or_sections:
         served = rd.get("total_individuals_served")
@@ -268,14 +271,20 @@ def aggregate_all_programs_totals(data_or_sections):
         contacts = rd.get("total_contacts")
         if isinstance(served, int):
             total_served += served
+        elif served is not None:
+            served_suppressed = True
         if isinstance(new, int):
             total_new += new
+        elif new is not None:
+            new_suppressed = True
         if isinstance(contacts, int):
             total_contacts += contacts
+        elif contacts is not None:
+            contacts_suppressed = True
         programs.append({"name": program.name, "report_data": rd})
     return {
-        "total_served": total_served,
-        "total_new_clients": total_new,
-        "total_contacts": total_contacts,
+        "total_served": "suppressed" if served_suppressed else total_served,
+        "total_new_clients": "suppressed" if new_suppressed else total_new,
+        "total_contacts": "suppressed" if contacts_suppressed else total_contacts,
         "programs": programs,
     }
