@@ -25,6 +25,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
+from apps.admin_settings.models import FeatureToggle
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Alert, Event, EventType
 from apps.notes.models import (
@@ -496,7 +497,10 @@ class DemoDataEngine:
         return profile
 
     # Known keys for each profile section (used for typo detection)
-    _VALID_TOP_KEYS = {"description", "defaults", "programs", "portal"}
+    _VALID_TOP_KEYS = {
+        "description", "defaults", "programs", "portal",
+        "demo_group", "users", "feature_toggles",
+    }
     _VALID_PORTAL_KEYS = {
         "journal_pools", "staff_notes_pool", "messages_pool",
         "program_resources", "client_resources", "survey_definitions",
@@ -518,6 +522,29 @@ class DemoDataEngine:
                     f"  Warning: unknown portal key '{key}' — will be ignored. "
                     f"Valid keys: {', '.join(sorted(self._VALID_PORTAL_KEYS))}"
                 )
+
+    def apply_feature_toggles(self, profile):
+        """Apply optional feature toggle overrides from the demo profile."""
+        feature_toggles = profile.get("feature_toggles", {})
+        if not feature_toggles:
+            return
+
+        applied = 0
+        for feature_key, is_enabled in feature_toggles.items():
+            if not isinstance(is_enabled, bool):
+                self.log_warning(
+                    f"  Warning: feature_toggles['{feature_key}'] must be true/false. Ignoring."
+                )
+                continue
+
+            FeatureToggle.objects.update_or_create(
+                feature_key=feature_key,
+                defaults={"is_enabled": is_enabled},
+            )
+            applied += 1
+
+        if applied:
+            self.log(f"  Applied {applied} feature toggle override(s) from the demo profile.")
 
     # ----- Cleanup -----
 
@@ -1790,6 +1817,7 @@ class DemoDataEngine:
         random.seed(42)  # Reproducible demo data
 
         profile = self.load_profile(profile_path)
+        self.apply_feature_toggles(profile)
 
         # Apply profile defaults
         profile_defaults = profile.get("defaults", {})

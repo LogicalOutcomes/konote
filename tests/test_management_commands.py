@@ -298,6 +298,24 @@ class SeedDemoDataTest(TestCase):
             f"Achievement value should be a category string, got '{sample.value}'",
         )
 
+    def test_seed_enables_circles_in_demo_mode(self):
+        """Generic demo seeding should enable circles and create demo circles."""
+        from apps.admin_settings.models import FeatureToggle
+        from apps.circles.models import Circle
+
+        FeatureToggle.objects.update_or_create(
+            feature_key="circles",
+            defaults={"is_enabled": False},
+        )
+
+        out = io.StringIO()
+        call_command("seed", stdout=out)
+
+        self.assertTrue(
+            FeatureToggle.objects.get(feature_key="circles").is_enabled
+        )
+        self.assertTrue(Circle.objects.filter(is_demo=True).exists())
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=True)
 class GenerateDemoDataCommandTest(TestCase):
@@ -355,6 +373,23 @@ class GenerateDemoDataCommandTest(TestCase):
             "seeds/custom_profile.json",
         )
         self.assertNotIn("Using default demo profile", out.getvalue())
+
+    def test_demo_engine_applies_feature_toggles_from_profile(self):
+        """Profile feature_toggles should update feature flags before generation."""
+        from apps.admin_settings.demo_engine import DemoDataEngine
+        from apps.admin_settings.models import FeatureToggle
+
+        FeatureToggle.objects.update_or_create(
+            feature_key="circles",
+            defaults={"is_enabled": True},
+        )
+
+        engine = DemoDataEngine(stdout=io.StringIO(), stderr=io.StringIO())
+        engine.apply_feature_toggles({"feature_toggles": {"circles": False}})
+
+        self.assertFalse(
+            FeatureToggle.objects.get(feature_key="circles").is_enabled
+        )
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=False)
