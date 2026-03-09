@@ -219,6 +219,20 @@ class NoteViewsTest(TestCase):
         note = ProgressNote.objects.first()
         self.assertEqual(note.interaction_type, "phone")
         self.assertEqual(note.outcome, "reached")
+        self.assertIn("showSuccess", resp.headers.get("HX-Trigger", ""))
+
+    def test_inline_quick_note_blank_reached_contact_shows_error_without_success_trigger(self):
+        """Invalid inline contact submissions should return errors without a success event."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/inline/",
+            {"notes_text": "", "interaction_type": "phone", "outcome": "reached"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Note text is required.")
+        self.assertEqual(ProgressNote.objects.count(), 0)
+        self.assertEqual(resp.headers.get("HX-Trigger"), None)
 
     def test_inline_quick_note_buttons_mode(self):
         """GET with ?mode=buttons returns the button partial."""

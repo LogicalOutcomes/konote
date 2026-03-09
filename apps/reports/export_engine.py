@@ -35,6 +35,7 @@ from .funder_report import (
     get_demographic_groups,
 )
 from .models import ReportMetric, ReportSection
+from .pdf_utils import is_pdf_available
 from .suppression import (
     SMALL_CELL_THRESHOLD,
     apply_secondary_suppression,
@@ -464,7 +465,6 @@ def _render_multi_program(
         }
 
         if export_format == "pdf":
-            from .pdf_utils import is_pdf_available
             if is_pdf_available():
                 from weasyprint import HTML as WeasyHTML
                 html_str = render_html_string(

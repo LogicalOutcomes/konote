@@ -10,16 +10,48 @@ function quickExit() {
     // The token is validated server-side; without it the endpoint returns 403.
     var tokenMeta = document.querySelector('meta[name="emergency-logout-token"]');
     var token = tokenMeta ? tokenMeta.getAttribute('content') : '';
-    // Send token as form data so Django can read it via request.POST.get("token").
-    // sendBeacon with FormData sends a multipart/form-data POST, which Django parses.
-    var payload = new FormData();
-    payload.append('token', token);
-    navigator.sendBeacon('/my/emergency-logout/', payload);
     // Read configurable exit URL from button data attribute (set by admin)
     var btn = document.getElementById('quick-exit');
     var exitUrl = (btn && btn.dataset.exitUrl) || 'https://www.google.ca';
-    // Replace current history entry so back button doesn't return here
-    window.location.replace(exitUrl);
+    var redirected = false;
+
+    function leaveNow() {
+        if (redirected) return;
+        redirected = true;
+        // Replace current history entry so back button doesn't return here
+        window.location.replace(exitUrl);
+    }
+
+    var payload = new URLSearchParams();
+    if (token) {
+        payload.append('token', token);
+    }
+
+    // Don't linger on the page if the network is slow, but give the logout
+    // request a brief head start so the session actually ends.
+    var fallbackTimer = setTimeout(leaveNow, 400);
+
+    if (window.fetch) {
+        fetch('/my/emergency-logout/', {
+            method: 'POST',
+            body: payload,
+            credentials: 'same-origin',
+            keepalive: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+            }
+        }).then(function () {
+            clearTimeout(fallbackTimer);
+            leaveNow();
+        }, function () {
+            clearTimeout(fallbackTimer);
+            leaveNow();
+        });
+        return;
+    }
+
+    navigator.sendBeacon('/my/emergency-logout/', payload);
+    leaveNow();
 }
 
 // Dismiss "new since last visit" banner

@@ -1,6 +1,7 @@
 # Phase 4: Progress note views
 """Views for progress notes — quick notes, full notes, timeline, cancellation."""
 import datetime
+import json
 
 import logging
 
@@ -604,10 +605,11 @@ def quick_note_inline(request, client_id):
                     status="default",
                 ).update(follow_up_completed_at=timezone.now())
 
-            messages.success(request, _("Note saved."))
-            return render(request, "notes/_quick_note_inline_buttons.html", {
+            response = render(request, "notes/_quick_note_inline_buttons.html", {
                 "client": client,
             })
+            response["HX-Trigger"] = json.dumps({"showSuccess": str(_("Note saved."))})
+            return response
     else:
         initial_type = request.GET.get("type", "phone")
         form = QuickNoteForm(initial={"interaction_type": initial_type}, circle_choices=circle_choices or None)

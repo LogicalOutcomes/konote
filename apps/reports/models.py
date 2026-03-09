@@ -452,6 +452,7 @@ class SecureExportLink(models.Model):
         ("metrics", _("Metric Report")),
         ("standard_report", _("Standard Report")),
         ("individual_client", _("Individual Client Export")),
+        ("session_report", _("Session Report")),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

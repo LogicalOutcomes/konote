@@ -1,5 +1,6 @@
 """Survey forms for validation."""
 from django import forms
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from .models import Survey, SurveyQuestion, SurveySection, SurveyTriggerRule
@@ -227,7 +228,10 @@ class TriggerRuleForm(forms.ModelForm):
 class CSVImportForm(forms.Form):
     """Form for uploading a survey via CSV."""
 
-    csv_file = forms.FileField(label=_("CSV file"))
+    csv_file = forms.FileField(
+        label=_("CSV file"),
+        validators=[FileExtensionValidator(allowed_extensions=["csv"])],
+    )
 
     def clean_csv_file(self):
         csv_file = self.cleaned_data["csv_file"]

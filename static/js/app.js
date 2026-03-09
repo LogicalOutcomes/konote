@@ -87,10 +87,11 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 })();
 
 // --- Link form error messages to their inputs (aria-describedby) ---
-// Scans for <small class="error"> and links the preceding input/select/textarea
+// Scans for <small class="error"> and <small class="badge-danger"> elements
+// and links the preceding input/select/textarea
 (function () {
     function linkErrorMessages() {
-        var errors = document.querySelectorAll("small.error");
+        var errors = document.querySelectorAll("small.error, small.badge-danger");
         errors.forEach(function (errorEl) {
             // Walk backwards through siblings to find the form control
             var sibling = errorEl.previousElementSibling;
@@ -394,20 +395,41 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 })();
 
 // --- Screen reader announcer for HTMX form success (IMPROVE-9) ---
-// When an HTMX POST succeeds, announce "Saved" to screen readers via #sr-announcer
+// Announce generic "Saved" only when a POST really succeeded and did not
+// re-render validation errors. Explicit success events (showSuccess) take
+// precedence and provide a more helpful message.
 (function () {
     var announcer = document.getElementById("sr-announcer");
     if (!announcer) return;
 
-    document.body.addEventListener("htmx:afterRequest", function (event) {
-        var verb = (event.detail.requestConfig && event.detail.requestConfig.verb) || "";
-        if (verb.toLowerCase() === "post" && event.detail.successful) {
-            announcer.textContent = "";
-            // Small delay so aria-live picks up the change
-            setTimeout(function () {
-                announcer.textContent = t("saved", "Saved");
-            }, 100);
+    function hasValidationErrors(target) {
+        if (!target || !(target instanceof Element)) return false;
+        var selector = "[aria-invalid='true'], .error-summary, small.error, small.badge-danger";
+        return target.matches(selector) || !!target.querySelector(selector);
+    }
+
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        var requestConfig = event.detail.requestConfig || {};
+        var verb = (requestConfig.verb || "").toLowerCase();
+        var xhr = event.detail.xhr;
+        if (verb !== "post" || !xhr || xhr.status < 200 || xhr.status >= 300) {
+            return;
         }
+
+        var hxTrigger = xhr.getResponseHeader("HX-Trigger") || "";
+        if (hxTrigger.indexOf("showSuccess") !== -1) {
+            return;
+        }
+
+        if (hasValidationErrors(event.detail.target)) {
+            return;
+        }
+
+        announcer.textContent = "";
+        // Small delay so aria-live picks up the change
+        setTimeout(function () {
+            announcer.textContent = t("saved", "Saved");
+        }, 100);
     });
 })();
 
@@ -479,6 +501,34 @@ document.body.addEventListener("showSuccess", function (e) {
     if (announcer) {
         announcer.textContent = "";
         setTimeout(function () { announcer.textContent = msg; }, 100);
+    }
+});
+
+// Keep the Messages nav badge in sync after an HTMX "mark as read" action.
+document.body.addEventListener("messageRead", function (e) {
+    var detail = e.detail || {};
+    var rawCount = detail.unreadCount;
+    if (rawCount === undefined && detail.value && typeof detail.value === "object") {
+        rawCount = detail.value.unreadCount;
+    }
+    var unreadCount = parseInt(rawCount, 10);
+    if (isNaN(unreadCount)) return;
+
+    var link = document.getElementById("nav-messages-link");
+    if (!link) return;
+
+    var badge = document.getElementById("messages-nav-badge");
+    if (unreadCount > 0) {
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.id = "messages-nav-badge";
+            badge.className = "badge badge-warning";
+            link.appendChild(document.createTextNode(" "));
+            link.appendChild(badge);
+        }
+        badge.textContent = String(unreadCount);
+    } else if (badge) {
+        badge.remove();
     }
 });
 

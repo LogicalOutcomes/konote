@@ -99,12 +99,13 @@ def scrub_pii(text, known_names=None):
             key=len,
             reverse=True,
         )
-        # Build a single combined alternation pattern instead of one regex per name
-        combined = "|".join(re.escape(n) for n in sorted_names)
-        name_pattern = re.compile(
-            rf"\b(?:{combined})(?:'s)?\b",
-            re.IGNORECASE,
-        )
-        result = name_pattern.sub("[NAME]", result)
+        if sorted_names:
+            # Build a single combined alternation pattern instead of one regex per name
+            combined = "|".join(re.escape(n) for n in sorted_names)
+            name_pattern = re.compile(
+                rf"\b(?:{combined})(?:'s)?\b",
+                re.IGNORECASE,
+            )
+            result = name_pattern.sub("[NAME]", result)
 
     return result
