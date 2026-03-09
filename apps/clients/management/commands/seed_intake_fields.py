@@ -478,12 +478,22 @@ class Command(BaseCommand):
             # Create or get the group
             # Youth/recreation groups are archived by default — agencies can reactivate if needed
             initial_status = "archived" if group_title in ARCHIVED_BY_DEFAULT else "active"
+            defaults = {"sort_order": group_sort_order, "status": initial_status}
+            # Demographics are admin-only: hidden from frontline workers to
+            # prevent bias activation (DEMO-VIS1). Participants self-report
+            # via the portal; admins see values for funder reporting.
+            if group_title == "Demographics":
+                defaults["admin_only"] = True
             group, was_group_created = CustomFieldGroup.objects.get_or_create(
                 title=group_title,
-                defaults={"sort_order": group_sort_order, "status": initial_status},
+                defaults=defaults,
             )
             if was_group_created:
                 groups_created += 1
+            elif group_title == "Demographics" and not group.admin_only:
+                # Existing installs: upgrade to admin_only
+                group.admin_only = True
+                group.save(update_fields=["admin_only"])
 
             # Create fields within the group
             for field_idx, field_data in enumerate(fields):
