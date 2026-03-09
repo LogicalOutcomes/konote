@@ -741,12 +741,23 @@ def dashboard(request):
     except Exception:
         pass
 
-    # Self-identification survey: show card if admin-only groups exist (DEMO-VIS1)
+    # Self-identification survey card (DEMO-VIS1):
+    # Show only if admin-only groups exist AND participant hasn't dismissed
+    # AND hasn't already submitted responses.
     show_selfid = False
     try:
-        show_selfid = CustomFieldGroup.objects.filter(
-            status="active", admin_only=True,
-        ).filter(fields__status="active").distinct().exists()
+        if not participant.selfid_dismissed:
+            has_groups = CustomFieldGroup.objects.filter(
+                status="active", admin_only=True,
+            ).filter(fields__status="active").distinct().exists()
+            if has_groups:
+                has_submitted = ClientDetailValue.objects.filter(
+                    client_file=client_file,
+                    field_def__group__admin_only=True,
+                    field_def__group__status="active",
+                    field_def__status="active",
+                ).exists()
+                show_selfid = not has_submitted
     except Exception:
         pass
 
@@ -825,11 +836,21 @@ def resources_list(request):
 
 @portal_login_required
 def settings_view(request):
-    """Portal settings — MFA status, password change link."""
+    """Portal settings — MFA status, password change link, About Me toggle."""
     participant = request.participant_user
+
+    # Check if admin-only groups exist (for About Me toggle)
+    selfid_available = False
+    try:
+        selfid_available = CustomFieldGroup.objects.filter(
+            status="active", admin_only=True,
+        ).filter(fields__status="active").distinct().exists()
+    except Exception:
+        pass
 
     return render(request, "portal/settings.html", {
         "participant": participant,
+        "selfid_available": selfid_available,
     })
 
 
@@ -2368,3 +2389,39 @@ def selfid_form(request):
         "success": success,
         "form": form,
     })
+
+
+@portal_login_required
+@require_POST
+def selfid_dismiss(request):
+    """Dismiss the About Me card from the dashboard.
+
+    Sets selfid_dismissed=True so the card no longer appears.
+    Reversible via the Settings page.
+    """
+    participant = request.participant_user
+    participant.selfid_dismissed = True
+    participant.save(update_fields=["selfid_dismissed"])
+    _audit_portal_event(request, "selfid_dismissed", metadata={
+        "participant_id": str(participant.pk),
+    })
+    return redirect("portal:dashboard")
+
+
+@portal_login_required
+@require_POST
+def selfid_toggle(request):
+    """Toggle the About Me card visibility from Settings.
+
+    Re-enables or disables the About Me card on the dashboard.
+    """
+    participant = request.participant_user
+    # Toggle: if dismissed, re-enable; if not, dismiss
+    new_value = not participant.selfid_dismissed
+    participant.selfid_dismissed = new_value
+    participant.save(update_fields=["selfid_dismissed"])
+    _audit_portal_event(request, "selfid_toggled", metadata={
+        "participant_id": str(participant.pk),
+        "dismissed": new_value,
+    })
+    return redirect("portal:settings")

@@ -22211,6 +22211,33 @@ msgstr "Autre"
 msgid "There are no self-identification questions available at this time."
 msgstr "Il n’y a aucune question d’auto-identification disponible pour le moment."
 
+msgid "Optionally share a bit about yourself. This helps your agency understand who they’re serving."
+msgstr "Partagez quelques informations sur vous si vous le souhaitez. Cela aide votre organisme à comprendre qui il dessert."
+
+msgid "Dismiss About Me survey card"
+msgstr "Masquer la carte du sondage À propos de moi"
+
+msgid "No thanks"
+msgstr "Non merci"
+
+msgid "About Me survey"
+msgstr "Sondage À propos de moi"
+
+msgid "The About Me card is hidden from your dashboard."
+msgstr "La carte À propos de moi est masquée de votre tableau de bord."
+
+msgid "Show on dashboard"
+msgstr "Afficher sur le tableau de bord"
+
+msgid "The About Me card appears on your dashboard."
+msgstr "La carte À propos de moi est affichée sur votre tableau de bord."
+
+msgid "Fill out About Me"
+msgstr "Remplir À propos de moi"
+
+msgid "Hide from dashboard"
+msgstr "Masquer du tableau de bord"
+
 msgid "%(count)d %(term)s discharged from %(program)s."
 msgstr ""
 

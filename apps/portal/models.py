@@ -131,6 +131,10 @@ class ParticipantUser(AbstractBaseUser):
         default=False,
         help_text="True after the participant has seen the self-identification consent notice.",
     )
+    selfid_dismissed = models.BooleanField(
+        default=False,
+        help_text="True if the participant chose to hide the About Me card from the dashboard.",
+    )
 
     # Password reset
     password_reset_token_hash = models.CharField(
