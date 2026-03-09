@@ -177,6 +177,22 @@
       "fixed_in": "DEMO-ADMIN-RO1, DEMO-BANNER1, DEMO-LOGIN-UX1, DEMO-AUDIT1, DEMO-EXCLUDE1",
       "verified_date": null,
       "notes": "5 safeguards: demo admin cannot POST to settings views, banner says 'Training Mode', login section labelled 'Training Accounts', demo logins audited with is_demo_context=True, explicit is_demo=False filters on team meeting view and dashboard aggregates."
+    },
+    {
+      "description": "Consent and custom-field HTMX forms used CSP-breaking inline hx-on autofocus",
+      "finding_group": null,
+      "fixed_date": "2026-03-09",
+      "fixed_in": "QA-MAR2026-WORKFLOWS",
+      "verified_date": null,
+      "notes": "Replaced hx-on::load autofocus handlers with a shared app.js helper driven by data-autofocus-first so HTMX swaps no longer trigger EvalError under CSP."
+    },
+    {
+      "description": "Participant create form lacked inline program validation feedback",
+      "finding_group": null,
+      "fixed_date": "2026-03-09",
+      "fixed_in": "QA-MAR2026-WORKFLOWS",
+      "verified_date": null,
+      "notes": "Program checkbox group now shows required marker, inline error text, and aria-describedby wiring when submission omits all programs."
     }
   ]
 }

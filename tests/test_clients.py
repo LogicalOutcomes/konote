@@ -169,6 +169,24 @@ class ClientViewsTest(TestCase):
         self.assertNotContains(resp, "input[this.value.length >= 3")
         self.assertNotContains(resp, "document.getElementById('id_birth_date')")
 
+    def test_create_form_shows_inline_program_error(self):
+        """Program selection errors should appear next to the checkbox group."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/participants/create/", {
+            "first_name": "Needs",
+            "last_name": "Program",
+            "preferred_name": "",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "",
+            "status": "active",
+            "preferred_language": "en",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="err_programs"')
+        self.assertContains(resp, "Please select at least one program.")
+        self.assertContains(resp, 'aria-describedby="err_programs"')
+
     def test_display_name_falls_back_to_first_name(self):
         """When no preferred name, display_name returns first_name."""
         cf = self._create_client("Jane", "Doe")
@@ -993,6 +1011,16 @@ class MultiSelectFieldTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Black, South Asian")
 
+    def test_custom_fields_edit_partial_uses_csp_safe_autofocus_marker(self):
+        """Custom fields edit partial should use the shared autofocus helper."""
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/custom-fields/edit/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "data-autofocus-first")
+        self.assertNotContains(resp, "hx-on::load")
+
     def test_collapsed_group_renders_without_open(self):
         """Groups with collapsed_by_default=True render <details> without open attribute."""
         self.group.collapsed_by_default = True
@@ -1105,6 +1133,17 @@ class ConsentRecordingTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent on file")
         self.assertContains(resp, "verbal")
+
+    def test_consent_edit_partial_uses_csp_safe_autofocus_marker(self):
+        """Consent edit partial should avoid inline hx-on handlers blocked by CSP."""
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.get(
+            f"/participants/{self.cf.pk}/consent/edit/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "data-autofocus-first")
+        self.assertNotContains(resp, "hx-on::load")
 
     def test_receptionist_cannot_record_consent(self):
         """Front desk staff cannot record consent (staff-only action)."""

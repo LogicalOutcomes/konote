@@ -96,11 +96,13 @@
     {% endif %}
 
     {% if form.programs.field.queryset.exists %}
-    <fieldset>
-        <legend>{{ term.program_plural|default:"Programs" }}</legend>
+    <fieldset{% if form.programs.errors %} aria-describedby="err_programs"{% endif %}>
+        <legend>{{ term.program_plural|default:"Programs" }}{% if form.programs.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</legend>
+        {% if form.programs.errors %}<small class="error" id="err_programs" role="alert">{{ form.programs.errors.0 }}</small>{% endif %}
         {% for program in form.programs.field.queryset %}
         <label>
             <input type="checkbox" name="programs" value="{{ program.pk }}"
+                   {% if form.programs.errors %}aria-invalid="true" aria-describedby="err_programs" {% endif %}
                    {% if program.pk in form.programs.value or program.pk|stringformat:"d" in form.programs.value %}checked{% endif %}>
             <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
             {{ program.translated_name }}
