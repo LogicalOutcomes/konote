@@ -248,9 +248,9 @@ def aggregate_all_programs_totals(data_or_sections):
     """Aggregate service metrics across all program reports.
 
     When any program's value has been suppressed (replaced with a string
-    like ``"< 5"``), that program's contribution is skipped so the
-    org-level total still reflects the available data without including
-    suppressed estimates.
+    like ``"< 5"``), the org-level total for that field is also marked
+    ``"suppressed"``. Showing the sum would reveal the suppressed program's
+    approximate count, which defeats the purpose of suppression.
 
     Args:
         data_or_sections: List of (program, report_data) tuples.
