@@ -2208,6 +2208,7 @@ def selfid_form(request):
     from apps.clients.models import (
         ClientDetailValue, CustomFieldGroup,
     )
+    from apps.portal.forms import SelfIdForm
 
     participant = request.participant_user
     client_file = _get_client_file(request)
@@ -2222,27 +2223,40 @@ def selfid_form(request):
         status="active", admin_only=True,
     ).prefetch_related("fields")
 
+    # Collect all active field definitions from admin-only groups
+    all_field_defs = []
+    for group in groups:
+        all_field_defs.extend(group.fields.filter(status="active"))
+
+    # Build a set of allowed field def PKs for save validation
+    allowed_field_pks = {fd.pk for fd in all_field_defs}
+
     success = False
 
     if request.method == "POST":
-        for group in groups:
-            for field_def in group.fields.filter(status="active"):
+        form = SelfIdForm(request.POST, field_defs=all_field_defs)
+        if form.is_valid():
+            for field_def in all_field_defs:
+                # Double-check: only save to admin_only fields
+                if field_def.pk not in allowed_field_pks:
+                    continue
+
                 key = f"custom_{field_def.pk}"
 
                 # Parse value based on input type
                 if field_def.input_type in ("multi_select", "multi_select_other"):
-                    selected = request.POST.getlist(key)
+                    selected = form.cleaned_data.get(key, [])
                     if field_def.input_type == "multi_select_other":
-                        other_text = request.POST.get(f"{key}_other", "").strip()
+                        other_text = form.cleaned_data.get(f"{key}_other", "").strip()
                         if other_text:
                             selected = list(selected) + [other_text]
                     raw_value = json_mod.dumps(selected) if selected else ""
                 elif field_def.input_type == "select_other":
-                    raw_value = request.POST.get(key, "").strip()
+                    raw_value = form.cleaned_data.get(key, "").strip()
                     if raw_value == "__other__":
-                        raw_value = request.POST.get(f"{key}_other", "").strip()
+                        raw_value = form.cleaned_data.get(f"{key}_other", "").strip()
                 else:
-                    raw_value = request.POST.get(key, "").strip()
+                    raw_value = str(form.cleaned_data.get(key, "") or "").strip()
 
                 # Save or update
                 cdv, _created = ClientDetailValue.objects.get_or_create(
@@ -2251,12 +2265,47 @@ def selfid_form(request):
                 cdv.set_value(raw_value)
                 cdv.save()
 
-        _audit_portal_event(request, "selfid_submitted", metadata={
-            "participant_id": str(participant.pk),
-        })
-        success = True
+            _audit_portal_event(request, "selfid_submitted", metadata={
+                "participant_id": str(participant.pk),
+            })
+            success = True
+    else:
+        # Pre-fill form with existing values
+        initial = {}
+        for field_def in all_field_defs:
+            key = f"custom_{field_def.pk}"
+            try:
+                cdv = ClientDetailValue.objects.get(
+                    client_file=client_file, field_def=field_def,
+                )
+                value = cdv.get_value()
+            except ClientDetailValue.DoesNotExist:
+                value = ""
 
-    # Build form context (similar to _get_custom_fields_context but for portal)
+            if field_def.input_type in ("multi_select", "multi_select_other") and value:
+                try:
+                    parsed = json_mod.loads(value)
+                except (json_mod.JSONDecodeError, TypeError):
+                    parsed = []
+                if field_def.input_type == "multi_select_other" and field_def.options_json:
+                    known = set(field_def.options_json)
+                    custom_vals = [v for v in parsed if v not in known]
+                    initial[f"{key}_other"] = custom_vals[0] if custom_vals else ""
+                    initial[key] = [v for v in parsed if v in known]
+                else:
+                    initial[key] = parsed
+            elif field_def.input_type == "select_other" and value and field_def.options_json:
+                if value not in field_def.options_json:
+                    initial[key] = "__other__"
+                    initial[f"{key}_other"] = value
+                else:
+                    initial[key] = value
+            else:
+                initial[key] = value
+
+        form = SelfIdForm(initial=initial, field_defs=all_field_defs)
+
+    # Build template context (groups with fields for display structure)
     custom_data = []
     for group in groups:
         field_values = []
@@ -2299,4 +2348,5 @@ def selfid_form(request):
         "participant": participant,
         "custom_data": custom_data,
         "success": success,
+        "form": form,
     })

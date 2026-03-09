@@ -386,6 +386,81 @@ class CorrectionRequestForm(forms.Form):
 # ---------------------------------------------------------------------------
 
 
+class SelfIdForm(forms.Form):
+    """Dynamic self-identification form for participant demographics.
+
+    Built from admin-only CustomFieldGroups. Fields are added dynamically
+    in __init__ based on the field definitions passed in. All fields are
+    optional — participants can skip any question.
+    """
+
+    def __init__(self, *args, field_defs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._field_defs = field_defs or []
+        for fd in self._field_defs:
+            key = f"custom_{fd.pk}"
+            if fd.input_type == "textarea":
+                self.fields[key] = forms.CharField(
+                    label=fd.name,
+                    required=False,
+                    widget=forms.Textarea(attrs={
+                        "rows": 3,
+                        "placeholder": fd.placeholder or "",
+                    }),
+                )
+            elif fd.input_type in ("select", "select_other"):
+                choices = [("", _("Select…"))]
+                for opt in (fd.options_json or []):
+                    choices.append((opt, opt))
+                if fd.input_type == "select_other":
+                    choices.append(("__other__", _("Other")))
+                self.fields[key] = forms.ChoiceField(
+                    label=fd.name,
+                    choices=choices,
+                    required=False,
+                )
+                if fd.input_type == "select_other":
+                    self.fields[f"{key}_other"] = forms.CharField(
+                        label=_("Other (please specify)"),
+                        required=False,
+                    )
+            elif fd.input_type in ("multi_select", "multi_select_other"):
+                choices = [(opt, opt) for opt in (fd.options_json or [])]
+                self.fields[key] = forms.MultipleChoiceField(
+                    label=fd.name,
+                    choices=choices,
+                    required=False,
+                    widget=forms.CheckboxSelectMultiple(),
+                )
+                if fd.input_type == "multi_select_other":
+                    self.fields[f"{key}_other"] = forms.CharField(
+                        label=_("Other (please specify)"),
+                        required=False,
+                    )
+            elif fd.input_type == "date":
+                self.fields[key] = forms.DateField(
+                    label=fd.name,
+                    required=False,
+                    widget=forms.DateInput(attrs={"type": "date"}),
+                )
+            elif fd.input_type == "number":
+                self.fields[key] = forms.DecimalField(
+                    label=fd.name,
+                    required=False,
+                    widget=forms.NumberInput(attrs={
+                        "placeholder": fd.placeholder or "",
+                    }),
+                )
+            else:
+                self.fields[key] = forms.CharField(
+                    label=fd.name,
+                    required=False,
+                    widget=forms.TextInput(attrs={
+                        "placeholder": fd.placeholder or "",
+                    }),
+                )
+
+
 class StaffPortalNoteForm(forms.Form):
     """Form for staff to leave a note visible in the participant's portal."""
 
