@@ -232,6 +232,27 @@ class PortalAuthTests(TestCase):
         self.assertNotContains(response, "Demo Participant 4")
         self.assertNotContains(response, "Demo Participant 5")
 
+    @override_settings(DEMO_MODE=True)
+    def test_demo_portal_login_sets_emergency_logout_token(self):
+        """Demo portal login should mint the quick-exit token used by the panic button."""
+        from apps.portal.views import SESSION_EMERGENCY_LOGOUT_TOKEN
+
+        self.client_file.record_id = "DEMO-001"
+        self.client_file.save(update_fields=["record_id"])
+
+        response = self.client.post("/auth/demo-portal-login/DEMO-001/")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/my/")
+        self.assertEqual(self.client.session.get("_portal_participant_id"), str(self.participant.pk))
+
+        token = self.client.session.get(SESSION_EMERGENCY_LOGOUT_TOKEN)
+        self.assertTrue(token)
+
+        dashboard = self.client.get("/my/")
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertContains(dashboard, token)
+
     # ------------------------------------------------------------------
     # Password reset
     # ------------------------------------------------------------------

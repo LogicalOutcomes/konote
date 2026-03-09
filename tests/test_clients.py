@@ -1,4 +1,6 @@
 """Tests for client CRUD views and search."""
+from unittest import mock
+
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from cryptography.fernet import Fernet
@@ -155,6 +157,15 @@ class ClientViewsTest(TestCase):
         self.assertEqual(cf.first_name, "Jonathan")
         self.assertEqual(cf.preferred_name, "Jay")
         self.assertEqual(cf.display_name, "Jay")
+
+    def test_create_form_uses_csp_safe_duplicate_trigger(self):
+        """The duplicate-check trigger should not rely on inline JS conditions blocked by CSP."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/participants/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'hx-trigger="input changed delay:1s"')
+        self.assertNotContains(resp, "input[this.value.length >= 3")
+        self.assertNotContains(resp, "document.getElementById('id_birth_date')")
 
     def test_display_name_falls_back_to_first_name(self):
         """When no preferred name, display_name returns first_name."""
@@ -1372,6 +1383,17 @@ class ExecutiveDashboardExportTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         content = resp.content.decode()
         self.assertIn("Prog A", content)
+
+    def test_export_still_downloads_if_audit_logging_fails(self):
+        """A transient audit DB failure should not turn executive CSV export into a 500."""
+        self.http.login(username="exec", password="pass")
+        with mock.patch("apps.audit.models.AuditLog.objects") as audit_objects:
+            audit_objects.using.return_value.create.side_effect = RuntimeError("audit db unavailable")
+            resp = self.http.get("/participants/executive/export/")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "text/csv")
+        self.assertIn("executive-dashboard.csv", resp["Content-Disposition"])
 
     def test_anonymous_user_redirected_export(self):
         """Unauthenticated users are redirected to login on export."""
