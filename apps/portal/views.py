@@ -172,7 +172,7 @@ def portal_login(request):
     ParticipantUser model) and MFA redirect when enabled.
     """
     from apps.portal.forms import PortalLoginForm
-    from apps.portal.models import ParticipantUser
+    from apps.portal.models import ParticipantUser, get_demo_portal_participants
 
     # Already logged in? Go to dashboard.
     if request.session.get("_portal_participant_id"):
@@ -270,13 +270,7 @@ def portal_login(request):
 
     demo_portal_participants = []
     if settings.DEMO_MODE:
-        demo_portal_participants = list(
-            ParticipantUser.objects.filter(
-                is_active=True, mfa_method="exempt",
-            )
-            .select_related("client_file")
-            .order_by("client_file__record_id")[:2]
-        )
+        demo_portal_participants = get_demo_portal_participants()
 
     return render(request, "portal/login.html", {
         "form": form,

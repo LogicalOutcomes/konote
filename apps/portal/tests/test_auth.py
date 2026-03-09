@@ -202,6 +202,36 @@ class PortalAuthTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    @override_settings(DEMO_MODE=True)
+    def test_portal_login_caps_demo_participants_to_three(self):
+        """The portal login page should only preview three demo participants."""
+        for index in range(2, 6):
+            client_file = ClientFile.objects.create(
+                record_id=f"TEST-{index:03d}",
+                status="active",
+            )
+            client_file.first_name = f"Demo {index}"
+            client_file.last_name = "Participant"
+            client_file.save()
+            participant = ParticipantUser.objects.create_participant(
+                email=f"demo{index}@example.com",
+                client_file=client_file,
+                display_name=f"Demo Participant {index}",
+                password="TestPass123!",
+            )
+            participant.mfa_method = "exempt"
+            participant.save(update_fields=["mfa_method"])
+
+        response = self.client.get("/my/login/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["demo_portal_participants"]), 3)
+        self.assertContains(response, "Test Participant")
+        self.assertContains(response, "Demo Participant 2")
+        self.assertContains(response, "Demo Participant 3")
+        self.assertNotContains(response, "Demo Participant 4")
+        self.assertNotContains(response, "Demo Participant 5")
+
     # ------------------------------------------------------------------
     # Password reset
     # ------------------------------------------------------------------

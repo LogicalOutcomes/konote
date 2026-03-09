@@ -122,7 +122,7 @@
             <p class="demo-heading">{% trans "Participant Portal" %}</p>
             <p class="demo-subtext">{% trans "See what participants see when they check their goals and progress (if this is enabled)" %}</p>
             <div class="demo-grid">
-                {% for pp in demo_portal_participants %}
+                {% for pp in demo_portal_participants|slice:":3" %}
                 <form method="post" action="/auth/demo-portal-login/{{ pp.client_file.record_id }}/">{% csrf_token %}<button type="submit" class="demo-btn demo-btn-portal">{% trans "Participant" %} — {{ pp.display_name }}</button></form>
                 {% endfor %}
             </div>

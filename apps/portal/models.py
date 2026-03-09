@@ -227,6 +227,21 @@ class ParticipantUser(AbstractBaseUser):
         return False
 
 
+DEMO_PORTAL_LOGIN_PREVIEW_LIMIT = 3
+
+
+def get_demo_portal_participants(limit=DEMO_PORTAL_LOGIN_PREVIEW_LIMIT):
+    """Return a small, stable set of demo participants for login shortcuts."""
+    return list(
+        ParticipantUser.objects.filter(
+            is_active=True,
+            mfa_method="exempt",
+        )
+        .select_related("client_file")
+        .order_by("client_file__record_id")[:limit]
+    )
+
+
 # ---------------------------------------------------------------------------
 # B) PortalInvite — staff-created invite for a participant to join the portal
 # ---------------------------------------------------------------------------
