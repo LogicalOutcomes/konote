@@ -24,10 +24,10 @@
             <input type="hidden" name="timeframe" id="id_timeframe" value="{{ filter_timeframe }}">
             <fieldset role="group" style="margin-bottom: 0.5rem;">
                 <legend class="sr-only">{% trans "Quick select" %}</legend>
-                <button type="button" class="outline{% if filter_timeframe == '30d' %} contrast{% endif %}" data-timeframe="30d" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 30 days" %}</button>
-                <button type="button" class="outline{% if filter_timeframe == '3m' %} contrast{% endif %}" data-timeframe="3m" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 3 months" %}</button>
-                <button type="button" class="outline{% if filter_timeframe == '6m' %} contrast{% endif %}" data-timeframe="6m" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 6 months" %}</button>
-                <button type="button" class="outline{% if not filter_timeframe or filter_timeframe == 'all' %} contrast{% endif %}" data-timeframe="all" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "All time" %}</button>
+                <button type="button" class="outline{% if filter_timeframe == '30d' %} contrast{% endif %}" data-timeframe="30d" aria-pressed="{% if filter_timeframe == '30d' %}true{% else %}false{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 30 days" %}</button>
+                <button type="button" class="outline{% if filter_timeframe == '3m' %} contrast{% endif %}" data-timeframe="3m" aria-pressed="{% if filter_timeframe == '3m' %}true{% else %}false{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 3 months" %}</button>
+                <button type="button" class="outline{% if filter_timeframe == '6m' %} contrast{% endif %}" data-timeframe="6m" aria-pressed="{% if filter_timeframe == '6m' %}true{% else %}false{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 6 months" %}</button>
+                <button type="button" class="outline{% if not filter_timeframe or filter_timeframe == 'all' %} contrast{% endif %}" data-timeframe="all" aria-pressed="{% if not filter_timeframe or filter_timeframe == 'all' %}true{% else %}false{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "All time" %}</button>
             </fieldset>
             <label>
                 {% trans "From date" %}
