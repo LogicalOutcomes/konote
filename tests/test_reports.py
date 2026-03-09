@@ -2035,7 +2035,7 @@ class AggregateAllProgramsTotalsTest(TestCase):
         self.assertEqual(len(result['programs']), 2)
         self.assertEqual(result['programs'][0]['name'], 'Program A')
 
-    def test_skips_suppressed_string_values(self):
+    def test_suppressed_string_values_propagate_to_total(self):
         from apps.reports.utils import aggregate_all_programs_totals
         from unittest.mock import Mock
         p1 = Mock(name='Program A')
@@ -2047,9 +2047,11 @@ class AggregateAllProgramsTotalsTest(TestCase):
             (p2, {'total_individuals_served': 7, 'new_clients_this_period': '< 5', 'total_contacts': 5}),
         ]
         result = aggregate_all_programs_totals(data)
-        self.assertEqual(result['total_served'], 7)  # skips suppressed '< 5'
-        self.assertEqual(result['total_new_clients'], 3)  # skips suppressed '< 5'
-        self.assertEqual(result['total_contacts'], 15)
+        # If any program's value is suppressed, the org total is also suppressed
+        # (showing the sum would reveal the suppressed program's approximate count)
+        self.assertEqual(result['total_served'], 'suppressed')
+        self.assertEqual(result['total_new_clients'], 'suppressed')
+        self.assertEqual(result['total_contacts'], 15)  # no suppressed values
 
     def test_empty_input(self):
         from apps.reports.utils import aggregate_all_programs_totals
