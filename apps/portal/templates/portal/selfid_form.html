@@ -27,7 +27,7 @@
 
             {% for item in group.fields %}
             <div class="form-row">
-                <label for="custom_{{ item.field_def.pk }}">{{ item.field_def.name }}</label>
+                <label for="custom_{{ item.field_def.pk }}" id="label_{{ item.field_def.pk }}">{{ item.field_def.name }}</label>
 
                 {% if item.field_def.input_type == "select" %}
                     <select name="custom_{{ item.field_def.pk }}"

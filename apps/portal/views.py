@@ -2206,7 +2206,7 @@ def selfid_form(request):
     """
     import json as json_mod
     from apps.clients.models import (
-        ClientDetailValue, CustomFieldDefinition, CustomFieldGroup,
+        ClientDetailValue, CustomFieldGroup,
     )
 
     participant = request.participant_user
