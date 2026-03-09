@@ -103,13 +103,20 @@
         {% endif %}
 
         {% if show_selfid %}
-        <a href="{% url 'portal:selfid_disclosure' %}" class="portal-card">
-            <article>
-                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <h2>{% trans "About Me" %}</h2>
-                <p>{% trans "Share information about yourself (optional)." %}</p>
-            </article>
-        </a>
+        <div class="portal-card-wrapper">
+            <a href="{% url 'portal:selfid_disclosure' %}" class="portal-card">
+                <article>
+                    <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <h2>{% trans "About Me" %}</h2>
+                    <p>{% trans "Optionally share a bit about yourself. This helps your agency understand who they're serving." %}</p>
+                </article>
+            </a>
+            <form method="post" action="{% url 'portal:selfid_dismiss' %}" class="selfid-dismiss">
+                {% csrf_token %}
+                <button type="submit" class="outline secondary" aria-label="{% trans 'Dismiss About Me survey card' %}">{% trans "No thanks" %}</button>
+                <p class="secondary" style="font-size: 0.85em; margin-top: 0.25rem;">{% trans "You can re-enable this from Settings anytime." %}</p>
+            </form>
+        </div>
         {% endif %}
 
     </div>

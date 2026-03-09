@@ -22129,11 +22129,117 @@ msgstr ""
 
 #. page_help.py — fallback
 msgid ""
-"Use your browser's back button or the navigation menu to return to the home "
+"Use your browser’s back button or the navigation menu to return to the home "
 "page."
 msgstr ""
 "Utilisez le bouton retour de votre navigateur ou le menu de navigation pour "
 "revenir à la page d’accueil."
+
+#. portal/selfid_disclosure.html, portal/dashboard.html, portal/selfid_form.html
+msgid "About Me"
+msgstr "À propos de moi"
+
+msgid "About This Survey"
+msgstr "À propos de ce sondage"
+
+msgid "Self-Identification Survey"
+msgstr "Sondage d’auto-identification"
+
+msgid "We’d like to invite you to share some information about yourself. This is completely voluntary."
+msgstr "Nous vous invitons à partager quelques informations sur vous. C’est entièrement volontaire."
+
+msgid "What we’re asking"
+msgstr "Ce que nous demandons"
+
+msgid "Questions about your identity, background, and experiences. These may include ethnicity, gender identity, Indigenous identity, and similar topics."
+msgstr "Des questions sur votre identité, vos origines et vos expériences. Elles peuvent porter sur l’ethnicité, l’identité de genre, l’identité autochtone et des sujets similaires."
+
+msgid "Why we’re asking"
+msgstr "Pourquoi nous le demandons"
+
+msgid "This information helps the agency understand who they’re serving and whether their programs are reaching and working for everyone. It’s used in summary reports to funders — for example, ‘X% of participants identified as Indigenous.’ Your individual answers are never shared in these reports."
+msgstr "Ces informations aident l’organisme à comprendre qui il dessert et si ses programmes rejoignent et fonctionnent pour tout le monde. Elles sont utilisées dans des rapports sommaires pour les bailleurs de fonds — par exemple, « X % des participants se sont identifiés comme Autochtones. » Vos réponses individuelles ne sont jamais partagées dans ces rapports."
+
+msgid "Who can see your answers"
+msgstr "Qui peut voir vos réponses"
+
+msgid "An administrator at the agency can see your individual responses for data quality purposes."
+msgstr "Un administrateur de l’organisme peut voir vos réponses individuelles à des fins de qualité des données."
+
+msgid ""
+"<strong>Your %(worker_term)s cannot see your answers.</strong> This "
+"information is kept separate from your file so it doesn’t influence your "
+"services."
+msgstr ""
+"<strong>Votre %(worker_term)s ne peut pas voir vos réponses.</strong> Ces "
+"informations sont conservées séparément de votre dossier afin de ne pas "
+"influencer vos services."
+
+msgid "Funders and external parties only see summary numbers, never individual responses."
+msgstr "Les bailleurs de fonds et les parties externes ne voient que des chiffres sommaires, jamais des réponses individuelles."
+
+msgid "Your choices"
+msgstr "Vos choix"
+
+msgid "Every question is optional. You can skip any question or choose ‘Prefer not to answer.’"
+msgstr "Chaque question est facultative. Vous pouvez sauter toute question ou choisir « Préfère ne pas répondre »."
+
+msgid "You can change your answers at any time by coming back to this page."
+msgstr "Vous pouvez modifier vos réponses à tout moment en revenant sur cette page."
+
+msgid "Choosing not to answer will not affect the services you receive."
+msgstr "Choisir de ne pas répondre n’affectera pas les services que vous recevez."
+
+msgid "I understand, continue"
+msgstr "Je comprends, continuer"
+
+msgid "All questions are optional. Choose ‘Prefer not to answer’ or leave blank for any question you’d rather skip."
+msgstr "Toutes les questions sont facultatives. Choisissez « Préfère ne pas répondre » ou laissez vide toute question que vous préférez ne pas répondre."
+
+msgid "Your responses have been saved. Thank you!"
+msgstr "Vos réponses ont été enregistrées. Merci!"
+
+msgid "Return to home"
+msgstr "Retour à l’accueil"
+
+msgid "Save my responses"
+msgstr "Enregistrer mes réponses"
+
+msgid "Other"
+msgstr "Autre"
+
+msgid "There are no self-identification questions available at this time."
+msgstr "Il n’y a aucune question d’auto-identification disponible pour le moment."
+
+msgid "Optionally share a bit about yourself. This helps your agency understand who they’re serving."
+msgstr "Partagez quelques informations sur vous si vous le souhaitez. Cela aide votre organisme à comprendre qui il dessert."
+
+msgid "Dismiss About Me survey card"
+msgstr "Masquer la carte du sondage À propos de moi"
+
+msgid "No thanks"
+msgstr "Non merci"
+
+msgid "You can re-enable this from Settings anytime."
+msgstr "Vous pouvez réactiver ceci dans les Paramètres à tout moment."
+
+msgid "About Me survey"
+msgstr "Sondage À propos de moi"
+
+msgid "The About Me card is hidden from your dashboard."
+msgstr "La carte À propos de moi est masquée de votre tableau de bord."
+
+msgid "Show on dashboard"
+msgstr "Afficher sur le tableau de bord"
+
+msgid "The About Me card appears on your dashboard."
+msgstr "La carte À propos de moi est affichée sur votre tableau de bord."
+
+msgid "Fill out About Me"
+msgstr "Remplir À propos de moi"
+
+msgid "Hide from dashboard"
+msgstr "Masquer du tableau de bord"
 
 msgid "%(count)d %(term)s discharged from %(program)s."
 msgstr ""
