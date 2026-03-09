@@ -86,6 +86,42 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     }
 })();
 
+// --- CSP-safe autofocus for HTMX-swapped forms ---
+// Inline hx-on handlers use eval-like execution in HTMX 2.x, which our CSP blocks.
+// Templates can mark swapped forms with data-autofocus-first and this helper will
+// move focus to the first interactive control after the swap settles.
+(function () {
+    function focusFirstControl(container) {
+        if (!(container instanceof Element)) return;
+
+        var focusRoot = container.matches("[data-autofocus-first]")
+            ? container
+            : container.querySelector("[data-autofocus-first]");
+        if (!focusRoot) return;
+
+        window.requestAnimationFrame(function () {
+            var firstControl = focusRoot.querySelector(
+                "select:not([disabled]), input:not([type='hidden']):not([disabled]), textarea:not([disabled]), button:not([disabled])"
+            );
+            if (firstControl && typeof firstControl.focus === "function") {
+                firstControl.focus();
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () {
+            focusFirstControl(document);
+        });
+    } else {
+        focusFirstControl(document);
+    }
+
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        focusFirstControl(event.detail.target);
+    });
+})();
+
 // --- Link form error messages to their inputs (aria-describedby) ---
 // Scans for <small class="error"> and <small class="badge-danger"> elements
 // and links the preceding input/select/textarea

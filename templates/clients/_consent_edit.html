@@ -16,8 +16,8 @@
       action="{% url 'clients:client_consent_save' client_id=client.pk %}"
       hx-post="{% url 'clients:client_consent_save' client_id=client.pk %}"
       hx-target="#consent-section"
-      hx-swap="innerHTML"
-      hx-on::load="requestAnimationFrame(() => this.querySelector('select, input:not([type=hidden]), textarea')?.focus())">
+    hx-swap="innerHTML"
+    data-autofocus-first>
     {% csrf_token %}
 
     <p class="help-text">

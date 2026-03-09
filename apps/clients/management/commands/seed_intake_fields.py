@@ -466,6 +466,22 @@ INTAKE_FIELD_GROUPS = [
 class Command(BaseCommand):
     help = "Seed default intake custom fields for Canadian nonprofit community services."
 
+    def _get_or_create_seed_record(self, model, lookup, defaults, record_label):
+        """Return a seeded record without crashing if old duplicate rows exist."""
+        matches = list(model.objects.filter(**lookup).order_by("pk")[:2])
+        if not matches:
+            return model.objects.create(**lookup, **defaults), True
+
+        instance = matches[0]
+        if len(matches) > 1:
+            details = ", ".join(f"{key}={value}" for key, value in lookup.items())
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  Duplicate {record_label} rows found ({details}); using oldest existing record."
+                )
+            )
+        return instance, False
+
     def handle(self, *args, **options):
         # No early-return guard — get_or_create handles idempotency.
         # A guard here caused a production outage when the DB had groups but
@@ -484,9 +500,11 @@ class Command(BaseCommand):
             # via the portal; admins see values for funder reporting.
             if group_title == "Demographics":
                 defaults["admin_only"] = True
-            group, was_group_created = CustomFieldGroup.objects.get_or_create(
-                title=group_title,
-                defaults=defaults,
+            group, was_group_created = self._get_or_create_seed_record(
+                CustomFieldGroup,
+                {"title": group_title},
+                defaults,
+                "custom field group",
             )
             if was_group_created:
                 groups_created += 1
@@ -522,10 +540,11 @@ class Command(BaseCommand):
                 if validation_type != "none":
                     defaults["validation_type"] = validation_type
 
-                _, was_field_created = CustomFieldDefinition.objects.get_or_create(
-                    group=group,
-                    name=name,
-                    defaults=defaults,
+                _, was_field_created = self._get_or_create_seed_record(
+                    CustomFieldDefinition,
+                    {"group": group, "name": name},
+                    defaults,
+                    "custom field definition",
                 )
                 if was_field_created:
                     fields_created += 1

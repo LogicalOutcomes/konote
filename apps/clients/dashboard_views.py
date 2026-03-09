@@ -6,6 +6,7 @@ count from ~12 * N (where N = number of programs) to a fixed ~10 queries
 regardless of how many programs exist.
 """
 import datetime
+import logging
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -22,6 +23,9 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.insights import get_structured_insights
 from apps.reports.insights_views import _compute_trend_direction
 from apps.reports.metric_insights import get_data_completeness
+
+
+logger = logging.getLogger(__name__)
 
 
 # Check WeasyPrint availability once at import time.
@@ -1444,22 +1448,7 @@ def executive_dashboard_export(request):
             f"{row['goal_completion_pct']}%" if row["goal_completion_pct"] is not None else ("suppressed" if row["suppress_pct"] else ""),
         ]))
 
-    # Audit log entry for export
-    from apps.audit.models import AuditLog
-    AuditLog.objects.using("audit").create(
-        event_timestamp=ctx["now"],
-        user_id=request.user.pk,
-        user_display=getattr(request.user, "display_name", str(request.user)),
-        action="export",
-        resource_type="executive_dashboard",
-        resource_id=0,
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata={
-            "format": "csv",
-            "programs": ctx["filtered_program_ids"],
-            "start_date": str(ctx["month_start"].date()),
-        },
-    )
+    _audit_executive_export(request, ctx, fmt="csv")
 
     return response
 
@@ -1501,24 +1490,36 @@ def executive_dashboard_pdf(request):
         response = HttpResponse(html_content, content_type="text/html")
         response["Content-Disposition"] = 'attachment; filename="executive-dashboard.html"'
 
-    # Audit log entry for PDF export
-    from apps.audit.models import AuditLog
-    AuditLog.objects.using("audit").create(
-        event_timestamp=ctx["now"],
-        user_id=request.user.pk,
-        user_display=getattr(request.user, "display_name", str(request.user)),
-        action="export",
-        resource_type="executive_dashboard",
-        resource_id=0,
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata={
-            "format": "pdf",
-            "programs": ctx["filtered_program_ids"],
-            "start_date": str(ctx["month_start"].date()),
-        },
+    _audit_executive_export(
+        request,
+        ctx,
+        fmt="pdf" if response["Content-Type"] == "application/pdf" else "html",
     )
 
     return response
+
+
+def _audit_executive_export(request, ctx, fmt):
+    """Write an audit entry for executive dashboard exports without breaking the download."""
+    try:
+        from apps.audit.models import AuditLog
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=ctx["now"],
+            user_id=request.user.pk,
+            user_display=getattr(request.user, "display_name", str(request.user)),
+            action="export",
+            resource_type="executive_dashboard",
+            resource_id=0,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "format": fmt,
+                "programs": ctx["filtered_program_ids"],
+                "start_date": str(ctx["month_start"].date()),
+            },
+        )
+    except Exception:
+        logger.exception("Executive dashboard %s export completed, but audit logging failed.", fmt)
 
 
 # ---------------------------------------------------------------------------
