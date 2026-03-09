@@ -7,6 +7,7 @@ auth system — participants are ParticipantUser, not User.
 Data isolation: every view scopes queries to request.participant_user.client_file.
 Sub-objects are always fetched with get_object_or_404(..., client_file=client_file).
 """
+import json
 import logging
 import secrets
 from functools import wraps
@@ -24,6 +25,8 @@ from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_POST
 
 from apps.admin_settings.models import FeatureToggle
+from apps.clients.models import ClientDetailValue, CustomFieldGroup
+from apps.portal.forms import SelfIdForm
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +172,7 @@ def portal_login(request):
     ParticipantUser model) and MFA redirect when enabled.
     """
     from apps.portal.forms import PortalLoginForm
-    from apps.portal.models import ParticipantUser
+    from apps.portal.models import ParticipantUser, get_demo_portal_participants
 
     # Already logged in? Go to dashboard.
     if request.session.get("_portal_participant_id"):
@@ -267,13 +270,7 @@ def portal_login(request):
 
     demo_portal_participants = []
     if settings.DEMO_MODE:
-        demo_portal_participants = list(
-            ParticipantUser.objects.filter(
-                is_active=True, mfa_method="exempt",
-            )
-            .select_related("client_file")
-            .order_by("client_file__record_id")[:2]
-        )
+        demo_portal_participants = get_demo_portal_participants()
 
     return render(request, "portal/login.html", {
         "form": form,
@@ -736,17 +733,27 @@ def dashboard(request):
             expires_at__gt=timezone.now(),
         ).order_by("-created_at").first()
     except Exception:
-        pass
+        logger.exception("Error loading pending alliance for dashboard")
 
-    # Self-identification survey: show card if admin-only groups exist (DEMO-VIS1)
+    # Self-identification survey card (DEMO-VIS1):
+    # Show only if admin-only groups exist AND participant hasn't dismissed
+    # AND hasn't already submitted responses.
     show_selfid = False
     try:
-        from apps.clients.models import CustomFieldGroup
-        show_selfid = CustomFieldGroup.objects.filter(
-            status="active", admin_only=True,
-        ).filter(fields__status="active").distinct().exists()
+        if not participant.selfid_dismissed:
+            has_groups = CustomFieldGroup.objects.filter(
+                status="active", admin_only=True,
+            ).filter(fields__status="active").distinct().exists()
+            if has_groups:
+                has_submitted = ClientDetailValue.objects.filter(
+                    client_file=client_file,
+                    field_def__group__admin_only=True,
+                    field_def__group__status="active",
+                    field_def__status="active",
+                ).exists()
+                show_selfid = not has_submitted
     except Exception:
-        pass
+        logger.exception("Error checking self-ID availability for dashboard")
 
     return render(request, "portal/dashboard.html", {
         "participant": participant,
@@ -823,11 +830,21 @@ def resources_list(request):
 
 @portal_login_required
 def settings_view(request):
-    """Portal settings — MFA status, password change link."""
+    """Portal settings — MFA status, password change link, About Me toggle."""
     participant = request.participant_user
+
+    # Check if admin-only groups exist (for About Me toggle)
+    selfid_available = False
+    try:
+        selfid_available = CustomFieldGroup.objects.filter(
+            status="active", admin_only=True,
+        ).filter(fields__status="active").distinct().exists()
+    except Exception:
+        logger.exception("Error checking self-ID availability for settings")
 
     return render(request, "portal/settings.html", {
         "participant": participant,
+        "selfid_available": selfid_available,
     })
 
 
@@ -2218,6 +2235,7 @@ def selfid_disclosure(request):
 
 
 @portal_login_required
+@ratelimit(key="ip", rate="10/m", method="POST", block=True)
 def selfid_form(request):
     """Self-identification form for participants to enter their own demographics.
 
@@ -2229,11 +2247,6 @@ def selfid_form(request):
     All fields are optional. The participant can update their responses
     at any time by revisiting this page.
     """
-    import json as json_mod
-    from apps.clients.models import (
-        ClientDetailValue, CustomFieldGroup,
-    )
-
     participant = request.participant_user
     client_file = _get_client_file(request)
 
@@ -2247,27 +2260,45 @@ def selfid_form(request):
         status="active", admin_only=True,
     ).prefetch_related("fields")
 
-    success = False
+    # Collect all active field definitions, filtering in Python to
+    # avoid bypassing the prefetch cache with a re-query per group
+    groups_with_fields = []
+    all_field_defs = []
+    for group in groups:
+        active_fields = [f for f in group.fields.all() if f.status == "active"]
+        if active_fields:
+            groups_with_fields.append((group, active_fields))
+            all_field_defs.extend(active_fields)
+
+    # Bulk-fetch all existing values in one query (avoids N+1)
+    existing_values = {
+        cdv.field_def_id: cdv
+        for cdv in ClientDetailValue.objects.filter(
+            client_file=client_file,
+            field_def__in=all_field_defs,
+        )
+    }
 
     if request.method == "POST":
-        for group in groups:
-            for field_def in group.fields.filter(status="active"):
+        form = SelfIdForm(request.POST, field_defs=all_field_defs)
+        if form.is_valid():
+            for field_def in all_field_defs:
                 key = f"custom_{field_def.pk}"
 
                 # Parse value based on input type
                 if field_def.input_type in ("multi_select", "multi_select_other"):
-                    selected = request.POST.getlist(key)
+                    selected = form.cleaned_data.get(key, [])
                     if field_def.input_type == "multi_select_other":
-                        other_text = request.POST.get(f"{key}_other", "").strip()
+                        other_text = form.cleaned_data.get(f"{key}_other", "").strip()
                         if other_text:
                             selected = list(selected) + [other_text]
-                    raw_value = json_mod.dumps(selected) if selected else ""
+                    raw_value = json.dumps(selected) if selected else ""
                 elif field_def.input_type == "select_other":
-                    raw_value = request.POST.get(key, "").strip()
+                    raw_value = form.cleaned_data.get(key, "").strip()
                     if raw_value == "__other__":
-                        raw_value = request.POST.get(f"{key}_other", "").strip()
+                        raw_value = form.cleaned_data.get(f"{key}_other", "").strip()
                 else:
-                    raw_value = request.POST.get(key, "").strip()
+                    raw_value = str(form.cleaned_data.get(key, "") or "").strip()
 
                 # Save or update
                 cdv, _created = ClientDetailValue.objects.get_or_create(
@@ -2276,23 +2307,54 @@ def selfid_form(request):
                 cdv.set_value(raw_value)
                 cdv.save()
 
-        _audit_portal_event(request, "selfid_submitted", metadata={
-            "participant_id": str(participant.pk),
-        })
-        success = True
+            _audit_portal_event(request, "selfid_submitted", metadata={
+                "participant_id": str(participant.pk),
+            })
+            # Early return — no need to rebuild template context for saved values
+            return render(request, "portal/selfid_form.html", {
+                "participant": participant,
+                "custom_data": [],
+                "success": True,
+                "form": SelfIdForm(field_defs=[]),
+            })
+    else:
+        # Pre-fill form with existing values
+        initial = {}
+        for field_def in all_field_defs:
+            key = f"custom_{field_def.pk}"
+            cdv = existing_values.get(field_def.pk)
+            value = cdv.get_value() if cdv else ""
 
-    # Build form context (similar to _get_custom_fields_context but for portal)
+            if field_def.input_type in ("multi_select", "multi_select_other") and value:
+                try:
+                    parsed = json.loads(value)
+                except (json.JSONDecodeError, TypeError):
+                    parsed = []
+                if field_def.input_type == "multi_select_other" and field_def.options_json:
+                    known = set(field_def.options_json)
+                    custom_vals = [v for v in parsed if v not in known]
+                    initial[f"{key}_other"] = custom_vals[0] if custom_vals else ""
+                    initial[key] = [v for v in parsed if v in known]
+                else:
+                    initial[key] = parsed
+            elif field_def.input_type == "select_other" and value and field_def.options_json:
+                if value not in field_def.options_json:
+                    initial[key] = "__other__"
+                    initial[f"{key}_other"] = value
+                else:
+                    initial[key] = value
+            else:
+                initial[key] = value
+
+        form = SelfIdForm(initial=initial, field_defs=all_field_defs)
+
+    # Build template context using the pre-fetched values
     custom_data = []
-    for group in groups:
+    for group, active_fields in groups_with_fields:
         field_values = []
-        for field_def in group.fields.filter(status="active"):
-            try:
-                cdv = ClientDetailValue.objects.get(
-                    client_file=client_file, field_def=field_def,
-                )
-                value = cdv.get_value()
-            except ClientDetailValue.DoesNotExist:
-                value = ""
+        for field_def in active_fields:
+            cdv = existing_values.get(field_def.pk)
+            value = cdv.get_value() if cdv else ""
 
             # Parse multi-select for template
             selected_values = []
@@ -2300,8 +2362,8 @@ def selfid_form(request):
             is_other_value = False
             if field_def.input_type in ("multi_select", "multi_select_other") and value:
                 try:
-                    selected_values = json_mod.loads(value)
-                except (json_mod.JSONDecodeError, TypeError):
+                    selected_values = json.loads(value)
+                except (json.JSONDecodeError, TypeError):
                     pass
                 if field_def.input_type == "multi_select_other" and field_def.options_json:
                     known = set(field_def.options_json)
@@ -2323,5 +2385,42 @@ def selfid_form(request):
     return render(request, "portal/selfid_form.html", {
         "participant": participant,
         "custom_data": custom_data,
-        "success": success,
+        "success": False,
+        "form": form,
     })
+
+
+@portal_login_required
+@require_POST
+def selfid_dismiss(request):
+    """Dismiss the About Me card from the dashboard.
+
+    Sets selfid_dismissed=True so the card no longer appears.
+    Reversible via the Settings page.
+    """
+    participant = request.participant_user
+    participant.selfid_dismissed = True
+    participant.save(update_fields=["selfid_dismissed"])
+    _audit_portal_event(request, "selfid_dismissed", metadata={
+        "participant_id": str(participant.pk),
+    })
+    return redirect("portal:dashboard")
+
+
+@portal_login_required
+@require_POST
+def selfid_toggle(request):
+    """Toggle the About Me card visibility from Settings.
+
+    Re-enables or disables the About Me card on the dashboard.
+    """
+    participant = request.participant_user
+    # Toggle: if dismissed, re-enable; if not, dismiss
+    new_value = not participant.selfid_dismissed
+    participant.selfid_dismissed = new_value
+    participant.save(update_fields=["selfid_dismissed"])
+    _audit_portal_event(request, "selfid_toggled", metadata={
+        "participant_id": str(participant.pk),
+        "dismissed": new_value,
+    })
+    return redirect("portal:settings")

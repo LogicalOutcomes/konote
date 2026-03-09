@@ -566,6 +566,12 @@ class Command(BaseCommand):
         self.stdout.write("    - Community Kitchen is shared — both workers see Kitchen clients")
         self.stdout.write("    - 3 clients cross-enrolled in Kitchen from other programs")
 
+        # Create portal accounts BEFORE seed_demo_data so portal content
+        # (journals, messages, staff notes, surveys) can be created in the
+        # same run. Previously, portal accounts were created after seed_demo_data
+        # which meant portal content was skipped on first run.
+        self._seed_demo_portal_participant()
+
         # Populate demo clients with rich data for charts and reports
         from django.core.management import call_command
 
@@ -573,10 +579,7 @@ class Command(BaseCommand):
             call_command("seed_demo_data", stdout=self.stdout)
         except Exception as e:
             self.stderr.write(f"  WARNING: seed_demo_data failed: {e}")
-            self.stderr.write("  Continuing with portal participant seeding...")
-
-        # Create demo portal accounts — runs even if seed_demo_data had errors
-        self._seed_demo_portal_participant()
+            self.stderr.write("  App will start but may be missing demo data.")
 
     def _demo_email(self, username):
         """Build a demo email from DEMO_EMAIL_BASE env var, or fall back to example.com."""

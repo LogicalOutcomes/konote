@@ -33,6 +33,31 @@
 
 <hr>
 
+{# About Me survey preference #}
+{% if selfid_available %}
+<section aria-labelledby="selfid-heading">
+    <h2 id="selfid-heading">{% trans "About Me survey" %}</h2>
+    {% if participant.selfid_dismissed %}
+    <p>{% trans "The About Me card is hidden from your dashboard." %}</p>
+    <form method="post" action="{% url 'portal:selfid_toggle' %}">
+        {% csrf_token %}
+        <button type="submit" class="outline secondary">{% trans "Show on dashboard" %}</button>
+    </form>
+    {% else %}
+    <p>{% trans "The About Me card appears on your dashboard." %}</p>
+    <div role="group">
+        <a href="{% url 'portal:selfid_disclosure' %}" class="secondary">{% trans "Fill out About Me" %}</a>
+        <form method="post" action="{% url 'portal:selfid_toggle' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="outline secondary">{% trans "Hide from dashboard" %}</button>
+        </form>
+    </div>
+    {% endif %}
+</section>
+
+<hr>
+
+{% endif %}
 {# Remove account #}
 <section aria-labelledby="remove-heading">
     <h2 id="remove-heading">{% trans "Remove my account" %}</h2>

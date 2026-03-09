@@ -245,6 +245,7 @@ def _apply_custom_fields(groups_data, stdout):
         group = CustomFieldGroup.objects.create(
             title=grp["title"],
             sort_order=i,
+            admin_only=grp.get("admin_only", False),
         )
         group_count += 1
 

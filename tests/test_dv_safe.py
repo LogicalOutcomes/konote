@@ -748,3 +748,72 @@ class DvSaveSideEnforcementTest(TestCase):
         ).first()
         self.assertIsNotNone(normal_val)
         self.assertEqual(normal_val.value, "Red")
+
+
+# ─── Admin-Only Group Tests (DEMO-VIS1) ──────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AdminOnlyGroupFilterTest(TestCase):
+    """Tests for admin_only group filtering in _get_custom_fields_context.
+
+    DEMO-VIS1: groups marked admin_only should only be visible to
+    administrators. Non-admin users (staff, program managers, receptionists)
+    must not see those groups.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = _create_client("ADMIN-001")
+
+        # Create a regular group with a field
+        self.regular_group = CustomFieldGroup.objects.create(
+            title="General Info", sort_order=0, status="active",
+            admin_only=False,
+        )
+        self.regular_field = _create_custom_field(
+            "Nickname", group=self.regular_group,
+        )
+
+        # Create an admin-only group with a field
+        self.admin_group = CustomFieldGroup.objects.create(
+            title="Demographics", sort_order=1, status="active",
+            admin_only=True,
+        )
+        self.admin_field = _create_custom_field(
+            "Ethnicity", group=self.admin_group,
+        )
+
+    def test_non_admin_cannot_see_admin_only_group(self):
+        """Staff users should not see admin-only groups."""
+        from apps.clients.views import _get_custom_fields_context
+
+        ctx = _get_custom_fields_context(
+            self.client_file, ROLE_STAFF, is_admin_user=False,
+        )
+        group_titles = [g["group"].title for g in ctx["custom_data"]]
+        self.assertIn("General Info", group_titles)
+        self.assertNotIn("Demographics", group_titles)
+
+    def test_admin_can_see_admin_only_group(self):
+        """Admin users should see both regular and admin-only groups."""
+        from apps.clients.views import _get_custom_fields_context
+
+        ctx = _get_custom_fields_context(
+            self.client_file, ROLE_STAFF, is_admin_user=True,
+        )
+        group_titles = [g["group"].title for g in ctx["custom_data"]]
+        self.assertIn("General Info", group_titles)
+        self.assertIn("Demographics", group_titles)
+
+    def test_receptionist_cannot_see_admin_only_group(self):
+        """Receptionists should not see admin-only groups."""
+        from apps.clients.views import _get_custom_fields_context
+
+        ctx = _get_custom_fields_context(
+            self.client_file, ROLE_RECEPTIONIST, is_admin_user=False,
+        )
+        group_titles = [g["group"].title for g in ctx["custom_data"]]
+        self.assertNotIn("Demographics", group_titles)
