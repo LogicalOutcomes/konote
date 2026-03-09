@@ -6,6 +6,8 @@ from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 
 from apps.auth_app.models import Invite, User
+from apps.clients.models import ClientFile
+from apps.portal.models import ParticipantUser
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
 from apps.auth_app.constants import (
@@ -19,7 +21,12 @@ from apps.auth_app.constants import (
 TEST_KEY = Fernet.generate_key().decode()
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    AUTH_MODE="local",
+    RATELIMIT_ENABLE=False,
+    DEMO_MODE=False,
+)
 class LoginViewTest(TestCase):
     """Test local username/password login."""
 
@@ -671,6 +678,35 @@ class DemoLoginTest(TestCase):
         )
         resp = self.http.post("/auth/demo-login/inactive-demo/")
         self.assertEqual(resp.status_code, 404)
+
+    def test_login_page_caps_demo_portal_participants_to_three(self):
+        """The staff login page should only preview three demo participants."""
+        for index in range(1, 6):
+            client_file = ClientFile.objects.create(
+                record_id=f"DEMO-{index:03d}",
+                status="active",
+            )
+            client_file.first_name = f"Participant {index}"
+            client_file.last_name = "Demo"
+            client_file.save()
+            participant = ParticipantUser.objects.create_participant(
+                email=f"participant{index}@example.com",
+                client_file=client_file,
+                display_name=f"Participant {index}",
+                password="DemoPass123!",
+            )
+            participant.mfa_method = "exempt"
+            participant.save(update_fields=["mfa_method"])
+
+        resp = self.http.get("/auth/login/")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context["demo_portal_participants"]), 3)
+        self.assertContains(resp, "Participant 1")
+        self.assertContains(resp, "Participant 2")
+        self.assertContains(resp, "Participant 3")
+        self.assertNotContains(resp, "Participant 4")
+        self.assertNotContains(resp, "Participant 5")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)

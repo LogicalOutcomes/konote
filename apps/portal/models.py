@@ -131,6 +131,10 @@ class ParticipantUser(AbstractBaseUser):
         default=False,
         help_text="True after the participant has seen the self-identification consent notice.",
     )
+    selfid_dismissed = models.BooleanField(
+        default=False,
+        help_text="True if the participant chose to hide the About Me card from the dashboard.",
+    )
 
     # Password reset
     password_reset_token_hash = models.CharField(
@@ -221,6 +225,21 @@ class ParticipantUser(AbstractBaseUser):
                 self.save(update_fields=["password_reset_request_count"])
                 return True
         return False
+
+
+DEMO_PORTAL_LOGIN_PREVIEW_LIMIT = 3
+
+
+def get_demo_portal_participants(limit=DEMO_PORTAL_LOGIN_PREVIEW_LIMIT):
+    """Return a small, stable set of demo participants for login shortcuts."""
+    return list(
+        ParticipantUser.objects.filter(
+            is_active=True,
+            mfa_method="exempt",
+        )
+        .select_related("client_file")
+        .order_by("client_file__record_id")[:limit]
+    )
 
 
 # ---------------------------------------------------------------------------

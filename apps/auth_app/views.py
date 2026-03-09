@@ -255,14 +255,9 @@ def _local_login(request):
             qs.order_by("display_name")
             .values("username", "display_name")
         )
-        from apps.portal.models import ParticipantUser
-        demo_portal_participants = list(
-            ParticipantUser.objects.filter(
-                is_active=True, mfa_method="exempt",
-            )
-            .select_related("client_file")
-            .order_by("client_file__record_id")[:2]
-        )
+        from apps.portal.models import get_demo_portal_participants
+
+        demo_portal_participants = get_demo_portal_participants()
 
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))
     return render(request, "auth/login.html", {

@@ -182,7 +182,9 @@ document.addEventListener('change', function(event) {
         var toggleTarget = document.getElementById(target.getAttribute('data-toggle-display-target'));
         var expectedValue = target.getAttribute('data-toggle-display-value') || '';
         if (toggleTarget) {
-            toggleTarget.style.display = target.value === expectedValue ? '' : 'none';
+            var isExpanded = target.value === expectedValue;
+            toggleTarget.style.display = isExpanded ? '' : 'none';
+            target.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
         }
     }
 });

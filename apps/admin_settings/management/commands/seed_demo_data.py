@@ -1542,7 +1542,8 @@ class Command(BaseCommand):
         # ParticipantUser AFTER seed_demo_data returns on first run.
         try:
             worker1 = User.objects.get(username="demo-worker-1")
-            workers_early = {"demo-worker-1": worker1}
+            worker2 = User.objects.get(username="demo-worker-2")
+            workers_early = {"demo-worker-1": worker1, "demo-worker-2": worker2}
             self._create_demo_portal_content(workers_early, timezone.now())
         except User.DoesNotExist:
             pass
@@ -3624,24 +3625,29 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _create_demo_portal_content(self, workers, now):
-        """Create portal content for DEMO-001 (Jordan Rivera).
+        """Create portal content for all demo participants.
 
-        Only DEMO-001 has a ParticipantUser account. This method is called
-        from the idempotent section of handle() so it works even when
-        seed.py creates the ParticipantUser after seed_demo_data returns.
+        Creates journal entries, messages, staff notes, and correction
+        requests for DEMO-001 (Jordan), DEMO-014 (Sam), and DEMO-010 (Amara).
+        Called from the idempotent section of handle().
         """
+        # Create content for each portal participant
+        self._create_jordan_portal_content(workers, now)
+        self._create_sam_portal_content(workers, now)
+        self._create_amara_portal_content(workers, now)
+
+    def _create_jordan_portal_content(self, workers, now):
+        """Portal content for Jordan Rivera (DEMO-001) — employment journey."""
         participant = ParticipantUser.objects.filter(
             client_file__record_id="DEMO-001"
         ).first()
         if not participant:
-            self.stdout.write("  Portal content: DEMO-001 has no portal account. Skipping.")
             return
 
         # Skip if journal entries already exist (idempotent)
         if ParticipantJournalEntry.objects.filter(
             participant_user=participant
         ).exists():
-            self.stdout.write("  Portal content: already exists. Skipping.")
             return
 
         client = participant.client_file
@@ -3893,9 +3899,276 @@ class Command(BaseCommand):
             correction_count += 1
 
         self.stdout.write(
-            f"  Portal content: {journal_count} journal entries, "
+            f"  Portal content (Jordan): {journal_count} journal entries, "
             f"{msg_count} messages, {note_count} staff notes, "
             f"{correction_count} correction requests."
+        )
+
+    def _create_sam_portal_content(self, workers, now):
+        """Portal content for Sam Williams (DEMO-004) — housing stability journey."""
+        participant = ParticipantUser.objects.filter(
+            client_file__record_id="DEMO-004"
+        ).first()
+        if not participant:
+            return
+        if ParticipantJournalEntry.objects.filter(participant_user=participant).exists():
+            return
+
+        client = participant.client_file
+        worker1 = workers.get("demo-worker-1")
+
+        # Sam's housing journey — 4 journal entries
+        journal_data = [
+            {
+                "days_ago": 75,
+                "content": (
+                    "Met with my worker today. They helped me fill out the "
+                    "housing application which was honestly overwhelming. So many "
+                    "forms. But at least now it's done and submitted. Fingers crossed."
+                ),
+            },
+            {
+                "days_ago": 45,
+                "content": (
+                    "Still waiting to hear about the apartment. It's hard to stay "
+                    "positive but my worker reminded me that the waitlist usually "
+                    "takes 6-8 weeks. Trying to focus on things I can control."
+                ),
+            },
+            {
+                "days_ago": 15,
+                "content": (
+                    "Got the call today!! I got approved for the subsidised unit. "
+                    "Move in date is next month. I can't believe this is actually "
+                    "happening. Going to start packing this weekend."
+                ),
+            },
+            {
+                "days_ago": 3,
+                "content": (
+                    "Moved in last weekend. It's small but it's MINE. My worker "
+                    "helped me connect with the furniture bank so I have a bed and "
+                    "a table now. Still need curtains but honestly I don't even care. "
+                    "I have my own kitchen."
+                ),
+            },
+        ]
+
+        journal_count = 0
+        for jd in journal_data:
+            entry = ParticipantJournalEntry(
+                participant_user=participant,
+                client_file=client,
+            )
+            entry.content = jd["content"]
+            entry.save()
+            backdate = now - timedelta(days=jd["days_ago"], hours=random.randint(18, 22))
+            ParticipantJournalEntry.objects.filter(pk=entry.pk).update(created_at=backdate)
+            journal_count += 1
+
+        # Sam's messages — 2 messages
+        message_data = [
+            {
+                "days_ago": 50,
+                "message_type": "general",
+                "archived_days_ago": 40,
+                "content": (
+                    "Hi, I forgot what documents I need for the housing application. "
+                    "Can you remind me?"
+                ),
+            },
+            {
+                "days_ago": 10,
+                "message_type": "general",
+                "archived_days_ago": None,
+                "content": (
+                    "Quick question — do you know if the furniture bank delivers "
+                    "or do I need to arrange pickup?"
+                ),
+            },
+        ]
+
+        msg_count = 0
+        for md in message_data:
+            msg = ParticipantMessage(
+                participant_user=participant,
+                client_file=client,
+                message_type=md["message_type"],
+            )
+            msg.content = md["content"]
+            msg.save()
+            backdate = now - timedelta(days=md["days_ago"], hours=random.randint(8, 20))
+            updates = {"created_at": backdate}
+            if md["archived_days_ago"] is not None:
+                updates["archived_at"] = now - timedelta(days=md["archived_days_ago"])
+            ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
+            msg_count += 1
+
+        # Staff notes for Sam — 2 notes
+        if worker1:
+            note_data = [
+                {
+                    "days_ago": 70,
+                    "content": (
+                        "Hi Sam — just confirming our meeting this Friday at 10am. "
+                        "Please bring your ID and proof of income. See you then!"
+                    ),
+                },
+                {
+                    "days_ago": 14,
+                    "content": (
+                        "Congratulations on the housing approval, Sam! Here's the "
+                        "furniture bank referral we discussed. Call them to book "
+                        "a delivery time. Let me know if you need anything else "
+                        "for the move."
+                    ),
+                },
+            ]
+            for nd in note_data:
+                note = StaffPortalNote(
+                    client_file=client,
+                    from_user=worker1,
+                    is_active=True,
+                )
+                note.content = nd["content"]
+                note.save()
+                backdate = now - timedelta(days=nd["days_ago"], hours=random.randint(9, 16))
+                StaffPortalNote.objects.filter(pk=note.pk).update(created_at=backdate)
+
+        self.stdout.write(
+            f"  Portal content (Sam): {journal_count} journal entries, {msg_count} messages."
+        )
+
+    def _create_amara_portal_content(self, workers, now):
+        """Portal content for Amara Diallo (DEMO-010) — newcomer settlement journey."""
+        participant = ParticipantUser.objects.filter(
+            client_file__record_id="DEMO-010"
+        ).first()
+        if not participant:
+            return
+        if ParticipantJournalEntry.objects.filter(participant_user=participant).exists():
+            return
+
+        client = participant.client_file
+        worker2 = workers.get("demo-worker-2")
+
+        # Amara's newcomer journey — 3 journal entries
+        journal_data = [
+            {
+                "days_ago": 60,
+                "content": (
+                    "Started the newcomer programme today. Everyone was really "
+                    "welcoming. My worker Noor speaks French too which helps a lot "
+                    "when I can't find the right English word. We talked about my "
+                    "goals — mostly I want to practise my English and learn how "
+                    "things work here."
+                ),
+            },
+            {
+                "days_ago": 30,
+                "content": (
+                    "Went to the conversation circle today. I was nervous to speak "
+                    "in front of people but everyone was patient. We talked about "
+                    "grocery shopping which was actually very useful. I learned so "
+                    "many new words. Noor says my English is improving every week."
+                ),
+            },
+            {
+                "days_ago": 7,
+                "content": (
+                    "Big day — I went to the bank BY MYSELF and opened an account. "
+                    "The person at the bank was kind and spoke slowly for me. "
+                    "Three months ago I would have been too scared to try. I feel "
+                    "like maybe this is going to be okay."
+                ),
+            },
+        ]
+
+        journal_count = 0
+        for jd in journal_data:
+            entry = ParticipantJournalEntry(
+                participant_user=participant,
+                client_file=client,
+            )
+            entry.content = jd["content"]
+            entry.save()
+            backdate = now - timedelta(days=jd["days_ago"], hours=random.randint(18, 22))
+            ParticipantJournalEntry.objects.filter(pk=entry.pk).update(created_at=backdate)
+            journal_count += 1
+
+        # Amara's messages — 2 messages
+        message_data = [
+            {
+                "days_ago": 35,
+                "message_type": "pre_session",
+                "archived_days_ago": 30,
+                "content": (
+                    "Bonjour Noor, I want to ask about the English class schedule. "
+                    "Can we talk about it at our next meeting?"
+                ),
+            },
+            {
+                "days_ago": 5,
+                "message_type": "general",
+                "archived_days_ago": None,
+                "content": (
+                    "Noor, my friend wants to join the conversation circle too. "
+                    "How does she sign up?"
+                ),
+            },
+        ]
+
+        msg_count = 0
+        for md in message_data:
+            msg = ParticipantMessage(
+                participant_user=participant,
+                client_file=client,
+                message_type=md["message_type"],
+            )
+            msg.content = md["content"]
+            msg.save()
+            backdate = now - timedelta(days=md["days_ago"], hours=random.randint(8, 20))
+            updates = {"created_at": backdate}
+            if md["archived_days_ago"] is not None:
+                updates["archived_at"] = now - timedelta(days=md["archived_days_ago"])
+            ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
+            msg_count += 1
+
+        # Staff notes for Amara — 2 notes
+        if worker2:
+            note_data = [
+                {
+                    "days_ago": 55,
+                    "content": (
+                        "Hi Amara, welcome to Newcomer Connections! Here is the "
+                        "schedule for the conversation circles we discussed. They "
+                        "run every Tuesday and Thursday at 1pm. No need to sign up "
+                        "— just come when you can."
+                    ),
+                },
+                {
+                    "days_ago": 8,
+                    "content": (
+                        "Great job opening your bank account this week, Amara! "
+                        "That's a big step. At our next meeting we can talk about "
+                        "the OSAP application for the ESL programme if you're "
+                        "still interested."
+                    ),
+                },
+            ]
+            for nd in note_data:
+                note = StaffPortalNote(
+                    client_file=client,
+                    from_user=worker2,
+                    is_active=True,
+                )
+                note.content = nd["content"]
+                note.save()
+                backdate = now - timedelta(days=nd["days_ago"], hours=random.randint(9, 16))
+                StaffPortalNote.objects.filter(pk=note.pk).update(created_at=backdate)
+
+        self.stdout.write(
+            f"  Portal content (Amara): {journal_count} journal entries, {msg_count} messages."
         )
 
     # ------------------------------------------------------------------

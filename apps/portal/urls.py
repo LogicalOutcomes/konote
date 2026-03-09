@@ -55,4 +55,6 @@ urlpatterns = [
     # Self-identification (DEMO-VIS1)
     path("self-id/", views.selfid_disclosure, name="selfid_disclosure"),
     path("self-id/form/", views.selfid_form, name="selfid_form"),
+    path("self-id/dismiss/", views.selfid_dismiss, name="selfid_dismiss"),
+    path("self-id/toggle/", views.selfid_toggle, name="selfid_toggle"),
 ]
