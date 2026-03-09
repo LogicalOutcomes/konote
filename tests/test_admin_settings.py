@@ -36,6 +36,8 @@ class AdminSettingsDashboardTest(TestCase):
         resp = self.client.get("/admin/settings/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Terminology")
+        self.assertContains(resp, "Start Setup Wizard")
+        self.assertContains(resp, "User Invites")
 
     def test_staff_cannot_view_dashboard(self):
         self.client.login(username="staff", password="testpass123")
@@ -212,6 +214,39 @@ class FeatureToggleTest(TestCase):
         })
         self.assertEqual(resp.status_code, 302)
         self.assertFalse(FeatureToggle.objects.get(feature_key="programs").is_enabled)
+
+    @override_settings(OPENROUTER_API_KEY="sk-test", OPENROUTER_MODEL="qwen/test-model")
+    def test_features_page_shows_openrouter_tools_mode(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/admin/settings/features/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Tools-only AI")
+        self.assertContains(resp, "Provider:")
+        self.assertContains(resp, "OpenRouter")
+        self.assertContains(resp, "qwen/test-model")
+
+    @override_settings(
+        OPENROUTER_API_KEY="sk-test",
+        INSIGHTS_API_BASE="http://localhost:11434/v1",
+        INSIGHTS_MODEL="llama3.2",
+    )
+    def test_features_page_shows_self_hosted_participant_mode(self):
+        self.client.login(username="admin", password="testpass123")
+        FeatureToggle.objects.create(feature_key="ai_assist_participant_data", is_enabled=True)
+        resp = self.client.get("/admin/settings/features/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Participant-data AI")
+        self.assertContains(resp, "Provider mode:")
+        self.assertContains(resp, "Self-hosted local provider")
+        self.assertContains(resp, "llama3.2")
+
+    @override_settings(OPENROUTER_API_KEY="")
+    def test_features_page_shows_unavailable_tools_mode_without_api_key(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/admin/settings/features/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Tools-only AI")
+        self.assertContains(resp, "Unavailable")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

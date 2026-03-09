@@ -10,8 +10,11 @@ Sub-objects are always fetched with get_object_or_404(..., client_file=client_fi
 import logging
 import secrets
 from functools import wraps
+from urllib.parse import parse_qs
 
 from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -46,6 +49,19 @@ def _set_emergency_logout_token(request):
     request.session[SESSION_EMERGENCY_LOGOUT_TOKEN] = secrets.token_urlsafe(32)
 
 
+def _get_feature_flags():
+    """Return feature flags merged with their default enabled/disabled state."""
+    flags = cache.get("feature_toggles")
+    if flags is None:
+        from apps.admin_settings.views import DEFAULT_FEATURES, FEATURES_DEFAULT_ENABLED
+
+        db_flags = FeatureToggle.get_all_flags()
+        flags = {key: key in FEATURES_DEFAULT_ENABLED for key in DEFAULT_FEATURES}
+        flags.update(db_flags)
+        cache.set("feature_toggles", flags, 300)
+    return flags
+
+
 # ---------------------------------------------------------------------------
 # Decorators
 # ---------------------------------------------------------------------------
@@ -60,7 +76,7 @@ def portal_feature_required(view_func):
 
     @wraps(view_func)
     def _wrapped(request, *args, **kwargs):
-        flags = FeatureToggle.get_all_flags()
+        flags = _get_feature_flags()
         if not flags.get("participant_portal"):
             raise Http404
         return view_func(request, *args, **kwargs)
@@ -82,7 +98,7 @@ def portal_login_required(view_func):
     @wraps(view_func)
     def _wrapped(request, *args, **kwargs):
         # Feature gate
-        flags = FeatureToggle.get_all_flags()
+        flags = _get_feature_flags()
         if not flags.get("participant_portal"):
             raise Http404
 
@@ -174,6 +190,7 @@ def portal_login(request):
                     email_hash=email_hash, is_active=True
                 )
             except ParticipantUser.DoesNotExist:
+                make_password("dummy-timing-equalisation")
                 # Don't reveal whether the account exists
                 error = _("Invalid email or password.")
                 _audit_portal_event(request, "portal_login_failed", metadata={
@@ -296,15 +313,25 @@ def emergency_logout(request):
     # Validate the session-bound emergency logout token.
     # The token is set on portal login and sent by portal.js via sendBeacon.
     # We use secrets.compare_digest to prevent timing-based attacks.
+    participant_id = request.session.get("_portal_participant_id")
     expected = request.session.get(SESSION_EMERGENCY_LOGOUT_TOKEN, "")
     submitted = request.POST.get("token", "")
+    if not submitted and request.body:
+        try:
+            submitted = parse_qs(request.body.decode("utf-8")).get("token", [""])[0]
+        except Exception:
+            submitted = ""
     if not expected or not secrets.compare_digest(expected, submitted):
         return HttpResponse(status=403)
 
-    # Token is single-use — remove it before flushing so it cannot be replayed.
-    request.session.pop(SESSION_EMERGENCY_LOGOUT_TOKEN, None)
-    request.session.pop("_portal_participant_id", None)
-    request.session.pop("_portal_mfa_pending_id", None)
+    if participant_id:
+        _audit_portal_event(request, "portal_emergency_logout", metadata={
+            "participant_id": participant_id,
+        })
+
+    # Flush the whole session so the participant cannot remain logged in via
+    # stale portal keys or a reused session cookie.
+    request.session.flush()
     return HttpResponse(status=204)
 
 
@@ -711,6 +738,16 @@ def dashboard(request):
     except Exception:
         pass
 
+    # Self-identification survey: show card if admin-only groups exist (DEMO-VIS1)
+    show_selfid = False
+    try:
+        from apps.clients.models import CustomFieldGroup
+        show_selfid = CustomFieldGroup.objects.filter(
+            status="active", admin_only=True,
+        ).filter(fields__status="active").distinct().exists()
+    except Exception:
+        pass
+
     return render(request, "portal/dashboard.html", {
         "participant": participant,
         "latest_note_date": latest_note,
@@ -721,6 +758,7 @@ def dashboard(request):
         "pending_surveys": pending_surveys,
         "single_survey_url": single_survey_url,
         "pending_alliance": pending_alliance,
+        "show_selfid": show_selfid,
     })
 
 
@@ -731,7 +769,7 @@ def resources_list(request):
     client_file = _get_client_file(request)
     lang = participant.preferred_language or "en"
 
-    flags = FeatureToggle.get_all_flags()
+    flags = _get_feature_flags()
     if not flags.get("portal_resources"):
         raise Http404
 
@@ -917,6 +955,7 @@ def password_reset_confirm(request):
     if request.method == "POST":
         form = PortalPasswordResetConfirmForm(request.POST)
         if form.is_valid():
+            generic_error = _("Invalid or expired code. Please request a new one.")
             email = form.cleaned_data["email"].strip().lower()
             code = form.cleaned_data["code"].strip()
             new_password = form.cleaned_data["new_password"]
@@ -927,15 +966,15 @@ def password_reset_confirm(request):
                     email_hash=email_hash, is_active=True
                 )
             except ParticipantUser.DoesNotExist:
-                error = _("Invalid code or email address.")
+                error = generic_error
             else:
                 # Check expiry
                 if not participant.password_reset_expires or participant.password_reset_expires < timezone.now():
-                    error = _("This code has expired. Please request a new one.")
+                    error = generic_error
                 elif not participant.password_reset_token_hash:
-                    error = _("No reset code has been requested.")
+                    error = generic_error
                 elif not check_password(code, participant.password_reset_token_hash):
-                    error = _("Invalid code or email address.")
+                    error = generic_error
                 else:
                     # Code valid — set new password and clear reset fields
                     participant.set_password(new_password)
@@ -2143,4 +2182,146 @@ def portal_alliance_rating(request, request_id):
         "alliance_choices": alliance_choices,
         "alliance_req": alliance_req,
         "rating_error": rating_error,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Self-Identification Survey (DEMO-VIS1)
+# ---------------------------------------------------------------------------
+
+
+@portal_login_required
+def selfid_disclosure(request):
+    """One-time consent disclosure before the self-identification form.
+
+    Explains what demographic data is collected, why, who can see it,
+    and that all questions are optional. Marks selfid_consent_shown=True
+    on acknowledgement.
+    """
+    participant = request.participant_user
+
+    # Already acknowledged — go straight to the form
+    if participant.selfid_consent_shown:
+        return redirect("portal:selfid_form")
+
+    if request.method == "POST":
+        participant.selfid_consent_shown = True
+        participant.save(update_fields=["selfid_consent_shown"])
+        _audit_portal_event(request, "selfid_consent_acknowledged", metadata={
+            "participant_id": str(participant.pk),
+        })
+        return redirect("portal:selfid_form")
+
+    return render(request, "portal/selfid_disclosure.html", {
+        "participant": participant,
+    })
+
+
+@portal_login_required
+def selfid_form(request):
+    """Self-identification form for participants to enter their own demographics.
+
+    Loads admin-only CustomFieldGroups (demographic fields) and lets the
+    participant fill them in directly. Data is saved to the same
+    ClientDetailValue records that admins see, ensuring a single source
+    of truth.
+
+    All fields are optional. The participant can update their responses
+    at any time by revisiting this page.
+    """
+    import json as json_mod
+    from apps.clients.models import (
+        ClientDetailValue, CustomFieldGroup,
+    )
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    # Require consent disclosure first
+    if not participant.selfid_consent_shown:
+        return redirect("portal:selfid_disclosure")
+
+    # Load admin-only groups (demographics) — these are the fields
+    # that workers cannot see but participants can self-identify
+    groups = CustomFieldGroup.objects.filter(
+        status="active", admin_only=True,
+    ).prefetch_related("fields")
+
+    success = False
+
+    if request.method == "POST":
+        for group in groups:
+            for field_def in group.fields.filter(status="active"):
+                key = f"custom_{field_def.pk}"
+
+                # Parse value based on input type
+                if field_def.input_type in ("multi_select", "multi_select_other"):
+                    selected = request.POST.getlist(key)
+                    if field_def.input_type == "multi_select_other":
+                        other_text = request.POST.get(f"{key}_other", "").strip()
+                        if other_text:
+                            selected = list(selected) + [other_text]
+                    raw_value = json_mod.dumps(selected) if selected else ""
+                elif field_def.input_type == "select_other":
+                    raw_value = request.POST.get(key, "").strip()
+                    if raw_value == "__other__":
+                        raw_value = request.POST.get(f"{key}_other", "").strip()
+                else:
+                    raw_value = request.POST.get(key, "").strip()
+
+                # Save or update
+                cdv, _created = ClientDetailValue.objects.get_or_create(
+                    client_file=client_file, field_def=field_def,
+                )
+                cdv.set_value(raw_value)
+                cdv.save()
+
+        _audit_portal_event(request, "selfid_submitted", metadata={
+            "participant_id": str(participant.pk),
+        })
+        success = True
+
+    # Build form context (similar to _get_custom_fields_context but for portal)
+    custom_data = []
+    for group in groups:
+        field_values = []
+        for field_def in group.fields.filter(status="active"):
+            try:
+                cdv = ClientDetailValue.objects.get(
+                    client_file=client_file, field_def=field_def,
+                )
+                value = cdv.get_value()
+            except ClientDetailValue.DoesNotExist:
+                value = ""
+
+            # Parse multi-select for template
+            selected_values = []
+            other_text = ""
+            is_other_value = False
+            if field_def.input_type in ("multi_select", "multi_select_other") and value:
+                try:
+                    selected_values = json_mod.loads(value)
+                except (json_mod.JSONDecodeError, TypeError):
+                    pass
+                if field_def.input_type == "multi_select_other" and field_def.options_json:
+                    known = set(field_def.options_json)
+                    custom_vals = [v for v in selected_values if v not in known]
+                    other_text = custom_vals[0] if custom_vals else ""
+            elif field_def.input_type == "select_other" and value and field_def.options_json:
+                is_other_value = value not in field_def.options_json
+
+            field_values.append({
+                "field_def": field_def,
+                "value": value,
+                "selected_values": selected_values,
+                "other_text": other_text,
+                "is_other_value": is_other_value,
+            })
+        if field_values:
+            custom_data.append({"group": group, "fields": field_values})
+
+    return render(request, "portal/selfid_form.html", {
+        "participant": participant,
+        "custom_data": custom_data,
+        "success": success,
     })

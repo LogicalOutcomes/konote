@@ -1,5 +1,7 @@
 # KoNote Web — Technical Documentation
 
+**Version 2.3** | **Last updated:** 2026-03-07
+
 This document provides a comprehensive technical reference for developers, system administrators, and AI assistants working with the KoNote Web codebase.
 
 ---

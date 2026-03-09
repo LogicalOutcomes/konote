@@ -247,6 +247,11 @@ def get_quarter_choices(num_quarters: int = 8) -> List[Tuple[str, str]]:
 def aggregate_all_programs_totals(data_or_sections):
     """Aggregate service metrics across all program reports.
 
+    When any program's value has been suppressed (replaced with a string
+    like ``"< 5"``), the org-level total for that field is also marked
+    ``"suppressed"``. Showing the sum would reveal the suppressed program's
+    approximate count, which defeats the purpose of suppression.
+
     Args:
         data_or_sections: List of (program, report_data) tuples.
 
@@ -256,18 +261,30 @@ def aggregate_all_programs_totals(data_or_sections):
     total_served = 0
     total_new = 0
     total_contacts = 0
+    served_suppressed = False
+    new_suppressed = False
+    contacts_suppressed = False
     programs = []
     for program, rd in data_or_sections:
-        if isinstance(rd.get("total_individuals_served"), int):
-            total_served += rd["total_individuals_served"]
-        if isinstance(rd.get("new_clients_this_period"), int):
-            total_new += rd["new_clients_this_period"]
-        if isinstance(rd.get("total_contacts"), int):
-            total_contacts += rd["total_contacts"]
+        served = rd.get("total_individuals_served")
+        new = rd.get("new_clients_this_period")
+        contacts = rd.get("total_contacts")
+        if isinstance(served, int):
+            total_served += served
+        elif served is not None:
+            served_suppressed = True
+        if isinstance(new, int):
+            total_new += new
+        elif new is not None:
+            new_suppressed = True
+        if isinstance(contacts, int):
+            total_contacts += contacts
+        elif contacts is not None:
+            contacts_suppressed = True
         programs.append({"name": program.name, "report_data": rd})
     return {
-        "total_served": total_served,
-        "total_new_clients": total_new,
-        "total_contacts": total_contacts,
+        "total_served": "suppressed" if served_suppressed else total_served,
+        "total_new_clients": "suppressed" if new_suppressed else total_new,
+        "total_contacts": "suppressed" if contacts_suppressed else total_contacts,
         "programs": programs,
     }

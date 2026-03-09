@@ -6,6 +6,15 @@ if [ -d ".git" ]; then
     git config core.hooksPath .githooks 2>/dev/null || true
 fi
 
+# Verify FIELD_ENCRYPTION_KEY is set before migrations touch encrypted fields
+if [ -z "${FIELD_ENCRYPTION_KEY:-}" ]; then
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: FIELD_ENCRYPTION_KEY is not set. Cannot run migrations safely."
+        exit 1
+    fi
+    echo "WARNING: FIELD_ENCRYPTION_KEY not set — encrypted field migrations will be skipped."
+fi
+
 echo "Running migrations..."
 # migrate_default uses Django's real migrate (bypassing django_tenants' migrate_schemas)
 # so the PUBLIC schema is kept in sync with all pending migrations, including
@@ -24,7 +33,13 @@ echo "Tenant schema migrations complete."
 # Uses ALLOWED_HOSTS env var for the domain; does nothing if already registered.
 echo ""
 echo "Registering tenant domain..."
-python manage.py setup_public_tenant 2>&1 || echo "WARNING: setup_public_tenant failed (see above). Site may not be accessible."
+if ! python manage.py setup_public_tenant 2>&1; then
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: setup_public_tenant failed in production mode. Refusing to start."
+        exit 1
+    fi
+    echo "WARNING: setup_public_tenant failed (see above). Site may not be accessible."
+fi
 echo "Tenant domain registration complete."
 
 echo "Running audit migrations..."
@@ -64,6 +79,58 @@ echo ""
 echo "Running security checks..."
 python manage.py startup_check
 # If startup_check exits non-zero, the script stops here (set -e)
+
+# Verify encrypted fields are readable (catches FERNET_KEY mismatches after migration)
+echo ""
+echo "Verifying encrypted field integrity..."
+python manage.py shell -c "
+import sys
+
+bad_total = 0
+checked_total = 0
+
+# Check SurveyResponse.respondent_name
+from apps.surveys.models import SurveyResponse
+bad = 0
+checked = 0
+for r in SurveyResponse.objects.exclude(_respondent_name_encrypted=b'').iterator():
+    checked += 1
+    if r.respondent_name_display == '[DECRYPTION ERROR]':
+        bad += 1
+if bad:
+    print(f'FAIL: {bad}/{checked} survey respondent names cannot be decrypted.')
+else:
+    print(f'OK: {checked} encrypted respondent name(s) verified.' if checked else 'OK: No encrypted respondent names to verify.')
+bad_total += bad
+checked_total += checked
+
+# Check ClientFile.first_name and last_name
+from apps.clients.models import ClientFile
+bad = 0
+checked = 0
+for c in ClientFile.objects.exclude(_first_name_encrypted=b'').exclude(_first_name_encrypted__isnull=True).iterator():
+    checked += 1
+    if c.first_name == '[DECRYPTION ERROR]' or c.last_name == '[DECRYPTION ERROR]':
+        bad += 1
+if bad:
+    print(f'FAIL: {bad}/{checked} client names cannot be decrypted.')
+else:
+    print(f'OK: {checked} encrypted client name(s) verified.' if checked else 'OK: No encrypted client names to verify.')
+bad_total += bad
+checked_total += checked
+
+if bad_total:
+    print(f'TOTAL: {bad_total}/{checked_total} encrypted fields failed decryption.')
+    print('The FIELD_ENCRYPTION_KEY may not match the key used during migration.')
+    sys.exit(1)
+print(f'All {checked_total} encrypted field(s) verified successfully.' if checked_total else 'No encrypted fields to verify.')
+" 2>&1 || {
+    if [ "${KONOTE_MODE:-production}" = "production" ]; then
+        echo "ERROR: Encryption verification failed. Refusing to start."
+        exit 1
+    fi
+    echo "WARNING: Encryption verification failed (non-production — continuing)."
+}
 
 PORT=${PORT:-8000}
 echo "Starting gunicorn on port $PORT"

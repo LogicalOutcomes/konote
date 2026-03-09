@@ -158,7 +158,7 @@
     </form>
 </article>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var acks = document.querySelectorAll('.erasure-ack-checkbox');
     var submitBtn = document.getElementById('erasure-submit-btn');
@@ -192,3 +192,4 @@
 })();
 </script>
 {% endblock %}
+

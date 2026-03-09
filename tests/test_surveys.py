@@ -4,10 +4,13 @@ Run with:
     pytest tests/test_surveys.py -v
 """
 from datetime import timedelta
+from unittest.mock import patch
 
 from cryptography.fernet import Fernet
+from django.core.cache import cache
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
+from django.utils.translation import override as translation_override
 
 from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
@@ -568,13 +571,28 @@ class AssignmentResponseModelTests(TestCase):
         anon_survey = Survey.objects.create(
             name="Anon Survey", created_by=self.staff, is_anonymous=True,
         )
-        response = SurveyResponse.objects.create(
+        response = SurveyResponse(
             survey=anon_survey,
             channel="link",
-            respondent_name_display="Anonymous Person",
         )
+        response.respondent_name_display = "Anonymous Person"
+        response.save()
         self.assertIsNone(response.client_file)
         self.assertIsNone(response.assignment)
+        self.assertEqual(response.respondent_name_display, "Anonymous Person")
+        self.assertNotEqual(response._respondent_name_encrypted, b"Anonymous Person")
+
+    def test_anonymous_link_forces_collect_name_off(self):
+        """Anonymous surveys must never persist links that collect names."""
+        anon_survey = Survey.objects.create(
+            name="Anonymous Link Survey", created_by=self.staff, is_anonymous=True,
+        )
+        link = SurveyLink.objects.create(
+            survey=anon_survey,
+            created_by=self.staff,
+            collect_name=True,
+        )
+        self.assertFalse(link.collect_name)
 
 
 @override_settings(
@@ -1266,6 +1284,19 @@ class PublicSurveyViewTests(TestCase):
             section=self.section, question_text="How was your experience?",
             question_type="short_text", sort_order=1, required=True,
         )
+        self.q2 = SurveyQuestion.objects.create(
+            section=self.section,
+            question_text="Rate accessibility",
+            question_type="rating_scale",
+            sort_order=2,
+            required=True,
+            min_value=1,
+            max_value=5,
+            options_json=[
+                {"value": "1", "label": "Poor", "label_fr": "Faible"},
+                {"value": "5", "label": "Excellent", "label_fr": "Excellent"},
+            ],
+        )
         self.link = SurveyLink.objects.create(
             survey=self.survey, created_by=self.staff,
         )
@@ -1275,10 +1306,17 @@ class PublicSurveyViewTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Public Survey")
 
+    def test_public_rating_scale_uses_fieldset_and_legend(self):
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, '<fieldset class="survey-question-group">', html=False)
+        self.assertContains(resp, "<legend>")
+        self.assertContains(resp, "Rate accessibility")
+
     def test_public_form_submit_creates_response(self):
         resp = self.client.post(
             f"/s/{self.link.token}/",
-            {f"q_{self.q1.pk}": "Great!"},
+            {f"q_{self.q1.pk}": "Great!", f"q_{self.q2.pk}": "4"},
         )
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(SurveyResponse.objects.filter(channel="link").count(), 1)
@@ -1468,6 +1506,41 @@ class PublicSurveySubmissionTests(TestCase):
         answer = response.answers.first()
         self.assertEqual(answer.value, "Excellent!")
 
+    def test_identified_link_encrypts_respondent_name(self):
+        self.link.collect_name = True
+        self.link.save(update_fields=["collect_name"])
+
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {
+                "respondent_name": "Casey",
+                f"q_{self.q1.pk}": "Excellent!",
+            },
+        )
+
+        self.assertEqual(resp.status_code, 302)
+        response = SurveyResponse.objects.get(channel="link")
+        self.assertEqual(response.respondent_name_display, "Casey")
+        self.assertNotEqual(response._respondent_name_encrypted, b"Casey")
+
+    def test_anonymous_link_ignores_posted_respondent_name(self):
+        self.survey.is_anonymous = True
+        self.survey.save(update_fields=["is_anonymous"])
+        self.link.collect_name = True
+        self.link.save()
+
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {
+                "respondent_name": "Hidden Name",
+                f"q_{self.q1.pk}": "Excellent!",
+            },
+        )
+
+        self.assertEqual(resp.status_code, 302)
+        response = SurveyResponse.objects.get(channel="link")
+        self.assertEqual(response.respondent_name_display, "")
+
     def test_public_form_repopulates_on_error(self):
         """Previously entered values are preserved when validation fails."""
         resp = self.client.post(f"/s/{self.link.token}/", {
@@ -1526,6 +1599,30 @@ class PublicSurveyBilingualTests(TestCase):
         self.assertContains(resp, "Description française")
         self.assertContains(resp, "Section FR")
         self.assertContains(resp, "Q FR")
+
+    def test_required_error_uses_french_question_label(self):
+        self.q.required = True
+        self.q.save(update_fields=["required"])
+        self.client.cookies.load({"django_language": "fr"})
+
+        resp = self.client.post(f"/s/{self.link.token}/", {})
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Q FR")
+        self.assertNotContains(resp, "Q EN")
+
+    def test_thank_you_uses_french_survey_name(self):
+        self.client.cookies.load({"django_language": "fr"})
+
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {f"q_{self.q.pk}": "Bonjour"},
+            follow=True,
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Nom français")
+        self.assertNotContains(resp, "English Name")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -1623,6 +1720,16 @@ class PublicSurveyAuditTests(TestCase):
         self.assertEqual(log.metadata["survey_id"], self.survey.pk)
         self.assertEqual(log.metadata["channel"], "public_link")
 
+    def test_exception_logging_redacts_full_token(self):
+        with patch("apps.surveys.public_views.get_object_or_404", side_effect=Exception("boom")):
+            with self.assertLogs("apps.surveys.public_views", level="ERROR") as captured:
+                resp = self.client.get(f"/s/{self.link.token}/")
+
+        self.assertEqual(resp.status_code, 200)
+        joined = "\n".join(captured.output)
+        self.assertNotIn(self.link.token, joined)
+        self.assertIn(self.link.token[:8], joined)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class PublicSurveySingleResponseTests(TestCase):
@@ -1668,6 +1775,47 @@ class PublicSurveySingleResponseTests(TestCase):
         resp = self.client.get(f"/s/{self.link.token}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Already Responded")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, RATELIMIT_ENABLE=True)
+class PublicSurveyRateLimitTests(TestCase):
+    """Test GET throttling for public survey endpoints."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        cache.clear()
+        self.staff = User.objects.create_user(
+            username="rl_staff", password="testpass123",
+            display_name="RateLimit Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Rate Limited Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Q1",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def tearDown(self):
+        cache.clear()
+
+    def test_public_form_get_rate_limited(self):
+        url = f"/s/{self.link.token}/"
+        for _ in range(120):
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 200)
+
+        blocked = self.client.get(url)
+        self.assertEqual(blocked.status_code, 429)
+        self.assertEqual(blocked["Retry-After"], "300")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

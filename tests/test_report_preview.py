@@ -292,7 +292,8 @@ class TemplateReportPreviewTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Print")
-        self.assertContains(resp, "window.print()")
+        self.assertContains(resp, "data-print-page")
+        self.assertNotContains(resp, "window.print()")
 
     def test_preview_admin_access(self):
         """Admin users should be able to access the preview."""

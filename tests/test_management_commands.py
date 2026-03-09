@@ -6,12 +6,14 @@ Already tested elsewhere (skip here):
 """
 import io
 import os
+import tempfile
 import unittest
 from pathlib import Path
 
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 
 import konote.encryption as enc_module
@@ -316,6 +318,145 @@ class UpdateDemoClientFieldsTest(TestCase):
         self.assertIn("DEMO_MODE is not enabled", out.getvalue())
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ProvisionTenantCommandTest(TestCase):
+    """Tests for the provision_tenant command."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_load_defaults_uses_current_admin_settings_fields(self):
+        """The command seeds terminology using the current model field names."""
+        from apps.admin_settings.models import FeatureToggle, TerminologyOverride
+        from apps.tenants.management.commands.provision_tenant import Command
+
+        command = Command()
+        command._load_defaults()
+        command._load_defaults()
+
+        self.assertEqual(TerminologyOverride.objects.count(), 6)
+        self.assertTrue(
+            TerminologyOverride.objects.filter(
+                term_key="client_plural",
+                display_value="Participants",
+                display_value_fr="Participant(e)s",
+            ).exists()
+        )
+        self.assertFalse(
+            TerminologyOverride.objects.filter(term_key="clients").exists()
+        )
+        self.assertEqual(FeatureToggle.objects.count(), 3)
+
+    def test_provision_tenant_resumes_existing_partial_state(self):
+        """A rerun should reuse existing tenant records instead of duplicating them."""
+        from apps.admin_settings.models import FeatureToggle, TerminologyOverride
+        from apps.auth_app.models import User
+        from apps.tenants.management.commands.provision_tenant import Command
+        from apps.tenants.models import Agency, AgencyDomain, TenantKey
+
+        agency = Agency.objects.create(
+            name="Resume Agency",
+            short_code="resume-agency",
+            schema_name="resume_agency",
+        )
+        domain = AgencyDomain.objects.create(
+            domain="resume-agency.example.com",
+            tenant=agency,
+            is_primary=False,
+        )
+        TenantKey.objects.create(tenant=agency, encrypted_key=b"existing-key")
+
+        out = io.StringIO()
+        with unittest.mock.patch.object(
+            Command,
+            "_run_tenant_phase",
+            side_effect=lambda agency, phase_name, callback: callback(),
+        ):
+            call_command(
+                "provision_tenant",
+                name="Resume Agency",
+                short_code="resume-agency",
+                domain="resume-agency.example.com",
+                admin_username="tenantadmin",
+                admin_password="S3curePass!",
+                stdout=out,
+            )
+
+        self.assertEqual(Agency.objects.filter(short_code="resume-agency").count(), 1)
+        self.assertEqual(
+            AgencyDomain.objects.filter(domain="resume-agency.example.com").count(),
+            1,
+        )
+        self.assertEqual(TenantKey.objects.filter(tenant=agency).count(), 1)
+        self.assertEqual(User.objects.filter(username="tenantadmin").count(), 1)
+        self.assertEqual(TerminologyOverride.objects.count(), 6)
+        self.assertEqual(FeatureToggle.objects.count(), 3)
+
+        domain.refresh_from_db()
+        self.assertTrue(domain.is_primary)
+        self.assertIn("already exists", out.getvalue())
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class RotateTenantKeyCommandTest(TestCase):
+    """Tests for the disabled rotate_tenant_key command."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_live_run_is_explicitly_disabled(self):
+        """Live rotation should fail closed until re-encryption exists."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command("rotate_tenant_key", short_code="youth-services")
+
+        message = str(ctx.exception)
+        self.assertIn("rotate_tenant_key is disabled (LIVE RUN)", message)
+        self.assertIn("safe tenant-wide re-encryption workflow", message)
+
+    def test_dry_run_is_also_disabled(self):
+        """Dry-run should not imply the unsafe workflow is available."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command(
+                "rotate_tenant_key",
+                short_code="youth-services",
+                dry_run=True,
+            )
+
+        message = str(ctx.exception)
+        self.assertIn("rotate_tenant_key is disabled (DRY RUN)", message)
+        self.assertIn("strand existing encrypted data", message)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SetupPublicTenantCommandTest(TestCase):
+    """Tests for the setup_public_tenant command fail-closed behavior."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_missing_domain_raises_command_error(self):
+        """Missing domain must fail closed so production startup stops."""
+        with self.assertRaises(CommandError) as ctx:
+            call_command("setup_public_tenant", domain="")
+
+        self.assertIn("No domain specified", str(ctx.exception))
+
+
 # =========================================================================
 # Security Commands
 # =========================================================================
@@ -476,6 +617,30 @@ class TranslateStringsTest(TestCase):
         # Verify .mo file exists after compilation
         mo_path = Path(settings.BASE_DIR) / "locale" / "fr" / "LC_MESSAGES" / "django.mo"
         self.assertTrue(mo_path.exists(), ".mo file should exist after compilation")
+
+    def test_extract_templates_preserves_context(self):
+        """Contextual {% trans %} tags should be extracted as contextual PO entries."""
+        from apps.admin_settings.management.commands.translate_strings import Command
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            template_dir = Path(tmp_dir) / "apps" / "portal" / "templates" / "portal"
+            template_dir.mkdir(parents=True)
+            (template_dir / "progress.html").write_text(
+                '{% trans "Holding steady" context "progress trend" %}\n'
+                '{% trans "Generate Report" %}\n'
+                '{% blocktrans %}Ignored for msgid extraction{% endblocktrans %}\n',
+                encoding="utf-8",
+            )
+
+            strings, file_count, blocktrans_count = Command()._extract_templates(
+                Path(tmp_dir)
+            )
+
+        self.assertIn(("progress trend", "Holding steady"), strings)
+        self.assertIn(("", "Generate Report"), strings)
+        self.assertNotIn(("", 'Holding steady" context "progress trend'), strings)
+        self.assertEqual(file_count, 1)
+        self.assertEqual(blocktrans_count, 1)
 
 
 # =========================================================================

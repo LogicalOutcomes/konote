@@ -32,7 +32,7 @@
 <form method="get" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: end;">
     <div>
         <label for="category-filter" class="visually-hidden">{% trans "Filter by category" %}</label>
-        <select name="category" id="category-filter" onchange="this.form.submit()" aria-label="{% trans 'Filter by category' %}">
+        <select name="category" id="category-filter" data-submit-on-change aria-label="{% trans 'Filter by category' %}">
             <option value="">{% trans "All categories" %}</option>
             {% for value, label in category_choices %}
             <option value="{{ value }}" {% if value == selected_category %}selected{% endif %}>{{ label }}</option>
@@ -41,7 +41,7 @@
     </div>
     <div>
         <label for="status-filter" class="visually-hidden">{% trans "Filter by status" %}</label>
-        <select name="status" id="status-filter" onchange="this.form.submit()" aria-label="{% trans 'Filter by status' %}">
+        <select name="status" id="status-filter" data-submit-on-change aria-label="{% trans 'Filter by status' %}">
             <option value="">{% trans "All statuses" %}</option>
             <option value="enabled" {% if selected_status == "enabled" %}selected{% endif %}>{% trans "Enabled" %}</option>
             <option value="disabled" {% if selected_status == "disabled" %}selected{% endif %}>{% trans "Disabled" %}</option>

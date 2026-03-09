@@ -5,14 +5,17 @@
 {% if can_create_note %}
 <div id="quick-note-container" class="quick-log-section">
     <h2>{% trans "Log Contact" %}</h2>
-    <p><small class="secondary">{% trans "Log a phone call, text, email, or visit. This creates a note that counts in reports." %}</small></p>
-    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Log a contact' %}">
+    <p><small class="secondary">{% trans "Use Log Contact for a fast update, or Detailed Note when you need target-by-target progress and session reflections." %}</small></p>
+    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Create a note' %}">
         <button class="outline"
                 hx-get="{% url 'notes:quick_note_inline' client_id=client.pk %}"
                 hx-target="#quick-note-container"
                 hx-swap="outerHTML">
             {% trans "Log Contact" %}
         </button>
+        <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline secondary">
+            {% trans "Detailed Note" %}
+        </a>
     </div>
 </div>
 {% endif %}

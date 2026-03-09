@@ -152,8 +152,14 @@ CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_trusted_origins))
 #
 # Note on 'unsafe-inline' for styles: Pico CSS currently requires it.
 # If you vendor Pico locally in future, you can remove 'unsafe-inline'
-# from CSP_STYLE_SRC in base.py for a tighter policy.
+# from CONTENT_SECURITY_POLICY in base.py for a tighter policy.
 # ─────────────────────────────────────────────────────────────────────
 _csp_report_uri = os.environ.get("CSP_REPORT_URI_ENDPOINT")
 if _csp_report_uri:
-    CSP_REPORT_URI = (_csp_report_uri,)
+    CONTENT_SECURITY_POLICY = {
+        **CONTENT_SECURITY_POLICY,
+        "DIRECTIVES": {
+            **CONTENT_SECURITY_POLICY["DIRECTIVES"],
+            "report-uri": [_csp_report_uri],
+        },
+    }

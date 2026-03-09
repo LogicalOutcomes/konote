@@ -96,7 +96,7 @@
         <label for="id_completed_at">{% trans "Date delivered" %}</label>
         <input type="date" name="completed_at" id="id_completed_at" value="{% now 'Y-m-d' %}">
 
-        <button type="submit" onclick="return confirm('{% trans "Mark this data access request as complete?" %}')">{% trans "Mark as Complete" %}</button>
+        <button type="submit" data-confirm="{% trans 'Mark this data access request as complete?' %}">{% trans "Mark as Complete" %}</button>
     </form>
 </article>
 {% endif %}

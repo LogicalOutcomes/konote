@@ -303,6 +303,152 @@ GENERIC_SUGGESTIONS = [
     "More evening or weekend options would make it easier for me to attend",
 ]
 
+# ---------------------------------------------------------------------------
+# Portal content pools — journal entries, messages, staff notes
+# ---------------------------------------------------------------------------
+
+# Journal entries keyed by trend. Each participant gets entries matching their
+# trend. The "days_ago" values space entries out over the participation period.
+PORTAL_JOURNAL_ENTRIES = {
+    "improving": [
+        {"days_ago": 120, "content": "First day in the program. Feeling nervous but hopeful. My worker seemed really understanding and didn't make me feel judged for where I'm starting from."},
+        {"days_ago": 90, "content": "Had my third session today. We set some goals together and for the first time it feels like I have an actual plan, not just a vague idea of what I need to do."},
+        {"days_ago": 60, "content": "I hit one of my goals this week! It's a small one but my worker said small wins matter. I'm starting to believe that."},
+        {"days_ago": 35, "content": "Things are feeling more manageable now. I look back at where I was three months ago and I can see actual progress. Still have a long way to go but the direction is right."},
+        {"days_ago": 10, "content": "Checked my progress charts today and seeing the line go up actually made me smile. I shared this with my family and they're proud of me too."},
+    ],
+    "mixed": [
+        {"days_ago": 110, "content": "Starting out. Not sure what to expect from this program but I need to make some changes."},
+        {"days_ago": 80, "content": "Had a good session this week. Felt like we were making progress. Then something came up at home and it set me back."},
+        {"days_ago": 50, "content": "Frustrated today. I feel like I take two steps forward and one step back. My worker says that's normal but it doesn't feel normal."},
+        {"days_ago": 25, "content": "Better week. Got back on track after a rough patch. Trying not to be too hard on myself when things don't go perfectly."},
+    ],
+    "struggling": [
+        {"days_ago": 100, "content": "Starting this program because I need help. Things have been really hard lately."},
+        {"days_ago": 65, "content": "Missed my last appointment because I couldn't get there. Feeling discouraged."},
+        {"days_ago": 30, "content": "My worker called to check in even though I missed again. That meant a lot. Going to try harder to make the next one."},
+    ],
+    "crisis_then_improving": [
+        {"days_ago": 130, "content": "Everything feels overwhelming right now. I don't know where to start but I know I need help."},
+        {"days_ago": 100, "content": "My worker helped me deal with the most urgent things first. It's still hard but at least I know what to focus on."},
+        {"days_ago": 70, "content": "The crisis is over. Breathing a little easier now. Starting to work on longer-term goals."},
+        {"days_ago": 40, "content": "Looking back at where I was two months ago, I can't believe how far I've come. Still fragile but getting stronger."},
+        {"days_ago": 10, "content": "Had a really good session today. For the first time in a long time, I feel like I'm going to be okay."},
+    ],
+}
+# Fallback for trends not in the dict above
+PORTAL_JOURNAL_ENTRIES["stable"] = PORTAL_JOURNAL_ENTRIES["improving"][:3]
+
+PORTAL_STAFF_NOTES = [
+    {"days_ago": 80, "content": "Welcome to your portal! You can use this space to check your goals, track progress, and send messages. I'm here if you have any questions."},
+    {"days_ago": 50, "content": "Great progress this month. Keep up the good work — remember, you can check your progress charts anytime from the dashboard."},
+    {"days_ago": 20, "content": "Just a reminder that you can use the journal feature to write down your thoughts between sessions. It's private — only you can see it."},
+    {"days_ago": 5, "content": "Your next session is coming up. If there's anything specific you want to discuss, feel free to send me a message through the portal beforehand."},
+]
+
+PORTAL_MESSAGES = [
+    {"days_ago": 70, "type": "general", "content": "Hi, I had a question about something we discussed in our last session. Can we go over the action plan again next time?"},
+    {"days_ago": 40, "type": "pre_session", "content": "Before our next meeting, I wanted to let you know that I tried what we talked about and it went pretty well. I'll tell you more when we meet."},
+    {"days_ago": 15, "type": "general", "content": "I need to reschedule our next appointment. Is there another time that works this week?"},
+]
+
+# Default program-level resources for the portal
+PORTAL_PROGRAM_RESOURCES = [
+    {
+        "title": "211 Ontario — Community & Social Services",
+        "title_fr": "211 Ontario — Services communautaires et sociaux",
+        "url": "https://211ontario.ca/",
+        "url_fr": "https://211ontario.ca/fr/",
+        "description": "Find local community services, supports, and programs across Ontario.",
+        "description_fr": "Trouvez des services communautaires, des soutiens et des programmes locaux partout en Ontario.",
+    },
+]
+
+# Survey definitions for the portal demo
+PORTAL_SURVEY_DEFINITIONS = [
+    {
+        "name": "Client Satisfaction Survey",
+        "name_fr": "Sondage sur la satisfaction des clients",
+        "description": "A brief survey about your experience with our services.",
+        "description_fr": "Un bref sondage sur votre expérience avec nos services.",
+        "sections": [
+            {
+                "title": "Your Experience",
+                "title_fr": "Votre expérience",
+                "questions": [
+                    {
+                        "text": "How satisfied are you with the support you have received?",
+                        "text_fr": "Dans quelle mesure êtes-vous satisfait(e) du soutien que vous avez reçu?",
+                        "type": "rating_scale",
+                        "min_value": 1,
+                        "max_value": 5,
+                        "required": True,
+                    },
+                    {
+                        "text": "My worker listens to me and understands my situation.",
+                        "text_fr": "Mon intervenant(e) m'écoute et comprend ma situation.",
+                        "type": "rating_scale",
+                        "min_value": 1,
+                        "max_value": 5,
+                        "required": True,
+                    },
+                    {
+                        "text": "I feel like I am making progress toward my goals.",
+                        "text_fr": "J'ai l'impression de progresser vers mes objectifs.",
+                        "type": "rating_scale",
+                        "min_value": 1,
+                        "max_value": 5,
+                        "required": True,
+                    },
+                    {
+                        "text": "Is there anything else you would like to share?",
+                        "text_fr": "Y a-t-il autre chose que vous aimeriez partager?",
+                        "type": "long_text",
+                        "required": False,
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        "name": "Program Feedback Survey",
+        "name_fr": "Sondage de rétroaction sur le programme",
+        "description": "Help us improve — tell us what's working and what could be better.",
+        "description_fr": "Aidez-nous à nous améliorer — dites-nous ce qui fonctionne et ce qui pourrait être mieux.",
+        "sections": [
+            {
+                "title": "About the Program",
+                "title_fr": "À propos du programme",
+                "questions": [
+                    {
+                        "text": "I would recommend this program to someone in a similar situation.",
+                        "text_fr": "Je recommanderais ce programme à quelqu'un dans une situation similaire.",
+                        "type": "single_choice",
+                        "options": [
+                            {"value": "yes", "label": "Yes", "label_fr": "Oui", "score": 1},
+                            {"value": "maybe", "label": "Maybe", "label_fr": "Peut-être", "score": 0},
+                            {"value": "no", "label": "No", "label_fr": "Non", "score": 0},
+                        ],
+                        "required": True,
+                    },
+                    {
+                        "text": "What has been most helpful about the program?",
+                        "text_fr": "Qu'est-ce qui a été le plus utile dans le programme?",
+                        "type": "long_text",
+                        "required": False,
+                    },
+                    {
+                        "text": "What could we do better?",
+                        "text_fr": "Que pourrions-nous améliorer?",
+                        "type": "long_text",
+                        "required": False,
+                    },
+                ],
+            },
+        ],
+    },
+]
+
 
 # ---------------------------------------------------------------------------
 # The engine
@@ -346,7 +492,32 @@ class DemoDataEngine:
         with open(path, "r", encoding="utf-8") as f:
             profile = json.load(f)
         self.log(f"  Loaded demo data profile: {profile_path}")
+        self._validate_profile_keys(profile)
         return profile
+
+    # Known keys for each profile section (used for typo detection)
+    _VALID_TOP_KEYS = {"description", "defaults", "programs", "portal"}
+    _VALID_PORTAL_KEYS = {
+        "journal_pools", "staff_notes_pool", "messages_pool",
+        "program_resources", "client_resources", "survey_definitions",
+    }
+
+    def _validate_profile_keys(self, profile):
+        """Warn about unrecognised keys in the profile (likely typos)."""
+        unknown_top = set(profile.keys()) - self._VALID_TOP_KEYS
+        for key in sorted(unknown_top):
+            self.log_warning(
+                f"  Warning: unknown profile key '{key}' — will be ignored. "
+                f"Valid keys: {', '.join(sorted(self._VALID_TOP_KEYS))}"
+            )
+        portal = profile.get("portal", {})
+        if portal:
+            unknown_portal = set(portal.keys()) - self._VALID_PORTAL_KEYS
+            for key in sorted(unknown_portal):
+                self.log_warning(
+                    f"  Warning: unknown portal key '{key}' — will be ignored. "
+                    f"Valid keys: {', '.join(sorted(self._VALID_PORTAL_KEYS))}"
+                )
 
     # ----- Cleanup -----
 
@@ -356,11 +527,24 @@ class DemoDataEngine:
         from apps.events.models import CalendarFeedToken
         from apps.circles.models import Circle
         from apps.portal.models import (
-            CorrectionRequest, ParticipantJournalEntry,
-            ParticipantMessage, ParticipantUser, StaffPortalNote,
+            ClientResourceLink, CorrectionRequest, ParticipantJournalEntry,
+            ParticipantMessage, ParticipantUser, PortalResourceLink,
+            StaffPortalNote,
         )
         from apps.registration.models import RegistrationLink, RegistrationSubmission
         from apps.surveys.models import Survey
+
+        # Restore metric portal_visibility first — this must run even if there
+        # are no demo clients/users (e.g. when _ensure_portal_visible_metrics was
+        # called before any demo users were created).
+        originals = getattr(self, "_metric_visibility_originals", {})
+        for metric_pk, original_value in originals.items():
+            MetricDefinition.objects.filter(pk=metric_pk).update(
+                portal_visibility=original_value,
+            )
+        if originals:
+            self.log(f"  Restored portal_visibility on {len(originals)} metrics.")
+        self._metric_visibility_originals = {}
 
         demo_clients = ClientFile.objects.filter(is_demo=True)
         demo_users = User.objects.filter(is_demo=True)
@@ -403,10 +587,26 @@ class DemoDataEngine:
             client_file__is_demo=True
         ).delete()[0]
 
-        # Surveys created by demo users
+        # Client resource links
+        counts["client_resources"] = ClientResourceLink.objects.filter(
+            client_file__is_demo=True
+        ).delete()[0]
+
+        # Portal resource links created by demo users
+        counts["portal_resources"] = PortalResourceLink.objects.filter(
+            created_by__is_demo=True
+        ).delete()[0]
+
+        # Surveys created by demo users (cascade deletes assignments/responses)
         counts["surveys"] = Survey.objects.filter(
             created_by__is_demo=True
         ).delete()[0]
+
+        # Also clean up survey assignments/responses linked to demo clients
+        # for surveys NOT created by demo users (e.g. pre-existing surveys)
+        from apps.surveys.models import SurveyAssignment, SurveyResponse
+        SurveyResponse.objects.filter(client_file__is_demo=True).delete()
+        SurveyAssignment.objects.filter(client_file__is_demo=True).delete()
 
         # Registration submissions for demo links
         counts["registrations"] = RegistrationSubmission.objects.filter(
@@ -519,6 +719,43 @@ class DemoDataEngine:
                 owning_program__isnull=True, status="active",
             ).first()
         return template
+
+    # ----- Metric portal visibility -----
+
+    def _ensure_portal_visible_metrics(self, programs):
+        """Ensure metrics used in demo plans are visible in the portal.
+
+        If all metrics have portal_visibility='no', progress charts will be
+        empty. This sets universal and program metrics to 'summary' so the
+        portal progress page has data to display.
+
+        Only runs when DEMO_MODE is enabled to prevent accidentally modifying
+        an agency's intentional metric visibility settings on production
+        instances. Original values are stored in _metric_visibility_originals
+        so cleanup_demo_data() can restore them.
+        """
+        from django.conf import settings
+        if not getattr(settings, "DEMO_MODE", False):
+            return
+
+        self._metric_visibility_originals = {}
+
+        # Collect metrics that need changing
+        qs = MetricDefinition.objects.filter(
+            is_universal=True, is_enabled=True, portal_visibility="no",
+        )
+        for program in programs:
+            qs = qs | MetricDefinition.objects.filter(
+                owning_program=program, is_enabled=True, portal_visibility="no",
+            )
+
+        # Store originals before modifying
+        for m in qs:
+            self._metric_visibility_originals[m.pk] = m.portal_visibility
+
+        updated = qs.update(portal_visibility="yes")
+        if updated:
+            self.log(f"  Set {updated} metrics to portal_visibility='yes'.")
 
     # ----- Demo user creation -----
 
@@ -814,36 +1051,51 @@ class DemoDataEngine:
                     )
                     all_targets.append((target, target_metrics))
         else:
-            # Generic plan structure: one section with 1-2 targets
-            section = PlanSection.objects.create(
-                client_file=client,
-                name=f"{program.name} Goals",
-                program=program,
-                sort_order=0,
-            )
-            # Create 1-2 targets
-            num_targets = min(2, max(1, len(metrics) // 2))
-            for t_idx in range(num_targets):
-                target_name = f"Goal {t_idx + 1}"
-                target_desc = "Work toward positive outcomes in this area."
-                target = PlanTarget.objects.create(
-                    plan_section=section,
+            # Generic plan structure with meaningful goals
+            generic_sections = [
+                {
+                    "name": "Personal Well-being",
+                    "targets": [
+                        ("Build confidence and self-efficacy",
+                         "Strengthen belief in ability to manage day-to-day challenges."),
+                    ],
+                },
+                {
+                    "name": f"{program.name} Goals",
+                    "targets": [
+                        ("Make progress in the program",
+                         "Work toward the outcomes identified at intake."),
+                        ("Develop skills for independence",
+                         "Build practical skills that support long-term stability."),
+                    ],
+                },
+            ]
+            for s_idx, sec_def in enumerate(generic_sections):
+                section = PlanSection.objects.create(
                     client_file=client,
-                    name=target_name,
-                    description=target_desc,
-                    sort_order=t_idx,
+                    name=sec_def["name"],
+                    program=program,
+                    sort_order=s_idx,
                 )
-                PlanTargetRevision.objects.create(
-                    plan_target=target,
-                    name=target.name,
-                    description=target.description,
-                    status="default",
-                    changed_by=worker,
-                )
-                target_metrics = self._assign_metrics_to_target(
-                    target, metrics, t_idx,
-                )
-                all_targets.append((target, target_metrics))
+                for t_idx, (target_name, target_desc) in enumerate(sec_def["targets"]):
+                    target = PlanTarget.objects.create(
+                        plan_section=section,
+                        client_file=client,
+                        name=target_name,
+                        description=target_desc,
+                        sort_order=t_idx,
+                    )
+                    PlanTargetRevision.objects.create(
+                        plan_target=target,
+                        name=target.name,
+                        description=target.description,
+                        status="default",
+                        changed_by=worker,
+                    )
+                    target_metrics = self._assign_metrics_to_target(
+                        target, metrics, len(all_targets),
+                    )
+                    all_targets.append((target, target_metrics))
 
         # Set client goal on the first target
         if all_targets:
@@ -1176,6 +1428,352 @@ class DemoDataEngine:
 
         self.log(f"  Created {created} demo portal accounts.")
 
+    # ----- Portal content: journals, messages, staff notes -----
+
+    def create_demo_portal_content(self, client_assignments, users, profile):
+        """Create rich portal content for demo participants.
+
+        Generates journal entries, staff portal notes, participant messages,
+        and client-specific resource links for participants who have portal
+        accounts. Uses profile data when available, otherwise falls back to
+        generic content pools.
+        """
+        from apps.portal.models import (
+            ClientResourceLink, ParticipantJournalEntry,
+            ParticipantMessage, ParticipantUser, StaffPortalNote,
+        )
+
+        now = self.now
+        portal_profile = profile.get("portal", {})
+        profile_journals = portal_profile.get("journal_pools", {})
+        profile_staff_notes = portal_profile.get("staff_notes_pool", PORTAL_STAFF_NOTES)
+        profile_messages = portal_profile.get("messages_pool", PORTAL_MESSAGES)
+        profile_client_resources = portal_profile.get("client_resources", [])
+
+        journal_count = 0
+        msg_count = 0
+        note_count = 0
+        resource_count = 0
+
+        for client, program, trend, worker, goal in client_assignments:
+            participant = ParticipantUser.objects.filter(
+                client_file=client, is_active=True,
+            ).first()
+            if not participant:
+                continue
+
+            # Skip if content already exists (idempotent)
+            if ParticipantJournalEntry.objects.filter(
+                participant_user=participant,
+            ).exists():
+                continue
+
+            # Get plan targets for linking journal entries
+            from apps.plans.models import PlanTarget
+            targets = list(
+                PlanTarget.objects.filter(
+                    client_file=client, status="default",
+                ).order_by("sort_order")[:3]
+            )
+
+            # --- Journal entries ---
+            entries = profile_journals.get(trend, PORTAL_JOURNAL_ENTRIES.get(
+                trend, PORTAL_JOURNAL_ENTRIES["improving"]
+            ))
+            for jd in entries:
+                entry = ParticipantJournalEntry(
+                    participant_user=participant,
+                    client_file=client,
+                )
+                entry.content = jd["content"]
+                # Link to a target if available
+                target_idx = jd.get("target_index")
+                if target_idx is not None and target_idx < len(targets):
+                    entry.plan_target = targets[target_idx]
+                elif targets and random.random() < 0.4:
+                    entry.plan_target = random.choice(targets)
+                entry.save()
+                backdate = now - timedelta(
+                    days=jd["days_ago"], hours=random.randint(18, 22),
+                )
+                ParticipantJournalEntry.objects.filter(pk=entry.pk).update(
+                    created_at=backdate,
+                )
+                journal_count += 1
+
+            # --- Staff portal notes ---
+            for nd in profile_staff_notes:
+                note = StaffPortalNote(
+                    client_file=client,
+                    from_user=worker,
+                    is_active=True,
+                )
+                note.content = nd["content"]
+                note.save()
+                backdate = now - timedelta(
+                    days=nd["days_ago"], hours=random.randint(9, 16),
+                )
+                StaffPortalNote.objects.filter(pk=note.pk).update(
+                    created_at=backdate,
+                )
+                note_count += 1
+
+            # --- Participant messages ---
+            for md in profile_messages:
+                msg = ParticipantMessage(
+                    client_file=client,
+                    participant_user=participant,
+                    message_type=md.get("type", "general"),
+                )
+                msg.content = md["content"]
+                msg.save()
+                backdate = now - timedelta(
+                    days=md["days_ago"], hours=random.randint(8, 20),
+                )
+                updates = {"created_at": backdate}
+                # Archive older messages (staff has addressed them)
+                if md["days_ago"] > 30:
+                    updates["archived_at"] = backdate + timedelta(hours=random.randint(1, 24))
+                ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
+                msg_count += 1
+
+            # --- Client-specific resource links ---
+            for rd in profile_client_resources:
+                ClientResourceLink.objects.get_or_create(
+                    client_file=client,
+                    url=rd["url"],
+                    defaults={
+                        "title": rd["title"],
+                        "description": rd.get("description", ""),
+                        "created_by": worker,
+                    },
+                )
+                resource_count += 1
+
+        self.log(
+            f"  Portal content: {journal_count} journal entries, "
+            f"{note_count} staff notes, {msg_count} messages, "
+            f"{resource_count} client resources."
+        )
+
+    # ----- Portal surveys -----
+
+    def create_demo_portal_surveys(self, client_assignments, users, profile):
+        """Create surveys with assignments and responses for the portal demo.
+
+        Creates two surveys: one that each participant has completed (shown
+        as a previous survey) and one that is still pending (shown as active).
+        The first participant completes survey 1 and has survey 2 pending;
+        the second participant has the reverse pattern.
+        """
+        from apps.portal.models import ParticipantUser
+        from apps.surveys.models import (
+            Survey, SurveyAnswer, SurveyAssignment, SurveyQuestion,
+            SurveyResponse, SurveySection,
+        )
+
+        now = self.now
+        portal_profile = profile.get("portal", {})
+        survey_defs = portal_profile.get(
+            "survey_definitions", PORTAL_SURVEY_DEFINITIONS,
+        )
+
+        if not survey_defs:
+            return
+
+        # Find a staff user to be the creator
+        usernames = list(users.keys())
+        creator = users.get(usernames[1]) if len(usernames) > 1 else list(users.values())[0]
+
+        # Create survey definitions
+        surveys = []
+        for sdef in survey_defs[:2]:  # Max 2 surveys
+            survey = Survey.objects.filter(name=sdef["name"]).first()
+            if survey:
+                # Ensure existing survey is active and portal-visible
+                Survey.objects.filter(pk=survey.pk).update(
+                    status="active",
+                    portal_visible=True,
+                    show_scores_to_participant=True,
+                )
+                survey.refresh_from_db()
+                surveys.append(survey)
+                continue
+
+            survey = Survey.objects.create(
+                name=sdef["name"],
+                name_fr=sdef.get("name_fr", ""),
+                description=sdef.get("description", ""),
+                description_fr=sdef.get("description_fr", ""),
+                status="active",
+                portal_visible=True,
+                show_scores_to_participant=True,
+                created_by=creator,
+            )
+
+            # Create sections and questions
+            for s_idx, sec_def in enumerate(sdef.get("sections", [])):
+                section = SurveySection.objects.create(
+                    survey=survey,
+                    title=sec_def["title"],
+                    title_fr=sec_def.get("title_fr", ""),
+                    sort_order=s_idx,
+                )
+                for q_idx, q_def in enumerate(sec_def.get("questions", [])):
+                    SurveyQuestion.objects.create(
+                        section=section,
+                        question_text=q_def["text"],
+                        question_text_fr=q_def.get("text_fr", ""),
+                        question_type=q_def["type"],
+                        sort_order=q_idx,
+                        required=q_def.get("required", False),
+                        min_value=q_def.get("min_value"),
+                        max_value=q_def.get("max_value"),
+                        options_json=q_def.get("options", []),
+                    )
+            surveys.append(survey)
+
+        if not surveys:
+            return
+
+        # Collect participants with portal accounts
+        portal_participants = []
+        for client, program, trend, worker, goal in client_assignments:
+            pu = ParticipantUser.objects.filter(
+                client_file=client, is_active=True,
+            ).first()
+            if pu:
+                portal_participants.append((pu, client, worker))
+
+        assignments_created = 0
+        responses_created = 0
+
+        for p_idx, (participant, client, worker) in enumerate(portal_participants):
+            for s_idx, survey in enumerate(surveys):
+                # Alternate pattern: participant 0 completed survey 0 / pending survey 1
+                # participant 1 completed survey 1 / pending survey 0, etc.
+                is_completed = (p_idx % 2) != (s_idx % 2)
+
+                assignment, a_created = SurveyAssignment.objects.get_or_create(
+                    survey=survey,
+                    participant_user=participant,
+                    defaults={
+                        "client_file": client,
+                        "status": "completed" if is_completed else "pending",
+                        "assigned_by": worker,
+                    },
+                )
+                if a_created:
+                    assignments_created += 1
+                    # Backdate the assignment
+                    days_back = 45 if is_completed else 5
+                    SurveyAssignment.objects.filter(pk=assignment.pk).update(
+                        created_at=now - timedelta(days=days_back),
+                    )
+
+                # Create a completed response for "previous" surveys
+                if is_completed and a_created:
+                    response = SurveyResponse.objects.create(
+                        survey=survey,
+                        assignment=assignment,
+                        client_file=client,
+                        channel="portal",
+                    )
+                    # Backdate
+                    SurveyResponse.objects.filter(pk=response.pk).update(
+                        submitted_at=now - timedelta(days=40),
+                    )
+                    # Create plausible answers
+                    questions = SurveyQuestion.objects.filter(
+                        section__survey=survey,
+                    ).order_by("section__sort_order", "sort_order")
+                    for question in questions:
+                        answer_kwargs = {"response": response, "question": question}
+                        if question.question_type == "rating_scale":
+                            score = random.randint(
+                                max(3, question.min_value or 1),
+                                question.max_value or 5,
+                            )
+                            answer_kwargs["numeric_value"] = score
+                            answer = SurveyAnswer(**answer_kwargs)
+                            answer.value = str(score)
+                            answer.save()
+                        elif question.question_type == "single_choice":
+                            opts = question.options_json or []
+                            if opts:
+                                chosen = random.choice(opts)
+                                answer = SurveyAnswer(**answer_kwargs)
+                                answer.value = chosen.get("value", chosen.get("label", ""))
+                                answer.save()
+                        elif question.question_type in ("short_text", "long_text"):
+                            answer = SurveyAnswer(**answer_kwargs)
+                            answer.value = random.choice([
+                                "Everything has been really helpful. Thank you.",
+                                "I feel more confident about my situation now.",
+                                "The support I've received has made a real difference.",
+                                "I appreciate how much my worker listens and understands.",
+                            ])
+                            answer.save()
+                        elif question.question_type == "yes_no":
+                            answer = SurveyAnswer(**answer_kwargs)
+                            answer.value = "yes"
+                            answer.save()
+                    responses_created += 1
+
+                    # Mark assignment completed
+                    SurveyAssignment.objects.filter(pk=assignment.pk).update(
+                        status="completed",
+                        completed_at=now - timedelta(days=40),
+                    )
+
+        self.log(
+            f"  Portal surveys: {len(surveys)} surveys, "
+            f"{assignments_created} assignments, {responses_created} responses."
+        )
+
+    # ----- Portal resources -----
+
+    def create_demo_portal_resources(self, client_assignments, users, profile):
+        """Create program-level resource links for the portal demo."""
+        from apps.portal.models import PortalResourceLink
+
+        portal_profile = profile.get("portal", {})
+        resources = portal_profile.get(
+            "program_resources", PORTAL_PROGRAM_RESOURCES,
+        )
+
+        if not resources:
+            return
+
+        # Find a staff user to be the creator
+        usernames = list(users.keys())
+        creator = users.get(usernames[1]) if len(usernames) > 1 else list(users.values())[0]
+
+        # Collect unique programs from client assignments
+        programs = {prog for _, prog, _, _, _ in client_assignments}
+
+        created_count = 0
+        for program in programs:
+            for r_idx, rdef in enumerate(resources):
+                _, created = PortalResourceLink.objects.get_or_create(
+                    program=program,
+                    url=rdef["url"],
+                    defaults={
+                        "title": rdef["title"],
+                        "title_fr": rdef.get("title_fr", ""),
+                        "url_fr": rdef.get("url_fr", ""),
+                        "description": rdef.get("description", ""),
+                        "description_fr": rdef.get("description_fr", ""),
+                        "display_order": r_idx,
+                        "created_by": creator,
+                    },
+                )
+                if created:
+                    created_count += 1
+
+        if created_count:
+            self.log(f"  Created {created_count} portal resource links.")
+
     # ----- Main orchestrator -----
 
     @transaction.atomic
@@ -1215,6 +1813,9 @@ class DemoDataEngine:
         programs = self.discover_programs()
         if not programs:
             return False
+
+        # 1b. Ensure metrics used in demo plans are portal-visible
+        self._ensure_portal_visible_metrics(programs)
 
         # 2. Create demo users
         users = self.create_demo_users(programs, profile)
@@ -1256,6 +1857,15 @@ class DemoDataEngine:
 
         # 7. Create portal accounts for demo participants
         self.create_demo_portal_accounts(client_assignments)
+
+        # 8. Create portal content (journals, messages, staff notes)
+        self.create_demo_portal_content(client_assignments, users, profile)
+
+        # 9. Create portal surveys with assignments and responses
+        self.create_demo_portal_surveys(client_assignments, users, profile)
+
+        # 10. Create portal resource links
+        self.create_demo_portal_resources(client_assignments, users, profile)
 
         # Warn about profile program names that didn't match any active program
         if profile and "programs" in profile:

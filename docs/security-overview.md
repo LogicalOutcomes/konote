@@ -95,9 +95,16 @@ For agencies completing Privacy Impact Assessments, see the PIA Template Answers
 
 ---
 
-## Further Reading
+## Security Documentation Map
 
-- [Security Operations Guide](security-operations.md) -- for IT staff setting up and maintaining KoNote
-- [Independent Review Guide](independent-review.md) -- for verifying security claims
-- [Security Architecture](security-architecture.md) -- for developers and security reviewers
-- [PIA Template Answers](pia-template-answers.md) -- pre-written answers for Privacy Impact Assessments
+KoNote's security documentation is organised by audience. Start with the document that matches your role:
+
+| Document | Audience | What it covers |
+|----------|----------|----------------|
+| **This document** ([Security Overview](security-overview.md)) | Decision-makers, board members | What KoNote protects, protection levels, compliance support |
+| [Security (Admin Guide)](admin/security.md) | Agency admins | Encryption setup, audit logs, backup/restore, erasure, incident response |
+| [Security Operations](security-operations.md) | IT staff, consultants | Detailed operational procedures -- key rotation, audit DB lockdown, export controls |
+| [Security Architecture](security-architecture.md) | Developers, security auditors | Technical deep-dive -- middleware pipeline, encryption implementation, RBAC enforcement |
+| [Independent Review Guide](independent-review.md) | Anyone verifying claims | How to run your own security review (AI-assisted or professional) |
+| [PIA Template Answers](pia-template-answers.md) | Privacy officers, legal | Pre-written responses for Privacy Impact Assessments |
+| [SECURITY.md](../SECURITY.md) | Security researchers | How to report vulnerabilities privately |

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluator Attestation" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluator Attestation" %}</h1>
+    <p>{{ framework.name }} — {{ framework.program.name }}</p>
+</hgroup>
+
+<article>
+    <p>{% trans "By submitting this attestation, you confirm that you have reviewed the evaluation framework and its components." %}</p>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Attestation Scope" %}</legend>
+        {% for checkbox in form.scope %}
+        <label>
+            {{ checkbox.tag }}
+            {{ checkbox.choice_label }}
+        </label>
+        {% endfor %}
+        {% if form.scope.errors %}<small class="error" role="alert">{{ form.scope.errors.0 }}</small>{% endif %}
+    </fieldset>
+
+    {% include "includes/_form_field.html" with field=form.attestation_text %}
+
+    <fieldset role="group">
+        <button type="submit">{% trans "Record Attestation" %}</button>
+        <a href="{% url 'programs:framework_detail' framework_id=framework.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </fieldset>
+</form>
+{% endblock %}

@@ -16,7 +16,7 @@
     <p>{% trans "Copy this link and paste it into your calendar app using the steps below." %}</p>
     <div role="group">
         <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar link' %}">
-        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value)" class="outline">{% trans "Copy" %}</button>
+        <button type="button" class="outline copy-btn" data-clipboard-target="feed-url">{% trans "Copy" %}</button>
     </div>
 
     {% if outlook_subscribe_url %}
@@ -24,7 +24,7 @@
     <p>{% trans "Outlook sometimes needs a different format. If the link above doesn't work in Outlook, try this one instead." %}</p>
     <div role="group">
         <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook calendar link' %}">
-        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('outlook-url').value)" class="outline">{% trans "Copy" %}</button>
+        <button type="button" class="outline copy-btn" data-clipboard-target="outlook-url">{% trans "Copy" %}</button>
     </div>
     {% endif %}
 </section>

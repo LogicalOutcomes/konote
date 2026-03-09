@@ -60,7 +60,7 @@
 {% include "reports/_insights_basic.html" %}
 {% endif %}
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var periodSelect = document.getElementById('{{ form.time_period.id_for_label }}');
     var customRange = document.getElementById('custom-date-range');
@@ -74,3 +74,4 @@
 })();
 </script>
 {% endblock %}
+

@@ -12,7 +12,7 @@ Before starting, collect these from the user:
 
 | Item | Example | Notes |
 |------|---------|-------|
-| VPS IP address | `141.227.151.7` | From the hosting provider (OVHcloud, DigitalOcean, etc.) |
+| VPS IP address | `YOUR_VPS_IP` | From the hosting provider (OVHcloud, DigitalOcean, etc.) |
 | VPS SSH user | `ubuntu` | OVHcloud default is `ubuntu` |
 | SSH access method | Key-based or password | Must be able to run `ssh ubuntu@IP` successfully |
 | Production domain | `konote.agency.ca` | DNS A record must point to VPS IP |

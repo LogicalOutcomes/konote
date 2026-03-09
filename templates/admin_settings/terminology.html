@@ -54,7 +54,7 @@
                 </td>
                 <td>
                     {% if row.is_overridden %}
-                    <a href="#" onclick="resetRow(this, '{{ row.default_en }}', '{{ row.default_fr }}'); return false;"
+                          <a href="#" data-call-function="resetRow" data-call-args='["$el", "{{ row.default_en|escapejs }}", "{{ row.default_fr|escapejs }}"]'
                        class="secondary" style="font-size:0.875rem;">{% trans "Reset" %}</a>
                     {% endif %}
                 </td>
@@ -66,11 +66,11 @@
 
     <div role="group">
         <button type="submit">{% trans "Save Changes" %}</button>
-        <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back" %}</a>
+        <a href="{% url 'admin_settings:dashboard' %}" class="outline">{% trans "Back" %}</a>
     </div>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 function resetRow(link, defaultEn, defaultFr) {
     const row = link.closest('tr');
     const inputs = row.querySelectorAll('input[type="text"]');
@@ -81,3 +81,4 @@ function resetRow(link, defaultEn, defaultFr) {
 }
 </script>
 {% endblock %}
+

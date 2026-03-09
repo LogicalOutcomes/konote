@@ -140,3 +140,197 @@ class UserProgramRole(models.Model):
         if ROLE_EXECUTIVE in roles:
             return not bool(roles & cls.CLIENT_ACCESS_ROLES)
         return False
+
+
+# ── Evaluation Planning models (CIDS Full Tier) ──────────────────────
+
+
+class EvaluationFramework(models.Model):
+    """Program-level evaluation framework that maps to cids:ImpactModel."""
+
+    STATUS_CHOICES = [
+        ("draft", _("Draft")),
+        ("active", _("Active")),
+        ("archived", _("Archived")),
+    ]
+    QUALITY_CHOICES = [
+        ("ai_generated", _("AI-generated")),
+        ("checks_passed", _("Checks passed")),
+        ("human_confirmed", _("Human-confirmed")),
+        ("manual", _("Manually entered")),
+    ]
+
+    name = models.CharField(max_length=255)
+    program = models.ForeignKey(
+        Program, on_delete=models.CASCADE, related_name="evaluation_frameworks",
+    )
+    report_template = models.ForeignKey(
+        "reports.ReportTemplate", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="evaluation_frameworks",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+    planning_quality_state = models.CharField(
+        max_length=20, choices=QUALITY_CHOICES, default="manual",
+    )
+
+    summary = models.TextField(blank=True, default="")
+    output_summary = models.TextField(blank=True, default="")
+    outcome_chain_summary = models.TextField(blank=True, default="")
+    risk_summary = models.TextField(blank=True, default="")
+    counterfactual_summary = models.TextField(blank=True, default="")
+    partner_requirements_summary = models.TextField(blank=True, default="")
+    source_documents_json = models.JSONField(default=list, blank=True)
+
+    evaluator_attestation_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="attested_frameworks",
+    )
+    evaluator_attestation_at = models.DateTimeField(null=True, blank=True)
+    evaluator_attestation_scope = models.JSONField(null=True, blank=True)
+    evaluator_attestation_text = models.TextField(blank=True, default="")
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="created_frameworks",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="updated_frameworks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "programs"
+        db_table = "evaluation_frameworks"
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.program.name})"
+
+    @property
+    def cids_class_coverage(self):
+        """Return set of distinct CIDS classes mapped by components."""
+        return set(
+            self.components.filter(is_active=True)
+            .exclude(cids_class="")
+            .values_list("cids_class", flat=True)
+        )
+
+    @property
+    def is_attested(self):
+        return self.evaluator_attestation_by_id is not None
+
+
+class EvaluationComponent(models.Model):
+    """Structured child record mapping to a CIDS Full Tier class."""
+
+    COMPONENT_TYPES = [
+        ("participant_group", _("Participant group")),
+        ("service", _("Service")),
+        ("activity", _("Activity")),
+        ("output", _("Output")),
+        ("outcome", _("Outcome")),
+        ("risk", _("Risk")),
+        ("mitigation", _("Mitigation")),
+        ("counterfactual", _("Counterfactual")),
+        ("assumption", _("Assumption")),
+        ("input", _("Input")),
+        ("impact_dimension", _("Impact dimension")),
+    ]
+    CIDS_CLASS_MAP = {
+        "participant_group": "cids:Stakeholder",
+        "service": "cids:Service",
+        "activity": "cids:Activity",
+        "output": "cids:Output",
+        "outcome": "cids:StakeholderOutcome",
+        "risk": "cids:ImpactRisk",
+        "mitigation": "cids:ImpactRisk",
+        "counterfactual": "cids:Counterfactual",
+        "assumption": "",
+        "input": "cids:Input",
+        "impact_dimension": "cids:ImpactDimension",
+    }
+    QUALITY_CHOICES = [
+        ("ai_generated", _("AI-generated")),
+        ("checks_passed", _("Checks passed")),
+        ("human_confirmed", _("Human-confirmed")),
+        ("manual", _("Manually entered")),
+    ]
+    PROVENANCE_CHOICES = [
+        ("manual", _("Manual")),
+        ("ai_local", _("AI (local)")),
+        ("ai_external", _("AI (external)")),
+        ("imported", _("Imported")),
+    ]
+
+    framework = models.ForeignKey(
+        EvaluationFramework, on_delete=models.CASCADE, related_name="components",
+    )
+    component_type = models.CharField(max_length=30, choices=COMPONENT_TYPES)
+    cids_class = models.CharField(max_length=100, blank=True, default="")
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default="")
+    sequence_order = models.IntegerField(default=0)
+    parent = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="children",
+    )
+    structured_payload = models.JSONField(default=dict, blank=True)
+    quality_state = models.CharField(
+        max_length=20, choices=QUALITY_CHOICES, default="manual",
+    )
+    provenance_source = models.CharField(
+        max_length=20, choices=PROVENANCE_CHOICES, default="manual",
+    )
+    provenance_model = models.CharField(max_length=200, blank=True, default="")
+    confidence_score = models.FloatField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "programs"
+        db_table = "evaluation_components"
+        ordering = ["framework", "sequence_order", "pk"]
+
+    def __str__(self):
+        return f"{self.get_component_type_display()}: {self.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.cids_class:
+            self.cids_class = self.CIDS_CLASS_MAP.get(self.component_type, "")
+        super().save(*args, **kwargs)
+
+
+class EvaluationEvidenceLink(models.Model):
+    """Source material that supported an evaluation framework."""
+
+    SOURCE_TYPE_CHOICES = [
+        ("proposal", _("Proposal")),
+        ("logic_model", _("Logic model")),
+        ("funder_requirement", _("Funder requirement")),
+        ("website", _("Website")),
+        ("manual_note", _("Manual note")),
+        ("report_template", _("Report template")),
+    ]
+
+    framework = models.ForeignKey(
+        EvaluationFramework, on_delete=models.CASCADE, related_name="evidence_links",
+    )
+    title = models.CharField(max_length=255)
+    source_type = models.CharField(max_length=30, choices=SOURCE_TYPE_CHOICES)
+    storage_path = models.CharField(max_length=500, blank=True, default="")
+    external_reference = models.URLField(max_length=500, blank=True, default="")
+    excerpt_text = models.TextField(blank=True, default="")
+    contains_pii = models.BooleanField(default=False)
+    used_for_ai = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "programs"
+        db_table = "evaluation_evidence_links"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title

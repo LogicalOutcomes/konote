@@ -6,7 +6,7 @@
         <input type="hidden" name="next" value="{{ request.path }}">
         <label for="program-switch" class="visually-hidden">{% trans "Active program" %}</label>
         <select name="program" id="program-switch"
-                onchange="this.form.submit()"
+            data-submit-on-change="true"
                 aria-label="{% trans 'Switch active program' %}">
             {% if not active_program_id %}
             <option value="" selected disabled>{% trans "Select program..." %}</option>

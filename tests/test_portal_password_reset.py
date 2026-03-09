@@ -31,6 +31,44 @@ def _enable_portal():
 
 @override_settings(
     FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-portal-login",
+)
+class PortalLoginSecurityTests(TestCase):
+    """Security regression tests for participant login."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        _enable_portal()
+        self.cf = ClientFile.objects.create(record_id="PLG-001", status="active")
+        self.cf.first_name = "Portal"
+        self.cf.last_name = "Tester"
+        self.cf.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="portal@example.com",
+            client_file=self.cf,
+            display_name="Portal P",
+            password="oldpass123",
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    @patch("apps.portal.views.make_password")
+    def test_unknown_email_runs_timing_equalization(self, mock_make_password):
+        resp = self.client.post("/my/login/", {
+            "email": "nobody@example.com",
+            "password": "wrongpass123",
+        })
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Invalid email or password.")
+        mock_make_password.assert_called_once_with("dummy-timing-equalisation")
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
     EMAIL_HASH_KEY="test-hash-key-pwreset",
 )
 class PasswordResetRequestTests(TestCase):
@@ -225,6 +263,45 @@ class PasswordResetConfirmTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.participant.refresh_from_db()
         self.assertTrue(self.participant.check_password("oldpass123"))
+
+    def test_failure_messages_are_generic(self):
+        code = self._request_code()
+
+        wrong_email_resp = self.client.post("/my/password/reset/confirm/", {
+            "email": "wrong@example.com",
+            "code": code,
+            "new_password": "newSecure99!",
+            "confirm_password": "newSecure99!",
+        })
+
+        self.participant.refresh_from_db()
+        self.participant.password_reset_expires = timezone.now() - timedelta(minutes=1)
+        self.participant.save(update_fields=["password_reset_expires"])
+        expired_resp = self.client.post("/my/password/reset/confirm/", {
+            "email": "confirm@example.com",
+            "code": code,
+            "new_password": "newSecure99!",
+            "confirm_password": "newSecure99!",
+        })
+
+        self.participant.refresh_from_db()
+        self.participant.password_reset_expires = timezone.now() + timedelta(minutes=10)
+        self.participant.password_reset_token_hash = ""
+        self.participant.save(update_fields=[
+            "password_reset_expires",
+            "password_reset_token_hash",
+        ])
+        no_request_resp = self.client.post("/my/password/reset/confirm/", {
+            "email": "confirm@example.com",
+            "code": code,
+            "new_password": "newSecure99!",
+            "confirm_password": "newSecure99!",
+        })
+
+        generic = "Invalid or expired code. Please request a new one."
+        self.assertContains(wrong_email_resp, generic)
+        self.assertContains(expired_resp, generic)
+        self.assertContains(no_request_resp, generic)
 
     def test_password_mismatch_rejected(self):
         code = self._request_code()

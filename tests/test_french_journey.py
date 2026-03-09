@@ -179,7 +179,7 @@ class NavigationFrenchTest(FrenchJourneyBaseTest):
         # Admin dropdown items
         self.assertContains(resp, "Administration")  # "Admin"
         self.assertContains(resp, "Param\u00e8tres")  # "Settings"
-        self.assertContains(resp, "Nouveaux utilisateurs")  # "New Users"
+        self.assertContains(resp, "Invitations utilisateur")  # "User Invites"
         self.assertContains(resp, "Journal d'audit")  # "Audit Log" — plain apostrophe
         self.assertContains(resp, "Rapports")  # "Reports"
 
@@ -310,7 +310,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Modifier")  # "Edit"
-        self.assertContains(resp, "Note rapide")  # Quick Note in Actions dropdown
+        self.assertContains(resp, "Enregistrer un contact")  # Quick note action label
 
     def test_client_detail_consent_in_french(self):
         """Consent display section is in French."""
@@ -444,8 +444,9 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
-        # Empty state (uses terminology-aware string)
-        self.assertContains(resp, "Ajouter la premi\u00e8re note")  # "Add the first note"
+        # Empty state — shows Log Contact / Detailed Note buttons in French
+        self.assertContains(resp, "Enregistrer un contact")  # "Log Contact"
+        self.assertContains(resp, "Note d\u00e9taill\u00e9e")  # "Detailed Note"
 
     def test_note_cancel_form_in_french(self):
         """Note cancellation form is in French."""
@@ -511,7 +512,7 @@ class PlansFrenchTest(FrenchJourneyBaseTest):
         self._login_admin_fr()
         resp = self.http.get("/manage/templates/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Cr\u00e9er un mod\u00e8le")  # "Create Template"
+        self.assertContains(resp, "Nouveau mod\u00e8le de plan")
 
     def test_metric_library_in_french(self):
         """Metric library page renders in French."""
@@ -613,7 +614,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
         self.assertContains(resp, "Fonctionnalit\u00e9s")  # "Features"
         self.assertContains(resp, "Param\u00e8tres d'instance")  # "Instance Settings" — plain '
         self.assertContains(resp, "Utilisateurs")  # "Users"
-        self.assertContains(resp, "G\u00e9rez la configuration de votre instance.")
+        self.assertContains(resp, "Commencez ici pour la configuration, les param\u00e8tres et les outils d'administration essentiels.")
 
     def test_settings_dashboard_buttons_in_french(self):
         """Settings dashboard action buttons are in French."""
@@ -668,8 +669,8 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
         self._login_admin_fr()
         resp = self.http.get("/manage/users/invites/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Nouvelle invitation")  # "New Invite"
-        self.assertContains(resp, "nouveaux utilisateurs")  # part of description
+        self.assertContains(resp, "Nouvelle invitation utilisateur")  # "New User Invite"
+        self.assertContains(resp, "Invitations utilisateur")
 
     def test_audit_log_in_french(self):
         """Audit log page renders in French."""

@@ -42,7 +42,7 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/auth/login/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -162,6 +162,9 @@ services:
       - OPS_VERIFY_BACKUPS=${OPS_VERIFY_BACKUPS:-true}
     volumes:
       - ./backups:/backups                         # Host-bind backup directory
+      # SECURITY NOTE: Docker socket grants full Docker API access. If ops
+      # container is compromised, attacker can control host containers. Consider
+      # tecnativa/docker-socket-proxy for high-threat environments.
       - /var/run/docker.sock:/var/run/docker.sock  # For docker system prune
     depends_on:
       db:

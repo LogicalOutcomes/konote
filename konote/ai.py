@@ -6,6 +6,7 @@ program names, aggregate stats). Client PII never reaches this module.
 """
 import json
 import logging
+import re
 from urllib.parse import urlparse
 
 import requests
@@ -26,9 +27,104 @@ _SAFETY_FOOTER = (
 )
 
 
+def _extract_json_payload(text):
+    """Extract the first balanced JSON object or array from model output."""
+    if not isinstance(text, str):
+        return None
+
+    cleaned = text.strip()
+    if not cleaned:
+        return None
+
+    cleaned = re.sub(r"<think>.*?</think>", "", cleaned, flags=re.IGNORECASE | re.DOTALL).strip()
+
+    if cleaned.startswith("```"):
+        lines = cleaned.split("\n")
+        lines = [line for line in lines if not line.strip().startswith("```")]
+        cleaned = "\n".join(lines).strip()
+
+    start = None
+    opener = None
+    for index, char in enumerate(cleaned):
+        if char in "[{":
+            start = index
+            opener = char
+            break
+
+    if start is None:
+        return None
+
+    closer = "}" if opener == "{" else "]"
+    depth = 0
+    in_string = False
+    escape = False
+
+    for index in range(start, len(cleaned)):
+        char = cleaned[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+            continue
+
+        if char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                return cleaned[start:index + 1]
+
+    return None
+
+
+def _parse_ai_json(result, log_label):
+    """Parse a JSON payload from model output, tolerating wrapper text."""
+    text = _extract_json_payload(result)
+    if text is None:
+        logger.warning("Could not find JSON in %s response: %s", log_label, str(result)[:300])
+        return None
+
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse %s response: %s", log_label, text[:300])
+        return None
+
+
 def is_ai_available():
     """Return True if the OpenRouter API key is configured."""
     return bool(getattr(settings, "OPENROUTER_API_KEY", ""))
+
+
+def _insights_host_is_allowed(hostname, allowed_hosts):
+    """Return True when the insights host matches the configured allowlist."""
+    if not hostname:
+        return False
+
+    hostname = hostname.lower().rstrip(".")
+    for entry in allowed_hosts:
+        candidate = entry.lower().strip().rstrip(".")
+        if not candidate:
+            continue
+        if candidate.startswith("*."):
+            suffix = candidate[1:]
+            if hostname.endswith(suffix):
+                return True
+            continue
+        if candidate.startswith("."):
+            if hostname.endswith(candidate):
+                return True
+            continue
+        if hostname == candidate:
+            return True
+    return False
 
 
 def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages=None):
@@ -65,6 +161,8 @@ def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages
                 "model": getattr(settings, "OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514"),
                 "messages": api_messages,
                 "max_tokens": max_tokens,
+                "reasoning": {"enabled": False},
+                "include_reasoning": False,
             },
             timeout=TIMEOUT_SECONDS,
         )
@@ -103,12 +201,9 @@ def generate_metric_rationale(name, definition, category, metric_type, scale_ran
     result = _call_openrouter(system, user_msg, max_tokens=512)
     if result is None:
         return None
-    try:
-        parsed = json.loads(result)
-        if isinstance(parsed, dict) and "note" in parsed:
-            return parsed
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric rationale: %s", result[:200])
+    parsed = _parse_ai_json(result, "metric rationale")
+    if isinstance(parsed, dict) and "note" in parsed:
+        return parsed
     return None
 
 
@@ -162,11 +257,7 @@ def suggest_metrics(target_description, metric_catalogue):
     result = _call_openrouter(system, user_msg)
     if result is None:
         return None
-    try:
-        return json.loads(result)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse metric suggestions: %s", result[:200])
-        return None
+    return _parse_ai_json(result, "metric suggestions")
 
 
 def improve_outcome(draft_text):
@@ -299,17 +390,8 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse suggest_target response: %s", text[:300])
+    parsed = _parse_ai_json(result, "suggest_target")
+    if parsed is None:
         return None
 
     return _validate_suggest_target_response(parsed, metric_catalogue)
@@ -419,13 +501,31 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         model = getattr(settings, "INSIGHTS_MODEL", "llama3")
         url = f"{insights_base.rstrip('/')}/chat/completions"
         parsed = urlparse(url)
-        if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
-            logger.warning(
-                "INSIGHTS_API_BASE uses HTTP for remote host %s — "
-                "de-identified data will transit unencrypted. "
-                "Use HTTPS for production deployments.",
-                parsed.hostname,
+        hostname = (parsed.hostname or "").lower()
+        is_local = hostname in ("localhost", "127.0.0.1", "::1")
+
+        if parsed.scheme not in ("http", "https"):
+            logger.error(
+                "INSIGHTS_API_BASE must use http or https, got scheme %s",
+                parsed.scheme or "<missing>",
             )
+            return None
+
+        if parsed.scheme == "http" and not is_local:
+            logger.error(
+                "INSIGHTS_API_BASE must use HTTPS for remote host %s.",
+                hostname or "<missing>",
+            )
+            return None
+
+        allowed_hosts = getattr(settings, "INSIGHTS_ALLOWED_HOSTS", [])
+        if allowed_hosts and not is_local and not _insights_host_is_allowed(hostname, allowed_hosts):
+            logger.error(
+                "INSIGHTS_API_BASE host %s is not in INSIGHTS_ALLOWED_HOSTS.",
+                hostname or "<missing>",
+            )
+            return None
+
         headers = {"Content-Type": "application/json"}
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -571,17 +671,8 @@ def generate_outcome_insights(
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse outcome insights response: %s", text[:300])
+    parsed = _parse_ai_json(result, "outcome insights")
+    if parsed is None:
         return None
 
     # Validate response structure
@@ -629,7 +720,7 @@ def validate_insights_response(response, original_quotes):
                     cq["note_id"] = matching_orig["note_id"]
                 verified_quotes.append(cq)
             else:
-                logger.info("AI quote not verbatim, skipping: %s", cq["text"][:80])
+                logger.info("AI quote not verbatim, skipping")
         response["cited_quotes"] = verified_quotes
 
     # Ensure themes is a list
@@ -659,7 +750,7 @@ def validate_insights_response(response, original_quotes):
                         sq.pop("note_id", None)
                         verified_sq.append(sq)
                     else:
-                        logger.info("Feedback quote not verbatim, skipping: %s", sq.get("text", "")[:80])
+                        logger.info("Feedback quote not verbatim, skipping")
                 item["supporting_quotes"] = verified_sq
             else:
                 item["supporting_quotes"] = []
@@ -795,17 +886,8 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse goal builder response: %s", text[:300])
+    parsed = _parse_ai_json(result, "goal builder")
+    if parsed is None:
         return None
 
     return _validate_goal_chat_response(parsed, metric_catalogue)
@@ -896,11 +978,7 @@ def suggest_note_structure(target_name, target_description, metric_names):
     result = _call_openrouter(system, user_msg)
     if result is None:
         return None
-    try:
-        return json.loads(result)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse note structure: %s", result[:200])
-        return None
+    return _parse_ai_json(result, "note structure")
 
 
 def generate_focused_analysis(question, suggestions, program_name):
@@ -960,17 +1038,8 @@ def generate_focused_analysis(question, suggestions, program_name):
     if result is None:
         return None
 
-    # Strip markdown fences if present
-    text = result.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")
-        lines = [ln for ln in lines if not ln.strip().startswith("```")]
-        text = "\n".join(lines).strip()
-
-    try:
-        parsed = json.loads(text)
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("Could not parse focused analysis response: %s", text[:300])
+    parsed = _parse_ai_json(result, "focused analysis")
+    if parsed is None:
         return None
 
     return _validate_focused_analysis(parsed, len(suggestions))
@@ -1012,3 +1081,85 @@ def _validate_focused_analysis(response, total_suggestions):
         response["suggestion"] = ""
 
     return response
+
+
+def suggest_taxonomy_mappings(subject_type, subject_title, subject_text, taxonomy_list_name, candidates, max_suggestions=3):
+    """Rank a constrained set of taxonomy candidates for a local item.
+
+    Returns a list of dicts {code, label, confidence, reason} or None.
+    """
+    system = (
+        "You help nonprofit reporting leads map local metrics, targets, and programs "
+        "to external reporting code lists. You will receive one local item, the code list "
+        "being used, and a constrained list of candidate entries. Return the best matches "
+        f"as a JSON object with a suggestions array of up to {max_suggestions} items. "
+        "Each item must use one of the provided candidate codes and follow this shape: "
+        '{"code":"...","label":"...","confidence":0.0,"reason":"..."}. '
+        "Confidence must be between 0 and 1. Return ONLY JSON."
+    )
+    user_msg = (
+        f"Item type: {subject_type}\n"
+        f"Item title: {subject_title}\n"
+        f"Item text:\n{subject_text}\n\n"
+        f"Code list: {taxonomy_list_name}\n"
+        f"Candidates:\n{json.dumps(candidates, indent=2)}"
+    )
+    result = _call_openrouter(system, user_msg, max_tokens=900)
+    if result is None:
+        return None
+    parsed = _parse_ai_json(result, "taxonomy suggestions")
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("suggestions"), list):
+        return None
+
+    valid = []
+    allowed_codes = {candidate.get("code") for candidate in candidates}
+    for item in parsed["suggestions"]:
+        if not isinstance(item, dict):
+            continue
+        if item.get("code") not in allowed_codes:
+            continue
+        confidence = item.get("confidence", 0.5)
+        try:
+            confidence = float(confidence)
+        except (TypeError, ValueError):
+            confidence = 0.5
+        valid.append({
+            "code": item.get("code", ""),
+            "label": item.get("label", ""),
+            "confidence": max(0.0, min(1.0, confidence)),
+            "reason": item.get("reason", ""),
+        })
+    return valid or None
+
+
+def answer_taxonomy_review_question(
+    subject_type,
+    subject_title,
+    subject_text,
+    taxonomy_system,
+    taxonomy_list_name,
+    current_mapping,
+    alternatives,
+    question,
+    history=None,
+):
+    """Answer an admin's review question about taxonomy classification."""
+    system = (
+        "You help a nonprofit reporting lead review taxonomy classifications. "
+        "Answer questions about why an item was mapped a certain way, what alternatives exist, "
+        "and when another taxonomy lens might be better. Stay grounded in the provided local item, "
+        "current mapping, and alternatives. Be concise and practical."
+    )
+    messages = list(history or [])
+    context_message = (
+        f"Item type: {subject_type}\n"
+        f"Item title: {subject_title}\n"
+        f"Item text:\n{subject_text}\n\n"
+        f"Taxonomy system: {taxonomy_system}\n"
+        f"Code list: {taxonomy_list_name}\n"
+        f"Current mapping: {json.dumps(current_mapping)}\n"
+        f"Alternatives: {json.dumps(alternatives)}"
+    )
+    messages.append({"role": "user", "content": context_message})
+    messages.append({"role": "user", "content": question})
+    return _call_openrouter(system, messages=messages, max_tokens=700)

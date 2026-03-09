@@ -69,7 +69,7 @@
             <div style="display:flex; align-items:flex-end; gap:0.5rem;">
                 <button type="submit">{% trans "Update" %}</button>
                 <a href="{% url 'audit:compliance_summary' %}" role="button" class="secondary outline">{% trans "Reset" %}</a>
-                <button type="button" class="contrast outline" onclick="window.print()">{% trans "Print" %}</button>
+                <button type="button" class="contrast outline" data-print-page>{% trans "Print" %}</button>
             </div>
         </div>
     </form>

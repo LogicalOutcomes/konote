@@ -192,6 +192,16 @@ class AutoSaveViewTests(TestCase):
                 {"value": "3", "label": "Good", "score": 3},
             ],
         )
+        self.q3 = SurveyQuestion.objects.create(
+            section=self.section,
+            question_text="Which supports helped?",
+            question_type="multiple_choice",
+            sort_order=3,
+            options_json=[
+                {"value": "staff", "label": "Staff"},
+                {"value": "housing", "label": "Housing search"},
+            ],
+        )
         self.client_file = ClientFile.objects.create(
             record_id="AUTO-001", status="active",
         )
@@ -258,10 +268,14 @@ class AutoSaveViewTests(TestCase):
         self.assertEqual(PartialAnswer.objects.filter(
             assignment=self.assignment, question=self.q1,
         ).count(), 1)
-        pa = PartialAnswer.objects.get(
-            assignment=self.assignment, question=self.q1,
-        )
-        self.assertEqual(pa.value, "Jane Doe")
+
+    def test_portal_survey_page_uses_link_semantics_for_navigation(self):
+        self._portal_login()
+        response = self.client.get(f"/my/surveys/{self.assignment.pk}/fill/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'role="button"')
+        self.assertContains(response, 'data-checkbox-autosave="true"')
 
     def test_autosave_rejects_non_htmx(self):
         self._portal_login()

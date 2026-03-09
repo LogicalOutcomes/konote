@@ -74,7 +74,7 @@ echo "  Audit backup: $AUDIT_SIZE"
 # Size sanity check — alert if today's main backup is less than half yesterday's
 YESTERDAY=$(date -d "yesterday" +%Y-%m-%d 2>/dev/null || echo "")
 if [ -n "$YESTERDAY" ]; then
-    YESTERDAY_BACKUP=$(ls "$BACKUP_DIR"/main_${YESTERDAY}*.dump 2>/dev/null | head -1)
+    YESTERDAY_BACKUP=$(ls "$BACKUP_DIR"/main_${YESTERDAY}*.dump 2>/dev/null | head -1 || true)
     if [ -n "${YESTERDAY_BACKUP:-}" ]; then
         TODAY_BYTES=$(stat -c%s "$BACKUP_DIR/main_$TIMESTAMP.dump" 2>/dev/null || echo 0)
         YESTERDAY_BYTES=$(stat -c%s "$YESTERDAY_BACKUP" 2>/dev/null || echo 0)

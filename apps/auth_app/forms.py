@@ -43,6 +43,10 @@ class UserCreateForm(forms.ModelForm):
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._requesting_user = requesting_user
+        self.fields["username"].help_text = _("Used only for sign-in. Most people will see the display name instead.")
+        self.fields["display_name"].help_text = _("Shown in notes, reports, and team lists.")
+        self.fields["is_admin"].help_text = _("Gives full access to settings, users, templates, and reports across the whole organisation.")
+        self.fields["email"].help_text = _("Optional, but recommended for account recovery and notifications.")
         # Non-admin users cannot create admin accounts — hide the field
         # (use HiddenInput, not del, to avoid Django _post_clean crash)
         if requesting_user and not requesting_user.is_admin:
@@ -94,6 +98,10 @@ class UserEditForm(forms.ModelForm):
         self._requesting_user = requesting_user
         if self.instance and self.instance.pk:
             self.fields["email"].initial = self.instance.email
+        self.fields["display_name"].help_text = _("Shown in notes, reports, and team lists.")
+        self.fields["is_admin"].help_text = _("Admins can change organisation-wide settings, users, templates, and reports.")
+        self.fields["is_active"].help_text = _("Turn this off when someone leaves. Their past work stays in the system.")
+        self.fields["email"].help_text = _("Optional, but recommended for account recovery and notifications.")
         # Non-admin users cannot toggle admin status or deactivate accounts
         # (PMs must use the dedicated deactivate view instead).
         # Use HiddenInput, not del, to avoid Django _post_clean crash.
@@ -155,6 +163,11 @@ class InviteCreateForm(forms.Form):
         initial=7, min_value=1, max_value=30,
         label=_("Link expires in (days)"),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["role"].help_text = _("Choose the level of access this invite should give the new team member.")
+        self.fields["expires_days"].help_text = _("After this many days, the link stops working and you will need to create a new one.")
 
 
 class InviteAcceptForm(forms.Form):

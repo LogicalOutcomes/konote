@@ -18,6 +18,7 @@ from apps.auth_app.decorators import _get_user_highest_role, admin_required, req
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
+from konote.utils import get_client_ip
 
 from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, ConsentWithdrawalForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
@@ -367,11 +368,6 @@ def client_list(request):
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
-    # Bulk operation permission flags (UX17)
-    can_bulk_status = PERMISSIONS.get(user_role, {}).get("client.edit", DENY) != DENY
-    can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
-    show_bulk = can_bulk_status or can_bulk_transfer
-
     # Base context shared by both single and split views
     context = {
         "has_mixed_roles": has_mixed_roles,
@@ -383,9 +379,6 @@ def client_list(request):
         "search_query": request.GET.get("q", ""),
         "sort_by": sort_by,
         "can_create": can_create,
-        "show_bulk": show_bulk,
-        "can_bulk_status": can_bulk_status,
-        "can_bulk_transfer": can_bulk_transfer,
     }
 
     # Build section-specific context
@@ -441,7 +434,10 @@ def client_list(request):
 
 
 def _get_create_field_defs(user):
-    """Return CustomFieldDefinitions marked show_on_create, respecting role access."""
+    """Return CustomFieldDefinitions marked show_on_create, respecting role access.
+
+    Admin-only groups (DEMO-VIS1) are excluded for non-admin users.
+    """
     qs = CustomFieldDefinition.objects.filter(
         status="active",
         group__status="active",
@@ -450,6 +446,9 @@ def _get_create_field_defs(user):
     user_role = getattr(user, "_program_role", None) or _get_user_highest_role(user)
     if user_role == ROLE_RECEPTIONIST:
         qs = qs.filter(front_desk_access="edit")
+    # Admin-only groups: exclude from non-admin users (DEMO-VIS1)
+    if not getattr(user, "is_admin", False):
+        qs = qs.exclude(group__admin_only=True)
     return list(qs)
 
 
@@ -1117,7 +1116,10 @@ def client_detail(request, client_id):
     has_hidden_programs = all_enrolled_count > visible_count
 
     # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
-    custom_fields_ctx = _get_custom_fields_context(client, user_role, hide_empty=True)
+    custom_fields_ctx = _get_custom_fields_context(
+        client, user_role, hide_empty=True,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
     custom_data = custom_fields_ctx["custom_data"]
     has_editable_fields = custom_fields_ctx["has_editable_fields"]
     # Breadcrumbs: Participants > [Name]
@@ -1264,7 +1266,7 @@ def assessment_due_banner(request, client_id):
     })
 
 
-def _get_custom_fields_context(client, user_role, hide_empty=False):
+def _get_custom_fields_context(client, user_role, hide_empty=False, is_admin_user=False):
     """Build custom fields context for display/edit templates.
 
     Args:
@@ -1272,8 +1274,14 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
         user_role: User's role (front desk, direct service, etc.)
         hide_empty: If True, exclude fields without values (for display mode).
                    If False, include all fields (for edit mode).
+        is_admin_user: If True, user is an administrator (can see admin-only groups).
 
     Returns a dict with custom_data, has_editable_fields, client, and is_receptionist (front desk flag).
+
+    Admin-only groups (DEMO-VIS1): groups marked admin_only are only visible
+    to administrators. Demographic data collected for funder reporting is not
+    displayed to frontline workers to prevent implicit bias and protect
+    small-sample de-identification in aggregate reports.
 
     DV-safe enforcement (PERM-P5): when client.is_dv_safe is True and user
     is a receptionist, fields marked is_dv_sensitive are excluded regardless
@@ -1289,6 +1297,9 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
         except Exception:
             dv_hide = True  # Fail closed
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
+    # Admin-only groups: hide from non-admin users (DEMO-VIS1)
+    if not is_admin_user:
+        groups = groups.filter(admin_only=False)
     custom_data = []
     has_editable_fields = False
 
@@ -1356,7 +1367,10 @@ def client_custom_fields_display(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    context = _get_custom_fields_context(client, user_role, hide_empty=True)
+    context = _get_custom_fields_context(
+        client, user_role, hide_empty=True,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
     return render(request, "clients/_custom_fields_display.html", context)
 
 
@@ -1366,7 +1380,10 @@ def client_custom_fields_edit(request, client_id):
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
-    context = _get_custom_fields_context(client, user_role)
+    context = _get_custom_fields_context(
+        client, user_role,
+        is_admin_user=getattr(request.user, "is_admin", False),
+    )
 
     # Only allow edit mode if user has editable fields
     if not context["has_editable_fields"]:
@@ -1395,9 +1412,13 @@ def client_save_custom_fields(request, client_id):
 
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == ROLE_RECEPTIONIST
+    is_admin_user = getattr(request.user, "is_admin", False)
 
     if request.method == "POST":
         groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
+        # Admin-only groups: exclude from non-admin users (DEMO-VIS1)
+        if not is_admin_user:
+            groups = groups.filter(admin_only=False)
 
         # Get field definitions the user can edit
         if is_receptionist:
@@ -1469,7 +1490,10 @@ def client_save_custom_fields(request, client_id):
 
     # For HTMX requests, return the read-only display partial
     if request.headers.get("HX-Request"):
-        context = _get_custom_fields_context(client, user_role, hide_empty=True)
+        context = _get_custom_fields_context(
+            client, user_role, hide_empty=True,
+            is_admin_user=is_admin_user,
+        )
         return render(request, "clients/_custom_fields_display.html", context)
 
     return redirect("clients:client_detail", client_id=client.pk)
@@ -1577,7 +1601,7 @@ def client_consent_save(request, client_id):
                 event_timestamp=timezone.now(),
                 user_id=request.user.pk,
                 user_display=str(request.user),
-                ip_address=request.META.get("REMOTE_ADDR"),
+                ip_address=get_client_ip(request),
                 action="create" if not is_regrant else "update",
                 resource_type="consent",
                 resource_id=client.pk,
@@ -1701,7 +1725,7 @@ def client_consent_withdraw(request, client_id):
             event_timestamp=timezone.now(),
             user_id=request.user.pk,
             user_display=str(request.user),
-            ip_address=request.META.get("REMOTE_ADDR"),
+            ip_address=get_client_ip(request),
             action="update",
             resource_type="consent",
             resource_id=client.pk,
@@ -1996,283 +2020,3 @@ def client_sharing_toggle(request, client_id):
         messages.success(request, _("Note sharing disabled."))
 
     return redirect("clients:client_detail", client_id=client_id)
-
-
-# ---- Bulk Operations (UX17) ----
-
-@login_required
-@requires_permission("client.edit")
-def bulk_status(request):
-    """Bulk status change for multiple clients.
-
-    Step 1 (POST without 'confirm'): show confirmation form with client names.
-    Step 2 (POST with 'confirm'): execute status change and redirect.
-    """
-    from .forms import BulkStatusForm
-    from apps.audit.models import AuditLog
-
-    active_ids = getattr(request, "active_program_ids", None)
-
-    if request.method != "POST":
-        return redirect("clients:client_list")
-
-    # Build the initial client_ids string from the posted array
-    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
-    # If coming from confirmation form, client_ids is a comma-separated hidden field
-    if len(raw_ids) == 1 and "," in raw_ids[0]:
-        raw_ids = raw_ids[0].split(",")
-
-    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
-
-    # Confirmation step — process the form
-    if "confirm" in request.POST:
-        form = BulkStatusForm(request.POST)
-        if form.is_valid():
-            client_ids = form.cleaned_data["client_ids"]
-            new_status = form.cleaned_data["status"]
-            reason = form.cleaned_data.get("status_reason", "")
-
-            # Security: filter to only accessible clients
-            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-            clients_to_update = accessible.filter(pk__in=client_ids)
-
-            updated_count = 0
-            for client_obj in clients_to_update:
-                old_status = client_obj.status
-                if old_status != new_status:
-                    client_obj.status = new_status
-                    client_obj.status_reason = reason
-                    client_obj.save(update_fields=["status", "status_reason", "updated_at"])
-                    updated_count += 1
-
-                    # Audit log per client
-                    AuditLog.objects.using("audit").create(
-                        event_timestamp=timezone.now(),
-                        user_id=request.user.pk,
-                        user_display=getattr(request.user, "display_name", str(request.user)),
-                        action="update",
-                        resource_type="clients",
-                        resource_id=client_obj.pk,
-                        is_demo_context=getattr(request.user, "is_demo", False),
-                        metadata={
-                            "bulk": True,
-                            "count": len(client_ids),
-                            "old_status": old_status,
-                            "new_status": new_status,
-                            "reason": reason,
-                        },
-                    )
-
-            messages.success(
-                request,
-                _("%(count)d %(term)s status updated to %(status)s.")
-                % {
-                    "count": updated_count,
-                    "term": request.get_term("client_plural") if updated_count != 1 else request.get_term("client"),
-                    "status": dict(ClientFile.STATUS_CHOICES).get(new_status, new_status),
-                },
-            )
-            return redirect("clients:client_list")
-        else:
-            # Form invalid — re-show confirmation with errors
-            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-            try:
-                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
-            except (ValueError, TypeError):
-                ids = []
-            selected_clients = list(accessible.filter(pk__in=ids))
-            return render(request, "clients/_bulk_status_confirm.html", {
-                "form": form,
-                "selected_clients": selected_clients,
-                "client_ids_str": client_ids_str,
-            })
-
-    # Initial step — show confirmation form
-    try:
-        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
-    except (ValueError, TypeError):
-        messages.error(request, _("Invalid selection."))
-        return redirect("clients:client_list")
-
-    if not client_ids:
-        messages.error(request, _("No participants selected."))
-        return redirect("clients:client_list")
-
-    # Security: filter to accessible clients only
-    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-    selected_clients = list(accessible.filter(pk__in=client_ids))
-
-    if not selected_clients:
-        messages.error(request, _("None of the selected participants are accessible."))
-        return redirect("clients:client_list")
-
-    form = BulkStatusForm(initial={"client_ids": client_ids_str})
-
-    template = "clients/_bulk_status_confirm.html"
-    context = {
-        "form": form,
-        "selected_clients": selected_clients,
-        "client_ids_str": client_ids_str,
-    }
-
-    # HTMX request — return partial for modal
-    if request.headers.get("HX-Request"):
-        return render(request, template, context)
-
-    return render(request, template, context)
-
-
-@login_required
-@requires_permission("client.transfer")
-def bulk_transfer(request):
-    """Bulk program transfer for multiple clients.
-
-    Step 1 (POST without 'confirm'): show confirmation form with client names.
-    Step 2 (POST with 'confirm'): execute transfer and redirect.
-    """
-    from .forms import BulkTransferForm
-    from apps.audit.models import AuditLog
-
-    active_ids = getattr(request, "active_program_ids", None)
-    available_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
-
-    if request.method != "POST":
-        return redirect("clients:client_list")
-
-    # Build the initial client_ids string from the posted array
-    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
-    if len(raw_ids) == 1 and "," in raw_ids[0]:
-        raw_ids = raw_ids[0].split(",")
-
-    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
-
-    # Confirmation step — process the form
-    if "confirm" in request.POST:
-        form = BulkTransferForm(request.POST, available_programs=available_programs)
-        if form.is_valid():
-            client_ids = form.cleaned_data["client_ids"]
-            add_program = form.cleaned_data.get("add_program")
-            remove_program = form.cleaned_data.get("remove_program")
-
-            # Security: filter to only accessible clients
-            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-            clients_to_update = list(accessible.filter(pk__in=client_ids))
-
-            affected_count = 0
-            for client_obj in clients_to_update:
-                added = []
-                removed = []
-
-                # Add to program (idempotent — skip if already enrolled)
-                if add_program:
-                    enrolment, created = ClientProgramEnrolment.objects.get_or_create(
-                        client_file=client_obj, program=add_program,
-                        defaults={"status": "active"},
-                    )
-                    if created:
-                        added.append(add_program.pk)
-                    elif enrolment.status != "active":
-                        enrolment.status = "active"
-                        enrolment.unenrolled_at = None
-                        enrolment.save()
-                        added.append(add_program.pk)
-
-                # Remove from program
-                if remove_program:
-                    now = timezone.now()
-                    episodes = list(ClientProgramEnrolment.objects.filter(
-                        client_file=client_obj,
-                        program=remove_program,
-                        status="active",
-                    ))
-                    for ep in episodes:
-                        ep.status = "finished"
-                        ep.unenrolled_at = now
-                        ep.ended_at = now
-                        ep.save()
-                        ServiceEpisodeStatusChange.objects.create(
-                            episode=ep,
-                            status="finished",
-                            reason="Bulk transfer",
-                            changed_by=request.user,
-                        )
-                    if episodes:
-                        removed.append(remove_program.pk)
-
-                if added or removed:
-                    affected_count += 1
-                    AuditLog.objects.using("audit").create(
-                        event_timestamp=timezone.now(),
-                        user_id=request.user.pk,
-                        user_display=getattr(request.user, "display_name", str(request.user)),
-                        action="update",
-                        resource_type="enrolment",
-                        resource_id=client_obj.pk,
-                        is_demo_context=getattr(request.user, "is_demo", False),
-                        metadata={
-                            "bulk": True,
-                            "count": len(client_ids),
-                            "programs_added": added,
-                            "programs_removed": removed,
-                        },
-                    )
-
-            messages.success(
-                request,
-                _("%(count)d %(term)s program enrolment updated.")
-                % {
-                    "count": affected_count,
-                    "term": request.get_term("client_plural") if affected_count != 1 else request.get_term("client"),
-                },
-            )
-            return redirect("clients:client_list")
-        else:
-            # Form invalid — re-show confirmation with errors
-            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-            try:
-                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
-            except (ValueError, TypeError):
-                ids = []
-            selected_clients = list(accessible.filter(pk__in=ids))
-            return render(request, "clients/_bulk_transfer_confirm.html", {
-                "form": form,
-                "selected_clients": selected_clients,
-                "client_ids_str": client_ids_str,
-            })
-
-    # Initial step — show confirmation form
-    try:
-        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
-    except (ValueError, TypeError):
-        messages.error(request, _("Invalid selection."))
-        return redirect("clients:client_list")
-
-    if not client_ids:
-        messages.error(request, _("No participants selected."))
-        return redirect("clients:client_list")
-
-    # Security: filter to accessible clients only
-    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-    selected_clients = list(accessible.filter(pk__in=client_ids))
-
-    if not selected_clients:
-        messages.error(request, _("None of the selected participants are accessible."))
-        return redirect("clients:client_list")
-
-    form = BulkTransferForm(
-        initial={"client_ids": client_ids_str},
-        available_programs=available_programs,
-    )
-
-    template = "clients/_bulk_transfer_confirm.html"
-    context = {
-        "form": form,
-        "selected_clients": selected_clients,
-        "client_ids_str": client_ids_str,
-    }
-
-    # HTMX request — return partial for modal
-    if request.headers.get("HX-Request"):
-        return render(request, template, context)
-
-    return render(request, template, context)

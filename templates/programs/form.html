@@ -132,7 +132,7 @@
 
 {% if suggest_confidential and confidential_keywords_json %}
 {{ confidential_keywords_json|json_script:"confidential-keywords-data" }}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     // Progressive enhancement: suggest confidential when program name matches keywords
     var keywords = JSON.parse(document.getElementById('confidential-keywords-data').textContent);
@@ -155,3 +155,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

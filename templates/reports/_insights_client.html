@@ -6,20 +6,36 @@
 
 {% if structured.note_count == 0 %}
 <p class="empty-state">{% trans "No notes recorded yet for this participant." %}</p>
-{% elif data_tier == "sparse" %}
+{% else %}
 
-{# Sparse: snapshot only #}
-{% if structured.descriptor_distribution %}
-<h3>{% trans "Progress Snapshot" %}</h3>
-<div class="descriptor-pills">
-    {% for label, pct in structured.descriptor_distribution.items %}
-    <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
-    {% endfor %}
+{# Per-goal current status #}
+{% if goal_statuses %}
+<h3>{% trans "How they're doing" %}</h3>
+{% if summary_line %}
+<p class="descriptor-summary">{% blocktrans with desc=summary_line %}All goals: {{ desc }}{% endblocktrans %}</p>
+{% endif %}
+<dl class="goal-status-list">
+{% for goal in goal_statuses %}
+<div class="goal-status-row">
+    <dt>
+        <span class="descriptor-dot descriptor-dot--{{ goal.descriptor_key }}" aria-hidden="true"></span>
+        {% if goal.note_id %}<a href="{% url 'notes:note_detail' note_id=goal.note_id %}">{{ goal.goal_name }}</a>{% else %}{{ goal.goal_name }}{% endif %}
+    </dt>
+    <dd>
+        {{ goal.descriptor_label }}
+        {% if goal.prev_label %}
+        <span class="goal-was">{% trans "was:" %} {{ goal.prev_label }}{% if goal.prev_date %} ({{ goal.prev_date|date:"M j" }}){% endif %}</span>
+        {% elif goal.is_first %}
+        <span class="goal-was">({% trans "first assessment" %})</span>
+        {% endif %}
+    </dd>
 </div>
+{% endfor %}
+</dl>
 {% endif %}
 
+{% if data_tier == "sparse" %}
 <p class="insights-notice-inline">{% trans "More data needed for trend analysis." %}</p>
-
 {% else %}
 
 {# Trend chart #}
@@ -90,50 +106,14 @@
 {% endfor %}
 {% endif %}
 
-{% endif %}{# end data_tier #}
+{% endif %}{# end data_tier sparse/else #}
+
+{% endif %}{# end note_count #}
 </section>
 
 {# Chart.js for client descriptor trend #}
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"client-trend-data" }}
-<script>
-{# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
-{# Labels use escapejs to safely handle apostrophes in translated strings #}
-{% trans "Harder right now" as lbl_harder %}
-{% trans "Holding steady" as lbl_holding %}
-{% trans "Something's shifting" as lbl_shifting %}
-{% trans "In a good place" as lbl_good %}
-(function() {
-    function initClientTrendChart() {
-        var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
-        if (!Array.isArray(rawData) || rawData.length === 0) return;
-        var ctx = document.getElementById('client-descriptor-trend');
-        if (!ctx) return;
-        new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: rawData.map(function(r) { return r.month; }),
-                datasets: [
-                    { label: '{{ lbl_harder|escapejs }}', data: rawData.map(function(r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
-                    { label: '{{ lbl_holding|escapejs }}', data: rawData.map(function(r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
-                    { label: '{{ lbl_shifting|escapejs }}', data: rawData.map(function(r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
-                    { label: '{{ lbl_good|escapejs }}', data: rawData.map(function(r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
-                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
-            },
-        });
-    }
-
-    if (typeof Chart !== 'undefined') {
-        initClientTrendChart();
-    } else {
-        window.addEventListener('load', initClientTrendChart);
-    }
-})();
-</script>
+{# Chart init moved to app.js — inline scripts break when loaded via HTMX due to CSP nonce mismatch #}
 {% endif %}
+

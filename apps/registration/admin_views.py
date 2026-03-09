@@ -16,6 +16,7 @@ from apps.clients.models import ClientFile, CustomFieldDefinition
 from apps.clients.views import get_client_queryset
 from apps.programs.models import UserProgramRole
 
+from .audit import log_registration_event
 from .forms import RegistrationLinkForm
 from .models import RegistrationLink, RegistrationSubmission
 from .utils import approve_submission, find_duplicate_clients, merge_with_existing
@@ -51,6 +52,8 @@ def _get_embed_code(request, link, height=600):
     style="border: none; max-width: 100%;">
 </iframe>'''
     return embed_code
+
+
 
 
 # --- Registration Link Management ---
@@ -274,7 +277,23 @@ def submission_approve(request, pk):
             messages.error(request, _("This submission has already been reviewed."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         client = approve_submission(submission, reviewed_by=request.user)
+        log_registration_event(
+            submission,
+            "update",
+            request=request,
+            old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
+            metadata={
+                "review_type": "approve",
+                "reference_number": submission.reference_number,
+            },
+        )
         messages.success(
             request,
             _("Approved! Participant record created for %(first)s %(last)s.") % {
@@ -308,11 +327,27 @@ def submission_reject(request, pk):
             messages.error(request, _("A rejection reason is required."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         submission.status = "rejected"
         submission.review_notes = reason
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
+        log_registration_event(
+            submission,
+            "update",
+            request=request,
+            old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
+            metadata={
+                "review_type": "reject",
+                "reference_number": submission.reference_number,
+            },
+        )
 
         messages.success(request, _("Submission rejected."))
         return redirect("registration:submission_list")
@@ -336,10 +371,26 @@ def submission_waitlist(request, pk):
             messages.error(request, _("This submission cannot be waitlisted."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         submission.status = "waitlist"
         submission.reviewed_by = request.user
         submission.reviewed_at = timezone.now()
         submission.save()
+        log_registration_event(
+            submission,
+            "update",
+            request=request,
+            old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
+            metadata={
+                "review_type": "waitlist",
+                "reference_number": submission.reference_number,
+            },
+        )
 
         messages.success(request, _("Submission moved to waitlist."))
         return redirect("registration:submission_list")
@@ -374,7 +425,24 @@ def submission_merge(request, pk):
             messages.error(request, _("Selected participant not found."))
             return redirect("registration:submission_detail", pk=pk)
 
+        old_status = submission.status
         client = merge_with_existing(submission, existing_client, request.user)
+        log_registration_event(
+            submission,
+            "update",
+            request=request,
+            old_status=old_status,
+            new_values={
+                "status": submission.status,
+                "client_file_id": submission.client_file_id,
+                "reviewed_at": submission.reviewed_at.isoformat() if submission.reviewed_at else None,
+            },
+            metadata={
+                "review_type": "merge",
+                "reference_number": submission.reference_number,
+                "merged_into_client_id": existing_client.pk,
+            },
+        )
         messages.success(
             request,
             _("Merged with existing participant %(first)s %(last)s.") % {

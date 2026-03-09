@@ -21,7 +21,7 @@
     {% if a.survey.description %}
     <p>{{ a.survey.description }}</p>
     {% endif %}
-    <a href="{% url 'portal:survey_fill' assignment_id=a.pk %}" role="button">
+    <a href="{% url 'portal:survey_fill' assignment_id=a.pk %}" class="secondary">
         {% if a.status == "in_progress" %}{% trans "Continue" %}{% else %}{% trans "Start" %}{% endif %}
     </a>
 </article>

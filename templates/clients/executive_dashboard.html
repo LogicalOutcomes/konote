@@ -26,7 +26,7 @@
 {% if programs|length > 1 %}
 <form method="get" action="" class="program-filter-form">
     <label for="program-filter">{% trans "Filter by" %} {{ term.program|default:"Program" }}:</label>
-    <select id="program-filter" name="program" onchange="this.form.submit()">
+    <select id="program-filter" name="program" data-submit-on-change>
         <option value="">{% trans "All" %} {{ term.program_plural|default:"Programs" }}</option>
         {% for prog in programs %}
         <option value="{{ prog.pk }}" {% if prog.pk == selected_program_id %}selected{% endif %}>
@@ -64,7 +64,7 @@
     </fieldset>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var form = document.getElementById('date-range-form');
     var buttons = form.querySelectorAll('.date-preset-btn');
@@ -847,3 +847,4 @@
 }
 </style>
 {% endblock %}
+

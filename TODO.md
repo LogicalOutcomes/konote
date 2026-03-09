@@ -2,10 +2,14 @@
 
 ## Flagged
 
-- [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
+
+### Phase: Infrastructure
+
+- [x] Migrate KoNote from Swiss VPS to Canadian VPS — completed 2026-03-06 (OPS-MIGRATE1)
+- [ ] Decommission old VPS (141.227.151.7) — verify new VPS stable for 1–2 weeks, then cancel old instance in OVH control panel — GK (OPS-DECOM1)
 
 ### Phase: Launch Readiness
 
@@ -16,22 +20,76 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Draft SaaS service agreement for LogicalOutcomes-managed agencies — data processing, security, SLAs, breach notification, termination, data export acknowledgement as schedule. Needs lawyer review (see tasks/saas-service-agreement.md) — SG (LEGAL-SaaS1)
 
+### Phase: Deep Review Fixes (2026-03-06)
+
+- [ ] Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
+- [ ] Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
+- [ ] Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
+
 ## Do Occasionally
 
 Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recurring-tasks.md).
 
 - [ ] **UX walkthrough** — run after UI changes. In Claude Code: `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` and add fixes to TODO (UX-WALK1)
 - [ ] **Quick code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the review prompt from [tasks/code-review-process.md](tasks/code-review-process.md) (REV1)
-- [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-qa-scenarios/reviews/` repo. Latest: 2026-03-04 (REV-DEEP1)
+- [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-ops/reviews/` repo. Latest: 2026-03-06 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
 - [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
 
 ## Coming Up
 
+### Phase: Goal Workflow Redesign (see tasks/goal-workflow-redesign.md)
+
+**Phase A — Fix the blockers**
+- [ ] Create dedicated `goal_create_from_suggestion` save endpoint (HTMX POST, no client-side form) with error handling (soft failure returns form, hard failure returns error card) — (GW-R1)
+- [ ] Auto-create sections silently using priority chain: match existing > match program-wide > AI suggestion > "General" — (GW-R2)
+- [ ] Rename "Shape this target" button to "Suggest a goal" with sparkle icon — (GW-R3)
+
+**Phase B — Suggestion card polish**
+- [ ] Demote "Suggested area" to secondary line on card — (GW-R4)
+- [ ] Default custom metric to included; remove Include/Skip from card; show in success message — (GW-R5)
+- [ ] Rename "Let me edit it" to "Let me review first" — (GW-R6)
+- [ ] Hide entry points after suggestion loads; "Start over" restores them — (GW-R7)
+- [ ] Store suggestion in server-side session, pass reference token to client — (GW-R19)
+- [ ] Animated loading bar with text rotation for AI wait — (GW-T5)
+
+**Phase C — Form improvements ("Let me review first" path)**
+- [ ] Reorder form: participant words > goal name > description (collapsible) > metrics > section (last) — (GW-R8)
+- [ ] Section picker: pre-select most recent; pre-fill AI suggestion; auto-create if empty — (GW-R9)
+- [ ] Add reassurance near submit: "You can revise this goal later" — (GW-R10)
+- [ ] Unify AI/non-AI form HTML into single form, remove SYNC duplication — (GW-T4)
+
+**Phase D — Entry point tuning**
+- [ ] Conditional layout: quick pick first if 3+ common goals, AI first otherwise — (GW-R11)
+- [ ] Increase textarea to rows=3 with CSS min-height — (GW-R12)
+- [ ] Move onboarding hint to contextual help icon on entry point — (GW-R13)
+- [ ] Persistent participant-words blockquote throughout flow — (GW-R21)
+- [ ] Quick pick prompts for participant's words after selection — (GW-R22)
+- [ ] Relabel metric tiers with clinical language — (GW-R23)
+- [ ] Add "Why this suggestion" collapsible with AI reasoning — (GW-R24)
+
+**Phase E — Accessibility fixes**
+- [ ] Fix aria-label: "AI-suggested goal" not "target" — (GW-R14)
+- [ ] Add aria-label to custom metric pre block — (GW-R15)
+- [ ] Change #form-announce to aria-live="assertive" — (GW-R16)
+- [ ] Add "Saving your goal..." screen reader announcement — (GW-R17)
+- [ ] Add hx-sync="this:abort" to shape button — (GW-R18)
+
+**Phase F — Program setup (longer-term)** — GK reviews domain section templates
+- [ ] Pre-seed programs with domain section templates at program setup — (GW-R20)
+
 ### Phase: Session 7 Prep — Admin UX & Configuration
 
 - [ ] Pre-report data quality checks — validate data quality before partner report export (see tasks/data-validation-design.md) (DQ2)
+
+### Phase: Evaluation Planning & CIDS Full Tier
+
+- [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
+- [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a more capable LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
+- [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
+- [x] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/evaluation-planning-enrichment-implementation-spec.md) — 2026-03-07 (EVAL-ENRICH-SPEC1)
+- [x] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — PR #422, deployed and validated on dev VPS — 2026-03-07 (EVAL-EDITOR1)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -52,14 +110,12 @@ _All documentation tasks completed — see Recently Done._
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Extract role string constants (ROLE_STAFF, ROLE_PROGRAM_MANAGER, etc.) into auth_app/constants.py — 400+ raw string literals across the codebase use "staff", "program_manager" etc. (REFACTOR1)
-- [ ] Add smoke test for all-programs HTML export path (CHORE-RPT-TEST1)
 
 ## Parking Lot: Needs Review
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
-- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
+- [ ] Add CIDS conformance badge and SHACL validation reporting — `validate_cids_jsonld` management command now works (pyshacl installed as test dep). Consider adding badge UI after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
@@ -69,6 +125,12 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] CIDS Full Tier + Evaluation Framework deployed to dev VPS — PR #422 merged, migration dependency fix PR #423, all exports pass SHACL validation, coverage dashboard live at 8/14 classes, evaluation framework CRUD working end-to-end — 2026-03-07 (CIDS-DEPLOY1)
+- [x] Translation catalog cleanup — filled 16 remaining empty French entries, 0 empty remain — PR #414 — 2026-03-07 (REV26-I18N2)
+- [x] Tenant provisioning + backup recovery resumability — --skip-to, --dry-run, --pre-restore, --full, transaction wrapping, expanded encryption checks — PR #414 — 2026-03-07 (REV26-DEP3)
+- [x] Extract role string constants into auth_app/constants.py — 5 PRs merged, 107 files updated — 2026-03-07 (REFACTOR1)
+- [x] Add smoke test for all-programs HTML export path — PR #340 — 2026-03-07 (CHORE-RPT-TEST1)
+- [x] Deep review follow-up hardening pass — AI scrubber expanded, focused analysis and note-structure flows scrubbed, insecure remote insights HTTP blocked, Docker build inputs tightened, tenant-key rotation disabled, `/health/` healthcheck wired, production startup fails closed on public-tenant bootstrap, French survey/export fixes landed, public survey page-step validation improved, registration intake/review audit coverage added — 2026-03-06 (REV26-SEC1, REV26-DEP1, REV26-DEP2, REV26-AI1, REV26-AI2, REV26-AI3, REV26-I18N1)
 - [x] Graduated privacy threshold + focused theme analysis — N=5 self-hosted / N=15 external, Ask a Question UI, AI-powered suggestion search, DRR updates — 2026-03-05 (AI-FOCUSED-THEME1)
 
 ### Session 13 — Report Fixes & Cleanup

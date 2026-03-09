@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Classification Review" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Classification Review" %}</h1>
+    <p>{% trans "Generate draft mappings from imported code lists, then review and approve them for reporting." %}</p>
+</hgroup>
+
+<section>
+    <h2>{% trans "Generate Draft Suggestions" %}</h2>
+    <form method="post" action="{% url 'admin_settings:taxonomy_generate_suggestions' %}">
+        {% csrf_token %}
+        {{ generate_form.as_p }}
+        <button type="submit">{% trans "Generate Draft Suggestions" %}</button>
+    </form>
+</section>
+
+<section>
+    <h2>{% trans "Review Queue" %}</h2>
+    <form method="get">
+        {{ filter_form.as_p }}
+        <button type="submit" class="secondary">{% trans "Filter Queue" %}</button>
+    </form>
+
+    {% if mappings %}
+    <form method="post" action="{% url 'admin_settings:taxonomy_bulk_action' %}" id="bulk-review-form">
+        {% csrf_token %}
+        {{ bulk_form.action }}
+        {{ bulk_form.mapping_ids }}
+        <button type="submit" class="secondary">{% trans "Apply to Selected" %}</button>
+    </form>
+    <div class="overflow-auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>{% trans "Select" %}</th>
+                    <th>{% trans "Item" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Taxonomy" %}</th>
+                    <th>{% trans "Code List" %}</th>
+                    <th>{% trans "Suggestion" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Confidence" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mapping in mappings %}
+                <tr>
+                    <td><input type="checkbox" class="bulk-mapping-checkbox" value="{{ mapping.pk }}" form="bulk-review-form" aria-label="{% trans "Select" %} {{ mapping.subject_display }}"></td>
+                    <td><a href="{% url 'admin_settings:taxonomy_mapping_detail' mapping.pk %}"><strong>{{ mapping.subject_display }}</strong></a></td>
+                    <td>{{ mapping.subject_type|title }}</td>
+                    <td>{{ mapping.get_taxonomy_system_display }}</td>
+                    <td>{{ mapping.taxonomy_list_name|default:"—" }}</td>
+                    <td>{{ mapping.taxonomy_code }} — {{ mapping.taxonomy_label|default:"(no label)" }}</td>
+                    <td>{{ mapping.get_mapping_status_display }}</td>
+                    <td>{% if mapping.confidence_score is not None %}{{ mapping.confidence_score|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td>
+                        <a href="{% url 'admin_settings:taxonomy_mapping_detail' mapping.pk %}" class="secondary">{% trans "Review" %}</a>
+                        {% if mapping.mapping_status == 'draft' %}
+                        <form method="post" action="{% url 'admin_settings:taxonomy_mapping_approve' mapping.pk %}" class="inline-form">
+                            {% csrf_token %}
+                            <button type="submit">{% trans "Approve" %}</button>
+                        </form>
+                        <form method="post" action="{% url 'admin_settings:taxonomy_mapping_reject' mapping.pk %}" class="inline-form">
+                            {% csrf_token %}
+                            <button type="submit" class="secondary">{% trans "Reject" %}</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script nonce="{{ request.csp_nonce }}">
+    document.addEventListener('DOMContentLoaded', function () {
+        var bulkForm = document.getElementById('bulk-review-form');
+        if (!bulkForm) return;
+        var hiddenField = document.getElementById('id_mapping_ids');
+        bulkForm.addEventListener('submit', function () {
+            var selected = Array.from(document.querySelectorAll('.bulk-mapping-checkbox:checked')).map(function (item) {
+                return item.value;
+            });
+            hiddenField.value = selected.join(',');
+        });
+    });
+    </script>
+    {% else %}
+    <article>
+        <p>{% trans "No mappings match the current filters." %}</p>
+    </article>
+    {% endif %}
+</section>
+
+<p><a href="{% url 'admin_settings:dashboard' %}">{% trans "← Back to Settings" %}</a></p>
+{% endblock %}

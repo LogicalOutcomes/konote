@@ -18,7 +18,7 @@
 <main id="main-content" tabindex="-1" class="container" style="max-width:720px; padding-top:2rem; text-align:center">
 
 <h1>{% trans "Thank you!" %}</h1>
-<p>{% blocktrans with name=survey.name %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
+<p>{% blocktrans with name=survey.name|bilingual:survey.name_fr %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
 
 {% if scores %}
 <section style="text-align:left; margin-top:2rem">
@@ -43,7 +43,7 @@
 {% endif %}
 
 </main>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 /* Report height to parent for iframe embed resizing */
 if (window.parent !== window) {
     new ResizeObserver(function() {
@@ -56,3 +56,4 @@ if (window.parent !== window) {
 </script>
 </body>
 </html>
+

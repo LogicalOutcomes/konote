@@ -130,7 +130,7 @@
             </button>
         </form>
         {% endif %}
-        <button type="button" class="outline secondary" onclick="window.print();" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+        <button type="button" class="outline secondary" data-print-page style="display: inline-flex; align-items: center; gap: 0.5rem;">
             <span aria-hidden="true">&#x1F5A8;</span> {% trans "Print" %}
         </button>
     </div>
@@ -167,6 +167,11 @@
 
         <dt>{% trans "Generated" %}</dt>
         <dd>{{ generated_at|date:"Y-m-d H:i" }}</dd>
+
+        {% if preview_type == "template" and report_data.cids_alignment.taxonomy_lens_label %}
+        <dt>{% trans "Reporting Lens" %}</dt>
+        <dd>{{ report_data.cids_alignment.taxonomy_lens_label }}</dd>
+        {% endif %}
 
         {% if preview_type == "adhoc" and is_aggregate_only %}
         <dt>{% trans "Data mode" %}</dt>
@@ -310,6 +315,47 @@
     </div>
 </section>
 {% endfor %}
+{% endif %}
+
+{% if report_data.cids_alignment and report_data.cids_alignment.mapped_count > 0 %}
+<section class="preview-section">
+    <h2>{% trans "Standards Alignment" %}</h2>
+    <p>
+        {% blocktrans with version=report_data.cids_alignment.cids_version %}
+        Aligned with Common Impact Data Standard (CIDS) v{{ version }}.
+        {% endblocktrans %}
+    </p>
+    <p><strong>{% trans "Reporting Lens:" %}</strong> {{ report_data.cids_alignment.taxonomy_lens_label }}</p>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Indicator" %}</th>
+                    <th scope="col">{% trans "Selected Code" %}</th>
+                    <th scope="col">{% trans "Selected Label" %}</th>
+                    <th scope="col">{% trans "Code List" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric in report_data.cids_alignment.metrics %}
+                {% if metric.selected_code %}
+                <tr>
+                    <td>{{ metric.name }}</td>
+                    <td>{{ metric.selected_code }}</td>
+                    <td>{{ metric.selected_label|default:"—" }}</td>
+                    <td>{{ metric.selected_list_name|default:"—" }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p>
+        {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}
+        {{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.
+        {% endblocktrans %}
+    </p>
+</section>
 {% endif %}
 
 {# ===============================================================
@@ -563,7 +609,7 @@
             </button>
         </form>
         {% endif %}
-        <button type="button" class="outline secondary" onclick="window.print();" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+        <button type="button" class="outline secondary" data-print-page style="display: inline-flex; align-items: center; gap: 0.5rem;">
             <span aria-hidden="true">&#x1F5A8;</span> {% trans "Print" %}
         </button>
     </div>

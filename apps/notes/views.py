@@ -1,6 +1,7 @@
 # Phase 4: Progress note views
 """Views for progress notes — quick notes, full notes, timeline, cancellation."""
 import datetime
+import json
 
 import logging
 
@@ -604,10 +605,11 @@ def quick_note_inline(request, client_id):
                     status="default",
                 ).update(follow_up_completed_at=timezone.now())
 
-            messages.success(request, _("Note saved."))
-            return render(request, "notes/_quick_note_inline_buttons.html", {
+            response = render(request, "notes/_quick_note_inline_buttons.html", {
                 "client": client,
             })
+            response["HX-Trigger"] = json.dumps({"showSuccess": str(_("Note saved."))})
+            return response
     else:
         initial_type = request.GET.get("type", "phone")
         form = QuickNoteForm(initial={"interaction_type": initial_type}, circle_choices=circle_choices or None)
@@ -642,6 +644,13 @@ def template_preview(request, template_id):
 @requires_permission("note.view", _get_program_from_client)
 def check_note_date(request, client_id):
     """HTMX endpoint: warn if a note already exists for this client on the given date."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
+
     date_str = request.GET.get("session_date", "")
     if not date_str:
         return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
@@ -650,15 +659,26 @@ def check_note_date(request, client_id):
     except ValueError:
         return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
 
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+
     existing = (
         ProgressNote.objects.filter(client_file_id=client_id, status="default")
+        .filter(Q(author_program_id__in=user_program_ids) | Q(author_program__isnull=True))
         .annotate(
             eff_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
         )
         .filter(eff_date__date=target_date)
         .select_related("author")
-        .order_by("-created_at")[:5]
+        .order_by("-created_at")
     )
+
+    existing, _consent_viewing_program = apply_consent_filter(
+        existing, client, request.user, user_program_ids,
+        active_program_ids=active_ids,
+    )
+
+    existing = existing[:5]
     return render(request, "notes/_note_date_warning.html", {"existing_notes": existing})
 
 

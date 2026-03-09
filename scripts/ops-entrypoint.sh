@@ -69,7 +69,12 @@ done
 # Export env vars so cron jobs can access them
 # (Alpine crond does not pass environment variables to jobs)
 # ---------------------------------------------------------------------------
-env > /etc/environment
+    # Export env vars so cron jobs can access them.
+    # Write a shell-safe file because values like DEFAULT_FROM_EMAIL may contain
+    # spaces or angle brackets that raw `env` output cannot be sourced from.
+    while IFS= read -r name; do
+        printf '%s=%q\n' "$name" "${!name}"
+    done < <(compgen -e | sort) > /etc/environment
 chmod 600 /etc/environment
 
 # ---------------------------------------------------------------------------

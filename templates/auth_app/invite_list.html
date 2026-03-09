@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "New Users" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "User Invites" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "New Users" %}</h1>
-    <p>{% trans "Manage invite links for new users" %}</p>
+    <h1>{% trans "User Invites" %}</h1>
+    <p>{% trans "Create and manage one-time invite links for new team members." %}</p>
 </hgroup>
 
-<p><a href="{% url 'admin_users:invite_create' %}" role="button">+ {% trans "New Invite" %}</a></p>
+<p><a href="{% url 'admin_users:invite_create' %}" role="button">+ {% trans "New User Invite" %}</a></p>
 
 <figure>
 <table role="grid" aria-label="{% trans 'Invite list' %}">
@@ -48,9 +48,9 @@
             <td>
                 {% if invite.is_valid %}
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="text" id="invite-link-{{ invite.pk }}" readonly value="{{ request.scheme }}://{{ request.get_host }}/auth/join/{{ invite.code }}/"
-                           style="font-size: 0.8em; padding: 0.25em; margin-bottom: 0;" aria-label="{% trans 'Invite link' %}"
-                           onclick="this.select()">
+                          <input type="text" id="invite-link-{{ invite.pk }}" readonly value="{{ request.scheme }}://{{ request.get_host }}/auth/join/{{ invite.code }}/"
+                              style="font-size: 0.8em; padding: 0.25em; margin-bottom: 0;" aria-label="{% trans 'Invite link' %}"
+                              data-select-on-click="true">
                     <button type="button" class="outline secondary copy-btn" data-clipboard-target="#invite-link-{{ invite.pk }}" aria-label="{% trans 'Copy invite link' %}" style="padding: 0.25em 0.5em; font-size: 0.8em; margin-bottom: 0;">{% trans "Copy" %}</button>
                 </div>
                 {% else %}
@@ -64,4 +64,6 @@
     </tbody>
 </table>
 </figure>
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back to Settings" %}</a>
 {% endblock %}

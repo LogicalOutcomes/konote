@@ -11,7 +11,7 @@ from apps.portal.staff_views import (
     portal_revoke_access,
 )
 
-from . import erasure_views, views
+from . import bulk_views, erasure_views, views
 from .dashboard_views import alert_overview_by_program, executive_dashboard, executive_dashboard_export, executive_dashboard_pdf
 from .data_access_views import data_access_log
 from .dv_views import dv_safe_enable, dv_safe_request_remove, dv_safe_review_remove
@@ -25,8 +25,9 @@ urlpatterns = [
     path("executive/pdf/", executive_dashboard_pdf, name="executive_dashboard_pdf"),
     path("executive/alerts/", alert_overview_by_program, name="alert_overview"),
     path("", views.client_list, name="client_list"),
-    path("bulk-status/", views.bulk_status, name="bulk_status"),
-    path("bulk-transfer/", views.bulk_transfer, name="bulk_transfer"),
+    # Bulk operation wizards (BULK1)
+    path("manage/bulk-transfer/", bulk_views.bulk_transfer, name="bulk_transfer_wizard"),
+    path("manage/bulk-discharge/", bulk_views.bulk_discharge, name="bulk_discharge_wizard"),
     path("create/", views.client_create, name="client_create"),
     path("check-duplicate/", views.check_duplicate, name="check_duplicate"),
     path("search/", views.client_search, name="client_search"),

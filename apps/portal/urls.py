@@ -52,4 +52,7 @@ urlpatterns = [
     path("surveys/<int:assignment_id>/thanks/", views.portal_survey_thank_you, name="survey_thank_you"),
     # Alliance rating (PORTAL-ALLIANCE1)
     path("alliance/<uuid:request_id>/", views.portal_alliance_rating, name="alliance_rating"),
+    # Self-identification (DEMO-VIS1)
+    path("self-id/", views.selfid_disclosure, name="selfid_disclosure"),
+    path("self-id/form/", views.selfid_form, name="selfid_form"),
 ]

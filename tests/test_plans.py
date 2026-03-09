@@ -8,6 +8,7 @@ import datetime
 from cryptography.fernet import Fernet
 from django.core.exceptions import ValidationError
 from django.test import TestCase, Client, override_settings
+from django.urls import reverse
 from django.utils import timezone
 
 import konote.encryption as enc_module
@@ -960,6 +961,25 @@ class MetricRationaleViewTest(TestCase):
         self.assertIsNotNone(log)
         self.assertIn("rationale", log.metadata.get("detail", ""))
 
+    def test_rationale_add_audit_log_uses_forwarded_ip(self):
+        """Metric rationale audit logs should use the forwarded client IP."""
+        from django.urls import reverse
+        from apps.audit.models import AuditLog
+
+        url = reverse("metrics:metric_rationale_add", kwargs={"metric_id": self.metric.pk})
+        self.http_client.post(
+            url,
+            {"note": "Audited note"},
+            HTTP_X_FORWARDED_FOR="192.0.2.77, 10.0.0.3",
+            REMOTE_ADDR="127.0.0.1",
+        )
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="MetricDefinition",
+            resource_id=str(self.metric.pk),
+            action="update",
+        ).last()
+        self.assertEqual(log.ip_address, "192.0.2.77")
+
     def test_rationale_add_ignores_empty_note(self):
         """POST with empty note should not append."""
         from django.urls import reverse
@@ -1216,4 +1236,214 @@ class InstrumentNameFieldTest(TestCase):
         with_instrument = MetricDefinition.objects.filter(instrument_name__gt="")
         self.assertEqual(with_instrument.count(), 1)
         self.assertEqual(with_instrument.first().name, "PHQ-9 Test")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class GoalSaveFromSuggestionTest(TestCase):
+    """Tests for the goal_create_from_suggestion HTMX endpoint."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.program = Program.objects.create(name="Suggestion Program", status="active")
+        self.user = User.objects.create_user(
+            username="suggestuser", password="testpass123", is_admin=False, is_active=True,
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role=ROLE_STAFF, status="active",
+        )
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Suggest"
+        self.client_file.last_name = "Client"
+        self.client_file.status = "active"
+        self.client_file.save()
+
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Goal Progress",
+            definition="How close to the goal",
+            category="general",
+            metric_type="scale",
+            min_value=0,
+            max_value=10,
+            is_enabled=True,
+            status="active",
+        )
+
+        self.suggestion = {
+            "name": "Improve confidence",
+            "description": "Build self-confidence through weekly exercises",
+            "client_goal": "I want to feel more confident",
+            "suggested_section": "Personal Growth",
+            "metrics": [
+                {"metric_id": self.metric.pk, "name": "Goal Progress"},
+            ],
+        }
+
+        self.url = reverse("plans:goal_save_suggestion", kwargs={"client_id": self.client_file.pk})
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _store_suggestion_in_session(self, key="goal_suggestion_test_abc12345"):
+        """Store a suggestion in the session and return the key."""
+        self.client.force_login(self.user)
+        # Access session to initialise it
+        session = self.client.session
+        session[key] = self.suggestion
+        session.save()
+        return key
+
+    def test_goal_save_suggestion_happy_path(self):
+        """POST with valid suggestion_key returns 204 with HX-Redirect, creates goal + section + metric."""
+        key = self._store_suggestion_in_session()
+        response = self.client.post(self.url, {"suggestion_key": key})
+
+        self.assertEqual(response.status_code, 204)
+        self.assertIn("HX-Redirect", response)
+
+        # Goal created
+        target = PlanTarget.objects.filter(client_file=self.client_file).first()
+        self.assertIsNotNone(target)
+        self.assertEqual(target.name, "Improve confidence")
+
+        # Section created with suggested name
+        section = PlanSection.objects.filter(
+            client_file=self.client_file, name="Personal Growth",
+        ).first()
+        self.assertIsNotNone(section)
+        self.assertEqual(target.plan_section, section)
+
+        # Metric assigned
+        ptm = PlanTargetMetric.objects.filter(plan_target=target, metric_def=self.metric)
+        self.assertTrue(ptm.exists())
+
+    def test_goal_save_suggestion_expired_key(self):
+        """POST with bad key returns 200 with error HTML."""
+        self.client.force_login(self.user)
+        response = self.client.post(self.url, {"suggestion_key": "bad_key_xyz"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "expired")
+
+    def test_goal_save_suggestion_auto_section_match_existing(self):
+        """Existing section on participant is reused (not duplicated)."""
+        # Create existing section matching the suggestion
+        existing = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Personal Growth",
+            program=self.program,
+        )
+
+        key = self._store_suggestion_in_session()
+        response = self.client.post(self.url, {"suggestion_key": key})
+
+        self.assertEqual(response.status_code, 204)
+        target = PlanTarget.objects.filter(client_file=self.client_file).first()
+        self.assertEqual(target.plan_section, existing)
+
+        # Should NOT have created a duplicate section
+        count = PlanSection.objects.filter(
+            client_file=self.client_file, name__iexact="Personal Growth",
+        ).count()
+        self.assertEqual(count, 1)
+
+    def test_goal_save_suggestion_auto_section_match_program(self):
+        """Section exists on other participant in same program — creates section with that name."""
+        # Create another client with a section in the same program
+        other_client = ClientFile()
+        other_client.first_name = "Other"
+        other_client.last_name = "Person"
+        other_client.status = "active"
+        other_client.save()
+
+        PlanSection.objects.create(
+            client_file=other_client,
+            name="Personal Growth",
+            program=self.program,
+        )
+
+        key = self._store_suggestion_in_session()
+        response = self.client.post(self.url, {"suggestion_key": key})
+
+        self.assertEqual(response.status_code, 204)
+
+        # A new section should be created for this client with the program's canonical name
+        section = PlanSection.objects.filter(
+            client_file=self.client_file, name="Personal Growth",
+        ).first()
+        self.assertIsNotNone(section)
+
+    def test_goal_save_suggestion_auto_section_fallback(self):
+        """No section suggestion -> 'General' created."""
+        self.suggestion["suggested_section"] = ""
+        key = self._store_suggestion_in_session()
+        response = self.client.post(self.url, {"suggestion_key": key})
+
+        self.assertEqual(response.status_code, 204)
+        section = PlanSection.objects.filter(
+            client_file=self.client_file, name="General",
+        ).first()
+        self.assertIsNotNone(section)
+
+    def test_goal_save_suggestion_custom_metric(self):
+        """custom_metric in suggestion creates MetricDefinition with category='custom'."""
+        self.suggestion["custom_metric"] = {
+            "name": "Weekly confidence check-in",
+            "definition": "Rate your confidence this week",
+            "min_value": 1,
+            "max_value": 5,
+            "unit": "score",
+        }
+        key = self._store_suggestion_in_session()
+        response = self.client.post(self.url, {"suggestion_key": key})
+
+        self.assertEqual(response.status_code, 204)
+        custom = MetricDefinition.objects.filter(
+            name="Weekly confidence check-in", category="custom",
+        ).first()
+        self.assertIsNotNone(custom)
+        self.assertFalse(custom.is_library)
+        self.assertEqual(custom.owning_program, self.program)
+
+    def test_goal_save_suggestion_permission_denied(self):
+        """User without program role gets 403."""
+        other_user = User.objects.create_user(
+            username="noaccess", password="testpass123", is_admin=False, is_active=True,
+        )
+        self.client.force_login(other_user)
+        # Store suggestion in session for other_user
+        session = self.client.session
+        session["goal_suggestion_test_perm"] = self.suggestion
+        session.save()
+
+        response = self.client.post(self.url, {"suggestion_key": "goal_suggestion_test_perm"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_create_goal_empty_name_raises(self):
+        """_create_goal raises ValueError when name is empty or whitespace."""
+        from apps.plans.views import _create_goal
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Test Section",
+            program=self.program,
+        )
+
+        for empty_name in ["", "   ", None]:
+            with self.assertRaises(ValueError, msg=f"Should raise for name={empty_name!r}"):
+                _create_goal(
+                    client_file=self.client_file,
+                    user=self.user,
+                    name=empty_name,
+                    section=section,
+                )
 

@@ -103,7 +103,7 @@
     </div>
 </form>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     var form = document.getElementById('export-form');
     var btn = document.getElementById('export-submit-btn');
@@ -116,3 +116,4 @@
 })();
 </script>
 {% endblock %}
+

@@ -443,6 +443,11 @@ class NoteTemplateForm(forms.ModelForm):
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["name"].help_text = _("The label staff will see when choosing what kind of note to write.")
+        self.fields["name_fr"].help_text = _("French label, if you want a different name in the French interface.")
+        self.fields["default_interaction_type"].help_text = _("The interaction type KoNote should pre-select when this template is used.")
+        self.fields["owning_program"].help_text = _("Leave blank to make this template available across the whole organisation. Choose a program to keep it program-specific.")
+        self.fields["status"].help_text = _("Archived templates stay in existing notes but are hidden for new note entry.")
         if requesting_user and not requesting_user.is_admin:
             pm_program_ids = set(
                 UserProgramRole.objects.filter(
@@ -462,6 +467,13 @@ class NoteTemplateSectionForm(forms.ModelForm):
     class Meta:
         model = ProgressNoteTemplateSection
         fields = ["name", "name_fr", "section_type", "sort_order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["name"].help_text = _("Short heading shown inside the note, such as Session summary or Next steps.")
+        self.fields["name_fr"].help_text = _("French section heading, if needed.")
+        self.fields["section_type"].help_text = _("Basic text gives staff a writing area. Plan targets pulls in the participant's active goals and metrics.")
+        self.fields["sort_order"].help_text = _("Lower numbers appear earlier in the note.")
 
 
 class AssessmentNoteForm(forms.Form):

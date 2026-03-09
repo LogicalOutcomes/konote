@@ -45,6 +45,9 @@ urlpatterns = [
     path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
     path("reports/client/<path:rest>", RedirectView.as_view(url="/reports/participant/%(rest)s", permanent=True)),
     path("reports/", include("apps.reports.urls")),
+    # Common URL redirects for better UX
+    path("dashboard/", RedirectView.as_view(url="/participants/executive/", permanent=False), name="dashboard_redirect"),
+    path("teams/", RedirectView.as_view(url="/groups/", permanent=False), name="teams_redirect"),
     path("consortia/", include("apps.consortia.urls")),
     path("groups/", include("apps.groups.urls")),
     path("circles/", include("apps.circles.urls")),

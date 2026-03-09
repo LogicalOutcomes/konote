@@ -1,4 +1,5 @@
 """Tests for the reports app — fiscal year functionality, metric export, demographics, and achievements."""
+import json
 import shutil
 import tempfile
 from datetime import date, datetime, timedelta
@@ -10,6 +11,7 @@ from django.utils.translation import override as translation_override
 from cryptography.fernet import Fernet
 
 from apps.auth_app.models import User
+from apps.admin_settings.models import CidsCodeList, TaxonomyMapping
 from apps.clients.models import (
     ClientFile,
     ClientProgramEnrolment,
@@ -1674,6 +1676,62 @@ class FunderReportViewTests(TestCase):
             username="staff", password="testpass123", is_admin=False
         )
         self.program = Program.objects.create(name="Test Program", status="active")
+        self.program_two = Program.objects.create(name="Second Program", status="active")
+
+    def _seed_cids_export_data(self):
+        client_file = ClientFile.objects.create()
+        client_file.first_name = "Test"
+        client_file.last_name = "Participant"
+        client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=client_file,
+            program=self.program,
+            status="active",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Housing Stability",
+            definition="Housing stability scale",
+            cids_unit_description="Score",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=metric,
+            taxonomy_system="sdg",
+            taxonomy_code="11",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_label="Sustainable Cities and Communities",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+        CidsCodeList.objects.create(
+            list_name="SDGImpacts",
+            code="11",
+            label="Sustainable Cities and Communities",
+            specification_uri="https://metadata.un.org/sdg/11",
+        )
+        section = PlanSection.objects.create(client_file=client_file, program=self.program)
+        target = PlanTarget(plan_section=section, client_file=client_file)
+        target.name = "Stable housing"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+        note = ProgressNote.objects.create(
+            client_file=client_file,
+            note_type="quick",
+            author=self.admin,
+            author_program=self.program,
+            status="default",
+            backdate=timezone.now(),
+        )
+        note.notes_text = "Follow-up"
+        note.save()
+        note_target = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=note_target,
+            metric_def=metric,
+            value="3",
+        )
 
     def test_admin_can_access_funder_report_form(self):
         """Admin users should be able to access the Funder report form."""
@@ -1889,6 +1947,26 @@ class FunderReportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
+    def test_funder_report_cids_json_export_uses_selected_taxonomy(self):
+        self._seed_cids_export_data()
+        self.client.login(username="admin", password="testpass123")
+        resp = self._submit_funder_report_through_approval(
+            {
+                "program": self.program.pk,
+                "fiscal_year": "2025",
+                "format": "cids_json",
+                "taxonomy_lens": "sdg",
+                "recipient": "self",
+                "recipient_reason": "Standards export",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client.get(f"/reports/download/{link.id}/")
+        payload = json.loads(self._get_download_content(download_resp))
+        indicator = next(node for node in payload["@graph"] if node.get("@type") == "cids:Indicator")
+        self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/11")
+
     def test_funder_report_all_programs_html_export(self):
         """All-programs mode with HTML format produces styled HTML, not CSV."""
         self.client.login(username="admin", password="testpass123")
@@ -1922,7 +2000,10 @@ class FunderReportViewTests(TestCase):
         })
         # Should return the form with an error, not redirect to preview
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "PDF export is not available for All Programs")
+        self.assertIn(
+            "PDF export is not available for All Programs. Please select CSV or HTML.",
+            resp.context["form"].errors["format"],
+        )
 
     def test_legacy_funder_url_redirects(self):
         """QA-R8-UX11: /reports/funder/ should 301 redirect to /reports/funder-report/."""
@@ -1954,7 +2035,7 @@ class AggregateAllProgramsTotalsTest(TestCase):
         self.assertEqual(len(result['programs']), 2)
         self.assertEqual(result['programs'][0]['name'], 'Program A')
 
-    def test_skips_suppressed_string_values(self):
+    def test_suppressed_string_values_propagate_to_total(self):
         from apps.reports.utils import aggregate_all_programs_totals
         from unittest.mock import Mock
         p1 = Mock(name='Program A')
@@ -1966,9 +2047,11 @@ class AggregateAllProgramsTotalsTest(TestCase):
             (p2, {'total_individuals_served': 7, 'new_clients_this_period': '< 5', 'total_contacts': 5}),
         ]
         result = aggregate_all_programs_totals(data)
-        self.assertEqual(result['total_served'], 7)  # skips suppressed '< 5'
-        self.assertEqual(result['total_new_clients'], 3)  # skips suppressed '< 5'
-        self.assertEqual(result['total_contacts'], 15)
+        # If any program's value is suppressed, the org total is also suppressed
+        # (showing the sum would reveal the suppressed program's approximate count)
+        self.assertEqual(result['total_served'], 'suppressed')
+        self.assertEqual(result['total_new_clients'], 'suppressed')
+        self.assertEqual(result['total_contacts'], 15)  # no suppressed values
 
     def test_empty_input(self):
         from apps.reports.utils import aggregate_all_programs_totals
@@ -2216,6 +2299,66 @@ class GenerateReportViewTest(TestCase):
             is_active=True,
         )
 
+    def _seed_template_cids_export_data(self):
+        client_file = ClientFile.objects.create()
+        client_file.first_name = "Template"
+        client_file.last_name = "Participant"
+        client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=client_file,
+            program=self.program,
+            status="active",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Employment Progress",
+            definition="Progress toward employment",
+            cids_unit_description="Score",
+        )
+        TaxonomyMapping.objects.create(
+            metric_definition=metric,
+            taxonomy_system="sdg",
+            taxonomy_code="8",
+            taxonomy_list_name="SDGImpacts",
+            taxonomy_label="Decent Work and Economic Growth",
+            mapping_status="approved",
+            mapping_source="manual",
+        )
+        CidsCodeList.objects.create(
+            list_name="SDGImpacts",
+            code="8",
+            label="Decent Work and Economic Growth",
+            specification_uri="https://metadata.un.org/sdg/8",
+        )
+        section = PlanSection.objects.create(client_file=client_file, program=self.program)
+        target = PlanTarget(plan_section=section, client_file=client_file)
+        target.name = "Find employment"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+        ReportMetric.objects.create(
+            report_template=self.template,
+            metric_definition=metric,
+            sort_order=1,
+        )
+        note = ProgressNote.objects.create(
+            client_file=client_file,
+            note_type="quick",
+            author=self.admin,
+            author_program=self.program,
+            status="default",
+            backdate=timezone.now(),
+        )
+        note.notes_text = "Template follow-up"
+        note.save()
+        note_target = ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=note_target,
+            metric_def=metric,
+            value="4",
+        )
+
     def test_admin_can_access_generate_report(self):
         """Admin should access the template-driven report form."""
         self.client_http.login(username="admin", password="testpass123")
@@ -2260,6 +2403,32 @@ class GenerateReportViewTest(TestCase):
         self.assertTrue(SecureExportLink.objects.exists())
         link = SecureExportLink.objects.latest("created_at")
         self.assertFalse(link.contains_pii)
+
+    def test_post_creates_cids_json_link(self):
+        from apps.reports.forms import build_period_choices
+
+        self._seed_template_cids_export_data()
+        self.client_http.login(username="admin", password="testpass123")
+        choices = build_period_choices(self.template)
+        period_val = choices[0][0] if choices else "2025-04-01|2025-06-30"
+        resp = self.client_http.post("/reports/generate/", {
+            "report_template": self.template.pk,
+            "period": period_val,
+            "format": "cids_json",
+            "taxonomy_lens": "sdg",
+            "recipient": "United Way",
+            "recipient_reason": "Quarterly standards reporting",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(
+            SecureExportLink.objects.exists(),
+            str(resp.context["form"].errors) if resp.context and "form" in resp.context else resp.content.decode("utf-8")[:4000],
+        )
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client_http.get(f"/reports/download/{link.id}/")
+        payload = json.loads(b"".join(download_resp.streaming_content).decode("utf-8"))
+        indicator = next(node for node in payload["@graph"] if node.get("@type") == "cids:Indicator")
+        self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/8")
 
 
 class GenerateReportCustomExportContextTest(TestCase):

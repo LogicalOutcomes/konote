@@ -5,6 +5,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.env.staging
 *.egg
 
 # Django
@@ -22,12 +23,18 @@ venv/
 # Environment
 .env
 *.env.local
+.env.staging
+konote-credentials-*
 
 # IDE
 .vscode/
 .idea/
+.obsidian/
 *.swp
 *.code-workspace
+
+# Jules (Google AI agent)
+.Jules/
 
 # Claude Code — track shared skills/commands, ignore personal config
 .claude/*
@@ -70,3 +77,7 @@ backups/
 
 # Generated documents (built from .md source)
 *.docx
+
+# Local UX feedback (screenshots + notes kept locally, not tracked)
+Pasted image*.png
+UX-feedback.md

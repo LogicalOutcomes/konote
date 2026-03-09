@@ -42,6 +42,7 @@ Processes **de-identified participant content** — survey responses, open-ended
 |---------|-------------|----------------|
 | Outcome insights | Summarise themes from participant feedback | De-identified participant quotes and responses |
 | Qualitative analysis | Identify patterns in open-ended responses | Scrubbed participant text |
+| Suggestion categorisation | Group and tag open-ended participant suggestions | Scrubbed suggestion text processed on a self-hosted open-source model managed by KoNote |
 
 **Privacy classification:** Even with name scrubbing, this is **de-identified personal information** under PIPEDA s.2 and potentially **personal health information** under PHIPA s.4 if it relates to health services. Context, small sample sizes, or distinctive phrasing can re-identify participants.
 
@@ -123,7 +124,7 @@ The scrubbed quotes are sent via HTTPS POST to one of two endpoints:
 ### What is NOT protected (known gaps)
 
 1. **Content re-identification risk** — Even after name scrubbing, distinctive phrasing or unusual situations described in participant quotes could identify someone in a small community. The 15-participant minimum helps but doesn't eliminate this risk.
-2. **AI provider data retention** — OpenRouter and the underlying model provider (Anthropic) have their own data retention policies. KoNote does not control what happens to data after it reaches the API. This is the core reason the self-hosted LLM path is important.
+2. **AI provider data retention** — For any participant-data flow that still uses OpenRouter or another external endpoint, the provider has its own data retention policies. KoNote does not control what happens to data after it reaches that API. Open-ended suggestion categorisation should instead use the self-hosted LLM path described below.
 3. **Toggle change audit** — Currently no audit log entry when `ai_assist` is toggled on or off. The DRR recommends adding this.
 4. **No participant notification** — Participants are not currently informed whether AI processes their feedback. The DRR recommends adding a portal transparency statement.
 
@@ -202,8 +203,16 @@ Log when `ai_assist_participant_data` is toggled: who, when, on/off. Use the exi
 
 The participant portal should state the current AI posture:
 
-- **If participant insights ON:** "This agency uses AI to summarise feedback themes. Your name is removed before processing. No individual responses are shared."
-- **If participant insights OFF:** "This agency does not use AI to process your responses."
+- **If participant insights ON:** "This agency uses AI to help group feedback themes from survey responses and suggestions. Direct identifiers such as your name are removed before that processing. Open-ended suggestions are categorised using a self-hosted model managed by KoNote. Staff still review the results before using them."
+- **If participant insights OFF:** "This agency does not use AI to process your survey responses or suggestions."
+
+Recommended participant-facing privacy notice wording:
+
+> We collect your responses so staff can understand program outcomes, improve services, and meet reporting requirements. Your information is stored in KoNote on systems managed for this agency. If this agency enables AI-assisted feedback analysis, direct identifiers are removed before participant text is processed. Open-ended suggestions are categorised using a self-hosted model managed by KoNote, and staff review AI-generated summaries before using them. If this agency does not enable that feature, your responses are reviewed only by authorised staff and reporting tools.
+
+Short portal disclosure variant:
+
+> Your responses help improve services. If AI-assisted feedback analysis is enabled for this agency, KoNote removes direct identifiers before processing participant text and uses a self-hosted model for open-ended suggestion categorisation.
 
 ### UI guardrails on goal builder
 
@@ -213,15 +222,15 @@ The goal builder input should include helper text: "Describe the general goal ar
 
 When AI generates a suggested target or metric, staff should see a small "AI-suggested" indicator — not as a warning, but as transparency. Preserves human agency in the decision.
 
-## Future: Self-Hosted Open-Source LLM for Participant Data
+## Self-Hosted Open-Source LLM for Open-Ended Suggestions
 
-For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles, newcomer-serving organisations), even de-identified data leaving the agency's infrastructure may be unacceptable.
+Open-ended suggestion categorisation should be planned and operated as a self-hosted open-source workflow managed by KoNote. This keeps the suggestion-tagging path on infrastructure controlled by the operator rather than a public AI API.
 
-**Future architectural direction:** For `ai_assist_participant_data`, support a self-hosted open-source LLM (e.g., Llama, Mistral) so participant data never leaves the agency's infrastructure.
+For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles, newcomer-serving organisations), even de-identified data leaving the operator-controlled environment may be unacceptable. Those agencies may still decide to disable participant-data AI entirely.
 
-The toggle design already supports this — `ai_assist_participant_data` can switch between external API and local model without changing the user-facing feature. The existing `INSIGHTS_API_BASE` environment variable already supports pointing to a local Ollama endpoint.
+The toggle design already supports this — `ai_assist_participant_data` can use a local model endpoint without changing the user-facing feature. The existing `INSIGHTS_API_BASE` environment variable already supports pointing to a self-hosted OpenAI-compatible endpoint.
 
-**When to build:** After the first agency deployment, when real data sovereignty requirements are articulated by a specific partner. Do not build speculatively.
+This does not require a product-level distinction in the UI. The operator decision is infrastructural: if open-ended suggestions are enabled for AI processing at all, the default posture should be the self-hosted managed model described in the self-hosted LLM DRR.
 
 ## Migration Notes
 
@@ -246,6 +255,73 @@ The minimum sample size for AI theme processing is now graduated:
 The N=5 threshold **only applies when `INSIGHTS_API_BASE` is configured** (self-hosted LLM). Agencies using OpenRouter retain the N=15 threshold. See the [self-hosted LLM DRR](self-hosted-llm-infrastructure.md) for infrastructure details.
 
 **Focused analysis** (top-down question-based search) follows the same graduated model and always returns synthesised content, never verbatim quotes, regardless of program size.
+
+## Three-Tier AI Architecture (Added 2026-03-07)
+
+KoNote uses AI at three distinct tiers, each with different data access, provider routing, and privacy controls. The two-toggle system (`ai_assist_tools_only` and `ai_assist_participant_data`) governs Tiers 1 and 2. Tier 3 operates outside KoNote's toggle system because it runs in an external LLM session controlled by the evaluator.
+
+### Tier 1: Operational AI (self-hosted)
+
+**Provider:** Self-hosted open-source model on the KoNote VPS (Ollama). Configured via `INSIGHTS_API_BASE` and `INSIGHTS_API_KEY`.
+
+**Toggle:** `ai_assist_participant_data` (disabled by default).
+
+**Data it sees:** De-identified participant content — survey responses, open-ended feedback, suggestion themes. PII-scrubbed. Stays on Canadian infrastructure.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Outcome insights (theme summarisation) | Scrubbed participant quotes | N>=5 self-hosted, N>=15 external; PII scrub; quote verification |
+| Suggestion categorisation (nightly batch) | Scrubbed suggestion text | Same thresholds; self-hosted only |
+| Focused analysis (question-based search) | Scrubbed participant content | Synthesised output only, never verbatim quotes |
+
+### Tier 2: Tools AI (cloud API)
+
+**Provider:** Cloud AI API. Configured via `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`.
+
+**Toggle:** `ai_assist_tools_only` (enabled by default).
+
+**Data it sees:** Program-level metadata only — metric names, goal text, program descriptions, aggregate statistics. Zero participant data.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Metric suggestions | Target description + metric catalogue | No participant data — institutional metadata only |
+| Goal builder | Staff-written outcome text (PII-scrubbed) | Staff controls input; PII scrub as safety net |
+| Narrative generation | Program name + date range + aggregate numbers | Aggregate only |
+| Note structure suggestions | Target name + description + metric names | No participant data |
+| CIDS code suggestions (batch) | Field names + metric definitions | Taxonomy metadata only |
+
+### Tier 3: Evaluation AI (external, evaluator-controlled)
+
+**Provider:** A more capable LLM accessed via an external platform. Not configured in KoNote's `.env` — the evaluator manages the session directly.
+
+**Toggle:** None. This tier operates outside KoNote entirely. No KoNote data is sent automatically.
+
+**Data it sees:** Non-PII program documentation uploaded by the evaluator — grant applications, logic models, program descriptions, aggregate statistics, published literature.
+
+| Task | Data sent | Privacy gate |
+|------|-----------|-------------|
+| Evaluation framework planning | Program documentation (uploaded by evaluator) | Evaluator controls what is shared; no participant data |
+| CIDS Full Tier metadata drafting | Service/activity/risk/counterfactual descriptions | Program-level metadata only |
+| Literature-informed enrichment | Published literature + aggregate program stats | Public and de-identified data only |
+| Taxonomy classification review | Metric definitions + taxonomy code lists | Institutional metadata only |
+
+**Why a separate tier?** The evaluation planning tasks require synthesis across multiple documents, evaluation methodology knowledge, and literature-informed judgement. These exceed the capabilities of the self-hosted model (Tier 1) and involve a different interaction pattern — a structured multi-step conversation rather than single API calls. The evaluator works with a more capable model directly, uploading only non-PII program documentation.
+
+**See also:**
+- [CIDS Evaluation Protocol](../cids-evaluation-protocol.md) — the 5-phase process that uses Tier 3
+- [CIDS Evaluation Planning Prompt](../cids-evaluation-planning-prompt.md) — the structured prompt for Tier 3 sessions
+- [Self-hosted LLM Infrastructure DRR](self-hosted-llm-infrastructure.md) — Tier 1 infrastructure details
+
+### Summary: What goes where
+
+| Data type | Tier | Provider | Leaves VPS? |
+|-----------|------|----------|-------------|
+| Participant quotes (scrubbed) | 1 — Operational | Self-hosted | No |
+| Open-ended suggestions (scrubbed) | 1 — Operational | Self-hosted | No |
+| Metric/goal/program metadata | 2 — Tools | Cloud API | Yes (no PII) |
+| CIDS taxonomy suggestions | 2 — Tools | Cloud API | Yes (no PII) |
+| Evaluation framework content | 3 — Evaluation | External LLM platform | Yes (no PII, evaluator-controlled) |
+| Translation strings | Outside toggle system | Cloud API | Yes (no PII — static UI strings) |
 
 ## GK Review Items
 

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "CIDS Compliance Dashboard" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "CIDS Compliance Dashboard" %}</h1>
+    <p>{% trans "Common Impact Data Standard (CIDS) v3.2.0 — Full Tier compliance tracking." %}</p>
+</hgroup>
+
+<div class="grid">
+    <article>
+        <header>{% trans "Agency Coverage" %}</header>
+        <p><strong>{{ all_classes_count }} / {{ total_classes }}</strong> {% trans "CIDS classes" %}</p>
+        <progress value="{{ all_classes_count }}" max="{{ total_classes }}"></progress>
+    </article>
+    <article>
+        <header>{% trans "Programs" %}</header>
+        <p><strong>{{ programs_with_fw }}</strong> / {{ total_programs }} {% trans "have evaluation frameworks" %}</p>
+    </article>
+    <article>
+        <header>{% trans "Attestations" %}</header>
+        <p><strong>{{ programs_attested }}</strong> / {{ total_programs }} {% trans "attested by evaluator" %}</p>
+    </article>
+</div>
+
+<section>
+    <h2>{% trans "Coverage by Program" %}</h2>
+    <div class="grid grid-single">
+    {% for summary in summaries %}
+    <article>
+        <header>
+            <div class="flex-between">
+                <strong>{{ summary.program.name }}</strong>
+                <span>{{ summary.present }} / {{ summary.total }} ({{ summary.pct }}%)</span>
+            </div>
+            <progress value="{{ summary.present }}" max="{{ summary.total }}"></progress>
+        </header>
+        <figure>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "CIDS Class" %}</th>
+                    <th scope="col">{% trans "Status" %}</th>
+                    <th scope="col">{% trans "Source" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in summary.coverage %}
+                <tr>
+                    <td><code>{{ c.class_uri }}</code> <small>({{ c.label }})</small></td>
+                    <td>
+                        {% if c.status == "present" %}
+                        <mark>{% trans "Present" %}</mark>
+                        {% else %}
+                        <small>{% trans "Missing" %}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if c.source == "framework" %}{% trans "Evaluation framework" %}
+                        {% elif c.source == "basic_tier" %}{% trans "Basic Tier export" %}
+                        {% elif c.source == "stub" %}{% trans "Derived stub" %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </figure>
+        <footer>
+            <a href="{% url 'reports:cids_export_status' program_id=summary.program.pk %}">{% trans "Export status" %}</a>
+            {% if summary.has_framework %}
+            {% elif summary.program.pk %}
+            | <a href="{% url 'programs:framework_create' program_id=summary.program.pk %}">{% trans "Create framework" %}</a>
+            {% endif %}
+        </footer>
+    </article>
+    {% endfor %}
+    </div>
+</section>
+
+<section>
+    <h2>{% trans "Export" %}</h2>
+    <div class="grid">
+        <a href="{% url 'reports:cids_full_tier_export' %}?format=download" role="button">{% trans "Download Full Tier JSON-LD" %}</a>
+        <a href="{% url 'reports:cids_full_tier_export' %}" role="button" class="outline">{% trans "Preview JSON-LD" %}</a>
+    </div>
+</section>
+{% endblock %}

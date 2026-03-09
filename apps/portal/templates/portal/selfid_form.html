@@ -1,0 +1,138 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Self-Identification Survey" %}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{% trans "Self-Identification Survey" %}</h1>
+        <p class="secondary">{% trans "All questions are optional. Choose 'Prefer not to answer' or leave blank for any question you'd rather skip." %}</p>
+    </header>
+
+    {% if success %}
+    <div role="alert" class="portal-alert success">
+        <p>{% trans "Your responses have been saved. Thank you!" %}</p>
+        <p><a href="{% url 'portal:dashboard' %}">{% trans "Return to home" %}</a></p>
+    </div>
+    {% endif %}
+
+    {% if custom_data %}
+    <form method="post" action="{% url 'portal:selfid_form' %}">
+        {% csrf_token %}
+
+        {% for group in custom_data %}
+        <fieldset>
+            <legend>{{ group.group.title }}</legend>
+
+            {% for item in group.fields %}
+            <div class="form-row">
+                <label for="custom_{{ item.field_def.pk }}" id="label_{{ item.field_def.pk }}">{{ item.field_def.name }}</label>
+
+                {% if item.field_def.input_type == "select" %}
+                    <select name="custom_{{ item.field_def.pk }}"
+                            id="custom_{{ item.field_def.pk }}">
+                        <option value="">{% trans "Select…" %}</option>
+                        {% for opt in item.field_def.options_json %}
+                        <option value="{{ opt }}" {% if item.value == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+
+                {% elif item.field_def.input_type == "select_other" %}
+                    <select name="custom_{{ item.field_def.pk }}"
+                            id="custom_{{ item.field_def.pk }}"
+                            data-toggle-display-target="other_wrap_{{ item.field_def.pk }}"
+                            data-toggle-display-value="__other__">
+                        <option value="">{% trans "Select…" %}</option>
+                        {% for opt in item.field_def.options_json %}
+                        <option value="{{ opt }}" {% if item.value == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                        <option value="__other__" {% if item.value and item.is_other_value %}selected{% endif %}>{% trans "Other" %}</option>
+                    </select>
+                    <div id="other_wrap_{{ item.field_def.pk }}"
+                         style="margin-top: 0.5rem;{% if not item.is_other_value %} display: none;{% endif %}">
+                        <label for="custom_{{ item.field_def.pk }}_other" class="sr-only">{% trans "Other (please specify)" %}</label>
+                        <input type="text"
+                               name="custom_{{ item.field_def.pk }}_other"
+                               id="custom_{{ item.field_def.pk }}_other"
+                               value="{% if item.is_other_value %}{{ item.value }}{% endif %}"
+                               placeholder="{% trans 'Please specify…' %}">
+                    </div>
+
+                {% elif item.field_def.input_type == "multi_select" %}
+                    <fieldset role="group" aria-labelledby="label_{{ item.field_def.pk }}">
+                        {% for opt in item.field_def.options_json %}
+                        <label>
+                            <input type="checkbox"
+                                   name="custom_{{ item.field_def.pk }}"
+                                   value="{{ opt }}"
+                                   {% if opt in item.selected_values %}checked{% endif %}>
+                            {{ opt }}
+                        </label>
+                        {% endfor %}
+                    </fieldset>
+
+                {% elif item.field_def.input_type == "multi_select_other" %}
+                    <fieldset role="group" aria-labelledby="label_{{ item.field_def.pk }}">
+                        {% for opt in item.field_def.options_json %}
+                        <label>
+                            <input type="checkbox"
+                                   name="custom_{{ item.field_def.pk }}"
+                                   value="{{ opt }}"
+                                   {% if opt in item.selected_values %}checked{% endif %}>
+                            {{ opt }}
+                        </label>
+                        {% endfor %}
+                    </fieldset>
+                    <div style="margin-top: 0.5rem;">
+                        <label for="custom_{{ item.field_def.pk }}_other">{% trans "Other (please specify)" %}</label>
+                        <input type="text"
+                               name="custom_{{ item.field_def.pk }}_other"
+                               id="custom_{{ item.field_def.pk }}_other"
+                               value="{{ item.other_text|default:'' }}"
+                               placeholder="{% trans 'Please specify…' %}">
+                    </div>
+
+                {% elif item.field_def.input_type == "textarea" %}
+                    <textarea name="custom_{{ item.field_def.pk }}"
+                              id="custom_{{ item.field_def.pk }}"
+                              rows="3"
+                              placeholder="{{ item.field_def.placeholder }}">{{ item.value }}</textarea>
+
+                {% elif item.field_def.input_type == "date" %}
+                    <input type="date"
+                           name="custom_{{ item.field_def.pk }}"
+                           id="custom_{{ item.field_def.pk }}"
+                           value="{{ item.value }}">
+
+                {% elif item.field_def.input_type == "number" %}
+                    <input type="number"
+                           name="custom_{{ item.field_def.pk }}"
+                           id="custom_{{ item.field_def.pk }}"
+                           value="{{ item.value }}"
+                           placeholder="{{ item.field_def.placeholder }}">
+
+                {% else %}
+                    <input type="text"
+                           name="custom_{{ item.field_def.pk }}"
+                           id="custom_{{ item.field_def.pk }}"
+                           value="{{ item.value }}"
+                           placeholder="{{ item.field_def.placeholder }}">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
+
+        <div role="group">
+            <button type="submit">{% trans "Save my responses" %}</button>
+            <a href="{% url 'portal:dashboard' %}" role="button" class="secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+
+    {% else %}
+    <p>{% trans "There are no self-identification questions available at this time." %}</p>
+    <a href="{% url 'portal:dashboard' %}" role="button">{% trans "Return to home" %}</a>
+    {% endif %}
+</article>
+{% endblock %}

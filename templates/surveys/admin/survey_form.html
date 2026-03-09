@@ -16,10 +16,7 @@
         <legend>{% trans "Survey Details" %}</legend>
         {% for field in form %}
             {% if field.name != "consent_text" and field.name != "consent_text_fr" %}
-            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</label>
-            {{ field }}
-            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-            {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+            {% include "includes/_form_field.html" with field=field %}
             {% endif %}
         {% endfor %}
     </fieldset>
@@ -52,10 +49,7 @@
             {{ section_form.id }}
             {% for field in section_form %}
                 {% if field.name != "id" and field.name != "DELETE" and field.name != "condition_question" and field.name != "condition_value" %}
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+                {% include "includes/_form_field.html" with field=field %}
                 {% endif %}
             {% endfor %}
 
@@ -92,7 +86,7 @@
 </form>
 
 {% if editing %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function() {
     // Build base URL using Django's url tag with a dummy question_id=0, then strip
     // the trailing "/0/" so we can append the real question PK at runtime.
@@ -121,3 +115,4 @@
 </script>
 {% endif %}
 {% endblock %}
+

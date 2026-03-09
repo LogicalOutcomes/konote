@@ -90,7 +90,7 @@
     <details>
         <summary class="secondary" style="font-size: 0.875rem;">{% trans "Reset to Safe Defaults" %}</summary>
         <p class="help-text">{% trans "This will remove all customised field access settings and restore the safe defaults for your access tier. All custom fields will be set to hidden." %}</p>
-        <button type="submit" class="outline contrast" onclick="return confirm('{% trans "Reset all field access settings to safe defaults? This cannot be undone." %}')">{% trans "Reset to Defaults" %}</button>
+        <button type="submit" class="outline contrast" data-confirm="{% trans "Reset all field access settings to safe defaults? This cannot be undone." %}">{% trans "Reset to Defaults" %}</button>
     </details>
 </form>
 {% endblock %}

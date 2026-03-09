@@ -76,7 +76,7 @@
 
     {# Actions #}
     <div class="ai-actions" style="margin-top: 1rem;">
-        <button onclick="navigator.clipboard.writeText(this.closest('.insights-ai-result').innerText).then(function(){this.textContent='{% trans "Copied!" %}'}.bind(this))" class="outline secondary" type="button">
+        <button class="outline secondary copy-btn" type="button" data-clipboard-closest=".insights-ai-result">
             {% trans "Copy to clipboard" %}
         </button>
         <button

@@ -45,6 +45,12 @@ def report_template_upload(request):
 
     # Accept either file upload or pasted text
     if csv_file:
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, _("File must be a .csv file."))
+            return render(request, "admin_settings/funder_profiles/upload.html")
+        if csv_file.size > 1024 * 1024:  # 1MB limit
+            messages.error(request, _("File too large. Maximum size is 1MB."))
+            return render(request, "admin_settings/funder_profiles/upload.html")
         try:
             csv_content = csv_file.read().decode("utf-8-sig")
         except UnicodeDecodeError:
@@ -175,8 +181,10 @@ def report_template_download_csv(request, profile_id):
         messages.warning(request, _("No source CSV available for this profile."))
         return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
+    from apps.reports.csv_utils import sanitise_filename
+
     response = HttpResponse(profile.source_csv, content_type="text/csv; charset=utf-8")
-    safe_name = profile.name.replace(" ", "_").replace("/", "_")
+    safe_name = sanitise_filename(profile.name)
     response["Content-Disposition"] = f'attachment; filename="report_template_{safe_name}.csv"'
     return response
 

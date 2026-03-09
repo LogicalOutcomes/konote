@@ -31,4 +31,5 @@ urlpatterns = [
         name="survey_rule_deactivate",
     ),
     path("import/", views.csv_import, name="csv_import"),
+    path("import/template/", views.csv_template, name="csv_template"),
 ]

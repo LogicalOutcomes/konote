@@ -113,7 +113,7 @@
 {% block extra_scripts %}
 {{ block.super }}
 <script src="{% static 'js/meeting-picker.js' %}"></script>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 (function () {
     var locationSelect = document.getElementById("{{ form.location.id_for_label }}");
     var customWrapper = document.getElementById("location-custom-wrapper");
@@ -136,3 +136,4 @@
 })();
 </script>
 {% endblock %}
+

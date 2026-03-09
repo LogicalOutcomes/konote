@@ -64,7 +64,7 @@
             <summary>{{ entry.obj.notes_text|truncatechars:200 }}</summary>
             <div class="timeline-note-full">
                 <p>{{ entry.obj.notes_text }}</p>
-                <p class="timeline-note-link"><small><a href="{% url 'notes:note_list' client_id=client.pk %}#note-{{ entry.obj.pk }}">{% trans "View in Notes" %} &rarr;</a></small></p>
+                <p class="timeline-note-link"><small><a href="{% url 'notes:note_detail' note_id=entry.obj.pk %}">{% trans "View in Notes" %} &rarr;</a></small></p>
             </div>
         </details>
         {% endif %}

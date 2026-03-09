@@ -12,6 +12,7 @@ urlpatterns = [
     path("sections/<int:section_id>/status/", views.section_status, name="section_status"),
     # Combined goal creation
     path("participant/<int:client_id>/goals/create/", views.goal_create, name="goal_create"),
+    path("participant/<int:client_id>/goals/save-suggestion/", views.goal_create_from_suggestion, name="goal_save_suggestion"),
     path("participant/<int:client_id>/goals/suggestions/", views.goal_name_suggestions, name="goal_name_suggestions"),
     # Target CRUD
     path("sections/<int:section_id>/targets/create/", views.target_create, name="target_create"),

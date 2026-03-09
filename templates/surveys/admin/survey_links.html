@@ -104,10 +104,16 @@
         <small id="expires_help">{% trans "Optional. The link will stop working after this many days." %}</small>
 
         <fieldset>
+            {% if survey.is_anonymous %}
+            <p>
+                <small>{% trans "This survey is anonymous, so shareable links will not collect respondent names." %}</small>
+            </p>
+            {% else %}
             <label>
                 <input type="checkbox" name="collect_name" id="collect_name">
-                {% trans "Ask respondents for their name (optional, not encrypted)" %}
+                {% trans "Ask respondents for their name (optional, encrypted)" %}
             </label>
+            {% endif %}
             <label>
                 <input type="checkbox" name="single_response" id="single_response">
                 {% trans "Limit to one response per browser (uses a cookie)" %}

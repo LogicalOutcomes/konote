@@ -280,6 +280,10 @@ class OversightReportViewTest(TestCase):
         resp = self.http.get("/reports/oversight/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Safety Oversight Reports")
+        self.assertContains(
+            resp,
+            "Review safety report snapshots and follow-up items that need leadership attention.",
+        )
 
     def test_generate_page_loads(self):
         self.http.login(username="admin_view", password="testpass123")

@@ -1,4 +1,7 @@
 """Tests for public registration views."""
+import hashlib
+import hmac
+
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -8,6 +11,7 @@ from apps.auth_app.models import User
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
 import konote.encryption as enc_module
+from apps.audit.models import AuditLog
 
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -16,6 +20,8 @@ TEST_KEY = Fernet.generate_key().decode()
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class PublicRegistrationFormViewTest(TestCase):
     """Tests for the public registration form view."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -156,6 +162,60 @@ class PublicRegistrationFormViewTest(TestCase):
         self.assertIsNotNone(submission)
         self.assertEqual(submission.status, "approved")
 
+    def test_public_submission_writes_audit_log_without_pii(self):
+        url = reverse(
+            "registration:public_registration_form",
+            kwargs={"slug": self.registration_link.slug}
+        )
+
+        response = self.client.post(url, {
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@example.com",
+            "phone": "613-555-1212",
+            "consent": "on",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        submission = RegistrationSubmission.objects.get(registration_link=self.registration_link)
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="registration",
+            resource_id=submission.pk,
+            action="create",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.new_values["status"], "pending")
+        metadata_text = str(log.metadata)
+        self.assertNotIn("John", metadata_text)
+        self.assertNotIn("Doe", metadata_text)
+        self.assertNotIn("john.doe@example.com", metadata_text)
+
+    def test_auto_approve_writes_review_audit_log_without_pii(self):
+        self.registration_link.auto_approve = True
+        self.registration_link.save()
+        url = reverse(
+            "registration:public_registration_form",
+            kwargs={"slug": self.registration_link.slug}
+        )
+
+        self.client.post(url, {
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "email": "jane.smith@example.com",
+            "consent": "on",
+        })
+
+        submission = RegistrationSubmission.objects.get(registration_link=self.registration_link)
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="registration",
+            resource_id=submission.pk,
+            action="update",
+            metadata__review_type="auto_approve",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.new_values["status"], "approved")
+        self.assertNotIn("jane.smith@example.com", str(log.metadata))
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class RegistrationCapacityTest(TestCase):
@@ -282,6 +342,8 @@ class RegistrationDeadlineTest(TestCase):
 class RegistrationSubmittedViewTest(TestCase):
     """Tests for the registration submitted confirmation view."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -360,6 +422,94 @@ class RegistrationSubmittedViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Registered")
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-registration-email-hash-key",
+)
+class RegistrationSubmissionPrivacyTest(TestCase):
+    """Privacy regressions for encrypted registration submissions."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", display_name="Admin"
+        )
+        self.admin.is_admin = True
+        self.admin.save()
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.registration_link = RegistrationLink.objects.create(
+            program=self.program,
+            title="Test Registration",
+            is_active=True,
+            created_by=self.admin,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_email_hash_uses_keyed_hmac_and_matches_portal_pattern(self):
+        """RegistrationSubmission email_hash should match the portal HMAC scheme."""
+        from apps.portal.models import ParticipantUser
+
+        submission = RegistrationSubmission(registration_link=self.registration_link)
+        submission.first_name = "Case"
+        submission.last_name = "Sensitive"
+        submission.email = "Case.Sensitive@Example.com "
+        submission.save()
+
+        expected = hmac.new(
+            b"test-registration-email-hash-key",
+            b"case.sensitive@example.com",
+            hashlib.sha256,
+        ).hexdigest()
+        self.assertEqual(submission.email_hash, expected)
+        self.assertEqual(
+            submission.email_hash,
+            ParticipantUser.compute_email_hash("Case.Sensitive@Example.com "),
+        )
+
+    def test_field_values_are_encrypted_at_rest(self):
+        """Sensitive custom field values should not remain in plaintext on the model."""
+        submission = RegistrationSubmission(registration_link=self.registration_link)
+        submission.first_name = "Taylor"
+        submission.last_name = "Nguyen"
+        submission.field_values = {
+            "preferred_name": "Tay",
+            "42": "Needs wheelchair-accessible pickup",
+        }
+        submission.save()
+
+        self.assertTrue(submission._field_values_encrypted)
+        self.assertNotIn(
+            b"wheelchair-accessible pickup",
+            bytes(submission._field_values_encrypted),
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(
+            submission.field_values,
+            {
+                "preferred_name": "Tay",
+                "42": "Needs wheelchair-accessible pickup",
+            },
+        )
+
+    def test_clearing_field_values_removes_encrypted_payload(self):
+        """Blank field values should clear the encrypted storage column."""
+        submission = RegistrationSubmission(registration_link=self.registration_link)
+        submission.first_name = "Jordan"
+        submission.last_name = "Lee"
+        submission.field_values = {"99": "temporary data"}
+        submission.save()
+
+        submission.field_values = {}
+        submission.save()
+        submission.refresh_from_db()
+
+        self.assertEqual(submission._field_values_encrypted, b"")
+        self.assertEqual(submission.field_values, {})
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -827,6 +977,8 @@ class IframeEmbedSecurityTest(TestCase):
     - Admin pages cannot be framed
     - Client data pages cannot be framed
     """
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

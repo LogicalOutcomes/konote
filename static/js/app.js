@@ -7,8 +7,35 @@ function t(key, fallback) {
     return KN[key] || fallback;
 }
 
-// Enable script execution in HTMX 2.0 swapped content (needed for Chart.js in Analysis tab)
-// This must be set before any HTMX swaps occur
+function _knParseCallArgs(raw, el) {
+    if (!raw) return [];
+    try {
+        var parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(function (item) {
+            return item === "$el" ? el : item;
+        });
+    } catch (err) {
+        console.warn("Invalid data-call-args JSON", err);
+        return [];
+    }
+}
+
+var _KN_ALLOWED_FNS = {
+    toggleView: 1, resetRow: 1,
+    addGroup: 1, toggleAll: 1, addProgram: 1, addTemplate: 1
+};
+
+function _knCallFunction(name, el, rawArgs) {
+    if (!name || !_KN_ALLOWED_FNS[name] || typeof window[name] !== "function") return false;
+    var args = _knParseCallArgs(rawArgs, el);
+    window[name].apply(window, args);
+    return true;
+}
+
+// Enable script execution in HTMX 2.0 swapped content.
+// Chart.js init is handled in app.js (not inline scripts) to avoid CSP nonce
+// mismatch, but other templates may still use inline scripts on full page loads.
 htmx.config.allowScriptTags = true;
 
 // Tell HTMX to use the loading bar as a global indicator
@@ -60,10 +87,11 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 })();
 
 // --- Link form error messages to their inputs (aria-describedby) ---
-// Scans for <small class="error"> and links the preceding input/select/textarea
+// Scans for <small class="error"> and <small class="badge-danger"> elements
+// and links the preceding input/select/textarea
 (function () {
     function linkErrorMessages() {
-        var errors = document.querySelectorAll("small.error");
+        var errors = document.querySelectorAll("small.error, small.badge-danger");
         errors.forEach(function (errorEl) {
             // Walk backwards through siblings to find the form control
             var sibling = errorEl.previousElementSibling;
@@ -216,6 +244,14 @@ document.body.addEventListener("htmx:configRequest", function (event) {
                     : targetEl.textContent;
             }
         }
+        // 3. Read from the closest ancestor matching a selector
+        else if (btn.hasAttribute("data-clipboard-closest")) {
+            var closestSelector = btn.getAttribute("data-clipboard-closest");
+            var sourceEl = btn.closest(closestSelector);
+            if (sourceEl) {
+                textToCopy = sourceEl.innerText || sourceEl.textContent || "";
+            }
+        }
 
         if (!textToCopy) return;
 
@@ -243,21 +279,157 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     });
 })();
 
+// --- Generic delegated UI helpers for CSP-safe templates ---
+(function () {
+    document.addEventListener("click", function (event) {
+        var target = event.target.closest(
+            "[data-reload-page],[data-print-page],[data-select-on-click],[data-confirm],[data-call-function],[data-dismiss-closest],[data-set-value-target]"
+        );
+        if (!target) return;
+
+        if (target.hasAttribute("data-confirm")) {
+            var message = target.getAttribute("data-confirm") || "";
+            if (!window.confirm(message)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+        }
+
+        if (target.hasAttribute("data-reload-page")) {
+            event.preventDefault();
+            window.location.reload();
+            return;
+        }
+
+        if (target.hasAttribute("data-print-page")) {
+            event.preventDefault();
+            window.print();
+            return;
+        }
+
+        if (target.hasAttribute("data-select-on-click")) {
+            if (typeof target.select === "function") {
+                target.select();
+            }
+            return;
+        }
+
+        if (target.hasAttribute("data-dismiss-closest")) {
+            event.preventDefault();
+            var selector = target.getAttribute("data-dismiss-closest");
+            var mode = target.getAttribute("data-dismiss-mode") || "remove";
+            var dismissTarget = target.closest(selector);
+            if (dismissTarget) {
+                if (mode === "clear") dismissTarget.innerHTML = "";
+                else dismissTarget.remove();
+            }
+            return;
+        }
+
+        if (target.hasAttribute("data-call-function")) {
+            var prevent = target.getAttribute("data-prevent-default");
+            if (prevent !== "false") {
+                event.preventDefault();
+            }
+            _knCallFunction(
+                target.getAttribute("data-call-function"),
+                target,
+                target.getAttribute("data-call-args")
+            );
+            return;
+        }
+
+        if (target.hasAttribute("data-set-value-target")) {
+            var clickValueTargetSelector = target.getAttribute("data-set-value-target");
+            if (!clickValueTargetSelector.startsWith("#") && !clickValueTargetSelector.startsWith(".")) {
+                clickValueTargetSelector = "#" + clickValueTargetSelector;
+            }
+            var clickValueTarget = document.querySelector(clickValueTargetSelector);
+            if (clickValueTarget) {
+                clickValueTarget.value = target.getAttribute("data-set-value") || "";
+            }
+        }
+    });
+
+    document.addEventListener("change", function (event) {
+        var target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target.matches("[data-submit-on-change]")) {
+            if (target.form) target.form.submit();
+        }
+
+        if (target.matches("[data-toggle-display-target]")) {
+            var toggleTarget = document.getElementById(target.getAttribute("data-toggle-display-target"));
+            var expectedValue = target.getAttribute("data-toggle-display-value") || "";
+            if (toggleTarget) {
+                toggleTarget.style.display = target.value === expectedValue ? "" : "none";
+            }
+        }
+
+        if (target.matches("[data-set-value-target]")) {
+            var valueTarget = document.querySelector(target.getAttribute("data-set-value-target"));
+            if (valueTarget) {
+                valueTarget.value = target.value;
+            }
+        }
+
+        if (target.matches("[data-call-function-on-change]")) {
+            _knCallFunction(
+                target.getAttribute("data-call-function-on-change"),
+                target,
+                target.getAttribute("data-call-args")
+            );
+        }
+    });
+
+    document.addEventListener("submit", function (event) {
+        var form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        var message = form.getAttribute("data-confirm");
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+        }
+    });
+})();
+
 // --- Screen reader announcer for HTMX form success (IMPROVE-9) ---
-// When an HTMX POST succeeds, announce "Saved" to screen readers via #sr-announcer
+// Announce generic "Saved" only when a POST really succeeded and did not
+// re-render validation errors. Explicit success events (showSuccess) take
+// precedence and provide a more helpful message.
 (function () {
     var announcer = document.getElementById("sr-announcer");
     if (!announcer) return;
 
-    document.body.addEventListener("htmx:afterRequest", function (event) {
-        var verb = (event.detail.requestConfig && event.detail.requestConfig.verb) || "";
-        if (verb.toLowerCase() === "post" && event.detail.successful) {
-            announcer.textContent = "";
-            // Small delay so aria-live picks up the change
-            setTimeout(function () {
-                announcer.textContent = t("saved", "Saved");
-            }, 100);
+    function hasValidationErrors(target) {
+        if (!target || !(target instanceof Element)) return false;
+        var selector = "[aria-invalid='true'], .error-summary, small.error, small.badge-danger";
+        return target.matches(selector) || !!target.querySelector(selector);
+    }
+
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        var requestConfig = event.detail.requestConfig || {};
+        var verb = (requestConfig.verb || "").toLowerCase();
+        var xhr = event.detail.xhr;
+        if (verb !== "post" || !xhr || xhr.status < 200 || xhr.status >= 300) {
+            return;
         }
+
+        var hxTrigger = xhr.getResponseHeader("HX-Trigger") || "";
+        if (hxTrigger.indexOf("showSuccess") !== -1) {
+            return;
+        }
+
+        if (hasValidationErrors(event.detail.target)) {
+            return;
+        }
+
+        announcer.textContent = "";
+        // Small delay so aria-live picks up the change
+        setTimeout(function () {
+            announcer.textContent = t("saved", "Saved");
+        }, 100);
     });
 })();
 
@@ -329,6 +501,34 @@ document.body.addEventListener("showSuccess", function (e) {
     if (announcer) {
         announcer.textContent = "";
         setTimeout(function () { announcer.textContent = msg; }, 100);
+    }
+});
+
+// Keep the Messages nav badge in sync after an HTMX "mark as read" action.
+document.body.addEventListener("messageRead", function (e) {
+    var detail = e.detail || {};
+    var rawCount = detail.unreadCount;
+    if (rawCount === undefined && detail.value && typeof detail.value === "object") {
+        rawCount = detail.value.unreadCount;
+    }
+    var unreadCount = parseInt(rawCount, 10);
+    if (isNaN(unreadCount)) return;
+
+    var link = document.getElementById("nav-messages-link");
+    if (!link) return;
+
+    var badge = document.getElementById("messages-nav-badge");
+    if (unreadCount > 0) {
+        if (!badge) {
+            badge = document.createElement("span");
+            badge.id = "messages-nav-badge";
+            badge.className = "badge badge-warning";
+            link.appendChild(document.createTextNode(" "));
+            link.appendChild(badge);
+        }
+        badge.textContent = String(unreadCount);
+    } else if (badge) {
+        badge.remove();
     }
 });
 
@@ -955,7 +1155,7 @@ document.addEventListener("click", function (event) {
     }
 
     function setup() {
-        watchModal("shortcuts-modal");
+        watchModal("page-help-modal");
     }
 
     if (document.readyState === "loading") {
@@ -978,9 +1178,9 @@ document.addEventListener("click", function (event) {
         return tag === "input" || tag === "textarea" || tag === "select" || active.isContentEditable;
     }
 
-    function showShortcutsModal() {
-        var modal = document.getElementById("shortcuts-modal");
-        var backdrop = document.getElementById("shortcuts-backdrop");
+    function showPageHelpModal() {
+        var modal = document.getElementById("page-help-modal");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (modal && backdrop) {
             lastFocusedElement = document.activeElement;
             modal.hidden = false;
@@ -989,9 +1189,9 @@ document.addEventListener("click", function (event) {
         }
     }
 
-    function hideShortcutsModal() {
-        var modal = document.getElementById("shortcuts-modal");
-        var backdrop = document.getElementById("shortcuts-backdrop");
+    function hidePageHelpModal() {
+        var modal = document.getElementById("page-help-modal");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (modal && backdrop) {
             modal.hidden = true;
             backdrop.hidden = true;
@@ -1052,7 +1252,7 @@ document.addEventListener("click", function (event) {
                 break;
 
             case "?":
-                showShortcutsModal();
+                showPageHelpModal();
                 return true;
         }
 
@@ -1068,7 +1268,7 @@ document.addEventListener("click", function (event) {
 
             // Escape closes modals
             if (e.key === "Escape") {
-                hideShortcutsModal();
+                hidePageHelpModal();
                 return;
             }
 
@@ -1092,22 +1292,22 @@ document.addEventListener("click", function (event) {
             }
         });
 
-        // Button to show shortcuts modal
-        var showBtn = document.getElementById("show-shortcuts");
+        // Button to show page help modal
+        var showBtn = document.getElementById("show-page-help");
         if (showBtn) {
-            showBtn.addEventListener("click", showShortcutsModal);
+            showBtn.addEventListener("click", showPageHelpModal);
         }
 
-        // Close shortcuts modal
-        var closeBtn = document.getElementById("close-shortcuts");
+        // Close page help modal
+        var closeBtn = document.getElementById("close-page-help");
         if (closeBtn) {
-            closeBtn.addEventListener("click", hideShortcutsModal);
+            closeBtn.addEventListener("click", hidePageHelpModal);
         }
 
         // Close modal when clicking backdrop
-        var backdrop = document.getElementById("shortcuts-backdrop");
+        var backdrop = document.getElementById("page-help-backdrop");
         if (backdrop) {
-            backdrop.addEventListener("click", hideShortcutsModal);
+            backdrop.addEventListener("click", hidePageHelpModal);
         }
     }
 
@@ -1493,227 +1693,6 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     });
 })();
 
-// --- Bulk Operations (UX17) ---
-// Checkbox selection, action bar visibility, and modal management for
-// bulk status change and program transfer on the client list.
-(function () {
-    var selectedIds = new Set();
-    var previousFocus = null;  // Store focus before modal opens
-
-    function getBar() { return document.getElementById("bulk-action-bar"); }
-    function getCount() { return document.getElementById("bulk-count"); }
-    function getBackdrop() { return document.getElementById("bulk-modal-backdrop"); }
-    function getModal() { return document.getElementById("bulk-modal-container"); }
-
-    function updateBar() {
-        var bar = getBar();
-        if (!bar) return;
-        var count = selectedIds.size;
-        if (count > 0) {
-            bar.hidden = false;
-            var countEl = getCount();
-            if (countEl) {
-                // Show "X selected on this page" when paginated
-                var totalEl = document.querySelector("[data-total-clients]");
-                var total = totalEl ? parseInt(totalEl.getAttribute("data-total-clients"), 10) : 0;
-                var visibleCbs = document.querySelectorAll(".bulk-select-row").length;
-                if (total > visibleCbs) {
-                    countEl.textContent = count + " " + t("selected", "selected")
-                        + " (" + t("on this page", "on this page") + ")";
-                } else {
-                    countEl.textContent = count + " " + t("selected", "selected");
-                }
-            }
-        } else {
-            bar.hidden = true;
-        }
-    }
-
-    // Inject selected IDs into HTMX requests from bulk action buttons
-    function injectIds(event) {
-        var elt = event.detail.elt;
-        if (!elt) return;
-        if (elt.id !== "bulk-status-btn" && elt.id !== "bulk-transfer-btn") return;
-        // Add client_ids[] parameters to the request
-        var params = event.detail.parameters;
-        if (!params) return;
-        selectedIds.forEach(function (id) {
-            if (!params["client_ids[]"]) {
-                params["client_ids[]"] = [];
-            }
-            if (Array.isArray(params["client_ids[]"])) {
-                params["client_ids[]"].push(id);
-            } else {
-                params["client_ids[]"] = [params["client_ids[]"], id];
-            }
-        });
-    }
-
-    function showModal() {
-        previousFocus = document.activeElement;
-        var backdrop = getBackdrop();
-        var modal = getModal();
-        if (backdrop) backdrop.hidden = false;
-        if (modal) {
-            modal.hidden = false;
-            // Focus first interactive element inside the modal
-            var firstField = modal.querySelector("select, input:not([type='hidden']), textarea, button");
-            if (firstField) {
-                firstField.focus();
-            } else {
-                modal.focus();
-            }
-        }
-    }
-
-    // Global function for the Cancel button in confirmation templates
-    window.closeBulkModal = function () {
-        var backdrop = getBackdrop();
-        var modal = getModal();
-        if (backdrop) backdrop.hidden = true;
-        if (modal) {
-            modal.hidden = true;
-            modal.innerHTML = "";
-        }
-        // Restore focus to the element that opened the modal
-        if (previousFocus && previousFocus.focus) {
-            previousFocus.focus();
-            previousFocus = null;
-        }
-    };
-
-    // Focus trap — keep Tab cycling within the open modal
-    function trapFocus(e) {
-        var modal = getModal();
-        if (!modal || modal.hidden) return;
-        if (e.key !== "Tab") return;
-        var focusable = modal.querySelectorAll(
-            "select, input:not([type='hidden']), textarea, button, [tabindex]:not([tabindex='-1'])"
-        );
-        if (!focusable.length) return;
-        var first = focusable[0];
-        var last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-        }
-    }
-
-    function setupCheckboxes() {
-        // Support multiple select-all checkboxes (one per table section).
-        // Each scopes to its own <table> so checking "select all" in one
-        // section doesn't affect the other.
-        var selectAlls = document.querySelectorAll(".bulk-select-all");
-        selectAlls.forEach(function (selectAll) {
-            selectAll.addEventListener("change", function () {
-                var checked = selectAll.checked;
-                var table = selectAll.closest("table");
-                var rowCbs = table
-                    ? table.querySelectorAll(".bulk-select-row")
-                    : document.querySelectorAll(".bulk-select-row");
-                rowCbs.forEach(function (cb) {
-                    cb.checked = checked;
-                    if (checked) {
-                        selectedIds.add(cb.value);
-                    } else {
-                        selectedIds.delete(cb.value);
-                    }
-                });
-                updateBar();
-            });
-        });
-
-        // Delegate click events for row checkboxes
-        document.addEventListener("change", function (e) {
-            if (!e.target.classList.contains("bulk-select-row")) return;
-            if (e.target.checked) {
-                selectedIds.add(e.target.value);
-            } else {
-                selectedIds.delete(e.target.value);
-                // Uncheck select-all in the same table section
-                var table = e.target.closest("table");
-                var sa = table
-                    ? table.querySelector(".bulk-select-all")
-                    : document.querySelector(".bulk-select-all");
-                if (sa) sa.checked = false;
-            }
-            updateBar();
-        });
-    }
-
-    function setup() {
-        setupCheckboxes();
-
-        // Listen for HTMX config to inject selected IDs
-        document.body.addEventListener("htmx:configRequest", injectIds);
-
-        // Show modal after HTMX loads the confirmation form
-        document.body.addEventListener("htmx:afterSwap", function (event) {
-            var target = event.detail.target;
-            if (target && target.id === "bulk-modal-container" && target.innerHTML.trim()) {
-                showModal();
-            }
-        });
-
-        // Close modal on backdrop click
-        var backdrop = getBackdrop();
-        if (backdrop) {
-            backdrop.addEventListener("click", window.closeBulkModal);
-        }
-
-        // Close modal on Escape key + focus trap
-        document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape") {
-                var modal = getModal();
-                if (modal && !modal.hidden) {
-                    window.closeBulkModal();
-                }
-            }
-            trapFocus(e);
-        });
-    }
-
-    // Re-sync checkboxes after HTMX replaces the table (pagination, filtering)
-    document.body.addEventListener("htmx:afterSwap", function (event) {
-        var target = event.detail.target;
-        if (target && target.id === "client-list-container") {
-            // Re-check any checkboxes that were previously selected
-            var rowCbs = target.querySelectorAll(".bulk-select-row");
-            rowCbs.forEach(function (cb) {
-                if (selectedIds.has(cb.value)) {
-                    cb.checked = true;
-                }
-            });
-            // Update select-all state for each table section
-            var selectAlls = target.querySelectorAll(".bulk-select-all");
-            selectAlls.forEach(function (sa) {
-                var table = sa.closest("table");
-                var tableCbs = table
-                    ? table.querySelectorAll(".bulk-select-row")
-                    : rowCbs;
-                if (tableCbs.length > 0) {
-                    var allChecked = true;
-                    tableCbs.forEach(function (cb) {
-                        if (!cb.checked) allChecked = false;
-                    });
-                    sa.checked = allChecked;
-                }
-            });
-            updateBar();
-        }
-    });
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", setup);
-    } else {
-        setup();
-    }
-})();
-
-
 // ── Plausibility warnings for metric values (DQ1 + DQ1-TIER2) ───────
 
 (function () {
@@ -1896,4 +1875,223 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             }
         }
     });
+})();
+
+// --- Chart.js initialisation (CSP-safe) ---
+// These functions were moved from inline <script> tags in templates because
+// inline scripts in HTMX-swapped content are blocked by CSP nonce mismatch:
+// the nonce in the HTMX response differs from the nonce in the original page's
+// CSP header. Translated labels come from window.KN (set in base.html).
+(function () {
+    var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var animDuration = prefersReducedMotion ? 0 : undefined;
+
+    // 1. Analysis tab — participant metric line charts
+    function initAnalysisCharts() {
+        var el = document.getElementById('chart-data');
+        if (!el) return;
+        var chartData;
+        try { chartData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(chartData)) return;
+
+        var canvases = document.querySelectorAll('canvas[id^="chart-"]');
+        chartData.forEach(function (chart, index) {
+            if (index >= canvases.length) return;
+            // Skip if already initialised (prevents double-init on HTMX re-swap)
+            if (canvases[index].getAttribute('data-chart-init')) return;
+            canvases[index].setAttribute('data-chart-init', '1');
+
+            var ctx = canvases[index].getContext('2d');
+            var datasets = [{
+                label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
+                data: chart.data_points.map(function (p) { return p.value; }),
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3,
+            }];
+            if (chart.min_value !== null) {
+                datasets.push({
+                    label: t('chartMinimum', 'Minimum') + ' (' + chart.min_value + ')',
+                    data: Array(chart.data_points.length).fill(chart.min_value),
+                    borderColor: 'rgba(239, 68, 68, 0.5)',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                });
+            }
+            if (chart.max_value !== null) {
+                datasets.push({
+                    label: t('chartMaximum', 'Maximum') + ' (' + chart.max_value + ')',
+                    data: Array(chart.data_points.length).fill(chart.max_value),
+                    borderColor: 'rgba(34, 197, 94, 0.5)',
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false,
+                });
+            }
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chart.data_points.map(function (p) { return p.date; }),
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: animDuration },
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y: { beginAtZero: false, title: { display: true, text: chart.unit || t('chartValue', 'Value') } },
+                        x: { title: { display: true, text: t('chartDate', 'Date') } },
+                    },
+                },
+            });
+        });
+    }
+
+    // 2. Client insights — descriptor trend chart
+    function initClientTrendChart() {
+        var el = document.getElementById('client-trend-data');
+        if (!el) return;
+        var rawData;
+        try { rawData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
+
+        var ctx = document.getElementById('client-descriptor-trend');
+        if (!ctx || ctx.getAttribute('data-chart-init')) return;
+        ctx.setAttribute('data-chart-init', '1');
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function (r) { return r.month; }),
+                datasets: [
+                    { label: t('descriptorHarder', 'Harder right now'), data: rawData.map(function (r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
+                    { label: t('descriptorHolding', 'Holding steady'), data: rawData.map(function (r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
+                    { label: t('descriptorShifting', "Something's shifting"), data: rawData.map(function (r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
+                    { label: t('descriptorGood', 'In a good place'), data: rawData.map(function (r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: animDuration },
+                plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } } },
+            },
+        });
+    }
+
+    // 3. Program insights — descriptor trend chart
+    function initDescriptorTrendChart() {
+        var el = document.getElementById('descriptor-trend-data');
+        if (!el) return;
+        var rawData;
+        try { rawData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
+
+        var ctx = document.getElementById('descriptor-trend-chart');
+        if (!ctx || ctx.getAttribute('data-chart-init')) return;
+        ctx.setAttribute('data-chart-init', '1');
+
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function (r) { return r.month; }),
+                datasets: [
+                    { label: t('descriptorHarder', 'Harder right now'), data: rawData.map(function (r) { return r.harder; }), borderColor: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorHolding', 'Holding steady'), data: rawData.map(function (r) { return r.holding; }), borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorShifting', "Something's shifting"), data: rawData.map(function (r) { return r.shifting; }), borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', tension: 0.3, fill: false },
+                    { label: t('descriptorGood', 'In a good place'), data: rawData.map(function (r) { return r.good_place; }), borderColor: '#27ae60', backgroundColor: 'rgba(39, 174, 96, 0.1)', tension: 0.3, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: animDuration },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: t('chartPercentage', 'Percentage') }, ticks: { callback: function (v) { return v + '%'; } } },
+                    x: { title: { display: true, text: t('chartMonth', 'Month') } },
+                },
+            },
+        });
+    }
+
+    // 4. Program insights — distribution trend charts (one per metric)
+    function initDistributionTrendCharts() {
+        var el = document.getElementById('metric-trends-data');
+        if (!el) return;
+        var trendsData;
+        try { trendsData = JSON.parse(el.textContent); } catch (e) { return; }
+        if (!trendsData) return;
+
+        Object.keys(trendsData).forEach(function (metricId) {
+            var points = trendsData[metricId];
+            if (!Array.isArray(points) || points.length === 0) return;
+
+            var ctx = document.getElementById('distribution-trend-' + metricId);
+            if (!ctx || ctx.getAttribute('data-chart-init')) return;
+            ctx.setAttribute('data-chart-init', '1');
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: points.map(function (p) { return p.month; }),
+                    datasets: [
+                        { label: t('distributionLow', 'More support needed'), data: points.map(function (p) { return p.band_low_pct; }), borderColor: '#5e81ac', tension: 0.3, fill: false },
+                        { label: t('distributionHigh', 'Goals within reach'), data: points.map(function (p) { return p.band_high_pct; }), borderColor: '#a3be8c', tension: 0.3, fill: false },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: animDuration },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } },
+                    },
+                },
+            });
+        });
+    }
+
+    // Unified dispatcher — runs all chart initialisers that find their data element
+    function initAllCharts() {
+        if (typeof Chart === 'undefined') return;
+        initAnalysisCharts();
+        initClientTrendChart();
+        initDescriptorTrendChart();
+        initDistributionTrendCharts();
+    }
+
+    // Run on initial page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            // Chart.js may load after DOMContentLoaded (it's at bottom of base.html),
+            // so also listen for window load as a fallback
+            if (typeof Chart !== 'undefined') {
+                initAllCharts();
+            } else {
+                window.addEventListener('load', initAllCharts);
+            }
+        });
+    } else {
+        // DOM already ready (e.g. script loaded dynamically)
+        if (typeof Chart !== 'undefined') {
+            initAllCharts();
+        } else {
+            window.addEventListener('load', initAllCharts);
+        }
+    }
+
+    // Run after HTMX swaps in new content (e.g. tab navigation, insights load)
+    document.body.addEventListener('htmx:afterSettle', initAllCharts);
 })();
