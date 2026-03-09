@@ -1,6 +1,8 @@
 """Tests for client CRUD views and search."""
+from io import StringIO
 from unittest import mock
 
+from django.core.management import call_command
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from cryptography.fernet import Fernet
@@ -648,6 +650,38 @@ class CustomFieldTest(TestCase):
         self.assertEqual(cdv.get_value(), "secret-value-123")
         # Plain value field should be empty (stored encrypted instead)
         self.assertEqual(cdv.value, "")
+
+    def test_seed_intake_fields_reuses_oldest_duplicate_field(self):
+        """Seed command should not crash if old duplicate field definitions already exist."""
+        group = CustomFieldGroup.objects.create(title="Contact Information", sort_order=10)
+        first = CustomFieldDefinition.objects.create(
+            group=group,
+            name="Preferred Name",
+            input_type="text",
+            placeholder="First duplicate",
+            sort_order=0,
+        )
+        CustomFieldDefinition.objects.create(
+            group=group,
+            name="Preferred Name",
+            input_type="text",
+            placeholder="Second duplicate",
+            sort_order=10,
+        )
+
+        out = StringIO()
+        call_command("seed_intake_fields", stdout=out)
+
+        duplicates = CustomFieldDefinition.objects.filter(group=group, name="Preferred Name").order_by("pk")
+        self.assertEqual(duplicates.count(), 2)
+        self.assertEqual(duplicates.first().pk, first.pk)
+        self.assertTrue(
+            CustomFieldDefinition.objects.filter(
+                group=group,
+                name="Primary Phone",
+            ).exists()
+        )
+        self.assertIn("Duplicate custom field definition rows found", out.getvalue())
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
