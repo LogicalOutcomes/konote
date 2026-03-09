@@ -389,6 +389,7 @@ def demo_portal_login(request, record_id):
     from apps.admin_settings.models import FeatureToggle
     from apps.clients.models import ClientFile
     from apps.portal.models import ParticipantUser
+    from apps.portal.views import _set_emergency_logout_token
 
     # Check that the portal feature toggle is enabled — without this,
     # the redirect to /my/ would just 404 with no explanation.
@@ -436,7 +437,9 @@ def demo_portal_login(request, record_id):
     # Set portal session (same pattern as portal_login view)
     participant.last_login = timezone.now()
     participant.save(update_fields=["last_login"])
+    request.session.cycle_key()
     request.session["_portal_participant_id"] = str(participant.pk)
+    _set_emergency_logout_token(request)
 
     # Log demo portal login for operational awareness (excluded from PHIPA
     # audit pipeline via is_demo_context=True)

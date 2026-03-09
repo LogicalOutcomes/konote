@@ -299,6 +299,64 @@ class SeedDemoDataTest(TestCase):
         )
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=True)
+class GenerateDemoDataCommandTest(TestCase):
+    """Tests for generate_demo_data profile selection."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_uses_default_prosper_profile_when_present(self):
+        """generate_demo_data should auto-use the Prosper demo profile when present."""
+        out = io.StringIO()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            seeds_dir = Path(tmp_dir) / "seeds"
+            seeds_dir.mkdir(parents=True)
+            (seeds_dir / "prosper_canada_demo_profile.json").write_text(
+                "{}",
+                encoding="utf-8",
+            )
+
+            with self.settings(BASE_DIR=Path(tmp_dir)):
+                with unittest.mock.patch(
+                    "apps.admin_settings.management.commands.generate_demo_data.DemoDataEngine.run",
+                    return_value=True,
+                ) as run_mock:
+                    call_command("generate_demo_data", stdout=out)
+
+        self.assertEqual(
+            run_mock.call_args.kwargs["profile_path"],
+            "seeds/prosper_canada_demo_profile.json",
+        )
+        self.assertIn("Using default demo profile", out.getvalue())
+
+    def test_explicit_profile_overrides_default_profile(self):
+        """An explicit --profile argument should win over the default profile."""
+        out = io.StringIO()
+
+        with unittest.mock.patch(
+            "apps.admin_settings.management.commands.generate_demo_data.DemoDataEngine.run",
+            return_value=True,
+        ) as run_mock:
+            call_command(
+                "generate_demo_data",
+                profile="seeds/custom_profile.json",
+                stdout=out,
+            )
+
+        self.assertEqual(
+            run_mock.call_args.kwargs["profile_path"],
+            "seeds/custom_profile.json",
+        )
+        self.assertNotIn("Using default demo profile", out.getvalue())
+
+
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=False)
 class UpdateDemoClientFieldsTest(TestCase):
     """Tests for the update_demo_client_fields command."""

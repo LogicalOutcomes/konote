@@ -22,7 +22,7 @@
             <label for="id_first_name">{% trans "First Name" %} <abbr title="{% trans 'required' %}">*</abbr></label>
             <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" required {% if not editing and not form.errors %}autofocus{% endif %}{% if form.first_name.errors %} aria-invalid="true" aria-describedby="err_first_name"{% endif %}
                    hx-get="{% url 'clients:check_duplicate' %}"
-                   hx-trigger="input[this.value.length >= 3 && document.getElementById('id_birth_date').value !== ''] changed delay:1s"
+                     hx-trigger="input changed delay:1s"
                    hx-target="#duplicate-banner"
                    hx-include="[name='phone'], [name='first_name'], [name='birth_date'], [name='exclude']"
                    hx-sync="#duplicate-banner:replace">
@@ -96,11 +96,13 @@
     {% endif %}
 
     {% if form.programs.field.queryset.exists %}
-    <fieldset>
-        <legend>{{ term.program_plural|default:"Programs" }}</legend>
+    <fieldset{% if form.programs.errors %} aria-describedby="err_programs"{% endif %}>
+        <legend>{{ term.program_plural|default:"Programs" }}{% if form.programs.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</legend>
+        {% if form.programs.errors %}<small class="error" id="err_programs" role="alert">{{ form.programs.errors.0 }}</small>{% endif %}
         {% for program in form.programs.field.queryset %}
         <label>
             <input type="checkbox" name="programs" value="{{ program.pk }}"
+                   {% if form.programs.errors %}aria-invalid="true" aria-describedby="err_programs" {% endif %}
                    {% if program.pk in form.programs.value or program.pk|stringformat:"d" in form.programs.value %}checked{% endif %}>
             <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
             {{ program.translated_name }}
