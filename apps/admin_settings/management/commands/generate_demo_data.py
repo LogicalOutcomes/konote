@@ -10,6 +10,8 @@ Usage:
   python manage.py generate_demo_data --clients-per-program 5 --days 365
   python manage.py generate_demo_data --force  # regenerate from scratch
 """
+from pathlib import Path
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -17,11 +19,26 @@ from apps.admin_settings.demo_engine import DemoDataEngine
 
 
 class Command(BaseCommand):
+    DEFAULT_PROFILE_PATH = Path("seeds/prosper_canada_demo_profile.json")
+
     help = (
         "Generate demo data matching the instance's current configuration. "
         "Creates demo users, clients, plans, notes, and events that reflect "
         "the actual programs, metrics, and templates configured in this instance."
     )
+
+    def _resolve_profile_path(self, explicit_profile):
+        """Return the explicit profile, a known default profile, or None."""
+        if explicit_profile:
+            return explicit_profile
+
+        default_profile = Path(settings.BASE_DIR) / self.DEFAULT_PROFILE_PATH
+        if default_profile.exists():
+            resolved = self.DEFAULT_PROFILE_PATH.as_posix()
+            self.stdout.write(f"Using default demo profile: {resolved}")
+            return resolved
+
+        return None
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -62,10 +79,12 @@ class Command(BaseCommand):
 
         engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
 
+        profile_path = self._resolve_profile_path(options["profile"])
+
         success = engine.run(
             clients_per_program=options["clients_per_program"],
             days_span=options["days"],
-            profile_path=options["profile"] or None,
+            profile_path=profile_path,
             force=options["force"],
         )
 
