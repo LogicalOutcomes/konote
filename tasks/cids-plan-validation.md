@@ -2,7 +2,7 @@
 
 **Validated against:** CIDS Ontology v3.2.0 (July 28, 2025)
 **Source:** https://ontology.commonapproach.org/cids-en.html
-**Plan document:** tasks/cids-json-ld-export.md
+**Plan document:** tasks/cids-field-reference.md
 **Date:** 2026-02-24
 **Status:** Reviewed — all decisions resolved 2026-02-25
 

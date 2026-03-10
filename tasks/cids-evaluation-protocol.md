@@ -222,10 +222,9 @@ For each program, the evaluator produces a brief covering:
 
 | Document | Relationship |
 |----------|-------------|
-| [evaluation-planning-enrichment-implementation-spec.md](evaluation-planning-enrichment-implementation-spec.md) | Technical spec for the models and APIs that store this protocol's outputs |
-| [evaluation-planning-and-enrichment-workflow.md](evaluation-planning-and-enrichment-workflow.md) | Broader workflow including post-export enrichment (Stages A-H); this protocol covers Stages A-B |
+| [design-rationale/cids-privacy-architecture.md](design-rationale/cids-privacy-architecture.md) | Technical spec for the models and APIs that store this protocol's outputs |
 | [cids-evaluation-planning-prompt.md](cids-evaluation-planning-prompt.md) | The LLM prompt used during this protocol |
-| [cids-full-tier-compliance-assessment.md](cids-full-tier-compliance-assessment.md) | Technical gap analysis for Full Tier export code |
+| [cids-compliance-summary.md](cids-compliance-summary.md) | Current CIDS compliance tier and what is implemented |
 | [cids-classification-implementation.md](cids-classification-implementation.md) | Taxonomy mapping pipeline (Phase 3 literature review feeds into this) |
 | [wireframes/demo-full-tier-export.jsonld](wireframes/demo-full-tier-export.jsonld) | Worked example of the final JSON-LD output |
 | [wireframes/evaluation-framework-editor.html](wireframes/evaluation-framework-editor.html) | UI wireframe for entering framework data in KoNote |

@@ -1,11 +1,10 @@
 # Evaluation Planning and Privacy-First Full Tier CIDS Implementation Spec
 
 Date: 2026-03-07
-Revised: 2026-03-07
-Status: Draft implementation spec (revised after expert panel review)
-Depends on:
-- tasks/post-export-ai-enrichment-design.md
-- tasks/evaluation-planning-and-enrichment-workflow.md
+Revised: 2026-03-10
+Status: Built and deployed (CIDS-DEPLOY1, PR #422, 2026-03-07). This is a design rationale record — it documents the architecture decisions made before and during implementation.
+Related:
+- tasks/post-export-ai-enrichment-design.md (Phases 2 & 3, deferred)
 
 ## Purpose
 

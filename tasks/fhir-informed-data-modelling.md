@@ -2,7 +2,7 @@
 
 **Task ID:** FHIR-DATA1
 **Created:** 2026-02-27
-**Status:** Draft — awaiting GK review
+**Status:** GK reviewed 2026-03-10. Implementation complete (interleaved with CIDS phases, CIDS-DEPLOY1 PR #422).
 **Depends on:** Interleaved with CIDS phases (see Sequencing section)
 **Reviewed by:** Second expert panel (4 experts, 3 rounds) — 5 revisions incorporated 2026-02-27
 **Expert panel:** 5-expert panel (Social Services Data Architect, Health Informatics Specialist, Nonprofit Technology Strategist, Evaluation & Measurement Specialist, Systems Architect) — consensus reached 2026-02-27

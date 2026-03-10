@@ -1,8 +1,8 @@
-# CIDS JSON-LD Export — Implementation Plan
+# CIDS Field Reference — Model-to-Standard Mapping
 
 **Task ID:** CIDS-EXPORT1
 **Created:** 2026-02-21
-**Status:** Validated against CIDS 3.2.0 — GO with corrections (see tasks/cids-plan-validation.md)
+**Status:** Built and deployed (CIDS-DEPLOY1, PR #422, 2026-03-07). Use this as the reference for which Django fields map to which CIDS classes.
 **Validated:** 2026-02-24 — 5 critical corrections applied inline, 6 Phase 3 items documented
 **Strategic value:** Full CIDS compliance would make KoNote one of the first participant management systems in Canada to deliver standardised impact data exports — a significant differentiator for funder adoption across the nonprofit sector.
 

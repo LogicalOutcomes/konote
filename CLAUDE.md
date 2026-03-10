@@ -218,7 +218,8 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 |---------|----------|
 | Task dashboard (one line per task) | `TODO.md` |
 | Task detail, subtasks, context, notes | `tasks/*.md` |
-| Phase prompts for Claude Code | `tasks/phase-*-prompt.md` |
+| Phase prompts for Claude Code | `tasks/phase-*-prompt.md` — **delete when the phase PR merges** |
+| Agent execution prompts (single-use) | `tasks/agent-prompts/` — **delete when the phase PR merges** |
 | Review prompts, framework, and results | `konote-ops/reviews/` (private repo) |
 | Design rationale for complex features | `tasks/design-rationale/*.md` |
 | Decisions, notes, changelog | `CHANGELOG.md` |
