@@ -63,6 +63,7 @@
                                style="margin-bottom:0">
                         <button type="button" class="outline secondary copy-btn"
                                 data-clipboard-text="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
+                                aria-label="{% trans 'Copy survey link' %}"
                                 style="margin-bottom:0; white-space:nowrap">{% trans "Copy" %}</button>
                     </div>
                 {% else %}
