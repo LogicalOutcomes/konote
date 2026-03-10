@@ -11,7 +11,7 @@
 # The /deploy-to-vps skill runs this via: ssh konote-vps /opt/konote/deploy.sh [flags]
 #
 # What it does:
-#   1. Pulls latest develop branch
+#   1. Pulls latest code (main for production, develop for dev)
 #   2. Rebuilds the web container
 #   3. Restarts containers
 #   4. Waits for health check
@@ -109,20 +109,23 @@ deploy_instance() {
     echo "=== Pulling latest code ==="
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
 
-    # Ensure dev instance is on the develop branch (not main).
-    # Production stays on whatever branch it's on (typically main).
+    # Determine the correct branch for this instance
+    local target_branch="main"
     if [ "$is_dev" = "true" ]; then
-        local current_branch
-        current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
-        if [ "$current_branch" != "develop" ]; then
-            echo -e "  ${YELLOW}Dev instance on '${current_branch}' — switching to 'develop'${NC}"
-            git fetch origin develop
-            git checkout develop
-            git reset --hard origin/develop
-        fi
+        target_branch="develop"
     fi
 
-    git pull origin develop
+    # Ensure the instance is on the correct branch
+    local current_branch
+    current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+    if [ "$current_branch" != "$target_branch" ]; then
+        echo -e "  ${YELLOW}Instance on '${current_branch}' — switching to '${target_branch}'${NC}"
+        git fetch origin "$target_branch"
+        git checkout "$target_branch"
+        git reset --hard "origin/${target_branch}"
+    fi
+
+    git pull origin "$target_branch"
 
     # --- Record after-commit ---
     local after_commit
