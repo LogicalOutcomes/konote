@@ -231,15 +231,26 @@ DEMO_PORTAL_LOGIN_PREVIEW_LIMIT = 3
 
 
 def get_demo_portal_participants(limit=DEMO_PORTAL_LOGIN_PREVIEW_LIMIT):
-    """Return a small, stable set of demo participants for login shortcuts."""
-    return list(
+    """Return a small, stable set of demo participants for login shortcuts.
+
+    When instance-specific demo data exists (for example ``PC-*`` records for
+    a client demo), prefer those over the generic ``DEMO-*`` shortcuts so the
+    login page matches the active seeded dataset for the environment.
+    """
+    base_qs = (
         ParticipantUser.objects.filter(
             is_active=True,
             mfa_method="exempt",
+            client_file__is_demo=True,
         )
         .select_related("client_file")
-        .order_by("client_file__record_id")[:limit]
+        .order_by("client_file__record_id")
     )
+    instance_specific_qs = base_qs.exclude(
+        client_file__record_id__startswith="DEMO-"
+    )
+    qs = instance_specific_qs if instance_specific_qs.exists() else base_qs
+    return list(qs[:limit])
 
 
 # ---------------------------------------------------------------------------
