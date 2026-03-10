@@ -22873,3 +22873,27 @@ msgstr ""
 
 msgid "Why we're asking"
 msgstr ""
+
+msgid "Copy AI draft to clipboard"
+msgstr ""
+
+msgid "Copy Outlook link"
+msgstr ""
+
+msgid "Copy calendar link"
+msgstr ""
+
+msgid "Copy direct link"
+msgstr ""
+
+msgid "Copy embed code"
+msgstr ""
+
+msgid "Copy export link"
+msgstr ""
+
+msgid "Copy registration link"
+msgstr ""
+
+msgid "Copy survey link"
+msgstr ""
