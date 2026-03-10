@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -231,15 +232,35 @@ DEMO_PORTAL_LOGIN_PREVIEW_LIMIT = 3
 
 
 def get_demo_portal_participants(limit=DEMO_PORTAL_LOGIN_PREVIEW_LIMIT):
-    """Return a small, stable set of demo participants for login shortcuts."""
-    return list(
+    """Return a small, stable set of demo participants for login shortcuts.
+
+    When instance-specific demo data exists (for example ``PC-*`` records for
+    a client demo), prefer those over the generic ``DEMO-*`` shortcuts so the
+    login page matches the active seeded dataset for the environment.
+
+    We support both the explicit ``client_file.is_demo`` flag and the legacy
+    record-id conventions used by the quick-login route (``DEMO-*``/``PC-*``),
+    because tests and older seeded data still rely on those record IDs even
+    when the boolean flag was not set at creation time.
+    """
+    base_qs = (
         ParticipantUser.objects.filter(
             is_active=True,
             mfa_method="exempt",
         )
+        .filter(
+            Q(client_file__is_demo=True)
+            | Q(client_file__record_id__startswith="DEMO-")
+            | Q(client_file__record_id__startswith="PC-")
+        )
         .select_related("client_file")
-        .order_by("client_file__record_id")[:limit]
+        .order_by("client_file__record_id")
     )
+    instance_specific_qs = base_qs.exclude(
+        client_file__record_id__startswith="DEMO-"
+    )
+    qs = instance_specific_qs if instance_specific_qs.exists() else base_qs
+    return list(qs[:limit])
 
 
 # ---------------------------------------------------------------------------

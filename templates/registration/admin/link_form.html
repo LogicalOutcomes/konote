@@ -16,7 +16,7 @@
     <p>
         <strong>{% trans "Registration URL:" %}</strong><br>
         <code id="registration-url">{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}</code>
-        <button type="button" class="outline secondary copy-btn" data-clipboard-target="#registration-url" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem;">{% trans "Copy" %}</button>
+        <button type="button" class="outline secondary copy-btn" data-clipboard-target="#registration-url" aria-label="{% trans 'Copy registration link' %}" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem;">{% trans "Copy" %}</button>
     </p>
 </article>
 {% endif %}

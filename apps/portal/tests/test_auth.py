@@ -205,10 +205,15 @@ class PortalAuthTests(TestCase):
     @override_settings(DEMO_MODE=True)
     def test_portal_login_caps_demo_participants_to_three(self):
         """The portal login page should only preview three demo participants."""
+        self.client_file.record_id = "DEMO-001"
+        self.client_file.is_demo = True
+        self.client_file.save(update_fields=["record_id", "is_demo"])
+
         for index in range(2, 6):
             client_file = ClientFile.objects.create(
-                record_id=f"TEST-{index:03d}",
+                record_id=f"DEMO-{index:03d}",
                 status="active",
+                is_demo=True,
             )
             client_file.first_name = f"Demo {index}"
             client_file.last_name = "Participant"

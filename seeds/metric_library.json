@@ -2,8 +2,8 @@
   {
     "name": "PHQ-9 (Depression)",
     "name_fr": "PHQ-9 (Dépression)",
-    "definition": "Patient Health Questionnaire-9. Scores 0-27. Measures depression severity: 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe.",
-    "definition_fr": "Questionnaire sur la santé du patient-9. Scores 0-27. Mesure la sévérité de la dépression : 0-4 minimale, 5-9 légère, 10-14 modérée, 15-19 modérément sévère, 20-27 sévère.",
+    "definition": "Patient Health Questionnaire-9. Scores 0-27. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe depression.",
+    "definition_fr": "Questionnaire de santé du patient-9. Scores de 0 à 27. 0-4 minimale, 5-9 légère, 10-14 modérée, 15-19 modérément sévère, 20-27 sévère.",
     "category": "mental_health",
     "min_value": 0,
     "max_value": 27,
@@ -16,15 +16,23 @@
       {"min": 0, "max": 4, "label": "Minimal", "label_fr": "Minimale"},
       {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
       {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
-      {"min": 15, "max": 19, "label": "Moderately severe", "label_fr": "Modérément sévère"},
+      {"min": 15, "max": 19, "label": "Moderately Severe", "label_fr": "Modérément sévère"},
       {"min": 20, "max": 27, "label": "Severe", "label_fr": "Sévère"}
+    ],
+    "rationale_log": [
+      {
+        "date": "2026-03-04",
+        "note": "Patient Health Questionnaire-9 (Kroenke et al., 2001). Validated screening and monitoring tool for depression severity with widely used published cut-points. Common in community mental health, primary care, and nonprofit counselling settings.",
+        "note_fr": "Questionnaire de santé du patient-9 (Kroenke et al., 2001). Outil validé de dépistage et de suivi de la sévérité de la dépression avec seuils publiés largement utilisés. Courant en santé mentale communautaire, en soins primaires et dans les services de counseling communautaires.",
+        "author": "System"
+      }
     ]
   },
   {
     "name": "GAD-7 (Anxiety)",
     "name_fr": "GAD-7 (Anxiété)",
-    "definition": "Generalized Anxiety Disorder-7. Scores 0-21. Measures anxiety severity: 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe.",
-    "definition_fr": "Trouble d'anxiété généralisée-7. Scores 0-21. Mesure la sévérité de l'anxiété : 0-4 minimale, 5-9 légère, 10-14 modérée, 15-21 sévère.",
+    "definition": "Generalized Anxiety Disorder-7. Scores 0-21. 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe anxiety.",
+    "definition_fr": "Échelle du trouble d'anxiété généralisée-7. Scores de 0 à 21. 0-4 minimale, 5-9 légère, 10-14 modérée, 15-21 sévère.",
     "category": "mental_health",
     "min_value": 0,
     "max_value": 21,
@@ -38,6 +46,14 @@
       {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
       {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
       {"min": 15, "max": 21, "label": "Severe", "label_fr": "Sévère"}
+    ],
+    "rationale_log": [
+      {
+        "date": "2026-03-04",
+        "note": "Generalized Anxiety Disorder-7 (Spitzer et al., 2006). Validated screening and monitoring tool for generalized anxiety severity with published cut-points. Widely used in community counselling, primary care, and outcome monitoring.",
+        "note_fr": "Échelle du trouble d'anxiété généralisée-7 (Spitzer et al., 2006). Outil validé de dépistage et de suivi de la sévérité de l'anxiété généralisée avec seuils publiés. Largement utilisé en counseling communautaire, en soins primaires et pour le suivi des résultats.",
+        "author": "System"
+      }
     ]
   },
   {
@@ -58,6 +74,14 @@
       {"min": 20, "max": 24, "label": "Mild", "label_fr": "Légère"},
       {"min": 25, "max": 29, "label": "Moderate", "label_fr": "Modérée"},
       {"min": 30, "max": 50, "label": "Severe", "label_fr": "Sévère"}
+    ],
+    "rationale_log": [
+      {
+        "date": "2026-03-04",
+        "note": "Kessler Psychological Distress Scale (Kessler et al., 2002). Validated screening tool for non-specific psychological distress. Scores 10-50 with published severity bands. Widely used in Canadian community services and population health surveys.",
+        "note_fr": "Échelle de détresse psychologique de Kessler (Kessler et al., 2002). Outil de dépistage validé pour la détresse psychologique non spécifique. Scores de 10 à 50 avec bandes de sévérité publiées. Largement utilisé dans les services communautaires canadiens et les enquêtes de santé publique.",
+        "author": "System"
+      }
     ]
   },
   {
