@@ -110,18 +110,15 @@ deploy_instance() {
 
     # Preserve the Caddyfile — multi-instance setups use a custom Caddyfile
     # that differs from the single-instance template in the repo. Without
-    # this, `git checkout -- .` overwrites it and Caddy routes break.
-    local caddyfile_backup=""
+    # this, git operations overwrite it and Caddy routes break.
+    # Uses cp (not shell variable) to preserve the file byte-for-byte.
+    local caddyfile_saved=false
     if [ -f "Caddyfile" ]; then
-        caddyfile_backup=$(cat Caddyfile)
+        cp Caddyfile /tmp/.caddyfile.deploy.bak
+        caddyfile_saved=true
     fi
 
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
-
-    # Restore the Caddyfile if it was customised (differs from repo version)
-    if [ -n "$caddyfile_backup" ]; then
-        echo "$caddyfile_backup" > Caddyfile
-    fi
 
     # Determine the correct branch for this instance
     local target_branch="main"
@@ -137,17 +134,14 @@ deploy_instance() {
         git fetch origin "$target_branch"
         git checkout "$target_branch"
         git reset --hard "origin/${target_branch}"
-        # Re-restore Caddyfile after branch switch
-        if [ -n "$caddyfile_backup" ]; then
-            echo "$caddyfile_backup" > Caddyfile
-        fi
     fi
 
     git pull origin "$target_branch"
 
-    # Re-restore Caddyfile after pull (pull can overwrite tracked files)
-    if [ -n "$caddyfile_backup" ]; then
-        echo "$caddyfile_backup" > Caddyfile
+    # Restore the Caddyfile after all git operations are done
+    if [ "$caddyfile_saved" = "true" ]; then
+        cp /tmp/.caddyfile.deploy.bak Caddyfile
+        rm -f /tmp/.caddyfile.deploy.bak
     fi
 
     # --- Record after-commit ---
@@ -173,28 +167,22 @@ deploy_instance() {
     echo "=== Restarting ==="
     docker compose up -d
 
-    # --- Ensure Caddy can reach this instance's web container ---
+    # --- Ensure Caddy can reach this instance + verify routing ---
     # Caddy runs in the production stack. For the dev instance, Caddy needs to
     # be connected to the dev frontend network so it can reverse-proxy to
-    # konote-dev-web. This is idempotent — it's a no-op if already connected.
+    # konote-dev-web. Also verify the Caddyfile uses explicit container names
+    # (not bare service names) to prevent Docker DNS conflicts.
     if [ "$is_dev" = "true" ]; then
         local caddy_container="konote-caddy-1"
         local dev_network="konote-dev_frontend"
         if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+            # Connect Caddy to dev network (idempotent)
             if ! docker inspect "$caddy_container" --format '{{json .NetworkSettings.Networks}}' | grep -q "$dev_network"; then
                 echo "=== Connecting Caddy to dev frontend network ==="
                 docker network connect "$dev_network" "$caddy_container" 2>/dev/null || true
             fi
-        fi
-    fi
 
-    # --- Verify Caddy routing (multi-instance DNS conflict prevention) ---
-    # When Caddy is connected to multiple frontend networks, the bare service
-    # name "web" can resolve to the wrong container. Verify that the Caddyfile
-    # uses explicit container names, not bare service names.
-    if [ "$is_dev" = "true" ]; then
-        local caddy_container="konote-caddy-1"
-        if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+            # Warn if Caddyfile uses bare service names (DNS conflict risk)
             local caddyfile_content
             caddyfile_content=$(docker exec "$caddy_container" cat /etc/caddy/Caddyfile 2>/dev/null || true)
             if echo "$caddyfile_content" | grep -q "reverse_proxy web:"; then
