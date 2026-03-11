@@ -101,6 +101,10 @@ MIDDLEWARE = [
     "konote.middleware.health_check.HealthCheckMiddleware",
     # SecurityMiddleware MUST be second for security headers
     "django.middleware.security.SecurityMiddleware",
+    # EmbedFramingMiddleware MUST be early (before Session/CSRF) so its
+    # response handler runs AFTER those middlewares set their cookies,
+    # allowing it to patch SameSite=None for cross-origin embeds.
+    "konote.middleware.embed_framing.EmbedFramingMiddleware",
     # WhiteNoiseMiddleware serves static files directly, before tenant resolution
     "whitenoise.middleware.WhiteNoiseMiddleware",
     # TenantMainMiddleware sets the PostgreSQL schema based on subdomain
@@ -120,9 +124,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
-    # EmbedFramingMiddleware MUST be after XFrameOptions and CSP so it can
-    # override their headers for ?embed=1 requests on public pages.
-    "konote.middleware.embed_framing.EmbedFramingMiddleware",
 ]
 
 ROOT_URLCONF = "konote.urls"

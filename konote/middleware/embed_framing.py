@@ -52,11 +52,17 @@ class EmbedFramingMiddleware:
 
         if is_embed:
             # 1. Allow framing from configured origins.
+            #    Override both CSP and X-Frame-Options headers directly
+            #    (runs after XFrameOptionsMiddleware and CSPMiddleware).
             frame_ancestors = " ".join(allowed_origins)
             response["Content-Security-Policy"] = (
                 f"frame-ancestors 'self' {frame_ancestors}"
             )
-            response.xframe_options_exempt = True
+            # Remove X-Frame-Options: DENY set by XFrameOptionsMiddleware.
+            # CSP frame-ancestors is the authoritative directive; we delete
+            # the legacy header to avoid conflicts.
+            if "X-Frame-Options" in response:
+                del response["X-Frame-Options"]
 
             # 2. Set SameSite=None on CSRF and session cookies so the
             #    browser sends them on cross-origin POST from the iframe.
