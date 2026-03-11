@@ -120,6 +120,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    # EmbedFramingMiddleware MUST be after XFrameOptions and CSP so it can
+    # override their headers for ?embed=1 requests on public pages.
+    "konote.middleware.embed_framing.EmbedFramingMiddleware",
 ]
 
 ROOT_URLCONF = "konote.urls"
