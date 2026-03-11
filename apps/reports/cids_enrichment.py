@@ -17,8 +17,6 @@ References CIDS v3.2 (not v2.0).
 """
 import logging
 
-from django.utils.translation import gettext_lazy as _lazy
-
 logger = logging.getLogger(__name__)
 
 
