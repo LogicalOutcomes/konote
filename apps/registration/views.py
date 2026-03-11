@@ -1,5 +1,9 @@
-"""Public registration views."""
-from django.conf import settings
+"""Public registration views.
+
+Iframe embedding (?embed=1) is handled by EmbedFramingMiddleware — views
+just use plain render() and the middleware overrides X-Frame-Options / CSP
+frame-ancestors for embeddable URL prefixes.
+"""
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -16,51 +20,6 @@ from .utils import approve_submission
 def _is_embed_mode(request):
     """Check if request is for embed mode (iframe display)."""
     return request.GET.get("embed") == "1"
-
-
-def _render_with_frame_options(request, template, context, allow_framing=False):
-    """Render template with appropriate X-Frame-Options / CSP frame-ancestors header.
-
-    When allow_framing is False (the default) the global X_FRAME_OPTIONS=DENY
-    setting applies and no CSP override is added.
-
-    When allow_framing is True (embed mode):
-    - EMBED_ALLOWED_ORIGINS from settings controls which parent origins may
-      frame the page.  An empty list means framing is denied even with ?embed=1.
-    - A CSP frame-ancestors directive is added to the response; it is the
-      authoritative browser-side restriction in CSP-capable browsers.
-    - response.xframe_options_exempt is set only when origins are configured, so
-      Django's XFrameOptionsMiddleware does not add a conflicting DENY header.
-
-    Args:
-        request: The HTTP request
-        template: Template path to render
-        context: Template context dict
-        allow_framing: If True, applies allowed-origins framing policy
-
-    Returns:
-        HttpResponse with appropriate framing headers
-    """
-    response = render(request, template, context)
-    if allow_framing:
-        allowed_origins = getattr(settings, "EMBED_ALLOWED_ORIGINS", [])
-        if not allowed_origins:
-            # No origins configured — deny framing even when ?embed=1 is passed.
-            # Return 403 so the integrating site gets a clear signal rather than
-            # silently displaying a broken embed.
-            from django.http import HttpResponseForbidden
-            return HttpResponseForbidden(
-                "Iframe embedding is not enabled for this instance. "
-                "Set EMBED_ALLOWED_ORIGINS in the environment to allow specific origins."
-            )
-        # Build CSP frame-ancestors value.
-        # "*" is a valid wildcard (dev only); in production set explicit origins.
-        frame_ancestors = " ".join(allowed_origins)
-        response["Content-Security-Policy"] = f"frame-ancestors 'self' {frame_ancestors}"
-        # Tell Django's XFrameOptionsMiddleware to skip so it does not override
-        # the CSP directive with an X-Frame-Options: DENY header.
-        response.xframe_options_exempt = True
-    return response
 
 
 # Rate limiting constants
@@ -181,11 +140,10 @@ def public_registration_form(request, slug):
 
     # If closed, show the closed page with appropriate message
     if closed_reason:
-        return _render_with_frame_options(
+        return render(
             request,
             closed_template,
             {"registration_link": registration_link, "reason": closed_reason},
-            allow_framing=embed_mode,
         )
 
     # Get capacity info for display
@@ -212,27 +170,26 @@ def public_registration_form(request, slug):
         if is_open and not is_rate_limited:
             form = PublicRegistrationForm(registration_link=registration_link)
             context["form"] = form
-        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
+        return render(request, form_template, context)
 
     # POST handling - re-check if still open (race condition protection)
     closed_reason = registration_link.is_closed_reason
     if closed_reason:
-        return _render_with_frame_options(
+        return render(
             request,
             closed_template,
             {"registration_link": registration_link, "reason": closed_reason},
-            allow_framing=embed_mode,
         )
 
     if is_rate_limited:
         context["rate_limit_error"] = True
-        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
+        return render(request, form_template, context)
 
     form = PublicRegistrationForm(request.POST, registration_link=registration_link)
     context["form"] = form
 
     if not form.is_valid():
-        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
+        return render(request, form_template, context)
 
     # Create the submission
     submission = RegistrationSubmission(
@@ -333,4 +290,4 @@ def registration_submitted(request, slug):
     }
 
     template = "registration/submitted_embed.html" if embed_mode else "registration/submitted.html"
-    return _render_with_frame_options(request, template, context, allow_framing=embed_mode)
+    return render(request, template, context)
