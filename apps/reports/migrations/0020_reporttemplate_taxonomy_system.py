@@ -3,6 +3,12 @@
 from django.db import migrations, models
 
 
+def set_existing_templates_iris_plus(apps, schema_editor):
+    """Set taxonomy_system='iris_plus' for existing templates that default to ''."""
+    ReportTemplate = apps.get_model("reports", "ReportTemplate")
+    ReportTemplate.objects.filter(taxonomy_system="").update(taxonomy_system="iris_plus")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -33,5 +39,9 @@ class Migration(migrations.Migration):
                 ),
                 max_length=50,
             ),
+        ),
+        migrations.RunPython(
+            set_existing_templates_iris_plus,
+            migrations.RunPython.noop,
         ),
     ]

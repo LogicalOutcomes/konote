@@ -209,6 +209,7 @@ class ReportTemplate(models.Model):
             "When blank, the default HTML report template is used."
         ),
     )
+    # Keep in sync with TaxonomyMapping.TAXONOMY_SYSTEMS (excludes common_approach)
     TAXONOMY_SYSTEMS = [
         ("iris_plus", _("IRIS+")),
         ("sdg", _("SDG")),
