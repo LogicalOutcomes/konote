@@ -34,7 +34,20 @@ If the wrapper script is unavailable, fall back to the direct SSH commands below
    - Timeout: 5 minutes (build ~30s, migrations can take longer).
    - For dev: if migrations fail, the script auto-resets the database (drop, recreate, re-migrate, re-seed demo data). This is safe because dev only has demo data.
 
-4. If the script exits `0` and prints `Deploy complete`, tell the user the deploy succeeded.
+4. If the script exits `0` and prints `Deploy complete`, verify the site is reachable:
+
+   ```
+   curl -sI --max-time 10 https://konote.llewelyn.ca/auth/login/ 2>&1 | head -1
+   ```
+
+   For dev:
+   ```
+   curl -sI --max-time 10 https://konote-dev.llewelyn.ca/auth/login/ 2>&1 | head -1
+   ```
+
+   If curl returns `HTTP/1.1 200 OK` or a `302` redirect, the deploy succeeded. Tell the user.
+
+   If curl returns `404 Not Found` despite healthy containers, **Caddy is routing to the wrong container** (Docker DNS conflict). Check that the Caddyfile uses explicit container names (`konote-web-1`, `konote-dev-web-1`), not bare service names (`web`). See the troubleshooting section of `docs/deploy-ovhcloud.md` for the fix.
 
 5. Only if the deploy fails or prints a warning, inspect logs.
 
