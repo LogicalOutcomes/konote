@@ -214,7 +214,7 @@ def generate_template_csv_rows(
 
 
 def generate_template_report(template, date_from, date_to, period_label,
-                             user, export_format, request, taxonomy_lens="iris_plus"):
+                             user, export_format, request, taxonomy_lens=""):
     """
     Generate a template-driven report.
 

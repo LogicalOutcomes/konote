@@ -105,7 +105,7 @@ def template_report_preview(request):
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
     period_label = form.cleaned_data.get("period_label", f"{date_from} to {date_to}")
-    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
+    taxonomy_lens = template.taxonomy_system
 
     # Generate report data using the same pipeline as the download path
     programs = list(template.partner.get_programs())
