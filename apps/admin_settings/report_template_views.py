@@ -129,18 +129,12 @@ def report_template_confirm(request):
 @admin_required
 def report_template_detail(request, profile_id):
     """View a report template's breakdowns and partner details."""
-    profile = get_object_or_404(
-        ReportTemplate.objects.select_related("partner").prefetch_related(
-            "breakdowns", "report_metrics__metric_definition",
-        ),
-        pk=profile_id,
-    )
-
-    # Handle inline taxonomy_system update
+    # Handle inline taxonomy_system update (light query — no prefetch needed)
     if request.method == "POST" and "taxonomy_system" in request.POST:
+        profile = get_object_or_404(ReportTemplate, pk=profile_id)
         new_value = request.POST.get("taxonomy_system", "")
-        valid_values = {v for v, _ in ReportTemplate.TAXONOMY_SYSTEMS}
-        if new_value == "" or new_value in valid_values:
+        valid_values = {"", *(v for v, _ in ReportTemplate.TAXONOMY_SYSTEMS)}
+        if new_value in valid_values:
             profile.taxonomy_system = new_value
             profile.save(update_fields=["taxonomy_system"])
             messages.success(request, _("Taxonomy system updated."))
@@ -148,6 +142,12 @@ def report_template_detail(request, profile_id):
             messages.error(request, _("Invalid taxonomy system."))
         return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
+    profile = get_object_or_404(
+        ReportTemplate.objects.select_related("partner").prefetch_related(
+            "breakdowns", "report_metrics__metric_definition",
+        ),
+        pk=profile_id,
+    )
     return render(request, "admin_settings/funder_profiles/detail.html", {
         "profile": profile,
     })

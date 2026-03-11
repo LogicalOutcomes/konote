@@ -29,6 +29,7 @@
                         <option value="{{ value }}"{% if profile.taxonomy_system == value %} selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
+                    <noscript><button type="submit" class="outline secondary" style="display: inline-block; width: auto;">{% trans "Save" %}</button></noscript>
                 </form>
             </dd>
             <dt>{% trans "Partner" %}</dt>
