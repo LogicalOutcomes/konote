@@ -2131,3 +2131,43 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     // Run after HTMX swaps in new content (e.g. tab navigation, insights load)
     document.body.addEventListener('htmx:afterSettle', initAllCharts);
 })();
+
+// --- Global loading state for async buttons (UX/A11Y) ---
+// Automatically sets aria-busy="true" on submit buttons during HTMX requests.
+// This triggers Pico CSS's built-in loading spinner and communicates busy state to screen readers.
+(function () {
+    document.body.addEventListener('htmx:beforeRequest', function (event) {
+        var elt = event.detail.elt;
+        if (!elt) return;
+
+        var btn = null;
+        if (elt.tagName === 'FORM') {
+            btn = elt.querySelector('button[type="submit"]');
+        } else if (elt.tagName === 'BUTTON' || elt.tagName === 'A') {
+            btn = elt;
+        }
+
+        if (btn && !btn.hasAttribute('aria-busy')) {
+            btn.setAttribute('aria-busy', 'true');
+            // Store a flag so we only remove it if we added it
+            btn.setAttribute('data-htmx-busy', 'true');
+        }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function (event) {
+        var elt = event.detail.elt;
+        if (!elt) return;
+
+        var btn = null;
+        if (elt.tagName === 'FORM') {
+            btn = elt.querySelector('button[type="submit"]');
+        } else if (elt.tagName === 'BUTTON' || elt.tagName === 'A') {
+            btn = elt;
+        }
+
+        if (btn && btn.getAttribute('data-htmx-busy') === 'true') {
+            btn.removeAttribute('aria-busy');
+            btn.removeAttribute('data-htmx-busy');
+        }
+    });
+})();
