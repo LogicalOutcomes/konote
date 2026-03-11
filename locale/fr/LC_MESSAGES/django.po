@@ -22897,3 +22897,39 @@ msgstr ""
 
 msgid "Copy survey link"
 msgstr ""
+
+msgid "CIDS / IRIS+"
+msgstr "CIDS / IRIS+"
+
+msgid "ESDC"
+msgstr "EDSC"
+
+msgid "IRIS+"
+msgstr "IRIS+"
+
+msgid "Invalid taxonomy system."
+msgstr "Système de taxonomie invalide."
+
+msgid "None (no appendix)"
+msgstr "Aucun (pas d'annexe)"
+
+msgid "Provincial"
+msgstr "Provincial"
+
+msgid "Public Health Agency of Canada"
+msgstr "Agence de la santé publique du Canada"
+
+msgid "SDG"
+msgstr "ODD"
+
+msgid "Standards Taxonomy"
+msgstr "Taxonomie de normes"
+
+msgid "Standards taxonomy system"
+msgstr "Système de taxonomie de normes"
+
+msgid "Taxonomy system updated."
+msgstr "Système de taxonomie mis à jour."
+
+msgid "United Way"
+msgstr "Centraide"
