@@ -124,6 +124,7 @@ class TaxonomyReportingBrowserTest(BrowserTestBase):
             period_type="quarterly",
             period_alignment="fiscal",
             output_format="mixed",
+            taxonomy_system="sdg",
         )
         ReportMetric.objects.create(
             report_template=self.report_template,
@@ -167,7 +168,7 @@ class TaxonomyReportingBrowserTest(BrowserTestBase):
         self.page.select_option("#id_report_template", str(self.report_template.pk))
         fiscal_year = self.page.locator("#id_fiscal_year option").nth(1).get_attribute("value")
         self.page.select_option("#id_fiscal_year", fiscal_year)
-        self.page.select_option("#id_taxonomy_lens", "sdg")
+
         self.page.check("input[name='format'][value='html']")
         self.page.fill("#id_recipient", "Jordan Lee, City Funder")
         self.page.fill("#id_recipient_reason", "Quarterly partner reporting")
@@ -184,7 +185,7 @@ class TaxonomyReportingBrowserTest(BrowserTestBase):
         self.wait_for_htmx()
         period_value = self.page.locator("#id_period option").nth(0).get_attribute("value")
         self.page.select_option("#id_period", period_value)
-        self.page.select_option("#id_taxonomy_lens", "sdg")
+
         self.page.fill("#id_recipient", "Jordan Lee, City Funder")
         self.page.fill("#id_recipient_reason", "Quarterly partner reporting")
         self.page.get_by_role("button", name="Preview on Screen").click()

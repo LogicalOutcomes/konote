@@ -209,6 +209,28 @@ class ReportTemplate(models.Model):
             "When blank, the default HTML report template is used."
         ),
     )
+    TAXONOMY_SYSTEMS = [
+        ("iris_plus", _("IRIS+")),
+        ("sdg", _("SDG")),
+        ("cids_iris", _("CIDS / IRIS+")),
+        ("united_way", _("United Way")),
+        ("phac", _("Public Health Agency of Canada")),
+        ("provincial", _("Provincial")),
+        ("esdc", _("ESDC")),
+        ("custom", _("Custom")),
+    ]
+
+    taxonomy_system = models.CharField(
+        max_length=50,
+        choices=TAXONOMY_SYSTEMS,
+        blank=True,
+        default="",
+        help_text=_(
+            "Which external taxonomy framework this report uses for its "
+            "standards alignment appendix (e.g., IRIS+, SDG, United Way). "
+            "Leave blank if no taxonomy appendix is needed."
+        ),
+    )
     include_all_metrics = models.BooleanField(
         default=False,
         help_text=_(

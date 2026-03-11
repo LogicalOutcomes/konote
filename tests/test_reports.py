@@ -1949,13 +1949,16 @@ class FunderReportViewTests(TestCase):
 
     def test_funder_report_cids_json_export_uses_selected_taxonomy(self):
         self._seed_cids_export_data()
+        # Set the template's taxonomy_system so the report uses SDG
+        if hasattr(self, "report_template") and self.report_template:
+            self.report_template.taxonomy_system = "sdg"
+            self.report_template.save()
         self.client.login(username="admin", password="testpass123")
         resp = self._submit_funder_report_through_approval(
             {
                 "program": self.program.pk,
                 "fiscal_year": "2025",
                 "format": "cids_json",
-                "taxonomy_lens": "sdg",
                 "recipient": "self",
                 "recipient_reason": "Standards export",
             },
@@ -2408,6 +2411,9 @@ class GenerateReportViewTest(TestCase):
         from apps.reports.forms import build_period_choices
 
         self._seed_template_cids_export_data()
+        # Set the template's taxonomy_system so the report uses SDG
+        self.template.taxonomy_system = "sdg"
+        self.template.save()
         self.client_http.login(username="admin", password="testpass123")
         choices = build_period_choices(self.template)
         period_val = choices[0][0] if choices else "2025-04-01|2025-06-30"
@@ -2415,7 +2421,6 @@ class GenerateReportViewTest(TestCase):
             "report_template": self.template.pk,
             "period": period_val,
             "format": "cids_json",
-            "taxonomy_lens": "sdg",
             "recipient": "United Way",
             "recipient_reason": "Quarterly standards reporting",
         })

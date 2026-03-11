@@ -234,7 +234,7 @@ def generate_funder_report_data(
     fiscal_year_label: str | None = None,
     user=None,
     report_template=None,
-    taxonomy_lens: str = "iris_plus",
+    taxonomy_lens: str = "",
 ) -> dict[str, Any]:
     """
     Build the complete report template data structure for a program.
