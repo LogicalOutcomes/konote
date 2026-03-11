@@ -58,10 +58,11 @@ class EmbedFramingMiddleware:
             )
             response.xframe_options_exempt = True
 
-            # 2. Set SameSite=None on the CSRF cookie so the browser
-            #    sends it on cross-origin POST from the parent iframe.
+            # 2. Set SameSite=None on CSRF and session cookies so the
+            #    browser sends them on cross-origin POST from the iframe.
             #    SameSite=None requires Secure, which is already set.
-            if settings.CSRF_COOKIE_NAME in response.cookies:
-                response.cookies[settings.CSRF_COOKIE_NAME]["samesite"] = "None"
+            for cookie_name in (settings.CSRF_COOKIE_NAME, settings.SESSION_COOKIE_NAME):
+                if cookie_name in response.cookies:
+                    response.cookies[cookie_name]["samesite"] = "None"
 
         return response
