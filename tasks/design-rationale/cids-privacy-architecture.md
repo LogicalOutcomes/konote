@@ -1,11 +1,10 @@
-# Evaluation Planning and Privacy-First Full Tier CIDS Implementation Spec
+# CIDS Privacy Architecture — Design Rationale Record
 
 Date: 2026-03-07
-Revised: 2026-03-07
-Status: Draft implementation spec (revised after expert panel review)
+Revised: 2026-03-10
+Status: Implemented (moved from tasks/ to design-rationale/ 2026-03-10)
 Depends on:
 - tasks/post-export-ai-enrichment-design.md
-- tasks/evaluation-planning-and-enrichment-workflow.md
 
 ## Purpose
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This protocol defines how an evaluator fills in the CIDS Full Tier metadata fields for a KoNote program. It is part of the evaluation planning process and produces the data stored in the `EvaluationFramework` and `EvaluationComponent` models (see [evaluation-planning-enrichment-implementation-spec.md](evaluation-planning-enrichment-implementation-spec.md)).
+This protocol defines how an evaluator fills in the CIDS Full Tier metadata fields for a KoNote program. It is part of the evaluation planning process and produces the data stored in the `EvaluationFramework` and `EvaluationComponent` models (see [design-rationale/cids-privacy-architecture.md](design-rationale/cids-privacy-architecture.md)).
 
 The output is a complete evaluation framework that maps directly to CIDS Full Tier JSON-LD classes. See [wireframes/demo-full-tier-export.jsonld](wireframes/demo-full-tier-export.jsonld) for a worked example.
 
@@ -222,11 +222,11 @@ For each program, the evaluator produces a brief covering:
 
 | Document | Relationship |
 |----------|-------------|
-| [evaluation-planning-enrichment-implementation-spec.md](evaluation-planning-enrichment-implementation-spec.md) | Technical spec for the models and APIs that store this protocol's outputs |
-| [evaluation-planning-and-enrichment-workflow.md](evaluation-planning-and-enrichment-workflow.md) | Broader workflow including post-export enrichment (Stages A-H); this protocol covers Stages A-B |
+| [design-rationale/cids-privacy-architecture.md](design-rationale/cids-privacy-architecture.md) | Technical spec for the models and APIs that store this protocol's outputs |
 | [cids-evaluation-planning-prompt.md](cids-evaluation-planning-prompt.md) | The LLM prompt used during this protocol |
-| [cids-full-tier-compliance-assessment.md](cids-full-tier-compliance-assessment.md) | Technical gap analysis for Full Tier export code |
+| [cids-compliance-summary.md](cids-compliance-summary.md) | Overall CIDS compliance status and document map |
 | [cids-classification-implementation.md](cids-classification-implementation.md) | Taxonomy mapping pipeline (Phase 3 literature review feeds into this) |
+| [deployment-protocol.md](deployment-protocol.md) | Where this protocol fits in the three-interview onboarding sequence (Interview 3) |
 | [wireframes/demo-full-tier-export.jsonld](wireframes/demo-full-tier-export.jsonld) | Worked example of the final JSON-LD output |
 | [wireframes/evaluation-framework-editor.html](wireframes/evaluation-framework-editor.html) | UI wireframe for entering framework data in KoNote |
 

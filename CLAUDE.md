@@ -255,6 +255,7 @@ Current DRRs (read the file before modifying related features — all in `tasks/
 - `encryption-key-rotation.md` — Encryption key rotation procedures
 - `access-tiers.md` — Access tiers, PERM-P5/P6/P8, and demographic visibility (DEMO-VIS1)
 - `funder-reporting-profiles.md` — Funder reporting profiles (CIDS template-based reporting)
+- `cids-privacy-architecture.md` — CIDS Full Tier privacy-first architecture (three-layer compliance)
 
 ### How Claude Manages Tasks
 
