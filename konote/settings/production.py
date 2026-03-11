@@ -142,10 +142,6 @@ if os.environ.get("WEBSITE_SITE_NAME"):
 if os.environ.get("CONTAINER_APP_NAME"):
     _trusted_origins.append("https://*.azurecontainerapps.io")
 
-# Embed origins also need CSRF trust so cross-origin form submissions
-# from the iframe are accepted (e.g. registration form on the website).
-_trusted_origins.extend(EMBED_ALLOWED_ORIGINS)
-
 CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_trusted_origins))
 
 # CSP — production overrides

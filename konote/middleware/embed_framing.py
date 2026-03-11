@@ -1,74 +1,70 @@
 """Middleware to allow iframe embedding for public pages with ?embed=1.
 
-Handles three cross-origin concerns when a page is embedded in an iframe:
+Handles two cross-origin concerns when a page is embedded in an iframe:
 
 1. **Framing policy** — replaces X-Frame-Options: DENY with a CSP
    frame-ancestors directive allowing the configured origins.
-2. **CSRF cookies** — sets SameSite=None on the CSRF cookie so the
-   browser sends it on cross-origin POST from the iframe.
-3. **CSRF origin check** — marks the request so CsrfViewMiddleware
-   accepts the cross-origin Origin header (via CSRF_TRUSTED_ORIGINS).
+2. **CSRF cookies** — sets SameSite=None on CSRF and session cookies so
+   the browser sends them on cross-origin POST from the iframe.
 """
 from django.conf import settings
 from django.http import HttpResponseForbidden
 
 
-# URL prefixes where ?embed=1 is allowed.
+# Must match prefixes in konote/urls.py — update both together.
 _EMBEDDABLE_PREFIXES = ("/register/", "/s/")
 
 
 class EmbedFramingMiddleware:
-    """Override framing and CSRF policies for embed requests.
+    """Override framing and cookie policies for embed requests.
 
     When a request includes ?embed=1 and the URL matches an embeddable prefix,
     this middleware:
     - Replaces the global DENY framing policy with CSP frame-ancestors
-    - Sets SameSite=None on the CSRF cookie (required for cross-origin POST)
-    - Adds EMBED_ALLOWED_ORIGINS to CSRF_TRUSTED_ORIGINS for the request
+    - Sets SameSite=None on CSRF and session cookies (required for cross-origin POST)
 
     If EMBED_ALLOWED_ORIGINS is empty, the embed request gets a 403.
     """
 
     def __init__(self, get_response):
         self.get_response = get_response
+        self._allowed_origins = getattr(settings, "EMBED_ALLOWED_ORIGINS", [])
+        if self._allowed_origins:
+            self._csp_header = (
+                "frame-ancestors 'self' " + " ".join(self._allowed_origins)
+            )
+        else:
+            self._csp_header = None
+        self._cookie_names = (settings.CSRF_COOKIE_NAME, settings.SESSION_COOKIE_NAME)
 
     def __call__(self, request):
-        is_embed = (
-            request.GET.get("embed") == "1"
-            and any(request.path.startswith(p) for p in _EMBEDDABLE_PREFIXES)
-        )
-
-        if is_embed:
-            allowed_origins = getattr(settings, "EMBED_ALLOWED_ORIGINS", [])
-            if not allowed_origins:
-                return HttpResponseForbidden(
-                    "Iframe embedding is not enabled for this instance. "
-                    "Set EMBED_ALLOWED_ORIGINS in the environment."
-                )
-            # Mark request so we can patch the CSRF cookie on the response.
-            request._embed_allowed_origins = allowed_origins
-
         response = self.get_response(request)
 
-        if is_embed:
-            # 1. Allow framing from configured origins.
-            #    Override both CSP and X-Frame-Options headers directly
-            #    (runs after XFrameOptionsMiddleware and CSPMiddleware).
-            frame_ancestors = " ".join(allowed_origins)
-            response["Content-Security-Policy"] = (
-                f"frame-ancestors 'self' {frame_ancestors}"
-            )
-            # Remove X-Frame-Options: DENY set by XFrameOptionsMiddleware.
-            # CSP frame-ancestors is the authoritative directive; we delete
-            # the legacy header to avoid conflicts.
-            if "X-Frame-Options" in response:
-                del response["X-Frame-Options"]
+        is_embed = (
+            request.GET.get("embed") == "1"
+            and request.path.startswith(_EMBEDDABLE_PREFIXES)
+        )
+        if not is_embed:
+            return response
 
-            # 2. Set SameSite=None on CSRF and session cookies so the
-            #    browser sends them on cross-origin POST from the iframe.
-            #    SameSite=None requires Secure, which is already set.
-            for cookie_name in (settings.CSRF_COOKIE_NAME, settings.SESSION_COOKIE_NAME):
-                if cookie_name in response.cookies:
-                    response.cookies[cookie_name]["samesite"] = "None"
+        if not self._csp_header:
+            return HttpResponseForbidden(
+                "Iframe embedding is not enabled for this instance. "
+                "Set EMBED_ALLOWED_ORIGINS in the environment."
+            )
+
+        # 1. Allow framing from configured origins.
+        response["Content-Security-Policy"] = self._csp_header
+        # Remove X-Frame-Options: DENY set by XFrameOptionsMiddleware.
+        # CSP frame-ancestors is the authoritative directive.
+        if "X-Frame-Options" in response:
+            del response["X-Frame-Options"]
+
+        # 2. Set SameSite=None on CSRF and session cookies so the
+        #    browser sends them on cross-origin POST from the iframe.
+        #    SameSite=None requires Secure, which is already set globally.
+        for cookie_name in self._cookie_names:
+            if cookie_name in response.cookies:
+                response.cookies[cookie_name]["samesite"] = "None"
 
         return response
