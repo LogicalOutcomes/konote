@@ -167,22 +167,24 @@ deploy_instance() {
     echo "=== Restarting ==="
     docker compose up -d
 
-    # --- Ensure Caddy can reach this instance + verify routing ---
-    # Caddy runs in the production stack. For the dev instance, Caddy needs to
-    # be connected to the dev frontend network so it can reverse-proxy to
-    # konote-dev-web. Also verify the Caddyfile uses explicit container names
-    # (not bare service names) to prevent Docker DNS conflicts.
-    if [ "$is_dev" = "true" ]; then
-        local caddy_container="konote-caddy-1"
-        local dev_network="konote-dev_frontend"
-        if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
-            # Connect Caddy to dev network (idempotent)
+    # --- Ensure Caddy can reach the dev instance + verify routing ---
+    # Production deploys recreate the Caddy container, which drops its
+    # connection to the dev frontend network. Reconnect it here regardless
+    # of which instance is being deployed, so production deploys don't
+    # break the dev site. The network-connect is idempotent (no-op if
+    # already connected or if the dev network doesn't exist).
+    local caddy_container="konote-caddy-1"
+    local dev_network="konote-dev_frontend"
+    if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+        if docker network ls --format '{{.Name}}' | grep -q "^${dev_network}$"; then
             if ! docker inspect "$caddy_container" --format '{{json .NetworkSettings.Networks}}' | grep -q "$dev_network"; then
                 echo "=== Connecting Caddy to dev frontend network ==="
                 docker network connect "$dev_network" "$caddy_container" 2>/dev/null || true
             fi
+        fi
 
-            # Warn if Caddyfile uses bare service names (DNS conflict risk)
+        # Warn if Caddyfile uses bare service names (DNS conflict risk)
+        if [ "$is_dev" = "true" ]; then
             local caddyfile_content
             caddyfile_content=$(docker exec "$caddy_container" cat /etc/caddy/Caddyfile 2>/dev/null || true)
             if echo "$caddyfile_content" | grep -q "reverse_proxy web:"; then
