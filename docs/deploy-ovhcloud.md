@@ -799,7 +799,7 @@ konote.yourdomain.ca {
 }
 
 konote-dev.yourdomain.ca {
-    reverse_proxy konote-dev-web:8000
+    reverse_proxy konote-dev-web-1:8000
 
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -812,7 +812,7 @@ konote-dev.yourdomain.ca {
 }
 ```
 
-> **Important:** Use `konote-web-1` (the container name), not `web` (the service name). Both instances define a `web` service, so Docker's DNS would resolve `web` ambiguously. Container names are unique.
+> **CRITICAL: Use explicit container names, never bare service names.** Both instances define a `web` service. When Caddy is connected to both frontend networks, Docker DNS can resolve the bare name `web` to either container unpredictably. If it resolves to the wrong one, the production site returns 404 on every page (because django-tenants doesn't recognise the domain). Use `konote-web-1` and `konote-dev-web-1` (the container names) to avoid this.
 
 ### Step 5: Clone and configure the dev instance
 
@@ -1083,6 +1083,40 @@ Django is rejecting the request because the domain is not in `ALLOWED_HOSTS`. Co
 - You're running two instances and the wrong one is receiving traffic (check Caddyfile uses explicit container names)
 
 Fix: edit `.env`, update `ALLOWED_HOSTS`, then run `sudo docker compose up -d`.
+
+### "404 Not Found" on production but dev works (multi-instance)
+
+If all URLs on the production domain return 404 but the dev domain works fine, **Caddy is routing production traffic to the dev web container**. This happens because of a Docker DNS conflict:
+
+- Both instances define a `web` service
+- When Caddy is connected to both frontend networks, Docker DNS can resolve `web` to the dev container instead of production
+- The dev container doesn't recognise the production domain, so django-tenants returns 404
+
+**Fix:**
+
+1. Check the Caddyfile uses explicit container names (not bare service names):
+
+```
+# Wrong — ambiguous when multiple instances share a network
+reverse_proxy web:8000
+
+# Correct — unambiguous container name
+reverse_proxy konote-web-1:8000
+```
+
+2. Edit the Caddyfile on the VPS:
+
+```bash
+sudo nano /opt/konote/Caddyfile
+```
+
+3. Restart Caddy to pick up the change:
+
+```bash
+sudo docker restart konote-caddy-1
+```
+
+> **Note:** The deploy script preserves the Caddyfile across deploys (it backs up and restores custom Caddyfiles that differ from the repo template). You can also protect it manually with `git update-index --skip-worktree Caddyfile`.
 
 ### "502 Bad Gateway" from Caddy
 

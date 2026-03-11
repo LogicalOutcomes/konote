@@ -11,7 +11,7 @@
 # The /deploy-to-vps skill runs this via: ssh konote-vps /opt/konote/deploy.sh [flags]
 #
 # What it does:
-#   1. Pulls latest develop branch
+#   1. Pulls latest code (main for production, develop for dev)
 #   2. Rebuilds the web container
 #   3. Restarts containers
 #   4. Waits for health check
@@ -107,22 +107,48 @@ deploy_instance() {
 
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
+
+    # Preserve the Caddyfile — multi-instance setups use a custom Caddyfile
+    # that differs from the single-instance template in the repo. Without
+    # this, `git checkout -- .` overwrites it and Caddy routes break.
+    local caddyfile_backup=""
+    if [ -f "Caddyfile" ]; then
+        caddyfile_backup=$(cat Caddyfile)
+    fi
+
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
 
-    # Ensure dev instance is on the develop branch (not main).
-    # Production stays on whatever branch it's on (typically main).
+    # Restore the Caddyfile if it was customised (differs from repo version)
+    if [ -n "$caddyfile_backup" ]; then
+        echo "$caddyfile_backup" > Caddyfile
+    fi
+
+    # Determine the correct branch for this instance
+    local target_branch="main"
     if [ "$is_dev" = "true" ]; then
-        local current_branch
-        current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
-        if [ "$current_branch" != "develop" ]; then
-            echo -e "  ${YELLOW}Dev instance on '${current_branch}' — switching to 'develop'${NC}"
-            git fetch origin develop
-            git checkout develop
-            git reset --hard origin/develop
+        target_branch="develop"
+    fi
+
+    # Ensure the instance is on the correct branch
+    local current_branch
+    current_branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+    if [ "$current_branch" != "$target_branch" ]; then
+        echo -e "  ${YELLOW}Instance on '${current_branch}' — switching to '${target_branch}'${NC}"
+        git fetch origin "$target_branch"
+        git checkout "$target_branch"
+        git reset --hard "origin/${target_branch}"
+        # Re-restore Caddyfile after branch switch
+        if [ -n "$caddyfile_backup" ]; then
+            echo "$caddyfile_backup" > Caddyfile
         fi
     fi
 
-    git pull origin develop
+    git pull origin "$target_branch"
+
+    # Re-restore Caddyfile after pull (pull can overwrite tracked files)
+    if [ -n "$caddyfile_backup" ]; then
+        echo "$caddyfile_backup" > Caddyfile
+    fi
 
     # --- Record after-commit ---
     local after_commit
@@ -158,6 +184,24 @@ deploy_instance() {
             if ! docker inspect "$caddy_container" --format '{{json .NetworkSettings.Networks}}' | grep -q "$dev_network"; then
                 echo "=== Connecting Caddy to dev frontend network ==="
                 docker network connect "$dev_network" "$caddy_container" 2>/dev/null || true
+            fi
+        fi
+    fi
+
+    # --- Verify Caddy routing (multi-instance DNS conflict prevention) ---
+    # When Caddy is connected to multiple frontend networks, the bare service
+    # name "web" can resolve to the wrong container. Verify that the Caddyfile
+    # uses explicit container names, not bare service names.
+    if [ "$is_dev" = "true" ]; then
+        local caddy_container="konote-caddy-1"
+        if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+            local caddyfile_content
+            caddyfile_content=$(docker exec "$caddy_container" cat /etc/caddy/Caddyfile 2>/dev/null || true)
+            if echo "$caddyfile_content" | grep -q "reverse_proxy web:"; then
+                echo -e "${YELLOW}  WARNING: Caddyfile uses bare 'web' service name instead of explicit${NC}"
+                echo -e "${YELLOW}  container name. This causes DNS conflicts in multi-instance setups.${NC}"
+                echo -e "${YELLOW}  Fix: use 'konote-web-1:8000' instead of 'web:8000' in the Caddyfile.${NC}"
+                log_event "DEPLOY WARNING: Caddyfile uses bare 'web' — DNS conflict risk"
             fi
         fi
     fi
