@@ -16,10 +16,7 @@ from .forms import PublicRegistrationForm
 from .models import RegistrationLink, RegistrationSubmission
 from .utils import approve_submission
 
-
-def _is_embed_mode(request):
-    """Check if request is for embed mode (iframe display)."""
-    return request.GET.get("embed") == "1"
+from konote.utils import is_embed_request, redirect_preserving_embed
 
 
 # Rate limiting constants
@@ -120,7 +117,7 @@ def public_registration_form(request, slug):
     - Form targets parent window on submit
     """
     # Check for embed mode (iframe display)
-    embed_mode = _is_embed_mode(request)
+    embed_mode = is_embed_request(request)
 
     # Look up the registration link
     try:
@@ -253,10 +250,7 @@ def public_registration_form(request, slug):
     request.session["last_submission_auto_approved"] = registration_link.auto_approve
 
     # Redirect - preserve embed mode
-    redirect_url = f"/register/{slug}/submitted/"
-    if embed_mode:
-        redirect_url += "?embed=1"
-    return redirect(redirect_url)
+    return redirect_preserving_embed(request, "registration_submitted", slug=slug)
 
 
 def registration_submitted(request, slug):
@@ -264,7 +258,7 @@ def registration_submitted(request, slug):
 
     Supports embed mode with ?embed=1 for iframe display.
     """
-    embed_mode = _is_embed_mode(request)
+    embed_mode = is_embed_request(request)
 
     # Look up the registration link (for branding/context)
     try:
