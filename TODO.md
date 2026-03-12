@@ -22,9 +22,9 @@
 
 ### Phase: Deep Review Fixes (2026-03-06)
 
-- [ ] Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
-- [ ] Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
-- [ ] Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
+- [ ] 🔨 Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
+- [ ] 🔨 Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
+- [ ] 🔨 Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
 
 ## Do Occasionally
 
