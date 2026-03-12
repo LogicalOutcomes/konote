@@ -1679,6 +1679,8 @@ class FunderReportViewTests(TestCase):
         self.program_two = Program.objects.create(name="Second Program", status="active")
 
     def _seed_cids_export_data(self):
+        from apps.reports.models import Partner, ReportTemplate
+
         client_file = ClientFile.objects.create()
         client_file.first_name = "Test"
         client_file.last_name = "Participant"

@@ -250,7 +250,11 @@ def public_registration_form(request, slug):
     request.session["last_submission_auto_approved"] = registration_link.auto_approve
 
     # Redirect - preserve embed mode
-    return redirect_preserving_embed(request, "registration_submitted", slug=slug)
+    return redirect_preserving_embed(
+        request,
+        "registration:registration_submitted",
+        slug=slug,
+    )
 
 
 def registration_submitted(request, slug):

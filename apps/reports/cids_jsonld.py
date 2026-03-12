@@ -539,6 +539,7 @@ def _build_code_node_from_metric(metric_definition, taxonomy_lens):
     if (
         taxonomy_lens == "common_approach"
         and metric_definition.cids_indicator_uri
+        and not metric_definition.cids_indicator_uri.startswith("urn:konote:indicator-definition:")
         and metric_definition.cids_indicator_uri.startswith(("http://", "https://", "urn:"))
     ):
         code_id = metric_definition.cids_indicator_uri

@@ -20,6 +20,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _is_local_indicator_uri(uri):
+    """Return True for auto-generated local indicator URIs.
+
+    These URIs keep local exports internally consistent, but they are not an
+    external standards alignment and should not count as one.
+    """
+    return bool(uri) and uri.startswith("urn:konote:indicator-definition:")
+
+
 def get_taxonomy_lens_label(taxonomy_lens):
     """Return a human-readable label for a taxonomy system key.
 
@@ -100,6 +109,23 @@ def _get_metric_lens_values(metric_definition, taxonomy_lens):
     }
 
 
+def _metric_has_any_standards_reference(metric_definition):
+    """Return True when a metric has any standards-alignment data at all.
+
+    This is broader than a selected taxonomy lens. It is used for default
+    summaries where the caller wants to know whether the metric is linked to
+    any recognised standards metadata, even before a specific reporting lens
+    is chosen.
+    """
+    if metric_definition.iris_metric_code:
+        return True
+    if metric_definition.sdg_goals:
+        return True
+    if metric_definition.cids_indicator_uri and not _is_local_indicator_uri(metric_definition.cids_indicator_uri):
+        return True
+    return False
+
+
 def derive_cids_theme(metric_definition):
     """Derive the CIDS impact theme for a MetricDefinition.
 
@@ -140,7 +166,10 @@ def get_standards_alignment_data(program, metric_definitions=None, taxonomy_lens
             metrics: list of dicts with metric CIDS data
             sdg_summary: dict of SDG goal number → count of metrics
             theme_summary: dict of theme → count of metrics
-                mapped_count: int (metrics with at least one reference for the selected lens)
+                mapped_count: int (metrics with any standards reference when no
+                    lens is selected, or with a mapping for the selected lens)
+                selected_mapped_count: int (metrics with a mapping for the
+                    selected lens)
             total_count: int (total metrics)
     """
     from apps.plans.models import MetricDefinition, PlanTargetMetric
@@ -167,16 +196,21 @@ def get_standards_alignment_data(program, metric_definitions=None, taxonomy_lens
     theme_counter = {}
     lens_counter = {}
     mapped_count = 0
+    selected_mapped_count = 0
 
     for metric in metric_definitions:
         theme, theme_source = derive_cids_theme(metric)
         lens_values = _get_metric_lens_values(metric, taxonomy_lens)
 
-        has_mapping = bool(lens_values["code"])
-        if has_mapping:
-            mapped_count += 1
+        has_selected_mapping = bool(lens_values["code"])
+        if has_selected_mapping:
+            selected_mapped_count += 1
             key = lens_values["label"] or lens_values["code"]
             lens_counter[key] = lens_counter.get(key, 0) + 1
+
+        has_any_mapping = has_selected_mapping or _metric_has_any_standards_reference(metric)
+        if has_any_mapping:
+            mapped_count += 1
 
         # Count SDG goals
         for goal in (metric.sdg_goals or []):
@@ -216,6 +250,7 @@ def get_standards_alignment_data(program, metric_definitions=None, taxonomy_lens
         "lens_summary": dict(sorted(lens_counter.items())),
         "sdg_summary": dict(sorted(sdg_counter.items())),
         "theme_summary": dict(sorted(theme_counter.items())),
-        "mapped_count": mapped_count,
+        "mapped_count": selected_mapped_count if taxonomy_lens else mapped_count,
+        "selected_mapped_count": selected_mapped_count,
         "total_count": len(metrics_data),
     }
