@@ -1140,6 +1140,19 @@ output.form-output {
     font-weight: 600;
 }
 
+/* ---- Required field indicator ---- */
+.required-indicator {
+    color: var(--kn-danger-fg, #842029);
+    margin-left: 2px;
+    text-decoration: none; /* override <abbr> underline */
+    cursor: default;
+}
+.form-required-note {
+    font-size: 0.8125rem;
+    color: var(--kn-text-muted, #64748b);
+    margin: -0.25rem 0 var(--kn-space-sm) 0;
+}
+
 /* ---- Interaction type radio pills (quick note form) ---- */
 .interaction-pills {
     border: none;

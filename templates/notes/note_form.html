@@ -14,6 +14,7 @@
     {% csrf_token %}
 
     {% include "includes/_form_errors.html" %}
+    <p class="form-required-note"><span aria-hidden="true">*</span> {% trans "Required" %}</p>
 
     <!-- Zone 1: Session Setup -->
     <fieldset class="session-setup" aria-label="{% trans 'Session setup' %}">
@@ -25,7 +26,7 @@
                 <div id="template-preview" aria-live="polite"></div>
             </div>
             <div class="field-interaction">
-                <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %}</label>
+                <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %} <abbr class="required-indicator" title="{% trans 'Required' %}">*</abbr></label>
                 {{ form.interaction_type }}
                 {% if form.interaction_type.errors %}<small class="error" id="interaction-type-error" role="alert">{{ form.interaction_type.errors.0 }}</small>{% endif %}
             </div>
