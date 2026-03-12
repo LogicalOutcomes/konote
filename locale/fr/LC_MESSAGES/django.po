@@ -23554,51 +23554,51 @@ msgid "Holding steady"
 msgstr "Stable"
 
 msgid "Active and responsive; participating willingly"
-msgstr ""
+msgstr "Actif et réactif ; participe volontiers"
 
 msgid ""
 "Cautious or holding back; still attending but with some resistance or "
 "emotional barriers"
-msgstr ""
+msgstr "Prudent(e) ou sur la réserve ; toujours présent(e) mais avec une certaine résistance ou des barrières émotionnelles"
 
 msgid "Highly motivated; taking initiative beyond what is asked"
-msgstr ""
+msgstr "Très motivé(e) ; prend des initiatives au-delà de ce qui est demandé"
 
 msgid ""
 "How the participant feels about their relationship with their worker — rated"
 " 1 (struggling) to 5 (trusting)"
-msgstr ""
+msgstr "Ce que le ou la participant(e) pense de sa relation avec son intervenant(e) — noté de 1 (difficile) à 5 (confiance)"
 
 msgid ""
 "No individual session this contact (e.g. group session, admin, or outreach "
 "only)"
-msgstr ""
+msgstr "Pas de rencontre individuelle lors de ce contact (p. ex. séance de groupe, administratif ou sensibilisation uniquement)"
 
 msgid "Not contributing to the session — may be present but not interacting"
-msgstr ""
+msgstr "Ne contribue pas à la rencontre — peut être présent(e) sans interagir"
 
 msgid ""
 "Participants registered but not yet marked Active — waiting for intake to be"
 " completed"
-msgstr ""
+msgstr "Participant(e)s inscrit(e)s mais pas encore marqué(e)s Actif/Active — en attente de la complétion du processus d'accueil"
 
 msgid ""
 "Percentage of active participants who have logged into the participant "
 "portal at least once"
-msgstr ""
+msgstr "Pourcentage de participant(e)s actif/actives ayant accédé au portail des participant(e)s au moins une fois"
 
 msgid ""
 "Percentage of sessions this period where staff observed Engaged or Fully "
 "invested participation"
-msgstr ""
+msgstr "Pourcentage de rencontres au cours de cette période où le personnel a observé une participation Engagée ou Pleinement impliquée"
 
 msgid "Present but passive; doing the minimum required"
-msgstr ""
+msgstr "Présent(e) mais passif/passive ; fait le minimum requis"
 
 msgid ""
 "Safety flags raised for one or more participants that have not been resolved"
 " or closed"
-msgstr ""
+msgstr "Alertes de sécurité soulevées pour un ou plusieurs participant(e)s qui n'ont pas encore été résolues ou fermées"
 
 msgid "What do these mean?"
-msgstr ""
+msgstr "Que signifient ces termes\u00a0?"
