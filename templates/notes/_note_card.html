@@ -13,6 +13,9 @@
     </a>
 </h2>
 <div class="note-card-meta-line">
+    {% if note.suggestion_priority == "urgent" %}
+        <span class="badge badge-danger" role="alert">&#9888; {% trans "Urgent" %}</span>
+    {% endif %}
     {% if note.status == "cancelled" %}
         <span class="badge badge-danger">{% trans "Cancelled" %}</span>
     {% endif %}
@@ -47,7 +50,9 @@
     <p class="note-card-preview">{{ note.notes_text|truncatechars:200 }}</p>
 {% endif %}
 <div class="note-card-meta">
-    {% if note.template %}
+    {% if note.note_type == "assessment" %}
+        <span class="note-chip note-chip--assessment">{% trans "Intake assessment" %}</span>
+    {% elif note.template %}
         <span class="note-chip">{{ note.template.name }}</span>
     {% endif %}
     {% if note.follow_up_date %}

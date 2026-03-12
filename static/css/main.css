@@ -1023,6 +1023,16 @@ output.form-output {
 .note-card--home_visit { border-left-color: #16a085; }
 .note-card--admin     { border-left-color: var(--kn-text-muted, #888); }
 .note-card--other     { border-left-color: var(--kn-neutral-fg, #555); }
+/* Safety-sensitive: urgent notes get red treatment, overrides interaction colour */
+.note-card--urgent {
+    border-left-color: var(--kn-urgent) !important;
+    background: var(--kn-urgent-bg);
+}
+/* Intake/assessment notes get a teal border */
+.note-card--assessment {
+    border-left-color: var(--kn-info-fg, #2980b9);
+    border-left-width: 6px;
+}
 
 /* Card heading — stretched link makes entire card clickable */
 .note-card-heading {
@@ -1123,6 +1133,11 @@ output.form-output {
 .note-chip--done {
     background: var(--kn-success-bg);
     color: var(--kn-success-fg);
+}
+.note-chip--assessment {
+    background: var(--kn-info-bg);
+    color: var(--kn-info-fg);
+    font-weight: 600;
 }
 
 /* ---- Interaction type radio pills (quick note form) ---- */
