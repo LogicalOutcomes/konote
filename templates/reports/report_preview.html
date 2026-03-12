@@ -317,7 +317,7 @@
 {% endfor %}
 {% endif %}
 
-{% if report_data.cids_alignment and report_data.cids_alignment.mapped_count > 0 %}
+{% if report_data.cids_alignment and report_data.cids_alignment.taxonomy_lens and report_data.cids_alignment.selected_mapped_count > 0 %}
 <section class="preview-section">
     <h2>{% trans "Standards Alignment" %}</h2>
     <p>
@@ -351,7 +351,7 @@
         </table>
     </div>
     <p>
-        {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}
+        {% blocktrans with mapped=report_data.cids_alignment.selected_mapped_count total=report_data.cids_alignment.total_count %}
         {{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.
         {% endblocktrans %}
     </p>
