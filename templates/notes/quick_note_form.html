@@ -61,7 +61,7 @@
     <div class="sticky-form-footer" role="region" aria-label="{% trans 'Save' %}">
         <div class="sticky-form-footer-inner">
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">
-                <span class="status-text">{% trans "Saved" %}</span>
+                <span class="status-text">{% trans "Draft saved locally" %}</span>
             </span>
             <div class="button-group">
                 <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>

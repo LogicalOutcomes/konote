@@ -1041,7 +1041,7 @@ document.addEventListener("click", function (event) {
             if (statusText) statusText.textContent = t("saving", "Saving…");
         } else if (status === "saved") {
             indicator.classList.add("saved");
-            if (statusText) statusText.textContent = t("saved", "Saved");
+            if (statusText) statusText.textContent = t("draftSaved", "Draft saved locally");
             // Hide after 2 seconds
             setTimeout(function() {
                 indicator.hidden = true;
