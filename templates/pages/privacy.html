@@ -4,7 +4,7 @@
 {% block title %}{% trans "Privacy Policy" %} - {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<div class="privacy-page">
+<div class="content-page privacy-page">
     <h1>{% trans "Privacy Policy" %}</h1>
 
     <div class="notice">
@@ -209,60 +209,26 @@
 </div>
 
 <style>
+/* Page-specific overrides — shared styles are in main.css .content-page */
 .privacy-page {
     max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
 }
 
 .privacy-page .notice {
-    background: var(--pico-form-element-background-color, #fff3cd);
-    border: 1px solid var(--pico-form-element-border-color, #ffc107);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    background: var(--kn-info-bg, #d1ecf1);
+    border: 1px solid var(--kn-border, #d1d5db);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
 }
 
-/* pill-nav styles are in main.css */
-
-.privacy-page section {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--pico-muted-border-color, #e0e0e0);
+.privacy-page .notice p {
+    margin-bottom: 0.25rem;
 }
 
-.privacy-page section:last-child {
-    border-bottom: none;
-}
-
-.privacy-page h2 {
-    color: var(--pico-primary, #1976d2);
-    border-bottom: 2px solid var(--pico-primary, #1976d2);
-    padding-bottom: 0.5rem;
-    margin-top: 2rem;
-}
-
-.privacy-page h3 {
-    margin-top: 1.5rem;
-    color: var(--pico-secondary, #607d8b);
-}
-
-.privacy-page ul {
-    margin-left: 1.5rem;
-}
-
-.privacy-page li {
-    margin-bottom: 0.5rem;
-}
-
-.privacy-page table {
-    margin: 1rem 0;
-}
-
-@media print {
-    .privacy-page section {
-        break-inside: avoid;
-    }
+.privacy-page .notice p:last-child {
+    margin-bottom: 0;
 }
 </style>
 {% endblock %}
