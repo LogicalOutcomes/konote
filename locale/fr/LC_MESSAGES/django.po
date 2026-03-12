@@ -9259,6 +9259,9 @@ msgstr "Le client consent aux rappels par courriel"
 msgid "Client consents to text message reminders"
 msgstr "Le client consent aux rappels par message texte"
 
+msgid "Communication & Language"
+msgstr "Communication et langue"
+
 msgid "Contact & Reminders"
 msgstr "Coordonnées et rappels"
 
