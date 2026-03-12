@@ -28,6 +28,10 @@
     <p><del>{{ note.notes_text }}</del></p>
     {% if note.status_reason %}<p><small>{% trans "Cancellation reason:" %} {{ note.status_reason }}</small></p>{% endif %}
 {% else %}
+    {% if note.summary %}
+        <p><strong>{% trans "Summary:" %}</strong> {{ note.summary }}</p>
+    {% endif %}
+
     {% if note.notes_text %}
         <p>{{ note.notes_text }}</p>
     {% endif %}
@@ -86,10 +90,6 @@
         </p>
     {% endif %}
 
-    {% if note.summary %}
-        <h3>{% trans "Summary" %}</h3>
-        <p>{{ note.summary }}</p>
-    {% endif %}
 {% endif %}
 
 <footer>
