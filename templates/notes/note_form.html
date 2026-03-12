@@ -13,6 +13,8 @@
 <form method="post" data-autosave data-client-id="{{ client.pk }}" data-form-type="full">
     {% csrf_token %}
 
+    {% include "includes/_form_errors.html" %}
+
     <!-- Zone 1: Session Setup -->
     <fieldset class="session-setup" aria-label="{% trans 'Session setup' %}">
         <div class="session-setup-grid">
@@ -340,7 +342,7 @@
                 <span id="completeness-text">{% trans "Select a target to begin" %}</span>
             </div>
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">
-                <span class="status-text">{% trans "Saved" %}</span>
+                <span class="status-text">{% trans "Draft saved locally" %}</span>
             </span>
             <div class="button-group">
                 <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
@@ -514,6 +516,29 @@ if (templateSelect && interactionSelect && defaultsEl) {
         }
     });
 }
+// --- Auto-expand target cards that contain validation errors ---
+(function () {
+    document.querySelectorAll(".target-card").forEach(function (card) {
+        if (!card.querySelector("small.error")) return;
+        // Unhide the card itself (make it visible)
+        card.hidden = false;
+        // Also tick the corresponding checkbox so the UI stays consistent
+        var targetId = card.getAttribute("data-target-id");
+        if (targetId) {
+            var cb = document.querySelector('.target-selector[data-target-id="' + targetId + '"]');
+            if (cb) cb.checked = true;
+        }
+        // Expand the card body so the error is visible
+        var body = card.querySelector(".target-card-body");
+        if (body) {
+            body.hidden = false;
+            card.classList.remove("compact");
+            card.classList.add("expanded");
+            var header = card.querySelector(".target-card-header");
+            if (header) header.setAttribute("aria-expanded", "true");
+        }
+    });
+})();
 </script>
 {% endblock %}
 

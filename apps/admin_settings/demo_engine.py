@@ -1015,6 +1015,9 @@ class DemoDataEngine:
                 client.record_id = record_id
                 client.status = "active"
                 client.is_demo = True
+                # Record consent so demo clients match real intake workflow
+                client.consent_given_at = self.now - timedelta(days=random.randint(1, 30))
+                client.consent_type = random.choice(["written", "verbal", "electronic"])
                 client.save()
 
                 ClientProgramEnrolment.objects.create(

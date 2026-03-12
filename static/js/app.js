@@ -1400,8 +1400,20 @@ document.addEventListener("click", function (event) {
         function tick() {
             remainingSeconds--;
             if (remainingSeconds <= 0) {
-                // Session expired — reload to trigger login redirect
-                window.location.reload();
+                // Session expired — POST to logout (not reload, which would renew the session)
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/auth/logout/";
+                var csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
+                if (csrfInput) {
+                    var hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "csrfmiddlewaretoken";
+                    hidden.value = csrfInput.value;
+                    form.appendChild(hidden);
+                }
+                document.body.appendChild(form);
+                form.submit();
                 return;
             }
             updateDisplay();

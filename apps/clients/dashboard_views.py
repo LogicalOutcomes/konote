@@ -1025,26 +1025,29 @@ def _get_executive_inline_data(user, program_ids, base_client_ids):
 
 
 # ---------------------------------------------------------------------------
-# Main view
+# Shared data assembly — single source of truth for screen, PDF, and CSV
 # ---------------------------------------------------------------------------
 
-@login_required
-def executive_dashboard(request):
-    """
-    Executive dashboard with aggregate statistics only.
+def _build_executive_context(request):
+    """Assemble all executive dashboard data.
 
-    Executives see high-level program metrics without access to individual
-    client records. This protects client confidentiality while giving
-    leadership the oversight they need.
+    Used by the on-screen view, PDF export, and CSV export so that all
+    three surfaces show identical information.
 
-    Optimised: uses batch queries (annotate/values grouped by program_id)
-    instead of per-program loops. Total query count is fixed (~10) regardless
-    of the number of programs.
+    Returns (context_dict, HttpResponseForbidden_or_None).
+    If the second value is truthy, return it as the HTTP response immediately.
     """
+    from django.http import HttpResponseForbidden
     from apps.clients.models import ClientProgramEnrolment
     from apps.programs.models import Program, UserProgramRole
-
+    from apps.auth_app.decorators import _get_user_highest_role_any
     from .views import get_client_queryset
+
+    # Role gate: only executives, PMs, and admins may export/view
+    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
+    is_admin = getattr(request.user, "is_admin", False)
+    if user_role not in MANAGEMENT_ROLES and not is_admin:
+        return None, HttpResponseForbidden("Access restricted to management roles.")
 
     # Feature flags
     flags = _get_feature_flags()
@@ -1055,14 +1058,10 @@ def executive_dashboard(request):
             user=request.user, status="active"
         ).values_list("program_id", flat=True)
     )
-    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
-
-    # Only users assigned to at least one programme may view this page
     if not user_program_ids:
-        from django.http import HttpResponseForbidden
-        return HttpResponseForbidden(
-            "Access restricted to staff assigned to at least one programme."
-        )
+        return None, HttpResponseForbidden("No programs assigned.")
+
+    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
 
     # Program filter
     selected_program_id = request.GET.get("program")
@@ -1074,10 +1073,7 @@ def executive_dashboard(request):
         except (ValueError, TypeError):
             selected_program_id = None
 
-    if selected_program_id:
-        filtered_programs = programs.filter(pk=selected_program_id)
-    else:
-        filtered_programs = programs
+    filtered_programs = programs.filter(pk=selected_program_id) if selected_program_id else programs
 
     # Base client queryset (respects demo/real separation)
     base_clients = get_client_queryset(request.user)
@@ -1085,9 +1081,7 @@ def executive_dashboard(request):
     # Time boundaries — support custom start date via query param (BUG-9/10)
     now = timezone.now()
     today = now.date()
-
     month_start, custom_start = _parse_date_range(request, now)
-
     week_start = now - timedelta(days=now.weekday())
 
     # Collect all active client IDs across filtered programs (for top-line cards)
@@ -1123,52 +1117,33 @@ def executive_dashboard(request):
     show_events = flags.get("events", False)
     show_portal = flags.get("portal_journal", False) or flags.get("portal_messaging", False)
 
-    # All base_client IDs (for filtering enrolments to accessible clients)
     base_client_ids = set(base_clients.values_list("pk", flat=True))
 
-    # Batch: enrolment stats (total, active, new_this_month per program)
     enrolment_stats = _batch_enrolment_stats(
         filtered_program_ids, base_client_ids, month_start,
     )
-
-    # Batch: notes this week per program
     notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
-
-    # Batch: engagement quality per program
     engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
-
-    # Batch: goal completion per program
     goal_map = _batch_goal_completion(filtered_program_ids)
-
-    # Batch: intake pending per program
     intake_map = _batch_intake_pending(filtered_program_ids)
 
-    # Batch: no-show rate per program (conditional)
     no_show_map = (
         _batch_no_show_rate(filtered_program_ids, month_start)
         if show_events else {}
     )
 
-    # Batch: group attendance per program
     group_att_map, programs_with_groups = _batch_group_attendance(
         filtered_program_ids, month_start,
     )
 
-    # Batch: portal adoption per program (conditional)
     portal_map = (
         _batch_portal_adoption(enrolment_stats)
         if show_portal else {}
     )
 
-    # Batch: suggestion counts per program
     suggestion_map = _batch_suggestion_counts(filtered_program_ids)
-
-    # Batch: active theme counts + top theme details per program
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
-    # Batch: program learning data (outcome headlines, trend, completeness)
-    # Use a local-timezone rolling window to avoid month-boundary dropouts
-    # while still matching DB date lookup timezone behaviour.
     _local_today = timezone.localdate()
     learning_date_from = _local_today - timedelta(days=PROGRAM_LEARNING_LOOKBACK_DAYS - 1)
     learning_date_to = _local_today
@@ -1176,7 +1151,6 @@ def executive_dashboard(request):
         filtered_programs, learning_date_from, learning_date_to,
     )
 
-    # Batch: metric insight indicators (trend, completeness, urgent themes)
     metric_insights_map = _batch_metric_insights(
         filtered_program_ids, month_start.date(), today,
     )
@@ -1190,8 +1164,6 @@ def executive_dashboard(request):
         es = enrolment_stats.get(pid, {})
 
         active_count = es.get("active", 0)
-        # Suppress percentage metrics for small programs to prevent
-        # statistical disclosure (identifying individuals from aggregates).
         suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
 
         stat = {
@@ -1246,24 +1218,20 @@ def executive_dashboard(request):
         for s in suggestion_map.values()
     )
 
-    # -- Privacy compliance banner (QA-R7-EXEC-COMPLIANCE1) ---------------
-    # Only computed for executive/admin roles. Shows pending items only.
-    from apps.auth_app.decorators import _get_user_highest_role_any
-    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
-    is_exec_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
+    # -- Privacy compliance summary (factual counts) ----------------------
+    is_exec_or_admin = user_role in MANAGEMENT_ROLES or is_admin
 
     privacy_banner_items = []
+    privacy_summary = ""
     if is_exec_or_admin:
         from .models import ClientProgramEnrolment, DataAccessRequest, ErasureRequest
 
-        # Accessible clients scoped to user's programs
         accessible_client_ids = set(
             ClientProgramEnrolment.objects.filter(
                 program_id__in=filtered_program_ids,
             ).values_list("client_file_id", flat=True)
         )
 
-        # Pending erasure requests — scoped to user's programs
         pending_erasures = ErasureRequest.objects.filter(
             status="pending",
             client_file_id__in=accessible_client_ids,
@@ -1282,12 +1250,14 @@ def executive_dashboard(request):
                     "overdue": False,
                 })
 
-        # Pending data access requests — scoped to user's programs
         pending_access = DataAccessRequest.objects.filter(
             completed_at__isnull=True,
             client_file_id__in=accessible_client_ids,
         )
+        pending_access_count = 0
+        oldest_access_days = None
         for dar in pending_access:
+            pending_access_count += 1
             is_overdue = dar.deadline < today
             privacy_banner_items.append({
                 "type": "data_access",
@@ -1296,8 +1266,27 @@ def executive_dashboard(request):
                 "overdue": is_overdue,
                 "deadline": dar.deadline,
             })
+            if oldest_access_days is None or dar.days_remaining < oldest_access_days:
+                oldest_access_days = dar.days_remaining
 
-    return render(request, "clients/executive_dashboard.html", {
+        # Build a one-line factual summary for the PDF export
+        parts = []
+        if pending_erasures:
+            parts.append(f"{pending_erasures} erasure request(s) pending")
+        if pending_access_count:
+            parts.append(f"{pending_access_count} data access request(s) pending")
+        if parts:
+            privacy_summary = "Privacy requests: " + "; ".join(parts)
+        else:
+            privacy_summary = "No pending privacy requests."
+
+    # Build filter label for exports
+    if selected_program_id and filtered_programs.exists():
+        filter_label = filtered_programs.first().translated_name
+    else:
+        filter_label = _("All Programs")
+
+    return {
         "programs": programs,
         "program_stats": program_stats,
         "total_clients": total_clients,
@@ -1311,113 +1300,53 @@ def executive_dashboard(request):
         "show_portal": show_portal,
         "total_suggestions_important": total_suggestions_important,
         "privacy_banner_items": privacy_banner_items,
+        "privacy_summary": privacy_summary,
         "selected_program_id": selected_program_id,
+        "filter_label": filter_label,
         "start_date": custom_start,
-        "data_refreshed_at": now,
+        "now": now,
+        "month_start": month_start,
+        "filtered_programs": filtered_programs,
+        "filtered_program_ids": filtered_program_ids,
+    }, None
+
+
+# ---------------------------------------------------------------------------
+# Main view
+# ---------------------------------------------------------------------------
+
+@login_required
+def executive_dashboard(request):
+    """
+    Executive dashboard with aggregate statistics only.
+
+    Executives see high-level program metrics without access to individual
+    client records. This protects client confidentiality while giving
+    leadership the oversight they need.
+
+    Uses _build_executive_context() as the single source of truth for data,
+    shared with the PDF and CSV exports.
+    """
+    ctx, err = _build_executive_context(request)
+    if err:
+        return err
+
+    ctx.update({
+        "data_refreshed_at": ctx["now"],
         "nav_active": "executive",
         "pdf_export_available": _WEASYPRINT_AVAILABLE,
     })
 
+    return render(request, "clients/executive_dashboard.html", ctx)
+
 
 def _prepare_dashboard_export(request):
-    """Shared data assembly for executive dashboard CSV and PDF exports.
+    """Data assembly for executive dashboard exports (CSV and PDF).
 
+    Delegates to _build_executive_context() — single source of truth.
     Returns (context_dict, HttpResponseForbidden_or_None).
-    If the second value is an HttpResponseForbidden, return it immediately.
     """
-    from django.http import HttpResponseForbidden
-    from apps.programs.models import Program, UserProgramRole
-    from .views import get_client_queryset
-    from apps.auth_app.decorators import _get_user_highest_role_any
-
-    # Role gate: only executives, PMs, and admins may export
-    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
-    is_admin = getattr(request.user, "is_admin", False)
-    if user_role not in MANAGEMENT_ROLES and not is_admin:
-        return None, HttpResponseForbidden("Access restricted to management roles.")
-
-    user_program_ids = list(
-        UserProgramRole.objects.filter(
-            user=request.user, status="active"
-        ).values_list("program_id", flat=True)
-    )
-    if not user_program_ids:
-        return None, HttpResponseForbidden("No programs assigned.")
-
-    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
-
-    selected_program_id = request.GET.get("program")
-    if selected_program_id:
-        try:
-            selected_program_id = int(selected_program_id)
-            if selected_program_id not in user_program_ids:
-                selected_program_id = None
-        except (ValueError, TypeError):
-            selected_program_id = None
-
-    filtered_programs = programs.filter(pk=selected_program_id) if selected_program_id else programs
-
-    now = timezone.now()
-    today = now.date()
-    month_start, custom_start = _parse_date_range(request, now)
-    week_start = now - timedelta(days=now.weekday())
-
-    base_clients = get_client_queryset(request.user)
-    base_client_ids = set(base_clients.values_list("pk", flat=True))
-    filtered_program_ids = list(filtered_programs.values_list("pk", flat=True))
-
-    enrolment_stats = _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start)
-    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
-    engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
-    goal_map = _batch_goal_completion(filtered_program_ids)
-
-    # Build per-program data rows (used by both CSV and PDF)
-    program_data = []
-    for program in filtered_programs:
-        pid = program.pk
-        es = enrolment_stats.get(pid, {})
-        active_count = es.get("active", 0)
-        suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
-        eng = None if suppress_pct else engagement_map.get(pid)
-        goal = None if suppress_pct else goal_map.get(pid)
-        program_data.append({
-            "name": program.translated_name,
-            "total": es.get("total", 0),
-            "active": active_count,
-            "new_this_period": es.get("new_this_month", 0),
-            "notes_this_week": notes_week_map.get(pid, 0),
-            "engagement_pct": eng,
-            "goal_completion_pct": goal,
-            "suppress_pct": suppress_pct,
-        })
-
-    # Top-line summary cards (PDF needs these; CSV can ignore them)
-    all_enrolled_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            program__in=filtered_programs, status="active"
-        ).values_list("client_file_id", flat=True)
-    )
-    all_active_ids = set(
-        base_clients.filter(
-            pk__in=all_enrolled_ids, status="active"
-        ).values_list("pk", flat=True)
-    )
-    all_client_ids = set(
-        base_clients.filter(pk__in=all_enrolled_ids).values_list("pk", flat=True)
-    )
-
-    return {
-        "filtered_programs": filtered_programs,
-        "filtered_program_ids": filtered_program_ids,
-        "program_data": program_data,
-        "now": now,
-        "month_start": month_start,
-        "custom_start": custom_start,
-        "total_active": len(all_active_ids),
-        "without_notes": _count_without_notes(all_active_ids, filtered_program_ids, month_start),
-        "overdue_followups": _count_overdue_followups(all_client_ids, today),
-        "user": request.user,
-    }, None
+    return _build_executive_context(request)
 
 
 @login_required
@@ -1435,17 +1364,36 @@ def executive_dashboard_export(request):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="executive-dashboard.csv"'
     writer = csv.writer(response)
-    writer.writerow(sanitise_csv_row(["Program", "Total Enrolled", "Active", "New This Period", "Notes This Week", "Engagement %", "Goal Completion %"]))
+    writer.writerow(sanitise_csv_row([
+        "Program", "Total Enrolled", "Active", "New This Period",
+        "Notes This Week", "Engagement Quality %", "Goal Completion %",
+        "Intake Pipeline", "No-Show Rate %", "Group Attendance %",
+        "Portal Adoption %", "Suggestions Total", "Suggestions Important",
+    ]))
 
-    for row in ctx["program_data"]:
+    for stat in ctx["program_stats"]:
+        def _pct(val, suppress):
+            if suppress:
+                return "suppressed"
+            if val is not None:
+                return f"{val}%"
+            return ""
+
+        suppress = stat.get("suppress_pct", False)
         writer.writerow(sanitise_csv_row([
-            row["name"],
-            row["total"],
-            row["active"],
-            row["new_this_period"],
-            row["notes_this_week"],
-            f"{row['engagement_pct']}%" if row["engagement_pct"] is not None else ("suppressed" if row["suppress_pct"] else ""),
-            f"{row['goal_completion_pct']}%" if row["goal_completion_pct"] is not None else ("suppressed" if row["suppress_pct"] else ""),
+            stat["program"].translated_name,
+            stat["total"],
+            stat["active"],
+            stat["new_this_month"],
+            stat["notes_this_week"],
+            _pct(stat.get("engagement_quality"), suppress),
+            _pct(stat.get("goal_completion"), suppress),
+            stat.get("intake_pending", ""),
+            _pct(stat.get("no_show_rate"), suppress),
+            _pct(stat.get("group_attendance"), suppress),
+            _pct(stat.get("portal_adoption"), suppress),
+            stat.get("suggestion_total", ""),
+            stat.get("suggestion_important", ""),
         ]))
 
     _audit_executive_export(request, ctx, fmt="csv")
@@ -1455,7 +1403,7 @@ def executive_dashboard_export(request):
 
 @login_required
 def executive_dashboard_pdf(request):
-    """Export executive dashboard as a PDF report."""
+    """Export executive dashboard as a PDF report with full parity to on-screen view."""
     from django.http import HttpResponse
     from django.template.loader import render_to_string
 
@@ -1466,12 +1414,18 @@ def executive_dashboard_pdf(request):
     generated_by = getattr(request.user, "display_name", str(request.user))
 
     template_context = {
-        "programs": ctx["filtered_programs"],
-        "program_data": ctx["program_data"],
+        "program_stats": ctx["program_stats"],
         "total_active": ctx["total_active"],
         "without_notes": ctx["without_notes"],
         "overdue_followups": ctx["overdue_followups"],
-        "start_date": ctx["custom_start"],
+        "show_alerts": ctx["show_alerts"],
+        "alert_oversight": ctx["alert_oversight"],
+        "show_events": ctx["show_events"],
+        "show_portal": ctx["show_portal"],
+        "total_suggestions_important": ctx["total_suggestions_important"],
+        "privacy_summary": ctx["privacy_summary"],
+        "filter_label": ctx["filter_label"],
+        "start_date": ctx["start_date"],
         "generated_at": ctx["now"],
         "generated_by": generated_by,
     }
@@ -1479,8 +1433,6 @@ def executive_dashboard_pdf(request):
     html_content = render_to_string("reports/pdf_executive_dashboard.html", template_context, request=request)
 
     # Attempt PDF conversion via WeasyPrint; fall back to HTML if unavailable.
-    # WeasyPrint may raise ImportError (not installed) or OSError (native
-    # libraries like libgobject missing, common on Windows dev machines).
     try:
         from weasyprint import HTML as WeasyHTML
         pdf_bytes = WeasyHTML(string=html_content).write_pdf()

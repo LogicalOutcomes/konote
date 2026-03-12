@@ -484,7 +484,7 @@ Even without MFA, KoNote enforces strong security for local passwords:
 | **Password hashing** | Argon2id — the strongest available algorithm |
 | **Minimum length** | 12 characters required |
 | **Common password check** | Django's built-in validator rejects known weak passwords |
-| **Session timeout** | Automatic logout after 8 hours of inactivity |
+| **Session timeout** | Automatic logout after 30 minutes of inactivity (configurable by administrators; default: 30 minutes) |
 | **Failed login logging** | All failed attempts recorded in audit log with IP address |
 
 #### When Local Auth Is Not Enough

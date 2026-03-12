@@ -988,6 +988,11 @@ msgstr ""
 "Le consentement doit être enregistré avant de pouvoir créer des notes de "
 "suivi pour ce/cette"
 
+msgid "Ask the assigned worker or program manager to record consent for this"
+msgstr ""
+"Demandez à l'intervenant(e) assigné(e) ou au gestionnaire de programme "
+"d'enregistrer le consentement pour ce/cette"
+
 #: templates/clients/_consent_edit.html
 msgid "Record Privacy Consent"
 msgstr "Enregistrer le consentement à la vie privée"
@@ -5193,6 +5198,9 @@ msgstr "Enregistrer la séance"
 
 msgid "Saved"
 msgstr "Enregistré"
+
+msgid "Draft saved locally"
+msgstr "Brouillon enregistré localement"
 
 msgid "Saved."
 msgstr "Enregistré."
@@ -22933,3 +22941,24 @@ msgstr "Système de taxonomie mis à jour."
 
 msgid "United Way"
 msgstr "Centraide"
+
+msgid "All Programs"
+msgstr "Tous les programmes"
+
+msgid "Census & Activity"
+msgstr "Recensement et activité"
+
+msgid "Engagement & Outcomes"
+msgstr "Engagement et résultats"
+
+msgid "Goal Completion"
+msgstr "Atteinte des objectifs"
+
+msgid "New this period"
+msgstr "Nouveaux cette période"
+
+msgid "Pipeline & Adoption"
+msgstr "Pipeline et adoption"
+
+msgid "more themes"
+msgstr "autres thèmes"
