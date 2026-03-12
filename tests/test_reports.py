@@ -1708,6 +1708,17 @@ class FunderReportViewTests(TestCase):
             label="Sustainable Cities and Communities",
             specification_uri="https://metadata.un.org/sdg/11",
         )
+        # Create a report template with SDG taxonomy for CIDS export tests
+        partner = Partner.objects.create(
+            name="SDG Test Partner", partner_type="funder", is_active=True,
+        )
+        partner.programs.add(self.program)
+        self.report_template = ReportTemplate.objects.create(
+            partner=partner,
+            name="SDG Test Template",
+            taxonomy_system="sdg",
+            created_by=self.admin,
+        )
         section = PlanSection.objects.create(client_file=client_file, program=self.program)
         target = PlanTarget(plan_section=section, client_file=client_file)
         target.name = "Stable housing"
@@ -1955,7 +1966,7 @@ class FunderReportViewTests(TestCase):
                 "program": self.program.pk,
                 "fiscal_year": "2025",
                 "format": "cids_json",
-                "taxonomy_lens": "sdg",
+                "report_template": self.report_template.pk,
                 "recipient": "self",
                 "recipient_reason": "Standards export",
             },
@@ -1966,6 +1977,27 @@ class FunderReportViewTests(TestCase):
         payload = json.loads(self._get_download_content(download_resp))
         indicator = next(node for node in payload["@graph"] if node.get("@type") == "cids:Indicator")
         self.assertEqual(indicator["hasCode"][0]["@id"], "https://metadata.un.org/sdg/11")
+
+    def test_funder_report_csv_export_without_taxonomy(self):
+        """Reports with no taxonomy_system (blank) should export without error."""
+        self._seed_cids_export_data()
+        self.report_template.taxonomy_system = ""
+        self.report_template.save()
+        self.client.login(username="admin", password="testpass123")
+        resp = self._submit_funder_report_through_approval(
+            {
+                "program": self.program.pk,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "report_template": self.report_template.pk,
+                "recipient": "self",
+                "recipient_reason": "No taxonomy export",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.latest("created_at")
+        download_resp = self.client.get(f"/reports/download/{link.id}/")
+        self.assertEqual(download_resp.status_code, 200)
 
     def test_funder_report_all_programs_html_export(self):
         """All-programs mode with HTML format produces styled HTML, not CSV."""
@@ -2408,6 +2440,9 @@ class GenerateReportViewTest(TestCase):
         from apps.reports.forms import build_period_choices
 
         self._seed_template_cids_export_data()
+        # Set the template's taxonomy_system so the report uses SDG
+        self.template.taxonomy_system = "sdg"
+        self.template.save()
         self.client_http.login(username="admin", password="testpass123")
         choices = build_period_choices(self.template)
         period_val = choices[0][0] if choices else "2025-04-01|2025-06-30"
@@ -2415,7 +2450,6 @@ class GenerateReportViewTest(TestCase):
             "report_template": self.template.pk,
             "period": period_val,
             "format": "cids_json",
-            "taxonomy_lens": "sdg",
             "recipient": "United Way",
             "recipient_reason": "Quarterly standards reporting",
         })

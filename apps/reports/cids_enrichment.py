@@ -17,29 +17,21 @@ References CIDS v3.2 (not v2.0).
 """
 import logging
 
-from django.utils.translation import gettext_lazy as _lazy
-
-from apps.plans.cids import is_local_konote_cids_uri
-
 logger = logging.getLogger(__name__)
 
 
-TAXONOMY_LENS_CHOICES = [
-    ("common_approach", _lazy("Common Approach")),
-    ("iris_plus", _lazy("IRIS+")),
-    ("sdg", _lazy("SDG")),
-]
-
-
-def get_taxonomy_lens_choices():
-    return TAXONOMY_LENS_CHOICES
-
-
 def get_taxonomy_lens_label(taxonomy_lens):
-    for value, label in TAXONOMY_LENS_CHOICES:
+    """Return a human-readable label for a taxonomy system key.
+
+    Looks up the label from TaxonomyMapping.TAXONOMY_SYSTEMS.
+    """
+    if not taxonomy_lens:
+        return ""
+    from apps.admin_settings.models import TaxonomyMapping
+    for value, label in TaxonomyMapping.TAXONOMY_SYSTEMS:
         if value == taxonomy_lens:
             return str(label)
-    return str(dict(TAXONOMY_LENS_CHOICES)["iris_plus"])
+    return taxonomy_lens
 
 
 def _get_approved_metric_mapping(metric_definition, taxonomy_lens):
@@ -52,6 +44,14 @@ def _get_approved_metric_mapping(metric_definition, taxonomy_lens):
 
 
 def _get_metric_lens_values(metric_definition, taxonomy_lens):
+    if not taxonomy_lens:
+        return {
+            "code": "",
+            "label": "",
+            "list_name": "",
+            "source": "",
+        }
+
     approved_mapping = _get_approved_metric_mapping(metric_definition, taxonomy_lens)
     if approved_mapping:
         return {
@@ -92,18 +92,6 @@ def _get_metric_lens_values(metric_definition, taxonomy_lens):
             "source": "metric_definition",
         }
 
-    if (
-        taxonomy_lens == "common_approach"
-        and metric_definition.cids_indicator_uri
-        and not is_local_konote_cids_uri(metric_definition.cids_indicator_uri)
-    ):
-        return {
-            "code": metric_definition.cids_indicator_uri,
-            "label": metric_definition.cids_indicator_uri,
-            "list_name": "",
-            "source": "metric_definition",
-        }
-
     return {
         "code": "",
         "label": "",
@@ -137,7 +125,7 @@ def derive_cids_theme(metric_definition):
     return None, None
 
 
-def get_standards_alignment_data(program, metric_definitions=None, taxonomy_lens="iris_plus"):
+def get_standards_alignment_data(program, metric_definitions=None, taxonomy_lens=""):
     """Build standards alignment data for a program's report appendix.
 
     Args:

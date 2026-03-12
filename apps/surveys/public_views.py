@@ -25,6 +25,8 @@ from .models import (
     SurveyResponse,
 )
 
+from konote.utils import redirect_preserving_embed
+
 logger = logging.getLogger(__name__)
 
 
@@ -115,7 +117,7 @@ def public_survey_form(request, token):
         if request.method == "POST" and "consent_agree" in request.POST:
             # Respondent is agreeing to consent — store in session and redirect
             request.session[consent_key] = timezone.now().isoformat()
-            return redirect("public_survey_form", token=token)
+            return redirect_preserving_embed(request, "public_survey_form", token=token)
 
         if not request.session.get(consent_key):
             # Consent not yet given — show consent page
@@ -142,7 +144,7 @@ def public_survey_form(request, token):
         # Honeypot anti-spam check
         if request.POST.get("website"):
             # Bots fill in hidden fields; real users won't see it
-            return redirect("public_survey_thank_you", token=link.token)
+            return redirect_preserving_embed(request, "public_survey_thank_you", token=link.token)
 
         # 1. Collect all submitted answers
         all_answers = {}
@@ -261,7 +263,7 @@ def public_survey_form(request, token):
             if scores:
                 request.session[f"survey_scores_{link.token}"] = scores
 
-        resp = redirect("public_survey_thank_you", token=link.token)
+        resp = redirect_preserving_embed(request, "public_survey_thank_you", token=link.token)
 
         # Set signed cookie to discourage repeat submissions
         if link.single_response:

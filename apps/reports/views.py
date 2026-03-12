@@ -1234,7 +1234,7 @@ def funder_report_form(request):
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
     report_template = form.cleaned_data.get("report_template")
-    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
+    taxonomy_lens = report_template.taxonomy_system if report_template else ""
 
     # Store form parameters in session for the preview/approve flow
     request.session["funder_report_preview"] = {
@@ -1265,12 +1265,12 @@ def _generate_funder_preview_data(session_params, user):
     date_from = dt.date.fromisoformat(session_params["date_from"])
     date_to = dt.date.fromisoformat(session_params["date_to"])
     fiscal_year_label = session_params["fiscal_year_label"]
-    taxonomy_lens = session_params.get("taxonomy_lens") or "iris_plus"
     report_template = None
     if session_params.get("report_template_id"):
         report_template = ReportTemplate.objects.filter(
             pk=session_params["report_template_id"]
         ).first()
+    taxonomy_lens = report_template.taxonomy_system if report_template else session_params.get("taxonomy_lens", "")
 
     if all_programs_mode:
         accessible_programs = get_manageable_programs(user)
@@ -1401,7 +1401,7 @@ def funder_report_preview(request):
             ReportTemplate.objects.filter(pk=session_params["report_template_id"]).values_list("name", flat=True).first()
             if session_params.get("report_template_id") else None
         ),
-        "taxonomy_lens": session_params.get("taxonomy_lens") or "iris_plus",
+        "taxonomy_lens": session_params.get("taxonomy_lens", ""),
         "taxonomy_lens_label": (
             data_or_sections[0][1]["cids_alignment"].get("taxonomy_lens_label", "")
             if all_programs_mode and data_or_sections
@@ -1447,9 +1447,10 @@ def funder_report_approve(request):
     date_to = session_params["date_to"]
     fiscal_year_label = session_params["fiscal_year_label"]
     export_format = session_params["export_format"]
-    taxonomy_lens = session_params.get("taxonomy_lens") or "iris_plus"
     recipient = session_params["recipient"]
     report_template_id = session_params.get("report_template_id")
+    report_template_obj = ReportTemplate.objects.filter(pk=report_template_id).first() if report_template_id else None
+    taxonomy_lens = report_template_obj.taxonomy_system if report_template_obj else session_params.get("taxonomy_lens", "")
 
     safe_name = sanitise_filename(str(program_display_name).replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
@@ -1695,7 +1696,7 @@ def generate_report_form(request):
     period_label = form.cleaned_data.get("period_label", f"{date_from} to {date_to}")
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
-    taxonomy_lens = form.cleaned_data.get("taxonomy_lens") or "iris_plus"
+    taxonomy_lens = template.taxonomy_system
 
     from .export_engine import generate_template_report
     try:

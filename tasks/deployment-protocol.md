@@ -13,6 +13,20 @@
 
 ---
 
+## Three Interviews — Overview
+
+Agency onboarding involves three distinct interviews, each with different staff and at different stages. Interviews 1 and 2 are part of deployment. Interview 3 is a separate professional service that happens after the agency is live.
+
+| Interview | When | Who's in the room | What it covers | Document |
+|-----------|------|-------------------|---------------|----------|
+| **1. Discovery + Permissions** | Pre-deployment (Phases 0–1) | ED, PM, Front Desk lead, IT contact | Org structure, programs, who sees what, hosting, features | This file (Phase 0) + [agency-permissions-interview.md](agency-permissions-interview.md) |
+| **2. Workflow Customisation** | Pre-launch (Phase 3) | Program leads, frontline coaches | Terminology, metrics, plan templates, note templates, custom fields | This file (Phase 3) |
+| **3. Evaluation Framework** | Post-launch, per program | Professional evaluator + program lead | Impact model, stakeholders, services, risks, counterfactuals, CIDS Full Tier metadata | [cids-evaluation-protocol.md](cids-evaluation-protocol.md) + [cids-evaluation-planning-prompt.md](cids-evaluation-planning-prompt.md) |
+
+**Interview 3 is optional for Basic/Essential Tier CIDS compliance.** Basic CIDS metadata (sector codes, population served, IRIS+ codes) is auto-populated when staff create programs, targets, and metrics during normal use — no interview needed. Interview 3 is only required for Full Tier CIDS compliance, which adds counterfactuals, impact risks, services, activities, and a formal impact model narrative.
+
+---
+
 ## Protocol Overview
 
 | Phase | Name | Led by | With client? | Duration | Output |
