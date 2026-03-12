@@ -5563,6 +5563,7 @@ article[aria-label="notification"].fading-out {
 
 /* ---- Pill navigation (shared by help + privacy pages) ---- */
 .pill-nav {
+    display: block;  /* Override Pico CSS nav flex layout */
     background: var(--kn-card-bg, #fff);
     padding: 0.75rem 1rem;
     border-radius: var(--kn-radius-card, 8px);
@@ -5615,29 +5616,9 @@ article[aria-label="notification"].fading-out {
     color: var(--pico-primary-inverse, #fff);
 }
 
-/* Compact grid layout for help page with many nav items */
-.help-page .pill-nav ul {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.3rem;
-}
-
-.help-page .pill-nav a {
-    text-align: center;
-}
-
 @media (max-width: 768px) {
     .pill-nav {
         padding: 0.5rem 0.75rem;
-    }
-    .help-page .pill-nav ul {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .help-page .pill-nav ul {
-        grid-template-columns: 1fr;
     }
 }
 
