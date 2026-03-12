@@ -234,7 +234,7 @@ def generate_funder_report_data(
     fiscal_year_label: str | None = None,
     user=None,
     report_template=None,
-    taxonomy_lens: str = "iris_plus",
+    taxonomy_lens: str = "",
 ) -> dict[str, Any]:
     """
     Build the complete report template data structure for a program.
@@ -593,7 +593,8 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
 
     # CIDS Standards Alignment appendix
     cids = report_data.get("cids_alignment")
-    if cids and cids.get("mapped_count", 0) > 0:
+    selected_mapped_count = cids.get("selected_mapped_count", cids.get("mapped_count", 0)) if cids else 0
+    if cids and cids.get("taxonomy_lens") and selected_mapped_count > 0:
         rows.append([_("STANDARDS ALIGNMENT (CIDS v%(version)s)") % {"version": cids["cids_version"]}])
         rows.append([_("Reporting Lens"), cids.get("taxonomy_lens_label", "")])
         if cids["program_cids"].get("sector_code"):
@@ -613,7 +614,7 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append([])
         rows.append([
             _("%(mapped)s of %(total)s indicators mapped for the selected reporting lens.")
-            % {"mapped": cids["mapped_count"], "total": cids["total_count"]}
+            % {"mapped": selected_mapped_count, "total": cids["total_count"]}
         ])
 
     return rows

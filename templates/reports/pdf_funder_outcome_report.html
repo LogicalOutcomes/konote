@@ -506,7 +506,7 @@
 {% endif %}
 
 {# CIDS Standards Alignment appendix (always shown in legacy layout if data exists) #}
-{% if report_data.cids_alignment and report_data.cids_alignment.mapped_count > 0 %}
+{% if report_data.cids_alignment and report_data.cids_alignment.taxonomy_lens and report_data.cids_alignment.selected_mapped_count > 0 %}
 <div class="page-break"></div>
 <div class="report-header">{% trans "Standards Alignment" %}</div>
 <p style="font-size: 9pt; color: #718096; margin-bottom: 0.5cm;">
@@ -541,7 +541,7 @@
     </tbody>
 </table>
 <p style="font-size: 9pt; color: #718096;">
-    {% blocktrans with mapped=report_data.cids_alignment.mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.{% endblocktrans %}
+    {% blocktrans with mapped=report_data.cids_alignment.selected_mapped_count total=report_data.cids_alignment.total_count %}{{ mapped }} of {{ total }} indicators mapped for the selected reporting lens.{% endblocktrans %}
 </p>
 
 {% if report_data.cids_alignment.lens_summary %}

@@ -107,6 +107,17 @@ deploy_instance() {
 
     # --- Pull latest code ---
     echo "=== Pulling latest code ==="
+
+    # Preserve the Caddyfile — multi-instance setups use a custom Caddyfile
+    # that differs from the single-instance template in the repo. Without
+    # this, git operations overwrite it and Caddy routes break.
+    # Uses cp (not shell variable) to preserve the file byte-for-byte.
+    local caddyfile_saved=false
+    if [ -f "Caddyfile" ]; then
+        cp Caddyfile /tmp/.caddyfile.deploy.bak
+        caddyfile_saved=true
+    fi
+
     git checkout -- . 2>/dev/null || true  # Reset any local modifications (e.g. CRLF fixes)
 
     # Determine the correct branch for this instance
@@ -126,6 +137,12 @@ deploy_instance() {
     fi
 
     git pull origin "$target_branch"
+
+    # Restore the Caddyfile after all git operations are done
+    if [ "$caddyfile_saved" = "true" ]; then
+        cp /tmp/.caddyfile.deploy.bak Caddyfile
+        rm -f /tmp/.caddyfile.deploy.bak
+    fi
 
     # --- Record after-commit ---
     local after_commit
@@ -150,17 +167,31 @@ deploy_instance() {
     echo "=== Restarting ==="
     docker compose up -d
 
-    # --- Ensure Caddy can reach this instance's web container ---
-    # Caddy runs in the production stack. For the dev instance, Caddy needs to
-    # be connected to the dev frontend network so it can reverse-proxy to
-    # konote-dev-web. This is idempotent — it's a no-op if already connected.
-    if [ "$is_dev" = "true" ]; then
-        local caddy_container="konote-caddy-1"
-        local dev_network="konote-dev_frontend"
-        if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+    # --- Ensure Caddy can reach the dev instance + verify routing ---
+    # Production deploys recreate the Caddy container, which drops its
+    # connection to the dev frontend network. Reconnect it here regardless
+    # of which instance is being deployed, so production deploys don't
+    # break the dev site. The network-connect is idempotent (no-op if
+    # already connected or if the dev network doesn't exist).
+    local caddy_container="konote-caddy-1"
+    local dev_network="konote-dev_frontend"
+    if docker ps --format '{{.Names}}' | grep -q "^${caddy_container}$"; then
+        if docker network ls --format '{{.Name}}' | grep -q "^${dev_network}$"; then
             if ! docker inspect "$caddy_container" --format '{{json .NetworkSettings.Networks}}' | grep -q "$dev_network"; then
                 echo "=== Connecting Caddy to dev frontend network ==="
                 docker network connect "$dev_network" "$caddy_container" 2>/dev/null || true
+            fi
+        fi
+
+        # Warn if Caddyfile uses bare service names (DNS conflict risk)
+        if [ "$is_dev" = "true" ]; then
+            local caddyfile_content
+            caddyfile_content=$(docker exec "$caddy_container" cat /etc/caddy/Caddyfile 2>/dev/null || true)
+            if echo "$caddyfile_content" | grep -q "reverse_proxy web:"; then
+                echo -e "${YELLOW}  WARNING: Caddyfile uses bare 'web' service name instead of explicit${NC}"
+                echo -e "${YELLOW}  container name. This causes DNS conflicts in multi-instance setups.${NC}"
+                echo -e "${YELLOW}  Fix: use 'konote-web-1:8000' instead of 'web:8000' in the Caddyfile.${NC}"
+                log_event "DEPLOY WARNING: Caddyfile uses bare 'web' — DNS conflict risk"
             fi
         fi
     fi

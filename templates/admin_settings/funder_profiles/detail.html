@@ -19,6 +19,19 @@
             <dd>{{ profile.breakdowns.count }}</dd>
             <dt>{% trans "Outcome Metrics" %}</dt>
             <dd>{{ profile.report_metrics.count }}</dd>
+            <dt>{% trans "Standards Taxonomy" %}</dt>
+            <dd>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <select name="taxonomy_system" aria-label="{% trans 'Standards taxonomy system' %}" onchange="this.form.submit()" style="display: inline-block; width: auto; margin-bottom: 0;">
+                        <option value="">{% trans "None (no appendix)" %}</option>
+                        {% for value, label in profile.TAXONOMY_SYSTEMS %}
+                        <option value="{{ value }}"{% if profile.taxonomy_system == value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <noscript><button type="submit" class="outline secondary" style="display: inline-block; width: auto;">{% trans "Save" %}</button></noscript>
+                </form>
+            </dd>
             <dt>{% trans "Partner" %}</dt>
             <dd>
                 {% if profile.partner %}

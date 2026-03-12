@@ -3,8 +3,27 @@
 **Author:** Gillian Kerr, LogicalOutcomes
 **Standard:** Common Impact Data Standard (CIDS) v3.2.0 (July 28, 2025)
 **Publisher:** Common Approach (commonapproach.org)
-**Date:** 2026-03-06
-**Status:** Full specification implemented; SHACL conformance validation deferred
+**Date:** 2026-03-10
+**Status:** Full specification implemented and deployed; SHACL conformance validation deferred
+
+---
+
+## Document Map
+
+Looking for something specific about CIDS? Start here:
+
+| Question | Document |
+|----------|----------|
+| Are we CIDS compliant? | This file |
+| How do we set up CIDS for a new program? | [cids-evaluation-protocol.md](cids-evaluation-protocol.md) |
+| What's the LLM prompt for evaluation planning? | [cids-evaluation-planning-prompt.md](cids-evaluation-planning-prompt.md) |
+| What fields map to which CIDS classes? | [cids-json-ld-export.md](cids-json-ld-export.md) (field mapping reference) |
+| How was the implementation validated? | [cids-plan-validation.md](cids-plan-validation.md) |
+| How does the privacy architecture work? | [design-rationale/cids-privacy-architecture.md](design-rationale/cids-privacy-architecture.md) |
+| How will taxonomy batch classification work? | [cids-classification-implementation.md](cids-classification-implementation.md) (future) |
+| How will post-export AI enrichment work? | [post-export-ai-enrichment-design.md](post-export-ai-enrichment-design.md) (future) |
+| Design decisions: metadata assignment timing | [design-rationale/cids-metadata-assignment.md](design-rationale/cids-metadata-assignment.md) |
+| Design decisions: batch classification workflow | [design-rationale/cids-batch-classification-workflow.md](design-rationale/cids-batch-classification-workflow.md) |
 
 ---
 
@@ -79,6 +98,7 @@ CIDS fields are auto-populated when staff create targets and metrics. Staff neve
 - **2026-02-24:** Implementation plan validated against CIDS 3.2.0 ontology and SHACL shapes (see `tasks/cids-plan-validation.md`). Five critical corrections applied; six Phase 3 items addressed.
 - **2026-02-25:** Reviewed and approved — target FullTier directly, pin to v3.2.0.
 - **2026-02-27:** Full implementation merged (PR #131) — metadata fields, code lists, admin UI, enriched reports, JSON-LD export, impact dimensions.
+- **2026-03-07:** Full Tier + Evaluation Framework deployed to VPS (CIDS-DEPLOY1).
 - **1,540-line test suite** covering CIDS models, export, enrichment, and edge cases.
 
 ## Notes for Common Approach
@@ -109,10 +129,21 @@ During implementation, we noticed a few areas where the spec was ambiguous or wh
 - Constructing `StakeholderOutcome` junction objects at export time from existing relational data
 - Deriving impact dimensions (scale, depth, duration) from service episode and achievement data
 
+## Setting Up CIDS for a New Agency
+
+CIDS configuration happens across the three onboarding interviews (see [deployment-protocol.md](deployment-protocol.md)):
+
+1. **During deployment (Interviews 1 & 2):** Basic CIDS metadata is auto-populated when staff create programs, targets, and metrics. No CIDS-specific interview is needed — sector codes, population served, and IRIS+ codes are set through normal configuration.
+
+2. **Post-launch (Interview 3 — optional):** For Full Tier compliance, a professional evaluator runs the [CIDS Evaluation Protocol](cids-evaluation-protocol.md) with each program lead (~1 working day per program). This fills in counterfactuals, impact risks, services, activities, and the formal impact model narrative.
+
+Basic and Essential Tier CIDS compliance works without Interview 3.
+
 ## References
 
 - CIDS Ontology: https://ontology.commonapproach.org/cids-en.html
 - Code Lists: https://codelist.commonapproach.org
 - JSON-LD Context: https://ontology.commonapproach.org/contexts/cidsContext.jsonld
-- KoNote implementation plan: `tasks/cids-json-ld-export.md`
+- KoNote field mapping reference: `tasks/cids-json-ld-export.md`
 - KoNote validation report: `tasks/cids-plan-validation.md`
+- Privacy architecture: `tasks/design-rationale/cids-privacy-architecture.md`
