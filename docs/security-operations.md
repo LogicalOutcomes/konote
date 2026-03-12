@@ -550,6 +550,8 @@ Before deploying to production, verify all items:
 
 ### Suspected Data Breach
 
+> **For the complete breach response checklist** (who to notify, when, how to document), see [Breach Response Workflow](breach-response-workflow.md).
+
 1. **Immediately rotate the encryption key** (see Key Management above)
 2. **Rotate the SECRET_KEY** — this invalidates all user sessions
    ```bash
