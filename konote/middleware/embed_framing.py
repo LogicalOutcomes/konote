@@ -38,13 +38,12 @@ class EmbedFramingMiddleware:
         self._cookie_names = (settings.CSRF_COOKIE_NAME, settings.SESSION_COOKIE_NAME)
 
     def __call__(self, request):
-        response = self.get_response(request)
-
         is_embed = (
             request.GET.get("embed") == "1"
             and request.path.startswith(_EMBEDDABLE_PREFIXES)
         )
         if not is_embed:
+            response = self.get_response(request)
             return response
 
         if not self._csp_header:
@@ -53,8 +52,11 @@ class EmbedFramingMiddleware:
                 "Set EMBED_ALLOWED_ORIGINS in the environment."
             )
 
+        response = self.get_response(request)
+
         # 1. Allow framing from configured origins.
         response["Content-Security-Policy"] = self._csp_header
+        response.xframe_options_exempt = True
         # Remove X-Frame-Options: DENY set by XFrameOptionsMiddleware.
         # CSP frame-ancestors is the authoritative directive.
         if "X-Frame-Options" in response:
