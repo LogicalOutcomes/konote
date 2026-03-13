@@ -266,7 +266,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
 
         self.page.locator("#email").fill(self.portal_email)
         self.page.locator("#password").fill(self.portal_password)
-        self.page.locator("form button[type='submit']").click()
+        self.page.locator("form[action='/my/login/'] button[type='submit']").click()
         self.page.wait_for_load_state("networkidle")
 
     def test_axe_portal_pages(self):

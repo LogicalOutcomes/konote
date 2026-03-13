@@ -53,8 +53,8 @@
 }
 .portal-lang-nav .lang-link {
     background: none;
-    border: 2px solid #3176aa;
-    color: #3176aa;
+    border: 2px solid #1f5a85;
+    color: #1f5a85;
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     cursor: pointer;
@@ -65,7 +65,7 @@
 }
 .portal-lang-nav .lang-link:hover,
 .portal-lang-nav .lang-link:focus {
-    background: #3176aa;
+    background: #1f5a85;
     color: #fff;
 }
 
