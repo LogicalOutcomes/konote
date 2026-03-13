@@ -554,6 +554,106 @@ const DEFAULT_TERMS = {
 };
 
 // =============================================================================
+// CSP-SAFE LEGACY HANDLER SHIM
+// =============================================================================
+
+const INLINE_HANDLER_ATTRS = ['onclick', 'onchange', 'oninput'];
+
+function moveInlineHandler(el, attr) {
+  if (!el || !el.hasAttribute || !el.hasAttribute(attr)) return;
+  el.setAttribute('data-' + attr.slice(2), el.getAttribute(attr));
+  el.removeAttribute(attr);
+}
+
+function hoistInlineHandlers(root = document) {
+  INLINE_HANDLER_ATTRS.forEach((attr) => {
+    if (root.nodeType === Node.ELEMENT_NODE) moveInlineHandler(root, attr);
+    if (!root.querySelectorAll) return;
+    root.querySelectorAll('[' + attr + ']').forEach((el) => moveInlineHandler(el, attr));
+  });
+}
+
+function matchLegacyCall(expression, pattern) {
+  const match = expression.match(pattern);
+  return match ? match[1] : null;
+}
+
+function syncBrandColour(value) {
+  document.getElementById('brand_colour').value = value;
+}
+
+function runLegacyClick(expression, element) {
+  if (!expression) return false;
+  if (expression === 'generateSecretKey()') return generateSecretKey(), true;
+  if (expression === 'generateEncryptionKey()') return generateEncryptionKey(), true;
+  if (expression === 'generateEmailHashKey()') return generateEmailHashKey(), true;
+  if (expression === 'generateAllKeys()') return generateAllKeys(), true;
+  if (expression === 'addProgram()') return addProgram(), true;
+  if (expression === 'addTemplate()') return addTemplate(), true;
+  if (expression === 'addFieldGroup()') return addFieldGroup(), true;
+  if (expression === 'downloadEnv()') return downloadEnv(), true;
+  if (expression === 'downloadJson()') return downloadJson(), true;
+  if (expression === 'this.parentElement.remove()') return element.parentElement?.remove(), true;
+  if (expression === 'this.parentElement.parentElement.remove()') return element.parentElement?.parentElement?.remove(), true;
+
+  const copyTarget = matchLegacyCall(expression, /^copyToClipboard\('([^']+)'\)$/);
+  if (copyTarget) return copyToClipboard(copyTarget), true;
+
+  const sectionId = matchLegacyCall(expression, /^addSection\((\d+)\)$/);
+  if (sectionId !== null) return addSection(Number(sectionId)), true;
+
+  const targetId = matchLegacyCall(expression, /^addTarget\((\d+)\)$/);
+  if (targetId !== null) return addTarget(Number(targetId)), true;
+
+  const fieldGroupId = matchLegacyCall(expression, /^addField\((\d+)\)$/);
+  if (fieldGroupId !== null) return addField(Number(fieldGroupId)), true;
+
+  return false;
+}
+
+function runLegacyChange(expression, element) {
+  if (!expression) return false;
+  if (expression === 'toggleDbMode()') return toggleDbMode(), true;
+  if (expression === 'toggleAuthMode()') return toggleAuthMode(), true;
+  if (expression === 'applySmtpPreset()') return applySmtpPreset(), true;
+  if (expression === 'toggleFieldOptions(this)') return toggleFieldOptions(element), true;
+  if (expression === "document.getElementById('brand_colour').value=this.value") return syncBrandColour(element.value), true;
+
+  const featureKey = matchLegacyCall(expression, /^handleFeatureDep\('([^']+)'\)$/);
+  if (featureKey) return handleFeatureDep(featureKey), true;
+
+  return false;
+}
+
+function runLegacyInput(expression, element) {
+  if (!expression) return false;
+  if (expression === 'deriveDomainFields()') return deriveDomainFields(), true;
+  if (expression === 'filterMetrics()') return filterMetrics(), true;
+  if (expression === "document.getElementById('brand_colour').value=this.value") return syncBrandColour(element.value), true;
+  return false;
+}
+
+document.addEventListener('click', (event) => {
+  const element = event.target.closest('[data-click]');
+  if (!element) return;
+  if (runLegacyClick(element.dataset.click, element)) {
+    event.preventDefault();
+  }
+});
+
+document.addEventListener('change', (event) => {
+  const element = event.target.closest('[data-change]');
+  if (!element) return;
+  runLegacyChange(element.dataset.change, element);
+});
+
+document.addEventListener('input', (event) => {
+  const element = event.target.closest('[data-input]');
+  if (!element) return;
+  runLegacyInput(element.dataset.input, element);
+});
+
+// =============================================================================
 // TAB NAVIGATION
 // =============================================================================
 
@@ -689,6 +789,7 @@ function buildFeatureTable() {
   }
   html += '</tbody></table>';
   container.innerHTML = html;
+  hoistInlineHandlers(container);
 }
 
 function handleFeatureDep(key) {
@@ -758,6 +859,7 @@ function addProgram(name, description, colour) {
     </div>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 // =============================================================================
@@ -791,6 +893,7 @@ function buildMetricsList() {
     html += '</div></details>';
   }
   container.innerHTML = html;
+  hoistInlineHandlers(container);
 }
 
 function filterMetrics() {
@@ -825,6 +928,7 @@ function addTemplate() {
     <button class="add-btn outline" onclick="addSection(${id})" style="font-size:0.75rem;">+ Add Section</button>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 function addSection(tplId) {
@@ -842,6 +946,7 @@ function addSection(tplId) {
     <button class="add-btn outline" onclick="addTarget(${id})" style="font-size:0.7rem;">+ Add Target</button>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 function addTarget(secId) {
@@ -855,6 +960,7 @@ function addTarget(secId) {
     <button class="outline" onclick="this.parentElement.remove()" style="font-size:0.7rem; padding:0.2rem 0.5rem; color:var(--kn-danger);">&times;</button>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 // =============================================================================
@@ -877,6 +983,7 @@ function addFieldGroup() {
     <button class="add-btn outline" onclick="addField(${id})" style="font-size:0.75rem;">+ Add Field</button>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 function addField(fgId) {
@@ -905,6 +1012,7 @@ function addField(fgId) {
     </div>
   `;
   container.appendChild(div);
+  hoistInlineHandlers(div);
 }
 
 function toggleFieldOptions(sel) {
@@ -1208,6 +1316,7 @@ function downloadJson() {
 // INITIALISE
 // =============================================================================
 
+hoistInlineHandlers(document);
 buildFeatureTable();
 buildTerminologyTable();
 buildMetricsList();
