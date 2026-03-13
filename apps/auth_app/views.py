@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -458,6 +458,18 @@ def demo_portal_login(request, record_id):
         logger.error("Audit logging failed for demo portal login: %s", e)
 
     return redirect("/my/")
+
+
+@login_required
+def session_ping(request):
+    """Lightweight endpoint to extend the server-side session.
+
+    Called by the 'Stay logged in' button in the session timer UI.
+    Any authenticated GET request extends the sliding session window
+    (SESSION_SAVE_EVERY_REQUEST = True handles the actual save).
+    Returns 204 No Content — no body needed.
+    """
+    return HttpResponse(status=204)
 
 
 @login_required

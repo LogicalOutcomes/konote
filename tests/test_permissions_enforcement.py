@@ -25,7 +25,7 @@ Matrix-enforced keys under /manage/ URL:
   audit.view — lives under /manage/audit/, view uses @requires_permission
 """
 from cryptography.fernet import Fernet
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from apps.auth_app.models import User
 from apps.auth_app.permissions import (
@@ -448,7 +448,130 @@ class AdminPermissionTest(TestCase):
                     self.assertIn(
                         response.status_code,
                         (403, 302),
+
                         f"Non-admin {role} should be blocked from {url}, "
                         f"got {response.status_code}",
                     )
             self.client.logout()
+
+
+# =========================================================================
+# Matrix completeness unit tests (no database required)
+# =========================================================================
+
+class PermissionsMatrixCompleteness(SimpleTestCase):
+    """Direct unit tests against validate_permissions() — no database needed."""
+
+    def test_validate_permissions_returns_valid(self):
+        """validate_permissions() reports no gaps across all 4 roles."""
+        from apps.auth_app.permissions import validate_permissions
+        is_valid, errors = validate_permissions()
+        self.assertTrue(
+            is_valid,
+            f"Permissions matrix has structural gaps: {errors}",
+        )
+
+    def test_all_program_roles_in_permissions_dict(self):
+        """Every role in ALL_PROGRAM_ROLES has an entry in PERMISSIONS."""
+        from apps.auth_app.permissions import PERMISSIONS
+        from apps.auth_app.constants import ALL_PROGRAM_ROLES
+        for role in ALL_PROGRAM_ROLES:
+            with self.subTest(role=role):
+                self.assertIn(
+                    role,
+                    PERMISSIONS,
+                    f"Role '{role}' is missing from the PERMISSIONS dict",
+                )
+
+
+# =========================================================================
+# Demo role seeding integration test
+# =========================================================================
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DemoRoleSeedingTest(TestCase):
+    """Verify seed creates demo users with roles matching EXPECTED_DEMO_ROLES.
+
+    Seeds demo data once per class via setUpTestData, then validates each
+    demo user's program role assignments against the canonical expectations
+    defined in the validate_permissions management command.
+    """
+
+    databases = {"default", "audit"}
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        from django.test import override_settings as _override
+        from io import StringIO
+
+        with _override(DEMO_MODE=True, FIELD_ENCRYPTION_KEY=TEST_KEY):
+            enc_module._fernet = None
+            call_command("seed", stdout=StringIO(), stderr=StringIO())
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _get_actual_roles(self, username):
+        from apps.auth_app.models import User
+        from apps.programs.models import UserProgramRole
+
+        user = User.objects.filter(username=username, is_demo=True).first()
+        if not user:
+            return None
+        return set(
+            UserProgramRole.objects.filter(user=user, status="active")
+            .values_list("program__name", "role")
+        )
+
+    def test_demo_users_exist(self):
+        """All demo users in EXPECTED_DEMO_ROLES are created by seed."""
+        from apps.auth_app.management.commands.validate_permissions import EXPECTED_DEMO_ROLES
+        from apps.auth_app.models import User
+
+        for username in EXPECTED_DEMO_ROLES:
+            with self.subTest(username=username):
+                self.assertTrue(
+                    User.objects.filter(username=username, is_demo=True).exists(),
+                    f"Demo user '{username}' not found after seed",
+                )
+
+    def test_demo_roles_match_expected(self):
+        """Each demo user's program roles exactly match EXPECTED_DEMO_ROLES."""
+        from apps.auth_app.management.commands.validate_permissions import EXPECTED_DEMO_ROLES
+
+        for username, expected_roles in EXPECTED_DEMO_ROLES.items():
+            with self.subTest(username=username):
+                actual = self._get_actual_roles(username)
+                self.assertIsNotNone(actual, f"Demo user '{username}' not found")
+                expected_set = {tuple(r) for r in expected_roles}
+                missing = expected_set - actual
+                extra = actual - expected_set
+                self.assertEqual(
+                    missing,
+                    set(),
+                    f"{username} is missing roles: {sorted(missing)}",
+                )
+                self.assertEqual(
+                    extra,
+                    set(),
+                    f"{username} has unexpected roles: {sorted(extra)}",
+                )
+
+    def test_demo_admin_has_no_program_roles(self):
+        """demo-admin has is_admin=True but no program role assignments."""
+        from apps.auth_app.models import User
+        from apps.programs.models import UserProgramRole
+
+        admin_user = User.objects.filter(username="demo-admin", is_demo=True).first()
+        self.assertIsNotNone(admin_user, "demo-admin should exist after seed")
+        self.assertTrue(admin_user.is_admin, "demo-admin should have is_admin=True")
+        role_count = UserProgramRole.objects.filter(user=admin_user).count()
+        self.assertEqual(
+            role_count,
+            0,
+            "demo-admin should have no program role assignments (admin access is separate)",
+        )

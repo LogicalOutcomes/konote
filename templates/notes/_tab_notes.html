@@ -87,7 +87,7 @@
 {% if page %}
 <div id="notes-timeline">
     {% for note in page %}
-    <article class="note-card note-card--{{ note.interaction_type }}{% if note.status == 'cancelled' %} note-card--cancelled{% endif %}"
+    <article class="note-card note-card--{{ note.interaction_type }}{% if note.status == 'cancelled' %} note-card--cancelled{% endif %}{% if note.suggestion_priority == 'urgent' %} note-card--urgent{% endif %}{% if note.note_type == 'assessment' %} note-card--assessment{% endif %}"
              id="note-{{ note.pk }}"
              aria-labelledby="note-{{ note.pk }}-heading">
         {% include "notes/_note_card.html" with note=note %}

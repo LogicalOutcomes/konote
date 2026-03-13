@@ -113,6 +113,12 @@
             <div class="number">{{ overdue_followups }}</div>
             <div class="label">{% trans "Overdue Follow-ups" %}</div>
         </div>
+        {% if total_suggestions_important > 0 %}
+        <div class="summary-card" style="border-color: #856404; background: #fff3cd;">
+            <div class="number">{{ total_suggestions_important }}</div>
+            <div class="label">{% trans "Important Suggestions" %}</div>
+        </div>
+        {% endif %}
     </div>
 
     {# Alert oversight #}

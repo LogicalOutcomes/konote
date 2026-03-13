@@ -14,6 +14,7 @@
     {% csrf_token %}
 
     {% include "includes/_form_errors.html" %}
+    <p class="form-required-note"><span aria-hidden="true">*</span> {% trans "Required" %}</p>
 
     <!-- Zone 1: Session Setup -->
     <fieldset class="session-setup" aria-label="{% trans 'Session setup' %}">
@@ -25,7 +26,7 @@
                 <div id="template-preview" aria-live="polite"></div>
             </div>
             <div class="field-interaction">
-                <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %}</label>
+                <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %} <abbr class="required-indicator" title="{% trans 'Required' %}">*</abbr></label>
                 {{ form.interaction_type }}
                 {% if form.interaction_type.errors %}<small class="error" id="interaction-type-error" role="alert">{{ form.interaction_type.errors.0 }}</small>{% endif %}
             </div>
@@ -243,7 +244,7 @@
                 <h3>{% trans "Their perspective" %}</h3>
 
                 <fieldset class="alliance-fieldset">
-                    <legend>{{ alliance_prompt|default:"Working relationship check-in" }}</legend>
+                    <legend title="{% trans 'How the participant feels about their relationship with their worker — rated 1 (struggling) to 5 (trusting)' %}">{{ alliance_prompt|default:"Working relationship check-in" }}</legend>
                     <input type="hidden" name="alliance_prompt_index" value="{{ alliance_prompt_index }}">
                     <small class="alliance-intro">{% trans "Ratings of 1–3 are normal and helpful — they tell you what to adjust." %}
                         <a href="{% url 'notes:alliance_repair_guide' %}" target="_blank" rel="noopener" title="{% trans 'Opens the Alliance Repair Guide in a new tab' %}">{% trans "Alliance Repair Guide" %}</a>
@@ -303,6 +304,17 @@
                     {% endfor %}
                     </div>
                     <small>{% trans "Your observation, not a score." %}</small>
+                    <details class="engagement-guide">
+                        <summary><small>{% trans "What do these mean?" %}</small></summary>
+                        <dl class="engagement-guide-list">
+                            <dt>{% trans "Not participating" %}</dt><dd>{% trans "Not contributing to the session — may be present but not interacting" %}</dd>
+                            <dt>{% trans "Going through motions" %}</dt><dd>{% trans "Present but passive; doing the minimum required" %}</dd>
+                            <dt>{% trans "Guarded" %}</dt><dd>{% trans "Cautious or holding back; still attending but with some resistance or emotional barriers" %}</dd>
+                            <dt>{% trans "Engaged" %}</dt><dd>{% trans "Active and responsive; participating willingly" %}</dd>
+                            <dt>{% trans "Fully invested" %}</dt><dd>{% trans "Highly motivated; taking initiative beyond what is asked" %}</dd>
+                            <dt>{% trans "No 1-on-1" %}</dt><dd>{% trans "No individual session this contact (e.g. group session, admin, or outreach only)" %}</dd>
+                        </dl>
+                    </details>
                     {% if form.engagement_observation.errors %}<small class="error" id="engagement-error" role="alert">{{ form.engagement_observation.errors.0 }}</small>{% endif %}
                 </fieldset>
 
