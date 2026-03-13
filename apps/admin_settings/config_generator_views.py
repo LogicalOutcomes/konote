@@ -14,4 +14,7 @@ CONFIG_GENERATOR_PATH = Path(__file__).resolve().parent.parent.parent / "tools" 
 def config_generator(request):
     """Serve the config generator HTML file directly."""
     html = CONFIG_GENERATOR_PATH.read_text(encoding="utf-8")
+    nonce = str(getattr(request, "csp_nonce", ""))
+    if nonce:
+        html = html.replace("<script>", f'<script nonce="{nonce}">', 1)
     return HttpResponse(html)
