@@ -30,6 +30,18 @@
 <div hx-get="{% url 'clients:assessment_due_banner' client_id=client.pk %}" hx-trigger="load" hx-swap="innerHTML"></div>
 {% endif %}
 
+{# Active alerts — shown prominently at the top of Info tab #}
+{% if active_alerts %}
+{% for alert in active_alerts %}
+<article class="alert-card" aria-label="{% trans 'alert' %}" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-card-background-color); margin-bottom: var(--kn-space-sm);">
+    <strong>{% trans "Alert" %}</strong> — <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
+    {% if alert.author %}<small class="secondary"> {% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
+    {% if show_program_ui and alert.author_program %}<span class="badge" style="background-color: {{ alert.author_program.colour_hex }}; color: #fff; margin-left: 0.25rem;">{{ alert.author_program.translated_name }}</span>{% endif %}
+    <p>{{ alert.content }}</p>
+</article>
+{% endfor %}
+{% endif %}
+
 {# Quick info row - high-frequency data for front desk #}
 <section class="quick-info-section">
     <dl class="quick-info">
@@ -76,13 +88,17 @@
 {% endif %}
 {% endif %}
 
-{# Contact & Messaging Consent — staff and above #}
+{# Communication & Language — staff and above #}
 {% if not is_receptionist and not client.is_anonymised %}
 <section>
     <details open>
-        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Contact & Reminders" %}</h2></summary>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Communication & Language" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
             <dl class="info-grid-compact">
+                <div class="info-field">
+                    <dt>{% trans "Preferred Language" %}</dt>
+                    <dd>{{ client.get_preferred_language_display|default:"English" }}</dd>
+                </div>
                 {% if visible_fields.phone and client.phone %}
                 <div class="info-field">
                     <dt>{% trans "Phone" %}</dt>
@@ -102,10 +118,6 @@
                     <dd>{{ client.email }}</dd>
                 </div>
                 {% endif %}
-                <div class="info-field">
-                    <dt>{% trans "Preferred Language" %}</dt>
-                    <dd>{{ client.get_preferred_language_display|default:"English" }}</dd>
-                </div>
             </dl>
 
             {# Consent status — simple display #}

@@ -286,6 +286,8 @@ We do not use:
 
 ## 10. Data Retention
 
+> **For a detailed retention schedule with recommended periods for Canadian nonprofits**, see [Data Retention Schedule](retention-schedule.md).
+
 | Data Type | Retention Period | Rationale |
 |-----------|------------------|-----------|
 | **Active Client Records** | Duration of service + [X years] | Service delivery and regulatory compliance |
@@ -352,6 +354,8 @@ We respond to access requests within **30 days** as required by PIPEDA. If we ne
 ---
 
 ## 12. Data Breach Response
+
+> **For the complete step-by-step breach response checklist**, see [Breach Response Workflow](breach-response-workflow.md).
 
 In the event of a data breach involving personal information:
 

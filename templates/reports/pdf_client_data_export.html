@@ -169,8 +169,8 @@
         </span>
     </div>
     <div class="content">
-        {% if note.notes_text %}{{ note.notes_text }}{% endif %}
         {% if note.summary %}{{ note.summary }}{% endif %}
+        {% if note.notes_text %}{{ note.notes_text }}{% endif %}
         {% if note.participant_reflection %}
         <br><em>{% trans "Participant's words" %}: {{ note.participant_reflection }}</em>
         {% endif %}

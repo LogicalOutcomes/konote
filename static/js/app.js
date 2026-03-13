@@ -1041,7 +1041,7 @@ document.addEventListener("click", function (event) {
             if (statusText) statusText.textContent = t("saving", "Saving…");
         } else if (status === "saved") {
             indicator.classList.add("saved");
-            if (statusText) statusText.textContent = t("saved", "Saved");
+            if (statusText) statusText.textContent = t("draftSaved", "Draft saved locally");
             // Hide after 2 seconds
             setTimeout(function() {
                 indicator.hidden = true;
@@ -1400,8 +1400,20 @@ document.addEventListener("click", function (event) {
         function tick() {
             remainingSeconds--;
             if (remainingSeconds <= 0) {
-                // Session expired — reload to trigger login redirect
-                window.location.reload();
+                // Session expired — POST to logout (not reload, which would renew the session)
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/auth/logout/";
+                var csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
+                if (csrfInput) {
+                    var hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "csrfmiddlewaretoken";
+                    hidden.value = csrfInput.value;
+                    form.appendChild(hidden);
+                }
+                document.body.appendChild(form);
+                form.submit();
                 return;
             }
             updateDisplay();
@@ -1420,10 +1432,13 @@ document.addEventListener("click", function (event) {
             document.addEventListener(evt, resetDebounced, { passive: true });
         });
 
-        // "Stay logged in" button — resets the timer explicitly
+        // "Stay logged in" button — resets the timer and pings the server
+        // to extend the actual server-side session (not just the local countdown)
         if (extendBtn) {
             extendBtn.addEventListener("click", function() {
                 resetTimer();
+                // Ping the server so the session sliding window resets
+                fetch("/auth/ping/", { method: "GET", credentials: "same-origin" }).catch(function() {});
             });
         }
 
@@ -1439,8 +1454,8 @@ document.addEventListener("click", function (event) {
         // Initial display (hidden — plenty of time)
         updateDisplay();
 
-        // Tick every minute
-        setInterval(tick, 60000);
+        // Tick every second (remainingSeconds is in seconds; interval must match)
+        setInterval(tick, 1000);
     }
 
     if (document.readyState === "loading") {
@@ -2130,4 +2145,44 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 
     // Run after HTMX swaps in new content (e.g. tab navigation, insights load)
     document.body.addEventListener('htmx:afterSettle', initAllCharts);
+})();
+
+// --- Global loading state for async buttons (UX/A11Y) ---
+// Automatically sets aria-busy="true" on submit buttons during HTMX requests.
+// This triggers Pico CSS's built-in loading spinner and communicates busy state to screen readers.
+(function () {
+    document.body.addEventListener('htmx:beforeRequest', function (event) {
+        var elt = event.detail.elt;
+        if (!elt) return;
+
+        var btn = null;
+        if (elt.tagName === 'FORM') {
+            btn = elt.querySelector('button[type="submit"]');
+        } else if (elt.tagName === 'BUTTON' || elt.tagName === 'A') {
+            btn = elt;
+        }
+
+        if (btn && !btn.hasAttribute('aria-busy')) {
+            btn.setAttribute('aria-busy', 'true');
+            // Store a flag so we only remove it if we added it
+            btn.setAttribute('data-htmx-busy', 'true');
+        }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function (event) {
+        var elt = event.detail.elt;
+        if (!elt) return;
+
+        var btn = null;
+        if (elt.tagName === 'FORM') {
+            btn = elt.querySelector('button[type="submit"]');
+        } else if (elt.tagName === 'BUTTON' || elt.tagName === 'A') {
+            btn = elt;
+        }
+
+        if (btn && btn.getAttribute('data-htmx-busy') === 'true') {
+            btn.removeAttribute('aria-busy');
+            btn.removeAttribute('data-htmx-busy');
+        }
+    });
 })();

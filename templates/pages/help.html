@@ -4,7 +4,7 @@
 {% block title %}{% trans "Help" %} - {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<div class="help-page">
+<div class="content-page help-page">
     <h1>{% trans "KoNote Help" %}</h1>
 
     <p>{% trans "Welcome to KoNote! This guide helps you find what you need quickly." %}</p>
@@ -791,66 +791,28 @@
 </div>
 
 <style>
-.help-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+/* Page-specific overrides — shared styles are in main.css .content-page */
+.help-page > h1 {
+    margin-bottom: 0.25rem;
 }
 
-/* pill-nav styles are in main.css */
-
-.pill-nav h2 {
-    margin-top: 0;
-    font-size: 1.1rem;
-}
-
-.help-page section {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--pico-muted-border-color, #e0e0e0);
-}
-
-.help-page section:last-child {
-    border-bottom: none;
-}
-
-.help-page h2 {
-    color: var(--pico-primary, #1976d2);
-    border-bottom: 2px solid var(--pico-primary, #1976d2);
-    padding-bottom: 0.5rem;
-}
-
-.help-page h3 {
-    margin-top: 1.5rem;
-    color: var(--pico-secondary, #607d8b);
-}
-
-.help-page table {
-    margin: 1rem 0;
+.help-page > p:first-of-type {
+    margin-bottom: 1rem;
+    color: var(--kn-text-secondary, #4a5568);
+    font-size: 0.9rem;
 }
 
 .help-page kbd {
-    background: var(--pico-muted-background-color, #e0e0e0);
-    border: 1px solid var(--pico-muted-border-color, #ccc);
+    background: var(--kn-neutral-bg, #e9ecef);
+    border: 1px solid var(--kn-border, #d1d5db);
     border-radius: 4px;
-    padding: 0.15rem 0.4rem;
+    padding: 0.1rem 0.35rem;
     font-family: monospace;
-    font-size: 0.9em;
-}
-
-.help-page ol, .help-page ul {
-    margin-left: 1.5rem;
-}
-
-.help-page li {
-    margin-bottom: 0.5rem;
+    font-size: 0.85em;
 }
 
 @media print {
-    .help-nav {
-        break-inside: avoid;
-    }
-    .help-page section {
+    .pill-nav {
         break-inside: avoid;
     }
 }

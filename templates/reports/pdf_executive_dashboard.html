@@ -13,6 +13,7 @@
         }
         h1 { font-size: 18pt; margin: 0 0 0.25cm; }
         h2 { font-size: 14pt; margin: 1cm 0 0.5cm; border-bottom: 1px solid #ccc; padding-bottom: 0.2cm; }
+        h3 { font-size: 12pt; margin: 0.6cm 0 0.3cm; }
         .meta { color: #555; font-size: 9pt; margin-bottom: 0.75cm; }
         .summary-grid {
             display: flex;
@@ -35,22 +36,48 @@
             font-size: 9pt;
             color: #555;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .program-section {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.4cm 0.5cm;
+            margin-bottom: 0.5cm;
+            page-break-inside: avoid;
+        }
+        .program-section h3 {
+            margin: 0 0 0.3cm;
+            padding-bottom: 0.15cm;
+            border-bottom: 1px solid #eee;
+        }
+        .metric-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2cm 1cm;
+            margin-bottom: 0.3cm;
+        }
+        .metric-item {
             font-size: 10pt;
+            min-width: 30%;
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 0.2cm 0.3cm;
-            text-align: left;
-        }
-        th {
-            background: #f5f5f5;
+        .metric-label { color: #555; }
+        .metric-value { font-weight: 600; }
+        .section-label {
+            font-size: 9pt;
             font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.3pt;
+            margin: 0.3cm 0 0.15cm;
         }
-        td.num { text-align: right; }
-        .suppressed { font-style: italic; color: #888; }
+        .suppressed { font-style: italic; color: #888; font-size: 9pt; }
+        .badge { font-size: 8pt; padding: 1pt 4pt; border-radius: 3pt; font-weight: 600; }
+        .badge-danger { background: #fee; color: #c00; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .theme-list { margin: 0; padding: 0 0 0 0.4cm; font-size: 10pt; }
+        .theme-list li { margin-bottom: 0.1cm; }
+        .learning-block { font-size: 10pt; margin-top: 0.15cm; }
+        .insight-bar { font-size: 9pt; color: #555; margin-bottom: 0.2cm; }
+        .privacy-line { font-size: 9pt; color: #555; margin-bottom: 0.5cm; }
+        .alert-line { font-size: 10pt; margin-bottom: 0.3cm; }
         .footer {
             margin-top: 1cm;
             font-size: 8pt;
@@ -67,9 +94,12 @@
     <div class="meta">
         {% trans "Period start" %}: {{ start_date|date:"Y-m-d" }}
         &nbsp;&middot;&nbsp;
+        {% trans "Filter" %}: {{ filter_label }}
+        &nbsp;&middot;&nbsp;
         {% blocktrans with date=generated_at|date:"Y-m-d H:i" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
     </div>
 
+    {# Summary cards #}
     <div class="summary-grid">
         <div class="summary-card">
             <div class="number">{{ total_active }}</div>
@@ -83,55 +113,178 @@
             <div class="number">{{ overdue_followups }}</div>
             <div class="label">{% trans "Overdue Follow-ups" %}</div>
         </div>
+        {% if total_suggestions_important > 0 %}
+        <div class="summary-card" style="border-color: #856404; background: #fff3cd;">
+            <div class="number">{{ total_suggestions_important }}</div>
+            <div class="label">{% trans "Important Suggestions" %}</div>
+        </div>
+        {% endif %}
     </div>
 
+    {# Alert oversight #}
+    {% if show_alerts and alert_oversight %}
+    <div class="alert-line">
+        {% trans "Safety Alerts" %}:
+        {{ alert_oversight.active }} {% trans "active" %}{% if alert_oversight.aging > 0 %},
+        {{ alert_oversight.aging }} {% trans "older than 14 days" %}{% endif %}{% if alert_oversight.pending_cancellation > 0 %},
+        {{ alert_oversight.pending_cancellation }} {% trans "pending review" %}{% endif %}
+    </div>
+    {% endif %}
+
+    {# Privacy summary #}
+    {% if privacy_summary %}
+    <div class="privacy-line">{{ privacy_summary }}</div>
+    {% endif %}
+
+    {# Per-program sections #}
     <h2>{% trans "Program Statistics" %}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">{% trans "Program" %}</th>
-                <th scope="col">{% trans "Total" %}</th>
-                <th scope="col">{% trans "Active" %}</th>
-                <th scope="col">{% trans "New This Period" %}</th>
-                <th scope="col">{% trans "Notes This Week" %}</th>
-                <th scope="col">{% trans "Engagement %" %}</th>
-                <th scope="col">{% trans "Goal Completion %" %}</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in program_data %}
-            <tr>
-                <td>{{ row.name }}</td>
-                <td class="num">{{ row.total }}</td>
-                <td class="num">{{ row.active }}</td>
-                <td class="num">{{ row.new_this_period }}</td>
-                <td class="num">{{ row.notes_this_week }}</td>
-                <td class="num">
-                    {% if row.suppress_pct %}
-                        <span class="suppressed">{% trans "suppressed" %}</span>
-                    {% elif row.engagement_pct != None %}
-                        {{ row.engagement_pct }}%
-                    {% else %}
-                        &mdash;
-                    {% endif %}
-                </td>
-                <td class="num">
-                    {% if row.suppress_pct %}
-                        <span class="suppressed">{% trans "suppressed" %}</span>
-                    {% elif row.goal_completion_pct != None %}
-                        {{ row.goal_completion_pct }}%
-                    {% else %}
-                        &mdash;
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7">{% trans "No program data available." %}</td>
-            </tr>
+
+    {% for stat in program_stats %}
+    <div class="program-section">
+        <h3>{{ stat.program.translated_name }}</h3>
+
+        {# Insight indicators #}
+        <div class="insight-bar">
+            {% if stat.trend_direction %}
+                {% if stat.trend_direction == "improving" %}&#8593; {% trans "Improving" %}
+                {% elif stat.trend_direction == "declining" %}&#8595; {% trans "Declining" %}
+                {% else %}&#8211; {% trans "Stable" %}{% endif %}
+                &nbsp;&middot;&nbsp;
+            {% endif %}
+            {% if stat.data_completeness_level == "full" %}{% trans "Data: Full" %}
+            {% elif stat.data_completeness_level == "partial" %}{% trans "Data: Partial" %}
+            {% else %}{% trans "Data: Low" %}{% endif %}
+            {% if stat.urgent_theme_count > 0 %}
+                &nbsp;&middot;&nbsp; {{ stat.urgent_theme_count }} {% trans "urgent" %}
+            {% endif %}
+        </div>
+
+        {# Census and activity #}
+        <div class="section-label">{% trans "Census & Activity" %}</div>
+        <div class="metric-grid">
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Total Participants" %}:</span>
+                <span class="metric-value">{{ stat.total }}</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Active" %}:</span>
+                <span class="metric-value">{{ stat.active }}</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">{% trans "New this month" %}:</span>
+                <span class="metric-value">{{ stat.new_this_month }}</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Notes this week" %}:</span>
+                <span class="metric-value">{{ stat.notes_this_week }}</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Intake Pipeline" %}:</span>
+                <span class="metric-value">{{ stat.intake_pending }}</span>
+            </div>
+        </div>
+
+        {# Engagement and outcomes #}
+        <div class="section-label">{% trans "Engagement & Outcomes" %}</div>
+        {% if stat.suppress_pct %}
+        <div class="suppressed">{% trans "Percentages hidden (fewer than 5 active participants)" %}</div>
+        {% else %}
+        <div class="metric-grid">
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Engagement Quality" %}:</span>
+                {% if stat.engagement_quality is not None %}
+                <span class="metric-value">{{ stat.engagement_quality }}%</span>
+                {% else %}
+                <span class="metric-value">{% trans "N/A" %}</span>
+                {% endif %}
+            </div>
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Goal Completion" %}:</span>
+                {% if stat.goal_completion is not None %}
+                <span class="metric-value">{{ stat.goal_completion }}%</span>
+                {% else %}
+                <span class="metric-value">{% trans "N/A" %}</span>
+                {% endif %}
+            </div>
+            {% if show_events and stat.no_show_rate is not None %}
+            <div class="metric-item">
+                <span class="metric-label">{% trans "No-Show Rate" %}:</span>
+                <span class="metric-value">{{ stat.no_show_rate }}%</span>
+            </div>
+            {% endif %}
+            {% if stat.group_attendance is not None %}
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Group Attendance" %}:</span>
+                <span class="metric-value">{{ stat.group_attendance }}%</span>
+            </div>
+            {% endif %}
+            {% if show_portal and stat.portal_adoption is not None %}
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Portal Adoption" %}:</span>
+                <span class="metric-value">{{ stat.portal_adoption }}%</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# Suggestion themes #}
+        {% if stat.top_themes %}
+        <div class="section-label">{% trans "Suggestion Themes" %}</div>
+        <ul class="theme-list">
+            {% for theme in stat.top_themes %}
+            <li>
+                {{ theme.name }} ({{ theme.link_count }})
+                {% if theme.priority == "urgent" %}<span class="badge badge-danger">{% trans "Urgent" %}</span>
+                {% elif theme.priority == "important" %}<span class="badge badge-warning">{% trans "Important" %}</span>{% endif %}
+            </li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+        {% if stat.theme_overflow > 0 %}
+        <div style="font-size: 9pt; color: #555;">+{{ stat.theme_overflow }} {% trans "more themes" %}</div>
+        {% endif %}
+        {% elif stat.suggestion_total > 0 %}
+        <div class="section-label">{% trans "Suggestions" %}</div>
+        <div class="metric-grid">
+            <div class="metric-item">
+                <span class="metric-label">{% trans "Total" %}:</span>
+                <span class="metric-value">{{ stat.suggestion_total }}{% if stat.suggestion_important > 0 %} ({{ stat.suggestion_important }} {% trans "important" %}){% endif %}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Program Learning #}
+        {% if stat.learning %}
+        <div class="section-label">{% trans "Program Learning" %}</div>
+        <div class="learning-block">
+            {% if stat.learning.suppress %}
+            <span class="suppressed">{% trans "Outcome data suppressed (fewer than 5 participants with data)" %}</span>
+            {% elif stat.learning.headline_pct is not None %}
+            <div>
+                {% if stat.learning.headline_type == "achievement" %}
+                {{ stat.learning.headline_pct }}% {{ stat.learning.headline_label }}
+                {% else %}
+                {{ stat.learning.headline_pct }}% {% trans "goals within reach" %} ({{ stat.learning.headline_label }})
+                {% endif %}
+            </div>
+            {% if stat.learning.target_rate or stat.learning.trend_direction %}
+            <div style="color: #555;">
+                {% if stat.learning.target_rate %}{% trans "Target" %}: {{ stat.learning.target_rate }}%{% endif %}
+                {% if stat.learning.target_rate and stat.learning.trend_direction %} &middot; {% endif %}
+                {% if stat.learning.trend_direction %}{% trans "Trend" %}: {{ stat.learning.trend_direction }} {{ stat.learning.trend_label }}{% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <span class="suppressed">{% trans "No outcome data recorded yet" %}</span>
+            {% endif %}
+            <div style="font-size: 9pt; color: #555;">
+                {{ stat.learning.completeness_with_data }} {% trans "of" %} {{ stat.learning.completeness_enrolled }} {% trans "participants with data" %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p>{% trans "No program data available." %}</p>
+    {% endfor %}
 
     <div class="footer">
         {% blocktrans with ts=generated_at|date:"Y-m-d H:i:s" %}Generated at {{ ts }}{% endblocktrans %}

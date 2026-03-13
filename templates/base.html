@@ -320,7 +320,7 @@
             {% if user.is_authenticated %}
             <div class="site-footer-session">
                 <span>{% trans "Logged in as" %} {{ user.display_name|default:user.username }}</span>
-                <span class="session-timer" id="session-timer" data-timeout="{{ session_timeout_minutes|default:30 }}" data-warn="{% trans "Your login expires in {mins} minute(s)" %}" data-urgent="{% trans "You'll be logged out in {mins} minute(s)" %}" aria-live="polite" aria-atomic="true" hidden>
+                <span class="session-timer" id="session-timer" data-timeout="{{ site.session_timeout_minutes|default:30 }}" data-warn="{% trans "Your login expires in {mins} minute(s)" %}" data-urgent="{% trans "You'll be logged out in {mins} minute(s)" %}" aria-live="polite" aria-atomic="true" hidden>
                     <span id="session-message"></span>
                 </span>
                 <button type="button" id="extend-session" class="extend-session-btn" hidden aria-label="{% trans 'Stay logged in' %}">{% trans "Stay logged in" %}</button>
@@ -361,7 +361,7 @@
     window.KN = {
         dismissMessage: "{% trans 'Dismiss message' %}",
         errorGeneric: "{% trans 'Something went wrong. Please try again.' %}",
-        error403: "{% trans "You don't have permission to do that." %}",
+        error403: '{% trans "You don\'t have permission to do that." %}',
         error404: "{% trans 'The requested item was not found.' %}",
         error500: "{% trans 'A server error occurred. Please try again later.' %}",
         errorNetwork: "{% trans 'Could not connect to the server. Check your internet connection.' %}",
@@ -378,6 +378,7 @@
         draftRestored: "{% trans 'Draft restored' %}",
         saving: "{% trans 'Saving…' %}",
         saved: "{% trans 'Saved' %}",
+        draftSaved: "{% trans 'Draft saved locally' %}",
         unsavedWarning: "{% trans 'You have unsaved changes. Are you sure you want to leave?' %}",
         loading: "{% trans 'Loading…' %}",
         resultsLoaded: "{% trans 'Results loaded.' %}",
@@ -397,7 +398,7 @@
         chartDate: "{% trans 'Date' %}",
         descriptorHarder: "{% trans 'Harder right now' %}",
         descriptorHolding: "{% trans 'Holding steady' %}",
-        descriptorShifting: "{% trans "Something's shifting" %}",
+        descriptorShifting: '{% trans "Something\'s shifting" %}',
         descriptorGood: "{% trans 'In a good place' %}",
         chartPercentage: "{% trans 'Percentage' %}",
         chartMonth: "{% trans 'Month' %}",

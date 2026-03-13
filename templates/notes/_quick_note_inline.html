@@ -19,7 +19,7 @@
 
         {# Interaction type radio pills #}
         <fieldset class="interaction-pills">
-            <legend>{% trans "Type" %}</legend>
+            <legend>{% trans "Type" %} <abbr class="required-indicator" title="{% trans 'Required' %}">*</abbr></legend>
             {% for radio in form.interaction_type %}
             {{ radio }}
             {% endfor %}

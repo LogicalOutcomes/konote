@@ -3,6 +3,11 @@
 Runs axe-core on key pages and fails on critical or serious violations.
 Uses Playwright + CDN-hosted axe-core (same approach as browser_base.py).
 
+Covers three flows (REV26-A11Y1):
+  1. Public survey flow
+  2. Staff report/chart flow (outcome insights)
+  3. Participant portal flow (dashboard, journal, goals)
+
 Marked @browser so it runs in the dedicated a11y CI job, not the fast
 unit-test job.
 
@@ -38,6 +43,14 @@ SMOKE_PAGES = [
     ("/", "Dashboard", True),
     ("/participants/", "Participant list", True),
     ("/admin/settings/features/", "Admin feature settings", True),
+    ("/reports/insights/", "Outcome insights (charts)", True),
+]
+
+# Portal pages tested with a separate participant session
+PORTAL_PAGES = [
+    ("/my/", "Portal dashboard"),
+    ("/my/journal/", "Portal journal"),
+    ("/my/goals/", "Portal goals"),
 ]
 
 
@@ -113,6 +126,9 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         from apps.auth_app.models import User
         from apps.programs.models import Program, UserProgramRole
         from apps.surveys.models import Survey, SurveyLink, SurveyQuestion, SurveySection
+        from apps.admin_settings.models import FeatureToggle
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.portal.models import ParticipantUser
 
         self.user = User.objects.create_user(
             username="a11y_staff", password="testpass123",
@@ -144,6 +160,26 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         )
         link = SurveyLink.objects.create(survey=survey, created_by=self.user)
         self.public_survey_path = f"/s/{link.token}/"
+
+        # Portal data — enable the feature toggle and create a participant
+        FeatureToggle.objects.update_or_create(
+            feature_key="participant_portal",
+            defaults={"is_enabled": True},
+        )
+        client_file = ClientFile.objects.create(
+            first_name="Portal", last_name="Tester",
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=client_file, program=self.program,
+        )
+        self.portal_email = "portal-a11y@test.example"
+        self.portal_password = "testportal123"
+        ParticipantUser.objects.create_participant(
+            email=self.portal_email,
+            client_file=client_file,
+            display_name="Portal Tester",
+            password=self.portal_password,
+        )
 
     def _login(self):
         """Log in via the login form."""
@@ -220,5 +256,38 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
             self.fail(
                 f"Axe-core found critical/serious accessibility violations "
                 f"on {len(all_violations)} page(s):"
+                + "\n".join(report)
+            )
+
+    def _portal_login(self):
+        """Log in to the participant portal via the portal login form."""
+        self.page.goto(f"{self.live_server_url}/my/login/")
+        self.page.wait_for_load_state("networkidle")
+
+        self.page.locator("#email").fill(self.portal_email)
+        self.page.locator("#password").fill(self.portal_password)
+        self.page.locator("form[action='/my/login/'] button[type='submit']").click()
+        self.page.wait_for_load_state("networkidle")
+
+    def test_axe_portal_pages(self):
+        """Run axe-core on participant portal pages — fail on critical/serious."""
+        self._portal_login()
+        all_violations = {}
+
+        for path, description in PORTAL_PAGES:
+            self.page.goto(f"{self.live_server_url}{path}")
+            self.page.wait_for_load_state("networkidle")
+
+            violations = self._run_axe()
+            if violations:
+                all_violations[path] = violations
+
+        if all_violations:
+            report = []
+            for path, violations in all_violations.items():
+                report.append(self._format_violations(violations, path))
+            self.fail(
+                f"Axe-core found critical/serious accessibility violations "
+                f"on {len(all_violations)} portal page(s):"
                 + "\n".join(report)
             )
