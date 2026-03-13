@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
 
 {% block title %}{% trans "Settings" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>{% trans "Settings" %}</h1>
-    <p>{% trans "Start here for setup, configuration, and core admin tools." %}</p>
+    <p>{% with language_prefix=CURRENT_LANGUAGE|slice:":2" %}{% if language_prefix == "fr" %}Commencez ici pour la configuration, les paramètres et les outils d'administration essentiels.{% else %}{% trans "Start here for setup, configuration, and core admin tools." %}{% endif %}{% endwith %}</p>
 </div>
 
 <div role="group" style="margin-bottom: 1rem;">
