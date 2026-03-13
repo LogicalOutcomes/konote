@@ -15,7 +15,7 @@
 <body>
 <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 {% include "_lang_toggle.html" with max_width="720px" %}
-<main id="main-content" tabindex="-1" class="container" style="max-width:720px; padding-top:2rem; text-align:center">
+<main id="main-content" tabindex="-1" class="container" style="max-width:720px; padding-top:2rem; text-align:center" aria-label="{% trans 'Main content' %}">
 
 <h1>{% trans "Thank you!" %}</h1>
 <p>{% blocktrans with name=survey.name|bilingual:survey.name_fr %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>

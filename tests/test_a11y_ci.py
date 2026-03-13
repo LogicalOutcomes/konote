@@ -127,7 +127,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         from apps.programs.models import Program, UserProgramRole
         from apps.surveys.models import Survey, SurveyLink, SurveyQuestion, SurveySection
         from apps.admin_settings.models import FeatureToggle
-        from apps.clients.models import ClientFile, ProgramEnrolment
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
         from apps.portal.models import ParticipantUser
 
         self.user = User.objects.create_user(
@@ -163,16 +163,14 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
 
         # Portal data — enable the feature toggle and create a participant
         FeatureToggle.objects.update_or_create(
-            feature_name="participant_portal",
+            feature_key="participant_portal",
             defaults={"is_enabled": True},
         )
         client_file = ClientFile.objects.create(
             first_name="Portal", last_name="Tester",
-            created_by=self.user,
         )
-        ProgramEnrolment.objects.create(
+        ClientProgramEnrolment.objects.create(
             client_file=client_file, program=self.program,
-            created_by=self.user,
         )
         self.portal_email = "portal-a11y@test.example"
         self.portal_password = "testportal123"
@@ -266,9 +264,9 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         self.page.goto(f"{self.live_server_url}/my/login/")
         self.page.wait_for_load_state("networkidle")
 
-        self.page.locator("#id_email").fill(self.portal_email)
-        self.page.locator("#id_password").fill(self.portal_password)
-        self.page.locator("form button[type='submit']").click()
+        self.page.locator("#email").fill(self.portal_email)
+        self.page.locator("#password").fill(self.portal_password)
+        self.page.locator("form[action='/my/login/'] button[type='submit']").click()
         self.page.wait_for_load_state("networkidle")
 
     def test_axe_portal_pages(self):

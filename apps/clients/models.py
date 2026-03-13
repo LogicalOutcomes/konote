@@ -565,6 +565,7 @@ class ServiceEpisode(models.Model):
 
 # Backwards compatibility — all existing imports continue working
 ClientProgramEnrolment = ServiceEpisode
+ProgramEnrolment = ServiceEpisode
 
 
 class ServiceEpisodeStatusChange(models.Model):
