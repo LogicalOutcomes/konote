@@ -101,8 +101,15 @@ def get_client_tab_counts(client):
         status="default"
     ).count()
 
+    # Completed survey responses (template checks features.surveys before displaying)
+    from apps.surveys.models import SurveyResponse
+    surveys_count = SurveyResponse.objects.filter(
+        client_file=client,
+    ).count()
+
     return {
         "notes_count": notes_count,
         "events_count": events_count + alerts_count,  # Combined for Events tab
         "targets_count": targets_count,
+        "surveys_count": surveys_count,
     }
