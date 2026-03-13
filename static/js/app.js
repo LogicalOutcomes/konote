@@ -1432,10 +1432,13 @@ document.addEventListener("click", function (event) {
             document.addEventListener(evt, resetDebounced, { passive: true });
         });
 
-        // "Stay logged in" button — resets the timer explicitly
+        // "Stay logged in" button — resets the timer and pings the server
+        // to extend the actual server-side session (not just the local countdown)
         if (extendBtn) {
             extendBtn.addEventListener("click", function() {
                 resetTimer();
+                // Ping the server so the session sliding window resets
+                fetch("/auth/ping/", { method: "GET", credentials: "same-origin" }).catch(function() {});
             });
         }
 
@@ -1451,8 +1454,8 @@ document.addEventListener("click", function (event) {
         // Initial display (hidden — plenty of time)
         updateDisplay();
 
-        // Tick every minute
-        setInterval(tick, 60000);
+        // Tick every second (remainingSeconds is in seconds; interval must match)
+        setInterval(tick, 1000);
     }
 
     if (document.readyState === "loading") {
