@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load static %}
 {% load permissions_tags %}
+{% get_current_language as CURRENT_LANGUAGE %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -64,7 +65,7 @@
 
     {% if user.is_authenticated and user.is_demo %}
     <div class="demo-banner" role="alert" aria-live="polite">
-        <strong>{% trans "Training Mode" %}</strong> — {% trans "changes here do not affect real participant records." %}
+        <strong>{% trans "Training Mode" %}</strong> — {% with language_prefix=CURRENT_LANGUAGE|slice:":2" %}{% if language_prefix == "fr" %}les modifications ici n'affectent pas les vrais dossiers des participants.{% else %}{% trans "changes here do not affect real participant records." %}{% endif %}{% endwith %}
         <span class="demo-banner-user">{% blocktrans with name=user.display_name %}Signed in as {{ name }}.{% endblocktrans %}</span>
     </div>
     {% endif %}
@@ -357,11 +358,13 @@
     <!-- Chart.js — for analysis charts (loaded globally for HTMX compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <!-- Translated strings for app.js (I18N-4) -->
+    {% translate "You don't have permission to do that." as error403_text %}
+    {% translate "Something's shifting" as descriptor_shifting_text %}
     <script nonce="{{ request.csp_nonce }}">
     window.KN = {
         dismissMessage: "{% trans 'Dismiss message' %}",
         errorGeneric: "{% trans 'Something went wrong. Please try again.' %}",
-        error403: '{% trans "You don\'t have permission to do that." %}',
+        error403: "{{ error403_text|escapejs }}",
         error404: "{% trans 'The requested item was not found.' %}",
         error500: "{% trans 'A server error occurred. Please try again later.' %}",
         errorNetwork: "{% trans 'Could not connect to the server. Check your internet connection.' %}",
@@ -398,7 +401,7 @@
         chartDate: "{% trans 'Date' %}",
         descriptorHarder: "{% trans 'Harder right now' %}",
         descriptorHolding: "{% trans 'Holding steady' %}",
-        descriptorShifting: '{% trans "Something\'s shifting" %}',
+        descriptorShifting: "{{ descriptor_shifting_text|escapejs }}",
         descriptorGood: "{% trans 'In a good place' %}",
         chartPercentage: "{% trans 'Percentage' %}",
         chartMonth: "{% trans 'Month' %}",
