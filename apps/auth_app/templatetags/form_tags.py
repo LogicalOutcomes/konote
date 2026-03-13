@@ -27,15 +27,23 @@ def describedby_ids(field):
 
 @register.filter(name="aria_describedby")
 def aria_describedby(bound_field, describedby_id):
-    """Add aria-describedby attribute to a rendered form widget."""
-    if not describedby_id:
-        return bound_field
+    """Add aria-describedby (and aria-invalid if errors exist) attribute to a rendered form widget."""
     html = str(bound_field)
-    if "aria-describedby=" in html:
+
+    attributes = []
+    if describedby_id and "aria-describedby=" not in html:
+        attributes.append(f'aria-describedby="{describedby_id}"')
+
+    if hasattr(bound_field, "errors") and bound_field.errors and "aria-invalid=" not in html:
+        attributes.append('aria-invalid="true"')
+
+    if not attributes:
         return bound_field
+
+    attrs_str = " ".join(attributes)
     html = re.sub(
         r"(<(?:input|select|textarea)\b)",
-        rf'\1 aria-describedby="{describedby_id}"',
+        rf"\1 {attrs_str}",
         html,
         count=1,
     )
