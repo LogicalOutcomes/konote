@@ -163,7 +163,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
 
         # Portal data — enable the feature toggle and create a participant
         FeatureToggle.objects.update_or_create(
-            feature_name="participant_portal",
+            feature_key="participant_portal",
             defaults={"is_enabled": True},
         )
         client_file = ClientFile.objects.create(
@@ -264,8 +264,8 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         self.page.goto(f"{self.live_server_url}/my/login/")
         self.page.wait_for_load_state("networkidle")
 
-        self.page.locator("#id_email").fill(self.portal_email)
-        self.page.locator("#id_password").fill(self.portal_password)
+        self.page.locator("#email").fill(self.portal_email)
+        self.page.locator("#password").fill(self.portal_password)
         self.page.locator("form button[type='submit']").click()
         self.page.wait_for_load_state("networkidle")
 
