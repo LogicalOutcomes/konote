@@ -7,6 +7,7 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("callback/", views.azure_callback, name="azure_callback"),
     path("logout/", views.logout_view, name="logout"),
+    path("ping/", views.session_ping, name="session_ping"),
     # Demo login (only works when DEMO_MODE is enabled)
     path("demo-login/<str:role>/", views.demo_login, name="demo_login"),
     path("demo-portal-login/<str:record_id>/", views.demo_portal_login, name="demo_portal_login"),

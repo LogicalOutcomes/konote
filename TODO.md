@@ -22,9 +22,7 @@
 
 ### Phase: Deep Review Fixes (2026-03-06)
 
-- [ ] Expand automated accessibility coverage across one public survey flow, one portal flow, and one report/chart flow — PB (REV26-A11Y1)
-- [ ] Document the active participant-data AI provider mode and data residency expectations for operators — SG (REV26-AI4)
-- [ ] Complete organization-specific privacy policy, retention schedule, and breach workflow documentation — SG (REV26-PRIV1)
+_All deep review fix tasks completed — see Recently Done._
 
 ## Do Occasionally
 
@@ -126,6 +124,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)
+- [x] AI provider configuration guide for operators — docs/ai-provider-guide.md covering cloud vs self-hosted, data residency, configuration, costs — 2026-03-12 (REV26-AI4)
+- [x] Data retention schedule + breach response workflow — docs/retention-schedule.md and docs/breach-response-workflow.md, with cross-references from privacy-policy-template.md and security-operations.md — 2026-03-12 (REV26-PRIV1)
 - [x] CIDS Full Tier + Evaluation Framework deployed to dev VPS — PR #422 merged, migration dependency fix PR #423, all exports pass SHACL validation, coverage dashboard live at 8/14 classes, evaluation framework CRUD working end-to-end — 2026-03-07 (CIDS-DEPLOY1)
 - [x] Translation catalog cleanup — filled 16 remaining empty French entries, 0 empty remain — PR #414 — 2026-03-07 (REV26-I18N2)
 - [x] Tenant provisioning + backup recovery resumability — --skip-to, --dry-run, --pre-restore, --full, transaction wrapping, expanded encryption checks — PR #414 — 2026-03-07 (REV26-DEP3)

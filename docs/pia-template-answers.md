@@ -101,7 +101,7 @@ All data access is logged to a separate audit database.
 - **Role-based access control** — Four role levels, enforced server-side.
 - **Audit logging** — Separate, append-only audit database.
 - **Strong password hashing** — Argon2id (when using local authentication).
-- **Session management** — Automatic logout after 8 hours of inactivity.
+- **Session management** — Automatic logout after 30 minutes of inactivity (configurable by administrators; default: 30 minutes).
 - **Export controls** — Time delays on bulk exports, recipient tracking.
 - **Multi-factor authentication** — Available through Azure AD SSO integration.
 - **CSRF protection** — Django's built-in cross-site request forgery prevention.

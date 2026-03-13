@@ -110,6 +110,7 @@ MIDDLEWARE = [
     # TenantMainMiddleware sets the PostgreSQL schema based on subdomain
     "django_tenants.middleware.main.TenantMainMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "konote.middleware.session_timeout.SessionTimeoutMiddleware",
     "django.middleware.common.CommonMiddleware",
     "konote.middleware.htmx_vary.HtmxVaryMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

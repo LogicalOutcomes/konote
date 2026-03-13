@@ -1216,6 +1216,15 @@ def client_detail(request, client_id):
         **tab_counts,  # notes_count, events_count, targets_count
     }
 
+    # Active alerts — shown on Info tab for immediate visibility
+    if not is_receptionist:
+        from apps.events.models import Alert
+        from django.db.models import Q as _Q
+        _alert_program_q = _Q(author_program_id__in=user_program_ids) | _Q(author_program__isnull=True)
+        context["active_alerts"] = Alert.objects.filter(
+            client_file=client, status="default",
+        ).filter(_alert_program_q).select_related("author_program")
+
     # DV-safe context (PERM-P5) — only for staff+ at Tier 2+
     if not is_receptionist:
         from apps.admin_settings.models import get_access_tier

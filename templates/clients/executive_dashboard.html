@@ -226,7 +226,7 @@
         {% if show_alerts and alert_oversight %}
         <article class="stat-card {% if alert_oversight.active > 0 %}stat-alert{% endif %}">
             <div class="stat-value">{{ alert_oversight.active }}</div>
-            <div class="stat-label">{% trans "Active Safety Alerts" %}</div>
+            <div class="stat-label" title="{% trans 'Safety flags raised for one or more participants that have not been resolved or closed' %}">{% trans "Active Safety Alerts" %}</div>
             {% if alert_oversight.aging > 0 %}
             <div class="stat-detail stat-warning-text">{{ alert_oversight.aging }} {% trans "older than 14 days" %}</div>
             {% endif %}
@@ -326,7 +326,7 @@
                 {% endif %}
                 {% if stat.engagement_quality is not None %}
                 <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
-                    <span class="metric-label">{% trans "Engagement Quality" %}</span>
+                    <span class="metric-label" title="{% trans 'Percentage of sessions this period where staff observed Engaged or Fully invested participation' %}">{% trans "Engagement Quality" %}</span>
                     <span class="metric-value">{{ stat.engagement_quality }}%
                         <span class="sr-only">{% if stat.engagement_quality >= 70 %}({% trans "Good" %}){% elif stat.engagement_quality >= 40 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
                     </span>
@@ -363,13 +363,13 @@
 
                 {# Pipeline & adoption #}
                 <div class="metric-row">
-                    <span class="metric-label">{% trans "Intake Pipeline" %}</span>
+                    <span class="metric-label" title="{% trans 'Participants registered but not yet marked Active — waiting for intake to be completed' %}">{% trans "Intake Pipeline" %}</span>
                     <span class="metric-value">{{ stat.intake_pending }}</span>
                 </div>
 
                 {% if show_portal and stat.portal_adoption is not None %}
                 <div class="metric-row">
-                    <span class="metric-label">{% trans "Portal Adoption" %}</span>
+                    <span class="metric-label" title="{% trans 'Percentage of active participants who have logged into the participant portal at least once' %}">{% trans "Portal Adoption" %}</span>
                     <span class="metric-value">{{ stat.portal_adoption }}%</span>
                 </div>
                 {% endif %}

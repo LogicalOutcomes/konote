@@ -1,0 +1,3 @@
+## 2024-05-18 - Global Loading State for Async Submit Buttons
+**Learning:** In a vanilla HTML/HTMX app using PicoCSS, buttons triggering async actions often lack immediate visual feedback and screen reader announcements, which can lead to double submissions and confusion. Setting `aria-busy="true"` dynamically hooks into PicoCSS's built-in loading spinner and announces the busy state, significantly improving perceived performance and accessibility globally.
+**Action:** Implemented global HTMX event listeners (`htmx:beforeRequest` and `htmx:afterRequest`) in `app.js` to automatically toggle `aria-busy="true"` on submit buttons. This provides a universal, accessible loading state for all async operations without adding custom CSS.
