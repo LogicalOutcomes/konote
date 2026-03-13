@@ -24,7 +24,7 @@
 </head>
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
-    <main id="main-content" tabindex="-1">
+    <main id="main-content" tabindex="-1" aria-label="{% trans 'Main content' %}">
         <div class="icon" aria-hidden="true">&#128268;</div>
         <h1>{% trans "You're offline" %}</h1>
         <p>{% trans "This page requires an internet connection. Please check your network and try again." %}</p>

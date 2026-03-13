@@ -99,7 +99,7 @@
         <strong>{{ site.product_name|default:"KoNote" }}</strong>
     </header>
 
-    <main id="main-content" class="container" style="max-width: 640px; margin: 2rem auto;" tabindex="-1">
+    <main id="main-content" class="container" style="max-width: 640px; margin: 2rem auto;" tabindex="-1" aria-label="{% trans 'Main content' %}">
         {% block content %}{% endblock %}
     </main>
 

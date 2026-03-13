@@ -127,7 +127,7 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         from apps.programs.models import Program, UserProgramRole
         from apps.surveys.models import Survey, SurveyLink, SurveyQuestion, SurveySection
         from apps.admin_settings.models import FeatureToggle
-        from apps.clients.models import ClientFile, ProgramEnrolment
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
         from apps.portal.models import ParticipantUser
 
         self.user = User.objects.create_user(
@@ -168,11 +168,9 @@ class AxeA11ySmokeTest(StaticLiveServerTestCase):
         )
         client_file = ClientFile.objects.create(
             first_name="Portal", last_name="Tester",
-            created_by=self.user,
         )
-        ProgramEnrolment.objects.create(
+        ClientProgramEnrolment.objects.create(
             client_file=client_file, program=self.program,
-            created_by=self.user,
         )
         self.portal_email = "portal-a11y@test.example"
         self.portal_password = "testportal123"
