@@ -71,7 +71,7 @@ KoNote supports a range of deployment options, from bare-bones self-hosted to fu
 
 What is **never** shared: databases, encryption keys, application instances, participant data.
 
-**Cost:** ~$94/agency/mo (5-agency network) to ~$67/agency/mo (30-agency network), Year 2+. See `hosting-budget-scenarios.md` for current figures.
+**Cost:** ~$96/agency/mo (5-agency network) to ~$67/agency/mo (30-agency network), Year 2+. See `hosting-budget-scenarios.md` for current figures.
 
 **Docs:** `tasks/p0-managed-service-plan.md`, `tasks/deployment-protocol.md`
 
@@ -88,7 +88,7 @@ What is **never** shared: databases, encryption keys, application instances, par
 
 **Trade-off:** Azure's parent company (Microsoft) is US-incorporated and subject to the US CLOUD Act. Data is in Canada (Toronto/Canada Central), but the corporate jurisdiction is American. See `tasks/design-rationale/data-access-residency-policy.md`.
 
-**Cost:** ~$171/agency/mo (list price) or ~$77/agency/mo (with nonprofit grant). See `hosting-budget-scenarios.md`.
+**Cost:** ~$173/agency/mo (list price) or ~$79/agency/mo (with nonprofit grant). See `hosting-budget-scenarios.md`.
 
 **Docs:** `docs/archive/deploy-azure.md` (archived but still accurate for Azure path)
 
@@ -190,7 +190,7 @@ Each file has a `<!-- COST_VERSION -->` header. Before updating, compare key val
 
 | Network size | OVHcloud | Azure (list) | Azure (nonprofit grant) |
 |---|---|---|---|
-| 5 agencies | ~$94/agency | ~$171/agency | ~$77/agency |
+| 5 agencies | ~$96/agency | ~$173/agency | ~$79/agency |
 | 30 agencies | ~$67/agency | ~$144/agency | ~$50/agency |
 
 Key Vault is $2/agency/month (per-agency vault, not shared). These figures include Key Vault in the per-agency hosting cost.
