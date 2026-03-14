@@ -1,5 +1,9 @@
 # Deploying KoNote on OVHcloud VPS
 
+> **Audience:** Technical staff deploying KoNote to an OVHcloud VPS.
+> **Assumes:** SSH access, comfort with the command line, access to a domain registrar.
+> **Read first:** [Deployment Index](deployment-index.md) for an overview of all deployment options.
+
 ## Two Paths: Automated or Manual
 
 | Path | Time | Best for |

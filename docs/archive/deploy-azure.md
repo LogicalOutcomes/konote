@@ -1,3 +1,5 @@
+> **ARCHIVED:** This deployment method is no longer the recommended path. OVHcloud is preferred for most agencies. This guide is maintained for agencies that specifically require Azure hosting. See [Deployment Index](../deployment-index.md) for current options.
+
 # KoNote Web — Azure Deployment Guide
 
 This guide walks you through deploying KoNote Web to Microsoft Azure. We'll use Azure Container Apps to run the application and Azure Database for PostgreSQL to store your data.

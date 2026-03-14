@@ -1,3 +1,5 @@
+> **ARCHIVED:** Elest.io deployment is no longer supported. See [Deployment Index](../deployment-index.md) for current deployment options (OVHcloud recommended).
+
 # Deploying KoNote Web to Elest.io
 
 This guide walks you through deploying KoNote Web on **Elest.io**, a cloud hosting platform that runs Docker applications.
