@@ -1,22 +1,23 @@
 # Hosting Cost Comparison: Azure vs OVHcloud
 
-*Last updated: 2026-03-04*
+*Last updated: 2026-03-14*
 
 <!-- COST_VERSION
-date: 2026-03-04
+date: 2026-03-14
 role: Component pricing source (all scenarios)
-llm_vps: VPS-4, $31 CAD/mo (shared, all agencies)
+llm_vps: VPS-4, $40 CAD/mo (shared, all agencies)
 app_vps_single: VPS-2, $14 CAD/mo (per agency)
 app_vps_multi: VPS-3, $27 CAD/mo (shared)
 ai_api_per_agency: ~$7 CAD/mo (translation + metrics)
-key_vault: ~$2 CAD/mo
-ovh_single_1_agency: $57 CAD/mo
-ovh_multi_10_agencies: $13 CAD/mo/agency
-azure_single_1_agency: $132 CAD/mo
-azure_multi_10_agencies: $46 CAD/mo/agency
-ops_hours_1_agency: ~1 hr/mo human (LLM-assisted)
-ops_hours_5_agencies_network: ~2.5 hr/mo human (LLM-assisted)
-ops_hours_10_agencies_mt: ~4.5-5 hr/mo human (LLM-assisted)
+key_vault: $2 CAD/mo per agency
+ovh_single_1_agency: $66 CAD/mo
+ovh_multi_10_agencies: $16 CAD/mo/agency
+azure_single_1_agency: $141 CAD/mo
+azure_multi_10_agencies: $48 CAD/mo/agency
+ops_hours_1_agency: ~1 hr/mo (human-only; ~4-5 hr/mo total including LLM work)
+ops_hours_5_agencies_network: ~2.5 hr/mo (human-only)
+ops_hours_10_agencies_mt: ~4.5-5 hr/mo (human-only)
+ops_hours_note: human-only hours shown; total work hours (LLM + human) are 4-5x higher
 ops_model: LLM-assisted (see docs/llm-operations-runbook.md)
 downstream: p0-managed-service-plan.md, konote-prosper-canada/deliverables/costing-model.md
 -->
@@ -85,10 +86,12 @@ This document compares two hosting approaches for KoNote, both using Azure Key V
 | VPS-1 | 4 | 8 GB | 75 GB NVMe | ~$9 |
 | VPS-2 | 6 | 12 GB | 100 GB NVMe | ~$14 |
 | VPS-3 | 8 | 24 GB | 200 GB NVMe | ~$27 |
-| VPS-4 | 12 | 48 GB | 300 GB NVMe | ~$31 |
+| VPS-4 | 12 | 48 GB | 300 GB NVMe | ~$40 |
 | VPS-6 | 24 | 96 GB | 400 GB NVMe | ~$105 |
 
 *Prices verified March 2026 from OVHcloud configurator. All plans include unlimited traffic. OVH parent is French-incorporated (OVH Groupe SA) — not subject to US CLOUD Act. VPS-6 price may need re-verification. Source: [OVHcloud Canada VPS](https://www.ovhcloud.com/en-ca/vps/).*
+
+*Note: Downstream cost documents (costing-model.md, hosting-budget-scenarios.md) use VPS-1 at $15/mo rather than VPS-2 at $14/mo because premium backup is operationally required for self-managed PostgreSQL on OVHcloud. The $15 figure includes the premium backup add-on.*
 
 ### AI API Costs (OpenRouter / Claude)
 
@@ -106,7 +109,7 @@ This document compares two hosting approaches for KoNote, both using Azure Key V
 |------|--------|
 | Model | Qwen3.5-35B-A3B (35B params, 3B active, MoE, Apache 2.0) |
 | Runtime | Ollama, CPU-only, nightly batch + on-demand insights |
-| Hosting | OVHcloud VPS-4 (~$31 CAD/mo), Beauharnois, QC (shared endpoint) |
+| Hosting | OVHcloud VPS-4 (~$40 CAD/mo), Beauharnois, QC (shared endpoint) |
 | VPS specs | 12 vCPUs, 48 GB RAM, 300 GB NVMe |
 | Tokens per suggestion call | ~800 (prompt + suggestion + response) |
 | Volume (10 agencies) | ~1,000 suggestions/month = ~800K tokens/month |
@@ -130,8 +133,8 @@ KoNote application and databases on Azure Canada Central. Self-hosted LLM on OVH
 | Azure Key Vault | $2 | Negligible operation volume |
 | OpenRouter AI (translation) | $2 | ~100 calls/mo × gpt-4o-mini |
 | OpenRouter AI (metrics/targets) | $5 | ~200 calls/mo × Sonnet 4.5 |
-| OVHcloud VPS-4 (LLM, shared) | $31 | 1/N share of shared VPS-4 |
-| **Total per agency** | **~$132** | |
+| OVHcloud VPS-4 (LLM, shared) | $40 | 1/N share of shared VPS-4 |
+| **Total per agency** | **~$141** | |
 
 ### Multi-Agency Scaling — Single Tenant (one VM + DB per agency)
 
@@ -140,11 +143,11 @@ KoNote application and databases on Azure Canada Central. Self-hosted LLM on OVH
 | Azure VMs (B2s each) | $55 | $275 | $550 |
 | Azure PostgreSQL x2 per agency (B1ms) | $34 | $170 | $340 |
 | PostgreSQL storage | $3 | $15 | $30 |
-| Azure Key Vault (shared) | $2 | $2 | $2 |
+| Azure Key Vault (per agency) | $2 | $10 | $20 |
 | OpenRouter AI (shared pool) | $7 | $35 | $70 |
-| OVHcloud LLM VPS-4 (shared) | $31 | $31 | $31 |
-| **Total** | **$132** | **$528** | **$1,023** |
-| **Per agency** | **$132** | **$106** | **$102** |
+| OVHcloud LLM VPS-4 (shared) | $40 | $40 | $40 |
+| **Total** | **$141** | **$545** | **$1,050** |
+| **Per agency** | **$141** | **$109** | **$105** |
 
 ### Multi-Agency Scaling — Multi-Tenant (shared infrastructure)
 
@@ -155,11 +158,11 @@ KoNote application and databases on Azure Canada Central. Self-hosted LLM on OVH
 | Azure VM (B4ms shared) | $194 | $194 | $194 |
 | Azure PostgreSQL x2 (B2ms shared) | $144 | $144 | $144 |
 | PostgreSQL storage (100 GB) | $16 | $16 | $16 |
-| Azure Key Vault (shared) | $2 | $2 | $2 |
+| Azure Key Vault (per agency) | $2 | $10 | $20 |
 | OpenRouter AI (shared pool) | $7 | $35 | $70 |
-| OVHcloud LLM VPS-4 (shared) | $31 | $31 | $31 |
-| **Total** | **$394** | **$422** | **$457** |
-| **Per agency** | **$394** | **$84** | **$46** |
+| OVHcloud LLM VPS-4 (shared) | $40 | $40 | $40 |
+| **Total** | **$403** | **$439** | **$484** |
+| **Per agency** | **$403** | **$88** | **$48** |
 
 ---
 
@@ -175,21 +178,21 @@ KoNote application, databases, and LLM all on OVHcloud VPS(es) in Beauharnois. S
 | Azure Key Vault | $2 | Encryption key management |
 | OpenRouter AI (translation) | $2 | ~100 calls/mo × gpt-4o-mini |
 | OpenRouter AI (metrics/targets) | $5 | ~200 calls/mo × Sonnet 4.5 |
-| OVHcloud LLM VPS-4 (shared) | $31 | 1/N share of shared VPS-4 |
+| OVHcloud LLM VPS-4 (shared) | $40 | 1/N share of shared VPS-4 |
 | Automated backups (OVH option) | $3 | Optional add-on |
-| **Total per agency** | **~$57** | |
+| **Total per agency** | **~$66** | |
 
 ### Multi-Agency Scaling — Single Tenant (one VPS per agency)
 
 | Component | 1 Agency | 5 Agencies | 10 Agencies |
 |-----------|----------|------------|-------------|
 | OVHcloud VPS-2 per agency | $14 | $70 | $140 |
-| Azure Key Vault (shared) | $2 | $2 | $2 |
+| Azure Key Vault (per agency) | $2 | $10 | $20 |
 | OpenRouter AI (shared pool) | $7 | $35 | $70 |
-| OVHcloud LLM VPS-4 (shared) | $31 | $31 | $31 |
+| OVHcloud LLM VPS-4 (shared) | $40 | $40 | $40 |
 | Backup add-ons | $3 | $15 | $30 |
-| **Total** | **$57** | **$153** | **$273** |
-| **Per agency** | **$57** | **$31** | **$27** |
+| **Total** | **$66** | **$170** | **$300** |
+| **Per agency** | **$66** | **$34** | **$30** |
 
 ### Multi-Agency Scaling — Multi-Tenant (shared infrastructure)
 
@@ -198,14 +201,14 @@ KoNote application, databases, and LLM all on OVHcloud VPS(es) in Beauharnois. S
 | Component | 1 Agency | 5 Agencies | 10 Agencies |
 |-----------|----------|------------|-------------|
 | OVHcloud VPS-3 (shared app + DB) | $27 | $27 | $27 |
-| OVHcloud VPS-4 (LLM, shared) | $31 | $31 | $31 |
-| Azure Key Vault (shared) | $2 | $2 | $2 |
+| OVHcloud VPS-4 (LLM, shared) | $40 | $40 | $40 |
+| Azure Key Vault (per agency) | $2 | $10 | $20 |
 | OpenRouter AI (shared pool) | $7 | $35 | $70 |
 | Backup add-ons | $3 | $3 | $3 |
-| **Total** | **$70** | **$98** | **$133** |
-| **Per agency** | **$70** | **$20** | **$13** |
+| **Total** | **$79** | **$115** | **$160** |
+| **Per agency** | **$79** | **$23** | **$16** |
 
-*At 10+ agencies, consider upgrading app VPS to VPS-4 (~$31) for headroom.*
+*At 10+ agencies, consider upgrading app VPS to VPS-4 (~$40) for headroom.*
 
 ---
 
@@ -223,19 +226,19 @@ KoNote application, databases, and LLM all on OVHcloud VPS(es) in Beauharnois. S
 
 | Scale | Azure Single-Tenant | Azure Multi-Tenant | OVH Single-Tenant | OVH Multi-Tenant |
 |-------|--------------------|--------------------|--------------------|--------------------|
-| 1 agency | $132 | $394* | $57 | $70* |
-| 5 agencies | $106 | $84 | $31 | $20 |
-| 10 agencies | $102 | $46 | $27 | $13 |
+| 1 agency | $141 | $403* | $66 | $79* |
+| 5 agencies | $109 | $88 | $34 | $23 |
+| 10 agencies | $105 | $48 | $30 | $16 |
 
-*\*Multi-tenant with 1 agency is more expensive due to the larger shared VM — cost advantage kicks in at 3+ agencies. All scenarios include ~$31/mo shared LLM VPS (VPS-4).*
+*\*Multi-tenant with 1 agency is more expensive due to the larger shared VM — cost advantage kicks in at 3+ agencies. All scenarios include ~$40/mo shared LLM VPS (VPS-4). Azure Key Vault is $2/mo per agency (each agency gets its own vault for data isolation).*
 
 ### Total Monthly Cost (CAD)
 
 | Scale | Azure Single-Tenant | Azure Multi-Tenant | OVH Single-Tenant | OVH Multi-Tenant |
 |-------|--------------------|--------------------|--------------------|--------------------|
-| 1 agency | $132 | $394 | $57 | $70 |
-| 5 agencies | $528 | $422 | $153 | $98 |
-| 10 agencies | $1,023 | $457 | $273 | $133 |
+| 1 agency | $141 | $403 | $66 | $79 |
+| 5 agencies | $545 | $439 | $170 | $115 |
+| 10 agencies | $1,050 | $484 | $300 | $160 |
 
 ---
 
@@ -266,10 +269,10 @@ These costs apply to both Azure and OVHcloud hosting scenarios.
 | Item | Value |
 |------|-------|
 | Model | Qwen3.5-35B-A3B on Ollama (primary); Qwen3.5-27B (backup/quality) |
-| Hosting | OVHcloud VPS-4 (~$31 CAD/mo shared — 12 vCPUs, 48 GB RAM) |
+| Hosting | OVHcloud VPS-4 (~$40 CAD/mo shared — 12 vCPUs, 48 GB RAM) |
 | Volume (10 agencies) | ~1,000 suggestions/month |
 | CPU inference time | ~1–2 hours/month (nightly batch) |
-| Per-agency cost (10 agencies) | ~$3 CAD/mo |
+| Per-agency cost (10 agencies) | ~$4 CAD/mo |
 | API cost | $0 (self-hosted, Apache 2.0 licence) |
 
 ---
@@ -332,15 +335,17 @@ Total automation cost: ~$0 additional (uses free tiers of monitoring services).
 
 ## Recommendations
 
-1. **For 1–3 agencies (launch phase)**: OVHcloud single-tenant at ~$57/agency/month vs ~$132 on Azure. The ~$31 LLM VPS is a fixed cost that becomes negligible at scale.
+**OVHcloud Beauharnois is recommended for most agencies** due to 60-70% lower cost and stronger data sovereignty (French-incorporated parent, not subject to US CLOUD Act). Azure is supported for agencies with existing Microsoft agreements, nonprofit grants, or specific compliance requirements that mandate a hyperscaler.
 
-2. **For 5–10 agencies (growth phase)**: Implement multi-tenancy first (MT-CORE1), then OVHcloud multi-tenant brings costs to $13–20/agency/month — still dramatically cheaper than Azure single-tenant.
+1. **For 1–3 agencies (launch phase)**: OVHcloud single-tenant at ~$66/agency/month vs ~$141 on Azure. The ~$40 LLM VPS is a fixed cost that becomes negligible at scale.
 
-3. **Azure makes sense if**: The agency or funder requires Azure specifically, or if the operational burden of self-managing PostgreSQL is unacceptable.
+2. **For 5–10 agencies (growth phase)**: Implement multi-tenancy first (MT-CORE1), then OVHcloud multi-tenant brings costs to $16–23/agency/month — still dramatically cheaper than Azure single-tenant.
 
-4. **LLM hosting**: One shared OVHcloud VPS-4 (~$31 CAD/month) serves all agencies — whether 1 or 100. Upgrade in-place if more capacity is needed (VPS-6 at ~$105). Complete data sovereignty on participant suggestions.
+3. **Azure makes sense if**: The agency or funder requires Azure specifically, has existing Microsoft nonprofit grants, or if the operational burden of self-managing PostgreSQL is unacceptable.
 
-5. **Key Vault**: Use Azure Key Vault in both scenarios. The CLOUD Act exposure is limited to the encryption key only, and the operational simplicity of managed KMS outweighs the theoretical risk for KoNote's threat model.
+4. **LLM hosting**: One shared OVHcloud VPS-4 (~$40 CAD/month) serves all agencies — whether 1 or 100. Upgrade in-place if more capacity is needed (VPS-6 at ~$105). Complete data sovereignty on participant suggestions.
+
+5. **Key Vault**: Use Azure Key Vault in both scenarios ($2 CAD/mo per agency — each agency gets its own vault for data isolation). The CLOUD Act exposure is limited to the encryption key only, and the operational simplicity of managed KMS outweighs the theoretical risk for KoNote's threat model.
 
 ---
 
@@ -403,10 +408,10 @@ Combines infrastructure costs from Scenario B (OVHcloud) with LLM-assisted suppo
 
 | Scale | Infrastructure/agency | Support/agency | **All-in/agency** |
 |-------|----------------------|----------------|-------------------|
-| 1 agency | $57 | $0 (internal) | **$57** |
-| 5 agencies (single-tenant, network) | $31 | ~$62 | **~$93** |
-| 5 agencies (multi-tenant) | $20 | ~$62 | **~$82** |
-| 10 agencies (multi-tenant, network) | $13 | ~$52 | **~$65** |
+| 1 agency | $66 | $0 (internal) | **$66** |
+| 5 agencies (single-tenant, network) | $34 | ~$62 | **~$96** |
+| 5 agencies (multi-tenant) | $23 | ~$62 | **~$85** |
+| 10 agencies (multi-tenant, network) | $16 | ~$52 | **~$68** |
 
 > **Note on support cost comparison:** The previous version of this section estimated 4–5 hr/mo (1 agency) assuming a traditional sysadmin doing all tasks manually. With the LLM-assisted model, human time drops to ~1 hr/mo because the LLM handles the technical work and the human only reviews and approves. The total *work* is similar — it's the *human portion* that's dramatically lower.
 
