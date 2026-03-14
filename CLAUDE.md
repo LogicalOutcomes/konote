@@ -35,7 +35,8 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 1. `git pull origin develop`
 2. `git worktree prune` — remove stale worktree references
 3. `git status` — if there are uncommitted changes you didn't make, **STOP and tell the user**. Do not stash, discard, or commit someone else's work.
-4. Check the current branch: `git branch --show-current`. If not on `develop`, switch to it before creating a new branch.
+4. `git stash list` — if stashes exist, report them to the user before proceeding. Stashes are orphaned work from previous sessions.
+5. Check the current branch: `git branch --show-current`. If not on `develop`, switch to it before creating a new branch.
 
 ### Working on a Task
 
@@ -65,9 +66,10 @@ Multiple sessions share one repo. Worktrees give each session an isolated direct
 
 Before finishing any session, verify:
 1. `git status` — **no uncommitted changes**. If there are changes, commit them or ask the user what to do.
-2. `git worktree list` — only the main repo and any active session worktrees should appear. Remove stale ones.
-3. Main repo is on `develop` (not stranded on a feature branch).
-4. All merged feature branches are deleted locally.
+2. `git stash list` — if any stashes exist, report them to the user. Check whether the content is already committed; if so, drop them (with user approval).
+3. `git worktree list` — only the main repo and any active session worktrees should appear. Remove stale ones.
+4. Main repo is on `develop` (not stranded on a feature branch).
+5. All merged feature branches are deleted locally.
 
 ## Terminal Command Rules
 
