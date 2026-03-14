@@ -53,7 +53,7 @@ KoNote supports a range of deployment options, from bare-bones self-hosted to fu
 - Audit logs in a separate tamper-resistant database
 - RBAC middleware enforcing role-based access on every request
 
-**Cost:** VPS hosting only (~$15 CAD/mo for OVHcloud VPS-1). No LO support fees.
+**Cost:** VPS hosting + Key Vault (~$17 CAD/mo for OVHcloud VPS-1 + per-agency Key Vault). No LO support fees.
 
 **Docs:** `docs/deploy-ovhcloud.md`, `docs/deploying-konote.md`
 
@@ -71,7 +71,7 @@ KoNote supports a range of deployment options, from bare-bones self-hosted to fu
 
 What is **never** shared: databases, encryption keys, application instances, participant data.
 
-**Cost:** ~$92/agency/mo (5-agency network) to ~$65/agency/mo (30-agency network), Year 2+. See `hosting-budget-scenarios.md` for current figures.
+**Cost:** ~$94/agency/mo (5-agency network) to ~$67/agency/mo (30-agency network), Year 2+. See `hosting-budget-scenarios.md` for current figures.
 
 **Docs:** `tasks/p0-managed-service-plan.md`, `tasks/deployment-protocol.md`
 
@@ -88,7 +88,7 @@ What is **never** shared: databases, encryption keys, application instances, par
 
 **Trade-off:** Azure's parent company (Microsoft) is US-incorporated and subject to the US CLOUD Act. Data is in Canada (Toronto/Canada Central), but the corporate jurisdiction is American. See `tasks/design-rationale/data-access-residency-policy.md`.
 
-**Cost:** ~$169/agency/mo (list price) or ~$77/agency/mo (with nonprofit grant). See `hosting-budget-scenarios.md`.
+**Cost:** ~$171/agency/mo (list price) or ~$77/agency/mo (with nonprofit grant). See `hosting-budget-scenarios.md`.
 
 **Docs:** `docs/archive/deploy-azure.md` (archived but still accurate for Azure path)
 
