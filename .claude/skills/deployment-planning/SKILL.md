@@ -186,12 +186,12 @@ Each file has a `<!-- COST_VERSION -->` header. Before updating, compare key val
 
 ## Quick Reference
 
-### Per-Agency Monthly Cost (Year 2+, as of 2026-03-04)
+### Per-Agency Monthly Cost (Year 2+, as of 2026-03-14)
 
 | Network size | OVHcloud | Azure (list) | Azure (nonprofit grant) |
 |---|---|---|---|
-| 5 agencies | ~$92/agency | ~$169/agency | ~$77/agency |
-| 30 agencies | ~$65/agency | ~$142/agency | ~$50/agency |
+| 5 agencies | ~$94/agency | ~$171/agency | ~$77/agency |
+| 30 agencies | ~$67/agency | ~$144/agency | ~$50/agency |
 
 Key Vault is $2/agency/month (per-agency vault, not shared). These figures include Key Vault in the per-agency hosting cost.
 
