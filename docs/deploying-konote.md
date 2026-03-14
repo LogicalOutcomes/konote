@@ -1,5 +1,9 @@
 # Deploying KoNote
 
+> **Audience:** Anyone choosing a deployment path — technical staff, managers, or nonprofit directors.
+> **Assumes:** Basic familiarity with web hosting concepts. No command-line knowledge needed.
+> **Start here:** [Deployment Index](deployment-index.md) if you're unsure which guide you need.
+
 This guide covers everything you need to get KoNote running — from local development to production. Choose your path:
 
 | I want to... | Go to... |
