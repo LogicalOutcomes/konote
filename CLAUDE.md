@@ -35,7 +35,8 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 1. `git pull origin develop`
 2. `git worktree prune` — remove stale worktree references
 3. `git status` — if there are uncommitted changes you didn't make, **STOP and tell the user**. Do not stash, discard, or commit someone else's work.
-4. Check the current branch: `git branch --show-current`. If not on `develop`, switch to it before creating a new branch.
+4. `git stash list` — if stashes exist, report them to the user before proceeding. Stashes are orphaned work from previous sessions.
+5. Check the current branch: `git branch --show-current`. If not on `develop`, switch to it before creating a new branch.
 
 ### Working on a Task
 
@@ -65,9 +66,10 @@ Multiple sessions share one repo. Worktrees give each session an isolated direct
 
 Before finishing any session, verify:
 1. `git status` — **no uncommitted changes**. If there are changes, commit them or ask the user what to do.
-2. `git worktree list` — only the main repo and any active session worktrees should appear. Remove stale ones.
-3. Main repo is on `develop` (not stranded on a feature branch).
-4. All merged feature branches are deleted locally.
+2. `git stash list` — if any stashes exist, report them to the user. Check whether the content is already committed; if so, drop them (with user approval).
+3. `git worktree list` — only the main repo and any active session worktrees should appear. Remove stale ones.
+4. Main repo is on `develop` (not stranded on a feature branch).
+5. All merged feature branches are deleted locally.
 
 ## Terminal Command Rules
 
@@ -237,25 +239,37 @@ Some features involve complex trade-offs (legal, privacy, data modelling, adopti
 
 **Do not override DRR decisions without explicit stakeholder approval.** If circumstances have changed, document why in the DRR before proceeding.
 
-Current DRRs (read the file before modifying related features — all in `tasks/design-rationale/`):
-- `circles-family-entity.md` — Circles (family/network entity)
-- `multi-tenancy.md` — Multi-tenancy architecture
-- `reporting-architecture.md` — Reporting system
-- `executive-dashboard-redesign.md` — Executive dashboard UX
-- `offline-field-collection.md` — Offline field collection (ODK Central)
-- `phipa-consent-enforcement.md` — PHIPA cross-program consent
-- `insights-metric-distributions.md` — Insights page & program reporting
-- `bilingual-requirements.md` — Bilingual (EN/FR) requirements
-- `ai-feature-toggles.md` — AI feature toggle split
-- `ovhcloud-deployment.md` — OVHcloud deployment architecture
-- `data-access-residency-policy.md` — Data access & residency policy
+Current DRRs (all in `tasks/design-rationale/` — see `README.md` there for the full navigation guide):
+
+**Foundation Principles — read these first:**
+- `foundation-collaborative-practice.md` — The "Ko" in KoNote: documentation WITH participants, two-lens notes, alliance, feedback-informed improvement
+- `foundation-data-sovereignty.md` — Individual, community (OCAP, Black data governance), and national data ownership
+- `foundation-security-by-default.md` — High security for non-technical operators: encryption, RBAC, immutable audit, fail-closed
+- `foundation-nonprofit-sustainability.md` — Affordable tech stack, self-healing ops, evaluation-driven configuration
+
+**Implementation Decisions — read before modifying related features:**
+- `access-tiers.md` — Three permission tiers, PERM-P5/P6/P8, demographic visibility
+- `ai-feature-toggles.md` — Two-tier AI split (tools-only vs. participant data)
+- `bilingual-requirements.md` — EN/FR translation, legal obligations
+- `cids-batch-classification-workflow.md` — Batch AI classification for reporting taxonomies
+- `cids-metadata-assignment.md` — When metadata gets assigned (creation vs. deferred)
+- `cids-privacy-architecture.md` — Three-layer compliance for CIDS reporting
+- `circles-family-entity.md` — Family/network entity, 6+ anti-patterns
+- `data-access-residency-policy.md` — Canadian residency by data access level
 - `document-integration.md` — SharePoint + Google Drive integration
-- `no-live-api-individual-data.md` — No live API for individual PII
-- `self-hosted-llm-infrastructure.md` — Self-hosted LLM (Ollama/OVHcloud)
-- `encryption-key-rotation.md` — Encryption key rotation procedures
-- `access-tiers.md` — Access tiers, PERM-P5/P6/P8, and demographic visibility (DEMO-VIS1)
-- `funder-reporting-profiles.md` — Funder reporting profiles (CIDS template-based reporting)
-- `cids-privacy-architecture.md` — CIDS Full Tier privacy-first architecture (three-layer compliance)
+- `encryption-key-rotation.md` — Key rotation procedures and custody
+- `executive-dashboard-redesign.md` — Dashboard UX with accessibility focus
+- `fhir-informed-modelling.md` — FHIR concepts without FHIR compliance
+- `funder-reporting-profiles.md` — Template-based funder reporting (Parking Lot)
+- `insights-metric-distributions.md` — Outcome Insights page, metric aggregation
+- `multi-tenancy.md` — Schema-per-tenant via django-tenants
+- `no-live-api-individual-data.md` — No live API for PII, export-only model
+- `offline-field-collection.md` — ODK Central for offline field collection
+- `ovhcloud-deployment.md` — OVHcloud VPS, self-healing, backup
+- `phipa-consent-enforcement.md` — Cross-program clinical note consent filtering
+- `reporting-architecture.md` — Template-driven vs. ad-hoc reporting
+- `self-hosted-llm-infrastructure.md` — Shared Ollama VPS, data isolation
+- `survey-metric-unification.md` — Surveys and metrics as one construct
 
 ### How Claude Manages Tasks
 

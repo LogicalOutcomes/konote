@@ -1,19 +1,20 @@
 # P0 Deliverable: Managed Service Model
 
 <!-- COST_VERSION
-date: 2026-03-04
+date: 2026-03-14
 role: Managed service model (derives from hosting-cost-comparison.md)
 llm_vps: VPS-4, $40 CAD/mo
+key_vault: $2 CAD/mo per agency
 ovh_single_1_agency: $74 CAD/mo
 ovh_multi_10_agencies: $15 CAD/mo/agency
-ops_hours_1_agency: 4-5 hr/mo
+ops_hours_1_agency: 4-5 hr/mo (total LLM+human work); ~1 hr/mo human-only
 upstream: tasks/hosting-cost-comparison.md
 downstream: konote-prosper-canada/deliverables/costing-model.md
 -->
 
 **Requirement ID:** MA5 (managed hosting and support), related to MA3/MA4
 **Deliverable type:** Costed plan
-**Date:** 2026-03-04 (updated with self-healing support cost impact)
+**Date:** 2026-03-14 (reconciled with upstream cost docs)
 **Source documents:** tasks/hosting-cost-comparison.md, tasks/design-rationale/ovhcloud-deployment.md, tasks/deployment-protocol.md, tasks/saas-service-agreement.md, tasks/design-rationale/data-access-residency-policy.md
 
 ---
@@ -106,7 +107,7 @@ Both paths are fully supported. The choice depends on the agency's requirements 
 
 - Server hosting (VPS or Azure VM)
 - Database hosting (self-managed or Azure managed)
-- Encryption key management (Azure Key Vault: ~$2/mo)
+- Encryption key management (Azure Key Vault: $2/mo per agency — each agency gets its own vault for data isolation)
 - AI API costs (translation + metrics generation: ~$7/agency/mo)
 - Self-hosted LLM for suggestion theme tagging + outcome insights (shared OVHcloud VPS-4: ~$4/agency/mo at 10 agencies)
 - Backup storage
@@ -118,14 +119,14 @@ The 4-layer self-healing automation handles ~99% of operational incidents automa
 
 | Item | Estimate | When needed |
 |------|----------|-------------|
-| KoNote team time (~4–5 hr/mo for 1 agency; ~2 hr/mo per agency at scale) | Internal cost | Always |
+| KoNote team time (~4–5 hr/mo total LLM+human for 1 agency, ~1 hr/mo human-only; ~2 hr/mo per agency at scale) | Internal cost | Always |
 | Freelance sysadmin on-call retainer | ~$75–150 CAD/mo | 3–5 agencies (recommended) |
 | Canadian MSP | ~$300–500 CAD/mo | 10+ agencies or when 24/7 SLA required |
 | SaaS agreement legal review | One-time ~$2,000–5,000 | Before first managed agency |
 | SSL certificates | $0 (Let's Encrypt via Caddy) | Always |
 | Domain registration | ~$15–20/year per agency | If LogicalOutcomes provides subdomain |
 
-**Impact of self-healing on support costs:** Without automation, managing even one OVHcloud VPS would require ~10–15 hours/month of sysadmin time (manual monitoring, backup management, incident response). With the 4-layer stack, this drops to ~4–5 hours/month — most of which is reviewing automated reports and applying software updates. At 5 agencies, the per-agency support burden is ~2 hours/month.
+**Impact of self-healing on support costs:** Without automation, managing even one OVHcloud VPS would require ~10–15 hours/month of sysadmin time (manual monitoring, backup management, incident response). With the 4-layer stack, total work drops to ~4–5 hours/month (LLM + human combined), of which only ~1 hour/month is human time — reviewing automated reports, approving deployments, and handling agency requests. At 5 agencies, the per-agency support burden is ~2 hours/month total.
 
 ---
 

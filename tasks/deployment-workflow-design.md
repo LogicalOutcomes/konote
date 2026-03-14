@@ -1,3 +1,7 @@
+> **Status:** DRAFT — problem statement only, no implementation recommendations yet.
+> **Date:** 2026-02 (original). Not actively being worked on.
+> **Context:** This document scopes the deployment workflow problem (how nonprofits move from demo to production). The phases described here ("Assessment / Customisation / Production") are separate from the deployment protocol phases (0-5) which cover infrastructure setup and onboarding.
+
 # Task: Design the Nonprofit Deployment Workflow
 
 ## Context
