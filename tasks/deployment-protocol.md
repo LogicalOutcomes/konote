@@ -1,6 +1,6 @@
 # Agency Deployment Protocol
 
-**Purpose:** End-to-end process for deploying KoNote for a new client organisation on Azure. Covers discovery through go-live and follow-up.
+**Purpose:** End-to-end process for deploying KoNote for a new client organisation. Covers discovery through go-live and follow-up. Supports OVHcloud (recommended), Azure, or self-hosted deployment.
 
 **Team roles:**
 - **Sara** (PM) — leads client-facing sessions (Phases 0, 1, 3, 4 walkthrough, 5)
