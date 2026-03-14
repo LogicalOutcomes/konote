@@ -5,6 +5,8 @@
 Status: Foundation Principle
 Created: 2026-03-14
 
+> **In plain language:** KoNote is designed so that staff and participants write notes together, not separately. The participant's voice — their words, their feedback, their rating of the relationship — is a core part of every note, not an afterthought. The name itself means "collaborative note" and works in both English and French.
+
 ---
 
 ## Core Principle
@@ -84,6 +86,26 @@ KoNote is designed to make these practices the path of least resistance, not an 
 
 **Anti-pattern:** Hardcoded clinical terminology that assumes every agency uses the same words. The terminology system exists because collaborative practice means respecting how each community describes its own relationships.
 
+### 8. Bilingual by Design
+
+**What:** KoNote is fully bilingual in English and French — not as a localisation add-on, but as a structural design constraint. The name itself is bilingual: "Note" is the same word in both languages, and "Ko-" reads as a stylised prefix for "co-" (*collaboration, coopération, collectif*) — a prefix that carries the same meaning in both English and French. French speakers parse "KoNote" as *co-note* = collaborative notes. In English, the exact same logic applies. There is also a subtle echo of the French verb *connoter* (to connote), suggesting depth, context, and significance beyond surface-level documentation — a fitting resonance for social services where notes carry real weight.
+
+Every template, every label, every system message exists in both languages. The translation pipeline (`translate_strings`) is part of the development workflow, not an afterthought. Translation is exempt from AI feature toggles because it is a legal requirement, not an optional feature.
+
+**Why:** The Official Languages Act and many federal/provincial funding agreements require bilingual service delivery. For agencies serving francophone communities in Ontario, Quebec, or New Brunswick, a system that only works in English is not usable. But beyond legal compliance, bilingual design is an expression of collaborative practice — if the system can't speak the participant's language, it cannot be truly collaborative.
+
+**Anti-pattern:** Treating French as a translation layer applied after the English version is complete. In KoNote, both languages are first-class — new features are not considered complete until both language versions exist. See `bilingual-requirements.md` for the detailed implementation decisions.
+
+### 9. Accessible by Design
+
+**What:** KoNote targets WCAG 2.2 AA compliance: semantic HTML, sufficient colour contrast, keyboard navigation, screen reader compatibility, and alt text for meaningful images. Accessibility is not a separate checklist applied after development — it is a constraint on every template and component from the start.
+
+**Why:** Collaborative documentation only works if all participants can use the system. A participant who uses a screen reader, has low vision, or has motor impairments must be able to navigate the portal, read their goals, rate the alliance, and write journal entries. If the portal is inaccessible, that participant is excluded from the "Ko" in KoNote — the collaboration becomes staff-only by default, which contradicts the foundational principle.
+
+Many nonprofit participants have accessibility needs — people with disabilities are disproportionately represented in social services. Designing for accessibility is not an edge case; it is designing for the actual user base.
+
+**Anti-pattern:** Treating accessibility as a post-launch polish item or a compliance checkbox. If a portal feature is built without keyboard navigation, a screen reader user discovers a broken experience — and the "fix it later" approach means they're excluded for however long "later" takes.
+
 ---
 
 ## Anti-Patterns Summary
@@ -97,6 +119,16 @@ KoNote is designed to make these practices the path of least resistance, not an 
 | Annual feedback surveys | Too infrequent; low response rates; feedback loop too slow to drive real improvement |
 | Deficit-focused clinical language | Pathologises participants; contradicts strengths-based practice; harmful when participants read their own records |
 | Hardcoded terminology | Not every community uses clinical language; forced terminology is a barrier to adoption |
+| French as a translation afterthought | Bilingual design is a legal requirement and a collaborative principle, not a localisation layer |
+| Accessibility as post-launch polish | Excluding participants with disabilities contradicts collaborative practice |
+
+---
+
+## Connections to Other Foundations
+
+- **Data Sovereignty**: Bilingual design supports francophone communities' right to services in their language. Accessible design ensures no participant is excluded from data access rights.
+- **Security by Default**: Accessibility constraints (semantic HTML, no reliance on colour alone) also improve security posture by reducing attack surface from custom UI workarounds.
+- **Nonprofit Sustainability**: Bilingual compliance is a legal prerequisite for federal funding — agencies that can't demonstrate it lose funding eligibility. See `bilingual-requirements.md`.
 
 ---
 
@@ -107,6 +139,7 @@ These existing Design Rationale Records contain the detailed implementation spec
 - **`insights-metric-distributions.md`** — How suggestion themes and outcome distributions are aggregated for program learning. Includes the "service-framing, not person-labelling" principle for dashboard language.
 - **`survey-metric-unification.md`** — Surveys and metrics as a unified construct, enabling participant self-report and staff observation to be captured through the same measurement infrastructure.
 - **`circles-family-entity.md`** — Family and network entity design, extending collaborative practice beyond the individual to recognise that participants exist in relational contexts.
+- **`bilingual-requirements.md`** — EN/FR translation pipeline, legal obligations, and tooling for bilingual-by-design development.
 
 ---
 
