@@ -23,6 +23,84 @@ Answer questions about KoNote deployment options, hosting costs, and cost assump
 - **Reviewing a code change against architectural decisions** — use the `design-rationale` skill instead (it has the full DRR review workflow)
 - **Debugging a deployment failure** — use `konote-ops/deployment/runbook.md` directly
 
+## Core Principle: Data Isolation
+
+**Every agency's participant data is fully isolated.** Agencies never share a KoNote instance, database, or encryption key — even when they share hosting infrastructure. Multiple instances can run on the same VPS for cost and operational efficiency, but data never crosses instance boundaries.
+
+This is enforced by:
+- **Per-instance databases** — each agency has its own PostgreSQL databases (main + audit)
+- **Per-agency encryption keys** — each agency's PII is encrypted with its own Fernet key, stored in a managed key service (Azure Key Vault or OVHcloud KMS)
+- **Schema-per-tenant isolation** — when multi-tenancy is enabled, PostgreSQL schema boundaries prevent cross-agency queries (see `tasks/design-rationale/multi-tenancy.md`)
+- **No shared participant tables** — row-level tenant isolation was explicitly rejected as an anti-pattern (one missed filter = data leak)
+
+**This principle is non-negotiable.** Any deployment option that combines participant data across agencies violates PHIPA and KoNote's design rationale. See the `design-rationale` skill for the full DRR review process.
+
+## Deployment Tiers
+
+KoNote supports a range of deployment options, from bare-bones self-hosted to fully managed. All tiers maintain the same data isolation and encryption guarantees — the difference is who manages the infrastructure and what operational support is included.
+
+### Tier 1: Self-Hosted (DIY)
+
+**Who:** Nonprofits with technical capacity (or a volunteer/consultant) who want the lowest cost.
+
+**What they get:** The open-source repo, deployment documentation, and Docker Compose stack. The agency deploys to their own VPS or server, manages their own backups, updates, and monitoring.
+
+**Why it's secure enough:** KoNote's security is built into the application, not bolted on by the hosting layer:
+- Fernet (AES-256) encryption on all PII fields at the application level
+- Encryption key stored in a managed key service (not in `.env`)
+- Docker healthchecks and autoheal for container recovery
+- Caddy with automatic HTTPS (Let's Encrypt)
+- Audit logs in a separate tamper-resistant database
+- RBAC middleware enforcing role-based access on every request
+
+**Cost:** VPS hosting only (~$15 CAD/mo for OVHcloud VPS-1). No LO support fees.
+
+**Docs:** `docs/deploy-ovhcloud.md`, `docs/deploying-konote.md`
+
+### Tier 2: Managed OVHcloud (Recommended)
+
+**Who:** Most agencies. LO handles infrastructure; the agency focuses on using KoNote.
+
+**What they get:** A fully hosted, maintained KoNote instance on OVHcloud Beauharnois (QC). LO provides setup, updates, backups, monitoring, and incident response.
+
+**Shared infrastructure, isolated data:** Multiple agencies can run on the same bare VPS, sharing:
+- Joint monitoring (UptimeRobot, health reports)
+- 4-layer self-healing automation (Docker autoheal, VPS auto-reboot, preventive cron, human escalation)
+- Shared LLM server for AI features (suggestions, translation)
+- Operational efficiencies (one update cycle covers all instances on the VPS)
+
+What is **never** shared: databases, encryption keys, application instances, participant data.
+
+**Cost:** ~$92/agency/mo (5-agency network) to ~$65/agency/mo (30-agency network), Year 2+. See `hosting-budget-scenarios.md` for current figures.
+
+**Docs:** `tasks/p0-managed-service-plan.md`, `tasks/deployment-protocol.md`
+
+### Tier 3: Azure Hosting
+
+**Who:** Agencies that require or prefer Azure — typically those with existing Microsoft agreements, Azure nonprofit grants, or specific compliance requirements.
+
+**What they get:** Same KoNote application deployed on Azure VM with Azure-managed PostgreSQL, Azure Key Vault, and Azure Monitor. Higher cost but leverages the Azure ecosystem.
+
+**Why choose Azure over OVHcloud:**
+- Agency already has Azure nonprofit credits ($2,000 USD/year — often enough to cover KoNote hosting)
+- Compliance requirements that specifically mandate a hyperscaler
+- Preference for managed database services over self-managed PostgreSQL
+
+**Trade-off:** Azure's parent company (Microsoft) is US-incorporated and subject to the US CLOUD Act. Data is in Canada (Toronto/Canada Central), but the corporate jurisdiction is American. See `tasks/design-rationale/data-access-residency-policy.md`.
+
+**Cost:** ~$169/agency/mo (list price) or ~$77/agency/mo (with nonprofit grant). See `hosting-budget-scenarios.md`.
+
+**Docs:** `docs/archive/deploy-azure.md` (archived but still accurate for Azure path)
+
+### Optional Add-Ons (Any Tier)
+
+| Service | Description | Availability |
+|---------|-------------|-------------|
+| **Penetration testing** | Third-party security audit of the agency's KoNote instance | On request, for agencies or networks willing to fund it |
+| **Evaluation framework setup** | CIDS Full Tier configuration with impact model, counterfactuals, and reporting profiles | Per-program, requires evaluation interview (see `tasks/deployment-protocol.md` Interview 3) |
+| **Self-hosted LLM** | Dedicated or shared Ollama server for AI suggestions and translation | Included in Tier 2; optional for Tier 1/3 |
+| **Cross-agency reporting** | Aggregate reporting dashboard for funder networks (k>=5 cell suppression) | Requires consortium setup; see `tasks/design-rationale/cids-privacy-architecture.md` |
+
 ## Cross-Repo Paths
 
 Files prefixed `konote-prosper-canada/` are in a **separate repo**. Locate it relative to the konote repo (typically `../konote-prosper-canada/` or search for it under the user's GitHub directory). Files prefixed `konote-ops/` are in the **private ops repo** (`../konote-ops/`).
