@@ -28,7 +28,7 @@ The script generates all credentials, SSHes into the VPS, hardens the OS, instal
 - **Safe to re-run** — skips already-completed steps
 - **Dry-run mode** — add `--dry-run` to preview without executing
 - **Full options** — run `./scripts/deploy-konote-vps.sh --help`
-- **Design doc** — see [deploy script design](plans/2026-02-20-deploy-script-design.md) for architecture decisions
+- **Design doc** — see [deploy script design](plans/archive/2026-02-20-deploy-script-design.md) for architecture decisions
 
 After the script finishes, skip to [Section 7: Point Your Domain to the VPS](#7-point-your-domain-to-the-vps) (if DNS isn't already configured) or [Section 12: Set Up External Monitoring](#12-set-up-external-monitoring) to complete the remaining manual steps. Backups and internal monitoring are handled automatically by the ops sidecar.
 

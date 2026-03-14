@@ -1,4 +1,4 @@
-# Agency Deployment Protocol — Azure
+# Agency Deployment Protocol
 
 **Purpose:** End-to-end process for deploying KoNote for a new client organisation on Azure. Covers discovery through go-live and follow-up.
 
@@ -33,7 +33,7 @@ Agency onboarding involves three distinct interviews, each with different staff 
 |-------|------|--------|-------------|----------|--------|
 | 0 | Discovery Call | Sara | Yes | 60 min | Discovery Worksheet |
 | 1 | Permissions Setup | Sara | Yes (2 sessions) | 2 × 45 min | Signed Configuration Summary |
-| 2 | Azure Infrastructure | Prince | No (needs client IT) | 2–4 hours | Running instance |
+| 2 | Infrastructure Setup | Prince | No (needs client IT) | 2–4 hours | Running instance |
 | 3 | Workflow Customisation | Sara | Yes | 60–90 min | Customisation Worksheet |
 | 4 | Go-Live Verification | Prince + Sara | Yes (walkthrough) | 60 min | Signed go-live confirmation |
 | 5 | 30-Day Check-In | Sara | Yes | 30 min | Updated config + action items |
@@ -233,19 +233,42 @@ After both sessions:
 
 ---
 
-## Phase 2: Azure Infrastructure Setup
+## Phase 2: Infrastructure Setup
 
-**Purpose:** Build the Azure environment and deploy KoNote using the signed Configuration Summary.
+**Purpose:** Provision hosting infrastructure and deploy KoNote using the signed Configuration Summary.
 
 **Who:** Prince (developer). May need the client's IT contact for Azure AD configuration.
 
-**Duration:** 2–4 hours
+**Duration:** 45 min – 4 hours (depends on platform)
+
+### Platform Choice
+
+The agency chooses their hosting platform during Phase 0 (Discovery). Phase 2 follows the appropriate path:
+
+| Platform | Guide | Typical Setup Time |
+|---|---|---|
+| **OVHcloud (recommended)** | [deploy-ovhcloud.md](../docs/deploy-ovhcloud.md) | 45-90 min |
+| **Azure** | [deploy-azure.md](../docs/archive/deploy-azure.md) | 1-2 hours |
+| **Self-hosted** | [deploying-konote.md](../docs/deploying-konote.md) | Varies |
+
+Regardless of platform, all instances use:
+- Per-agency Azure Key Vault (or OVHcloud KMS) for encryption key storage
+- Docker Compose stack (runs identically on any platform)
+- Caddy for automatic HTTPS
+
+For OVHcloud deployments, follow `docs/deploy-ovhcloud.md` — the 16-step guide covers VPS provisioning, Docker setup, and DNS configuration.
+
+---
+
+### Azure Path
+
+The remainder of this section documents the Azure-specific setup steps. For OVHcloud or self-hosted deployments, follow the platform guide linked above and skip to [Phase 3](#phase-3-workflow-customisation-interview).
 
 **Full technical guide:** [Deploy to Azure](../docs/deploying-konote.md#deploy-to-azure) (in deploying-konote.md)
 
 ---
 
-### Pre-Flight Checklist
+### Pre-Flight Checklist (Azure)
 
 Before touching Azure, confirm all inputs are ready:
 

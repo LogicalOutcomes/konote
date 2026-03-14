@@ -193,6 +193,8 @@ Each file has a `<!-- COST_VERSION -->` header. Before updating, compare key val
 | 5 agencies | ~$92/agency | ~$169/agency | ~$77/agency |
 | 30 agencies | ~$65/agency | ~$142/agency | ~$50/agency |
 
+Key Vault is $2/agency/month (per-agency vault, not shared). These figures include Key Vault in the per-agency hosting cost.
+
 **These figures change.** Always read `hosting-budget-scenarios.md` for current numbers.
 
 ### Why OVHcloud Over Azure
@@ -209,7 +211,7 @@ Read the `COST_VERSION` header in `tasks/hosting-cost-comparison.md` for current
 - ~200 participants/agency, ~2 visits/month
 - All AI self-hosted (Qwen3.5 + NLLB-200) — $0 API costs
 - Support at $100/hr, LLM-assisted (reduces human hours)
-- Single-tenant currently; multi-tenant planned (would reduce hosting cost)
+- Single-tenant currently; multi-tenant planned (would reduce hosting cost). Each agency has its own Azure Key Vault ($2/mo) for encryption key storage.
 
 ### Onboarding Cost
 
