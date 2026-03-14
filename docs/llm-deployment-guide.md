@@ -1,5 +1,8 @@
 # KoNote Deployment Guide — For AI Assistants
 
+> **Audience:** AI coding assistants (Claude Code). This guide is structured for automated execution, not human reading.
+> **For humans:** See [deploy-ovhcloud.md](deploy-ovhcloud.md) for the human-readable OVHcloud deployment guide.
+
 This guide is designed to be given to an AI coding assistant (Claude Code, Cursor, GitHub Copilot, etc.) so it can deploy KoNote on behalf of a nonprofit. It is structured as unambiguous, sequential instructions with exact commands and expected outputs.
 
 **For the full human-readable guide with explanations**, see [deploy-ovhcloud.md](deploy-ovhcloud.md).
