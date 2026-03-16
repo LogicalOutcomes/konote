@@ -23,6 +23,7 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.insights import get_structured_insights
 from apps.reports.insights_views import _compute_trend_direction
 from apps.reports.metric_insights import get_data_completeness
+from apps.reports.insights_fhir import build_program_summary, build_funder_stats
 
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,25 @@ def _count_without_notes(active_client_ids, program_ids, month_start):
         ).values_list("client_file_id", flat=True)
     )
     return len(set(active_client_ids) - clients_with_notes)
+
+
+def _count_stale_episodes(program_id, active_client_ids, thirty_days_ago):
+    """Active episodes with no note in 30+ days (enhanced attention signal).
+
+    Feature G: episode-aware query that's more meaningful than the
+    calendar-month-based _count_without_notes.
+    """
+    if not active_client_ids:
+        return 0
+    clients_with_recent = set(
+        ProgressNote.objects.filter(
+            client_file_id__in=active_client_ids,
+            author_program_id=program_id,
+            created_at__gte=thirty_days_ago,
+            status="default",
+        ).values_list("client_file_id", flat=True)
+    )
+    return len(active_client_ids - clients_with_recent)
 
 
 def _count_overdue_followups(client_ids, today):
@@ -1209,6 +1229,26 @@ def _build_executive_context(request):
         stat["data_completeness_level"] = mi.get("data_completeness_level", "low")
         stat["data_completeness_pct"] = mi.get("data_completeness_pct", 0)
         stat["urgent_theme_count"] = mi.get("urgent_theme_count", 0)
+
+        # FHIR enrichment: program summary sentence + funder stats
+        stat["summary_sentence"] = build_program_summary(
+            program, es, period_label=_("quarter"),
+        )
+        stat["funder_stats"] = build_funder_stats(
+            program, learning_date_from, learning_date_to,
+        )
+
+        # Enhanced attention signal: stale episodes (30+ days no note)
+        thirty_days_ago = now - timedelta(days=30)
+        program_active_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id=pid, status="active",
+                client_file_id__in=base_client_ids,
+            ).values_list("client_file_id", flat=True)
+        )
+        stat["stale_episodes"] = _count_stale_episodes(
+            pid, program_active_ids, thirty_days_ago,
+        )
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)
