@@ -25,60 +25,21 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="plantarget",
+            name="goal_source_method",
+            field=models.CharField(
+                blank=True,
+                default="",
+                max_length=20,
+                help_text="How goal_source was derived (e.g. heuristic, manual, ai_inferred).",
+            ),
+        ),
+        migrations.AddField(
+            model_name="plantarget",
             name="target_date",
             field=models.DateField(
                 blank=True,
                 null=True,
                 help_text="Target completion date. Auto-set from program default or AI extraction.",
-            ),
-        ),
-        migrations.AddField(
-            model_name="plantarget",
-            name="continuous",
-            field=models.BooleanField(
-                default=False,
-                help_text="Ongoing maintenance goal vs. time-bound achievement goal.",
-            ),
-        ),
-        migrations.AddField(
-            model_name="plantarget",
-            name="metadata_sources",
-            field=models.JSONField(
-                blank=True,
-                default=dict,
-                help_text="Tracks how each auto-populated field was derived.",
-            ),
-        ),
-        migrations.AlterField(
-            model_name="plantarget",
-            name="status",
-            field=models.CharField(
-                max_length=20,
-                default="default",
-                choices=[
-                    ("default", "Active"),
-                    ("on_hold", "On Hold"),
-                    ("completed", "Completed"),
-                    ("deactivated", "Deactivated"),
-                ],
-            ),
-        ),
-        migrations.AddField(
-            model_name="plansection",
-            name="period_start",
-            field=models.DateField(
-                blank=True,
-                null=True,
-                help_text="When this plan section became active. Auto-computed from target activity.",
-            ),
-        ),
-        migrations.AddField(
-            model_name="plansection",
-            name="period_end",
-            field=models.DateField(
-                blank=True,
-                null=True,
-                help_text="When this plan section concluded. Auto-set when all targets complete.",
             ),
         ),
     ]

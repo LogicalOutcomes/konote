@@ -1478,7 +1478,7 @@ class FHIRGoalMetadataTest(TestCase):
         target.client_goal = "I want a safe place to live"
         target.save()
         self.assertEqual(target.goal_source, "joint")
-        self.assertEqual(target.metadata_sources.get("goal_source"), "heuristic")
+        self.assertEqual(target.goal_source_method, "heuristic")
 
     def test_goal_source_participant_when_only_client_goal(self):
         """Goal source = participant when only client_goal is populated."""
@@ -1523,7 +1523,11 @@ class FHIRGoalMetadataTest(TestCase):
         target.name = "Test goal"
         target.save()
         self.assertIsNotNone(target.target_date)
-        self.assertEqual(target.metadata_sources.get("target_date"), "program_default")
+        # Verify it's approximately today + 90 days
+        from datetime import timedelta
+        from django.utils import timezone
+        expected = (timezone.now() + timedelta(days=90)).date()
+        self.assertEqual(target.target_date, expected)
 
     def test_no_target_date_without_program_default(self):
         """No target date when program has no default_goal_review_days."""
@@ -1534,19 +1538,6 @@ class FHIRGoalMetadataTest(TestCase):
         target.name = "Test goal"
         target.save()
         self.assertIsNone(target.target_date)
-
-    def test_on_hold_status_valid(self):
-        """PlanTarget can be set to on_hold status."""
-        target = PlanTarget(
-            plan_section=self.section,
-            client_file=self.client_file,
-        )
-        target.name = "Test goal"
-        target.save()
-        target.status = "on_hold"
-        target.save()
-        target.refresh_from_db()
-        self.assertEqual(target.status, "on_hold")
 
     def test_goal_source_not_overwritten_on_update(self):
         """Goal source preserved on subsequent saves (only set on creation)."""
@@ -1563,8 +1554,8 @@ class FHIRGoalMetadataTest(TestCase):
         target.save()
         self.assertEqual(target.goal_source, "worker")
 
-    def test_is_auto_inferred_helper(self):
-        """is_auto_inferred returns True for heuristic/ai_inferred sources."""
+    def test_goal_source_method_set(self):
+        """goal_source_method records 'heuristic' when auto-classified."""
         target = PlanTarget(
             plan_section=self.section,
             client_file=self.client_file,
@@ -1572,11 +1563,6 @@ class FHIRGoalMetadataTest(TestCase):
         target.name = "Test"
         target.description = "Desc"
         target.save()
-        self.assertTrue(target.is_auto_inferred("goal_source"))
-        self.assertFalse(target.is_auto_inferred("continuous"))
+        self.assertEqual(target.goal_source_method, "heuristic")
 
-    def test_plan_section_period_fields_nullable(self):
-        """PlanSection period fields are nullable by default."""
-        self.assertIsNone(self.section.period_start)
-        self.assertIsNone(self.section.period_end)
 

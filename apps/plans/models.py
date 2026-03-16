@@ -402,15 +402,6 @@ class PlanSection(models.Model):
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True, related_name="plan_sections"
     )
     sort_order = models.IntegerField(default=0)
-    # ── FHIR CarePlan.period ─────────────────────────────────────────
-    period_start = models.DateField(
-        null=True, blank=True,
-        help_text=_("When this plan section became active. Auto-computed from target activity."),
-    )
-    period_end = models.DateField(
-        null=True, blank=True,
-        help_text=_("When this plan section concluded. Auto-set when all targets complete."),
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -431,7 +422,6 @@ class PlanTarget(models.Model):
 
     STATUS_CHOICES = [
         ("default", _("Active")),
-        ("on_hold", _("On Hold")),
         ("completed", _("Completed")),
         ("deactivated", _("Deactivated")),
     ]
@@ -501,13 +491,9 @@ class PlanTarget(models.Model):
         null=True, blank=True,
         help_text=_("Target completion date. Auto-set from program default or AI extraction."),
     )
-    continuous = models.BooleanField(
-        default=False,
-        help_text=_("Ongoing maintenance goal vs. time-bound achievement goal."),
-    )
-    metadata_sources = models.JSONField(
-        default=dict, blank=True,
-        help_text=_("Tracks how each auto-populated field was derived."),
+    goal_source_method = models.CharField(
+        max_length=20, blank=True, default="",
+        help_text=_("How goal_source was derived: heuristic, worker_set, or ai_inferred."),
     )
 
     def save(self, *args, **kwargs):
@@ -524,9 +510,7 @@ class PlanTarget(models.Model):
             elif has_description:
                 self.goal_source = "worker"
             if self.goal_source:
-                if not isinstance(self.metadata_sources, dict):
-                    self.metadata_sources = {}
-                self.metadata_sources["goal_source"] = "heuristic"
+                self.goal_source_method = "heuristic"
 
         # Auto-set target_date from program default
         if is_new and not self.target_date and self.plan_section_id:
@@ -536,19 +520,10 @@ class PlanTarget(models.Model):
                     from datetime import timedelta
                     from django.utils import timezone
                     self.target_date = (timezone.now() + timedelta(days=program.default_goal_review_days)).date()
-                    if not isinstance(self.metadata_sources, dict):
-                        self.metadata_sources = {}
-                    self.metadata_sources["target_date"] = "program_default"
             except (AttributeError, TypeError):
                 pass  # Plan section may not have a program
 
         super().save(*args, **kwargs)
-
-    def is_auto_inferred(self, field_name):
-        """Check if a metadata field was auto-populated (for template badges)."""
-        return self.metadata_sources.get(field_name) in (
-            "heuristic", "ai_inferred", "program_default", "computed",
-        )
 
     @property
     def name(self):
