@@ -1178,6 +1178,7 @@ def _build_executive_context(request):
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
+    thirty_days_ago = now - timedelta(days=30)
 
     for program in filtered_programs:
         pid = program.pk
@@ -1239,7 +1240,6 @@ def _build_executive_context(request):
         )
 
         # Enhanced attention signal: stale episodes (30+ days no note)
-        thirty_days_ago = now - timedelta(days=30)
         program_active_ids = set(
             ClientProgramEnrolment.objects.filter(
                 program_id=pid, status="active",

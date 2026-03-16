@@ -84,6 +84,9 @@ def get_goal_source_vs_achievement(program, date_from=None, date_to=None):
         sufficient: bool
         comparison_sentence: str (plain-language comparison)
     """
+    # Intentionally includes all statuses (not just ACTIVE_STATUSES) because
+    # completed/deactivated goals with achievement data are valid for
+    # cross-tab analysis — we want the full historical picture.
     qs = PlanTarget.objects.filter(
         plan_section__program=program,
         goal_source__gt="",
