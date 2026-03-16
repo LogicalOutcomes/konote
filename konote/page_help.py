@@ -90,6 +90,7 @@ PAGE_HELP = {
             _("Goals are grouped into {section_plural} (life areas or themes)."),
             _("Click a {metric} to see the progress chart over time."),
             _("Add new goals using the button at the top — AI suggestions are available if enabled."),
+            _("Goals can be placed on hold if work is paused — on-hold goals are excluded from active reporting."),
         ],
         "help_section": "plans",
     },
@@ -173,6 +174,8 @@ PAGE_HELP = {
         "tips": [
             _("Choose a template, select the date range and programs, then preview before exporting."),
             _("Reports can be exported as Word documents or PDFs."),
+            _("Episode-based statistics (service hours, contacts per episode) are included automatically."),
+            _("Goal source breakdowns show how goals were created — manually, from AI suggestions, or from templates."),
         ],
         "help_section": "reports",
     },
