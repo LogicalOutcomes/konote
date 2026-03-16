@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
             field=models.DateField(
                 blank=True,
                 null=True,
-                help_text="Target completion date. Auto-set from program default or AI extraction.",
+                help_text="Target completion date. Auto-set from program default.",
             ),
         ),
     ]

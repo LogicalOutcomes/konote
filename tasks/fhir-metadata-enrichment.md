@@ -1,36 +1,24 @@
-# FHIR Metadata Enrichment — Implementation Plan
+# FHIR Metadata Enrichment — Implementation Record
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** Implemented — PR #527
+**Implemented:** 2026-03-16
+**Simplified:** 2026-03-16 (expert panel review removed 5 over-engineered fields)
 
-**Goal:** Add FHIR-informed metadata fields to PlanTarget, PlanSection, ProgressNote, and Program — all AI-inferred or auto-populated, zero worker burden — to enable richer funder reporting without additional data entry.
+**Goal:** Add FHIR-informed metadata fields to PlanTarget, ProgressNote, and Program — auto-populated on save, zero worker burden — to enable episode-based reporting and goal source tracking.
 
-**Architecture:** Nullable fields on existing models, auto-populated via save() logic (deterministic), heuristic classification from existing field patterns, and LLM inference via management command. A JSONField tracks the source of each auto-populated value for audit and quality reporting.
+**Architecture:** Nullable fields on existing models, auto-populated via save() logic. Episode FK is a deterministic database lookup. Goal source uses a heuristic from existing encrypted field patterns. Target date auto-set from configurable program default. No AI dependency.
 
-**Tech Stack:** Django 5, PostgreSQL 16, OpenRouter API (existing konote/ai.py pattern)
+**Tech Stack:** Django 5, PostgreSQL 16
 
-**Depends on:** Phase F1 (ServiceEpisode) — already complete. Phase F2 (achievement_status) — already complete.
+**Depends on:** Phase F1 (ServiceEpisode) — complete. Phase F2 (achievement_status) — complete.
 
-**Design rationale:** Approved under "Borrow FHIR concepts without FHIR compliance" (tasks/design-rationale/fhir-informed-modelling.md). Expert panel consensus 2026-03-16: AI-inferred metadata is more accurate than human-coded; zero additional form fields; make metadata invisible to workers.
-
----
-
-## Why Everything at Once
-
-All new fields are nullable with `blank=True, default=""` (or `default=dict` for JSONField). This means:
-- Empty fields cause zero harm — reports skip nulls or show "not classified"
-- The schema changes are trivially reversible (drop a column)
-- Deterministic logic (episode FK) works immediately on save
-- Heuristic classification (goal_source) works immediately on save
-- AI inference can run as a backfill whenever ready — no dependency on having it Day 1
-- No new form fields, no new user-facing UI, no workflow changes
-
-There is no scenario where having the fields empty is worse than not having them at all.
+**Design rationale:** Approved under "Borrow FHIR concepts without FHIR compliance" (tasks/design-rationale/fhir-informed-modelling.md). Two expert panels (2026-03-16): initial panel designed fields, review panel simplified by removing fields without current reporting consumers.
 
 ---
 
-## Changes Summary
+## What Was Shipped
 
-### New Fields
+All new fields are nullable with `blank=True`. No new form fields, no new user-facing UI, no workflow changes.
 
 **ProgressNote** (`apps/notes/models.py`):
 
@@ -42,11 +30,31 @@ There is no scenario where having the fields empty is worse than not having them
 
 | Field | Type | FHIR Source | Population Method |
 |---|---|---|---|
-| `goal_source` | CharField(max_length=20, blank=True) | Goal.source | Heuristic from description/client_goal fields + AI from first session note |
-| `target_date` | DateField(null=True, blank=True) | Goal.target.due | Program default (default_goal_review_days) + AI extraction of temporal language |
-| `continuous` | BooleanField(default=False) | Goal.continuous | AI classification: maintenance vs. time-bound |
-| `metadata_sources` | JSONField(default=dict) | — | Tracks source of each auto-populated value |
-| Add `on_hold` to STATUS_CHOICES | — | Goal.lifecycleStatus | Worker action (pause a goal during crisis) |
+| `goal_source` | CharField(max_length=20, blank=True) | Goal.source | Heuristic from description/client_goal field patterns |
+| `goal_source_method` | CharField(max_length=20, blank=True) | — | How goal_source was derived (heuristic/worker_set/ai_inferred) |
+| `target_date` | DateField(null=True, blank=True) | Goal.target.due | Auto-set from Program.default_goal_review_days |
+
+**Program** (`apps/programs/models.py`):
+
+| Field | Type | Purpose | Population Method |
+|---|---|---|---|
+| `default_goal_review_days` | PositiveIntegerField(null=True, blank=True) | Default target_date offset for goals | Admin configuration |
+
+## What Was Cut (Expert Review, 2026-03-16)
+
+| Removed | Reason |
+|---|---|
+| `PlanTarget.continuous` (BooleanField) | False binary (many goals are both), no funder asks for it |
+| `PlanTarget.metadata_sources` (JSONField) | Over-engineered for one tracked field; replaced with `goal_source_method` CharField |
+| `PlanTarget.on_hold` status | Valid concept but needs full view audit first — every `status="default"` query must be updated |
+| `PlanSection.period_start/period_end` | Misleading precision from `created_at` proxy, no funder reporting value |
+| `infer_fhir_metadata` AI command | Only served cut fields (continuous, target_date AI extraction) |
+
+## Deferred Work
+
+- **on_hold goal status:** Create as separate task with full view audit of all `status="default"` queries in apps/plans/views.py
+- **AI inference for goal_source refinement:** Can be added later if heuristic accuracy needs improvement
+- **CarePlan period tracking:** Revisit if funders request plan duration reporting
 
 **PlanSection** (`apps/plans/models.py`):
 

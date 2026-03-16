@@ -489,7 +489,7 @@ class PlanTarget(models.Model):
     )
     target_date = models.DateField(
         null=True, blank=True,
-        help_text=_("Target completion date. Auto-set from program default or AI extraction."),
+        help_text=_("Target completion date. Auto-set from program default."),
     )
     goal_source_method = models.CharField(
         max_length=20, blank=True, default="",
