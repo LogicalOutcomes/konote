@@ -484,8 +484,7 @@
 {% endif %}
 
 {# Chart.js for goal source distribution (Feature A) #}
-{# Data table shown instead — Chart.js init will be added to app.js in a future pass #}
-{# {% if goal_source_dist.sufficient %}
+{% if goal_source_dist.sufficient %}
 {{ goal_source_dist|json_script:"goal-source-data" }}
-{% endif %} #}
+{% endif %}
 

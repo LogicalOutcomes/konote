@@ -23,7 +23,8 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.insights import get_structured_insights
 from apps.reports.insights_views import _compute_trend_direction
 from apps.reports.metric_insights import get_data_completeness
-from apps.reports.insights_fhir import build_program_summary, build_funder_stats
+# build_program_summary and build_funder_stats logic is inlined in
+# _batch_fhir_enrichment for query batching efficiency.
 
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,309 @@ def _count_stale_episodes(program_id, active_client_ids, thirty_days_ago):
         ).values_list("client_file_id", flat=True)
     )
     return len(active_client_ids - clients_with_recent)
+
+
+def _batch_fhir_enrichment(filtered_program_ids, base_client_ids,
+                           enrolment_stats, programs, date_from, date_to,
+                           thirty_days_ago):
+    """Batch FHIR enrichment data for all programs in minimal queries.
+
+    Replaces per-program calls to build_program_summary, build_funder_stats,
+    and _count_stale_episodes with batched queries.
+
+    Returns dict of program_id -> {
+        summary_sentence: str,
+        funder_stats: list of dicts,
+        stale_episodes: int,
+    }
+    """
+    from apps.clients.models import ServiceEpisode
+    from apps.plans.models import PlanTarget
+
+    program_map = {p.pk: p for p in programs}
+
+    # ── Batch query 1: ServiceEpisode counts by program × episode_type ──
+    ep_rows = (
+        ServiceEpisode.objects.filter(
+            program_id__in=filtered_program_ids,
+        )
+        .values("program_id", "episode_type", "status")
+        .annotate(cnt=Count("id"), distinct_clients=Count("client_file_id", distinct=True))
+    )
+    ep_data = {}
+    for pid in filtered_program_ids:
+        ep_data[pid] = {
+            "new_accessible": 0, "returning_accessible": 0,
+            "served_total": 0, "served_new": 0, "served_returning": 0,
+            "finished_total": 0, "finished_with_reason": 0,
+            "completed_discharge": 0,
+        }
+    for r in ep_rows:
+        pid = r["program_id"]
+        if pid not in ep_data:
+            continue
+        etype = r["episode_type"]
+        status = r["status"]
+        # Accessible (active/on_hold) for summary
+        if status in ("active", "on_hold"):
+            if etype == "new_intake":
+                ep_data[pid]["new_accessible"] += r["cnt"]
+            elif etype == "re_enrolment":
+                ep_data[pid]["returning_accessible"] += r["cnt"]
+        # Served (active/on_hold/finished) for funder stats
+        if status in ("active", "on_hold", "finished"):
+            ep_data[pid]["served_total"] += r["distinct_clients"]
+            if etype == "new_intake":
+                ep_data[pid]["served_new"] += r["distinct_clients"]
+            elif etype == "re_enrolment":
+                ep_data[pid]["served_returning"] += r["distinct_clients"]
+        # Finished for completion stat
+        if status == "finished":
+            ep_data[pid]["finished_total"] += r["cnt"]
+
+    # Separate query for finished episodes with end_reason (needs exclude logic)
+    finished_rows = (
+        ServiceEpisode.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="finished",
+        )
+        .exclude(end_reason="")
+        .values("program_id")
+        .annotate(
+            with_reason=Count("id"),
+            completed=Count("id", filter=Q(end_reason__in=["completed", "goals_met"])),
+        )
+    )
+    for r in finished_rows:
+        pid = r["program_id"]
+        if pid in ep_data:
+            ep_data[pid]["finished_with_reason"] = r["with_reason"]
+            ep_data[pid]["completed_discharge"] = r["completed"]
+
+    # ── Batch query 2: ProgressNote counts by program ──
+    note_rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            status="default",
+        )
+        .values("author_program_id")
+        .annotate(cnt=Count("id"))
+    )
+    note_counts = {r["author_program_id"]: r["cnt"] for r in note_rows}
+
+    # ── Batch query 3: PlanTarget aggregates by program ──
+    target_rows = (
+        PlanTarget.objects.filter(
+            plan_section__program_id__in=filtered_program_ids,
+            status__in=PlanTarget.ACTIVE_STATUSES,
+        )
+        .values("plan_section__program_id")
+        .annotate(
+            total=Count("id"),
+            joint=Count("id", filter=Q(goal_source="joint")),
+            with_source=Count("id", filter=Q(goal_source__gt="")),
+            with_achievement=Count("id", filter=Q(achievement_status__gt="")),
+            positive=Count("id", filter=Q(
+                achievement_status__in=["achieved", "sustaining", "improving"]
+            )),
+        )
+    )
+    target_data = {}
+    for r in target_rows:
+        target_data[r["plan_section__program_id"]] = r
+
+    # ── Batch query 4: Stale episodes (active enrolments with no recent note) ──
+    # Get all active enrolments
+    active_enrolments = (
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="active",
+            client_file_id__in=base_client_ids,
+        )
+        .values_list("program_id", "client_file_id")
+    )
+    active_by_program = {}
+    for pid, cid in active_enrolments:
+        active_by_program.setdefault(pid, set()).add(cid)
+
+    # Get clients with recent notes (single query)
+    all_active_cids = set()
+    for ids in active_by_program.values():
+        all_active_cids.update(ids)
+    recent_note_clients = set()
+    if all_active_cids:
+        recent_note_clients = set(
+            ProgressNote.objects.filter(
+                client_file_id__in=all_active_cids,
+                author_program_id__in=filtered_program_ids,
+                created_at__gte=thirty_days_ago,
+                status="default",
+            ).values_list("client_file_id", flat=True)
+        )
+
+    # ── Assemble results per program ──
+    result = {}
+    for pid in filtered_program_ids:
+        program = program_map.get(pid)
+        if not program:
+            continue
+
+        es = enrolment_stats.get(pid, {})
+        active = es.get("active", 0)
+        ep = ep_data.get(pid, {})
+        td = target_data.get(pid, {})
+        sessions = note_counts.get(pid, 0)
+        goal_count = td.get("total", 0)
+        joint_count = td.get("joint", 0)
+        joint_pct = round(joint_count / goal_count * 100) if goal_count else 0
+        total_tracked = td.get("with_achievement", 0)
+        positive = td.get("positive", 0)
+
+        # Summary sentence
+        if active < SMALL_PROGRAM_THRESHOLD:
+            summary = _(
+                "%(program)s has %(active)d active participants. "
+                "Aggregate statistics are not shown for programs with fewer "
+                "than 5 participants to protect privacy."
+            ) % {"program": program.name, "active": active}
+        elif total_tracked >= 10:
+            ach_pct = round(positive / total_tracked * 100)
+            summary = _(
+                "%(program)s is serving %(active)d participants "
+                "(%(new)d new, %(returning)d returning this %(period)s). "
+                "Staff recorded %(sessions)d sessions. "
+                "%(goals)d goals are active, %(joint_pct)d%% jointly developed "
+                "with participants. %(ach_pct)d%% of tracked goals show "
+                "improvement or achievement."
+            ) % {
+                "program": program.name, "active": active,
+                "new": ep.get("new_accessible", 0),
+                "returning": ep.get("returning_accessible", 0),
+                "period": _("quarter"), "sessions": sessions,
+                "goals": goal_count, "joint_pct": joint_pct,
+                "ach_pct": ach_pct,
+            }
+        else:
+            summary = _(
+                "%(program)s is serving %(active)d participants "
+                "(%(new)d new this %(period)s). "
+                "Staff recorded %(sessions)d sessions across "
+                "%(goals)d active goals, %(joint_pct)d%% jointly developed "
+                "with participants."
+            ) % {
+                "program": program.name, "active": active,
+                "new": ep.get("new_accessible", 0),
+                "period": _("quarter"), "sessions": sessions,
+                "goals": goal_count, "joint_pct": joint_pct,
+            }
+
+        # Funder stats
+        funder_stats = []
+
+        # 1. Served
+        funder_stats.append({
+            "label": _("Served"),
+            "value": _(
+                "%(total)d participants (%(new)d new, %(returning)d returning)"
+            ) % {
+                "total": ep.get("served_total", 0),
+                "new": ep.get("served_new", 0),
+                "returning": ep.get("served_returning", 0),
+            },
+            "confidence": "reliable",
+            "note": "",
+        })
+
+        # 2. Sessions
+        funder_stats.append({
+            "label": _("Sessions"),
+            "value": _("%(count)d sessions delivered") % {"count": sessions},
+            "confidence": "reliable",
+            "note": "",
+        })
+
+        # 3. Goals jointly developed
+        with_source = td.get("with_source", 0)
+        if with_source >= 5:
+            gpct = round(joint_count / with_source * 100)
+            funder_stats.append({
+                "label": _("Goals"),
+                "value": _(
+                    "%(pct)d%% jointly developed with participants"
+                ) % {"pct": gpct},
+                "confidence": "reliable",
+                "note": "",
+            })
+        else:
+            funder_stats.append({
+                "label": _("Goals"),
+                "value": _("not enough data"),
+                "confidence": "insufficient",
+                "note": "",
+            })
+
+        # 4. Achievement
+        if total_tracked >= 10:
+            apct = round(positive / total_tracked * 100)
+            coverage = round(total_tracked / goal_count * 100) if goal_count else 0
+            conf = "reliable" if coverage >= 80 else "partial"
+            funder_stats.append({
+                "label": _("Improving"),
+                "value": _(
+                    "%(pct)d%% of tracked goals improving or achieved"
+                ) % {"pct": apct},
+                "confidence": conf,
+                "note": _(
+                    "%(tracked)d of %(total)d have metric data"
+                ) % {"tracked": total_tracked, "total": goal_count}
+                if conf == "partial" else "",
+            })
+        else:
+            funder_stats.append({
+                "label": _("Improving"),
+                "value": _("not enough data"),
+                "confidence": "insufficient",
+                "note": "",
+            })
+
+        # 5. Completion
+        ft = ep.get("finished_total", 0)
+        fwr = ep.get("finished_with_reason", 0)
+        if ft >= 10 and fwr / ft >= 0.5:
+            cd = ep.get("completed_discharge", 0)
+            cpct = round(cd / ft * 100)
+            cov = round(fwr / ft * 100)
+            conf = "reliable" if cov >= 80 else "partial"
+            funder_stats.append({
+                "label": _("Completed"),
+                "value": _(
+                    "%(pct)d%% completed program"
+                ) % {"pct": cpct},
+                "confidence": conf,
+                "note": _(
+                    "%(with_reason)d of %(total)d have discharge reason"
+                ) % {"with_reason": fwr, "total": ft}
+                if conf == "partial" else "",
+            })
+        else:
+            funder_stats.append({
+                "label": _("Completed"),
+                "value": _("not enough data"),
+                "confidence": "insufficient",
+                "note": "",
+            })
+
+        # Stale episodes
+        prog_active = active_by_program.get(pid, set())
+        stale = len(prog_active - recent_note_clients)
+
+        result[pid] = {
+            "summary_sentence": summary,
+            "funder_stats": funder_stats,
+            "stale_episodes": stale,
+        }
+
+    return result
 
 
 def _count_overdue_followups(client_ids, today):
@@ -1175,10 +1479,17 @@ def _build_executive_context(request):
         filtered_program_ids, month_start.date(), today,
     )
 
+    # Batch FHIR enrichment (summary, funder stats, stale episodes)
+    thirty_days_ago = now - timedelta(days=30)
+    fhir_map = _batch_fhir_enrichment(
+        filtered_program_ids, base_client_ids, enrolment_stats,
+        filtered_programs, learning_date_from, learning_date_to,
+        thirty_days_ago,
+    )
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
-    thirty_days_ago = now - timedelta(days=30)
 
     for program in filtered_programs:
         pid = program.pk
@@ -1231,24 +1542,11 @@ def _build_executive_context(request):
         stat["data_completeness_pct"] = mi.get("data_completeness_pct", 0)
         stat["urgent_theme_count"] = mi.get("urgent_theme_count", 0)
 
-        # FHIR enrichment: program summary sentence + funder stats
-        stat["summary_sentence"] = build_program_summary(
-            program, es, period_label=_("quarter"),
-        )
-        stat["funder_stats"] = build_funder_stats(
-            program, learning_date_from, learning_date_to,
-        )
-
-        # Enhanced attention signal: stale episodes (30+ days no note)
-        program_active_ids = set(
-            ClientProgramEnrolment.objects.filter(
-                program_id=pid, status="active",
-                client_file_id__in=base_client_ids,
-            ).values_list("client_file_id", flat=True)
-        )
-        stat["stale_episodes"] = _count_stale_episodes(
-            pid, program_active_ids, thirty_days_ago,
-        )
+        # FHIR enrichment (batched — see _batch_fhir_enrichment)
+        fhir = fhir_map.get(pid, {})
+        stat["summary_sentence"] = fhir.get("summary_sentence", "")
+        stat["funder_stats"] = fhir.get("funder_stats", [])
+        stat["stale_episodes"] = fhir.get("stale_episodes", 0)
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)

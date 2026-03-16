@@ -22,11 +22,14 @@
             <div class="funder-stat-card" role="listitem">
                 <div class="funder-stat-label">
                     {% if fs.confidence == "reliable" %}
-                    <span class="completeness-indicator" aria-hidden="true" title="{% trans 'Reliable' %}">&#9679;</span>
+                    <span class="completeness-indicator" aria-hidden="true">&#9679;</span>
+                    <span class="sr-only">{% trans "Reliable" %}:</span>
                     {% elif fs.confidence == "partial" %}
-                    <span class="completeness-indicator completeness-partial" aria-hidden="true" title="{% trans 'Partial data' %}">&#9680;</span>
+                    <span class="completeness-indicator completeness-partial" aria-hidden="true">&#9680;</span>
+                    <span class="sr-only">{% trans "Partial data" %}:</span>
                     {% else %}
-                    <span class="completeness-indicator completeness-low" aria-hidden="true" title="{% trans 'Insufficient data' %}">&#9675;</span>
+                    <span class="completeness-indicator completeness-low" aria-hidden="true">&#9675;</span>
+                    <span class="sr-only">{% trans "Insufficient data" %}:</span>
                     {% endif %}
                     {{ fs.label }}
                 </div>
