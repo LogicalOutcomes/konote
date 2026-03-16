@@ -291,7 +291,11 @@ def program_insights(request):
 
         # ── FHIR metadata features ──
         goal_source_dist = get_goal_source_distribution(program, date_from, date_to)
-        practice_health = get_practice_health(program, date_from, date_to)
+        practice_health = get_practice_health(
+            program, date_from, date_to,
+            goal_source_dist=goal_source_dist,
+            data_completeness=data_completeness,
+        )
 
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():

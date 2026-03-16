@@ -2114,57 +2114,6 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         });
     }
 
-    // Goal source distribution horizontal bar chart (Feature A)
-    function initGoalSourceChart() {
-        var el = document.getElementById('goal-source-data');
-        if (!el) return;
-        var data;
-        try { data = JSON.parse(el.textContent); } catch (e) { return; }
-        if (!data || !data.sources) return;
-
-        var ctx = document.getElementById('goal-source-chart');
-        if (!ctx || ctx.getAttribute('data-chart-init')) return;
-        ctx.setAttribute('data-chart-init', '1');
-
-        // Filter out suppressed sources for the chart
-        var visible = data.sources.filter(function (s) { return !s.suppressed; });
-        if (visible.length === 0) return;
-
-        var colours = ['#5e81ac', '#a3be8c', '#ebcb8b', '#bf616a', '#b48ead'];
-
-        new Chart(ctx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: visible.map(function (s) { return s.label; }),
-                datasets: [{
-                    data: visible.map(function (s) { return s.pct; }),
-                    backgroundColor: visible.map(function (_, i) { return colours[i % colours.length]; }),
-                    borderWidth: 0,
-                }],
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: animDuration },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (c) {
-                                var src = visible[c.dataIndex];
-                                return src.label + ': ' + src.count + ' (' + src.pct + '%)';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: { beginAtZero: true, max: 100, ticks: { callback: function (v) { return v + '%'; } } },
-                },
-            },
-        });
-    }
-
     // Unified dispatcher — runs all chart initialisers that find their data element
     function initAllCharts() {
         if (typeof Chart === 'undefined') return;
@@ -2172,7 +2121,6 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         initClientTrendChart();
         initDescriptorTrendChart();
         initDistributionTrendCharts();
-        initGoalSourceChart();
     }
 
     // Run on initial page load

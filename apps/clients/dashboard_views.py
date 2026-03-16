@@ -67,28 +67,8 @@ def _count_without_notes(active_client_ids, program_ids, month_start):
     return len(set(active_client_ids) - clients_with_notes)
 
 
-def _count_stale_episodes(program_id, active_client_ids, thirty_days_ago):
-    """Active episodes with no note in 30+ days (enhanced attention signal).
-
-    Feature G: episode-aware query that's more meaningful than the
-    calendar-month-based _count_without_notes.
-    """
-    if not active_client_ids:
-        return 0
-    clients_with_recent = set(
-        ProgressNote.objects.filter(
-            client_file_id__in=active_client_ids,
-            author_program_id=program_id,
-            created_at__gte=thirty_days_ago,
-            status="default",
-        ).values_list("client_file_id", flat=True)
-    )
-    return len(active_client_ids - clients_with_recent)
-
-
-def _batch_fhir_enrichment(filtered_program_ids, base_client_ids,
-                           enrolment_stats, programs, date_from, date_to,
-                           thirty_days_ago):
+def _batch_fhir_enrichment(filtered_program_ids, enrolment_stats,
+                           programs, thirty_days_ago):
     """Batch FHIR enrichment data for all programs in minimal queries.
 
     Computes program summary sentences and stale episode counts using
@@ -148,7 +128,7 @@ def _batch_fhir_enrichment(filtered_program_ids, base_client_ids,
             joint=Count("id", filter=Q(goal_source="joint")),
             with_achievement=Count("id", filter=Q(achievement_status__gt="")),
             positive=Count("id", filter=Q(
-                achievement_status__in=["achieved", "sustaining", "improving"]
+                achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
             )),
         )
     )
@@ -157,31 +137,32 @@ def _batch_fhir_enrichment(filtered_program_ids, base_client_ids,
         target_data[r["plan_section__program_id"]] = r
 
     # ── Batch query 4: Stale episodes (active enrolments with no recent note) ──
-    active_enrolments = (
-        ClientProgramEnrolment.objects.filter(
-            program_id__in=filtered_program_ids,
-            status="active",
-            client_file_id__in=base_client_ids,
-        )
-        .values_list("program_id", "client_file_id")
-    )
-    active_by_program = {}
-    for pid, cid in active_enrolments:
-        active_by_program.setdefault(pid, set()).add(cid)
-
+    # Use active_ids from enrolment_stats (already queried) to avoid duplicate query.
+    # Query recent notes per-program to avoid cross-program false negatives:
+    # a note in Program B shouldn't clear a stale flag in Program A.
+    active_by_program = {
+        pid: es.get("active_ids", set())
+        for pid, es in enrolment_stats.items()
+    }
     all_active_cids = set()
     for ids in active_by_program.values():
         all_active_cids.update(ids)
-    recent_note_clients = set()
+
+    # Fetch recent notes grouped by (program, client) for correct per-program counting
+    recent_by_program = {}
     if all_active_cids:
-        recent_note_clients = set(
+        recent_rows = (
             ProgressNote.objects.filter(
                 client_file_id__in=all_active_cids,
                 author_program_id__in=filtered_program_ids,
                 created_at__gte=thirty_days_ago,
                 status="default",
-            ).values_list("client_file_id", flat=True)
+            )
+            .values_list("author_program_id", "client_file_id")
+            .distinct()
         )
+        for rpid, rcid in recent_rows:
+            recent_by_program.setdefault(rpid, set()).add(rcid)
 
     # ── Assemble results per program ──
     result = {}
@@ -239,9 +220,10 @@ def _batch_fhir_enrichment(filtered_program_ids, base_client_ids,
                 "goals": goal_count, "joint_pct": joint_pct,
             }
 
-        # Stale episodes
+        # Stale episodes (per-program: only notes in THIS program count)
         prog_active = active_by_program.get(pid, set())
-        stale = len(prog_active - recent_note_clients)
+        prog_recent = recent_by_program.get(pid, set())
+        stale = len(prog_active - prog_recent)
 
         result[pid] = {
             "summary_sentence": summary,
@@ -1341,12 +1323,11 @@ def _build_executive_context(request):
         filtered_program_ids, month_start.date(), today,
     )
 
-    # Batch FHIR enrichment (summary, funder stats, stale episodes)
+    # Batch FHIR enrichment (summary sentence + stale episodes)
     thirty_days_ago = now - timedelta(days=30)
     fhir_map = _batch_fhir_enrichment(
-        filtered_program_ids, base_client_ids, enrolment_stats,
-        filtered_programs, learning_date_from, learning_date_to,
-        thirty_days_ago,
+        filtered_program_ids, enrolment_stats,
+        filtered_programs, thirty_days_ago,
     )
 
     # Assemble per-program stat dicts

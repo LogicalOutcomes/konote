@@ -431,6 +431,8 @@ class PlanTarget(models.Model):
     # Use this for queries that mean "goals still in play."
     # Metric collection (note forms) should use status="default" only.
     ACTIVE_STATUSES = ["default", "on_hold"]
+    # Achievement statuses that count as positive outcomes.
+    POSITIVE_ACHIEVEMENT_STATUSES = ["achieved", "sustaining", "improving"]
 
     plan_section = models.ForeignKey(PlanSection, on_delete=models.CASCADE, related_name="targets")
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="plan_targets")
