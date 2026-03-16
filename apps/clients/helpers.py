@@ -98,7 +98,7 @@ def get_client_tab_counts(client):
     # Active plan targets
     targets_count = PlanTarget.objects.filter(
         client_file=client,
-        status="default"
+        status__in=PlanTarget.ACTIVE_STATUSES
     ).count()
 
     # Completed survey responses (template checks features.surveys before displaying)

@@ -623,7 +623,7 @@ def _build_stakeholder_outcome_node(program, outcome_id, org_id):
     """Derive a cids:StakeholderOutcome from aggregate PlanTarget achievement."""
     targets = PlanTarget.objects.filter(
         plan_section__program=program,
-        status__in=["default", "completed"],
+        status__in=["default", "on_hold", "completed"],
     )
     total = targets.count()
     if not total:

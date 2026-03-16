@@ -1062,7 +1062,7 @@ def client_analysis(request, client_id):
     # Get targets with metrics — filtered by user's accessible programs
     # PlanTarget doesn't have a direct program FK, so filter through plan_section.program
     targets = PlanTarget.objects.filter(
-        client_file=client, status="default"
+        client_file=client, status__in=PlanTarget.ACTIVE_STATUSES
     ).filter(
         Q(plan_section__program_id__in=user_program_ids) | Q(plan_section__program__isnull=True)
     ).select_related("plan_section__program").prefetch_related("metrics")
