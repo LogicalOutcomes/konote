@@ -36,6 +36,12 @@ from .metric_insights import (
     get_data_completeness,
     get_instrument_aggregates,
 )
+from .insights_fhir import (
+    get_goal_source_distribution,
+    get_goal_source_vs_achievement,
+    get_practice_health,
+    get_cohort_comparison,
+)
 
 # Map DB values to human-readable labels for suggestion priorities
 _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
@@ -285,6 +291,12 @@ def program_insights(request):
                                     structured=structured,
                                     distributions=metric_distributions)
 
+        # ── FHIR metadata features ──
+        goal_source_dist = get_goal_source_distribution(program, date_from, date_to)
+        goal_source_crosstab = get_goal_source_vs_achievement(program, date_from, date_to)
+        practice_health = get_practice_health(program, date_from, date_to)
+        cohort_data = get_cohort_comparison(program, date_from, date_to)
+
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():
             ach["not_achieved_count"] = ach["total"] - ach["achieved_count"]
@@ -370,6 +382,11 @@ def program_insights(request):
             "total_new_participants": total_new_participants,
             "distributions_summary": distributions_summary,
             "outcomes_summary": outcomes_summary,
+            # FHIR metadata features
+            "goal_source_dist": goal_source_dist,
+            "goal_source_crosstab": goal_source_crosstab,
+            "practice_health": practice_health,
+            "cohort_data": cohort_data,
             **expand_flags,
             **interp,
         })

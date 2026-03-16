@@ -1,0 +1,46 @@
+{% load i18n %}
+{# Program summary sentence (Feature D) + funder stats (Feature F) + stale episodes (Feature G) #}
+
+{% if stat.summary_sentence %}
+<div class="exec-program-summary" aria-label="{% trans 'Program summary' %}">
+    <p class="exec-summary-sentence">{{ stat.summary_sentence }}</p>
+
+    {# Enhanced attention signal: stale episodes #}
+    {% if stat.stale_episodes > 0 %}
+    <p class="exec-attention-signal" role="status">
+        <strong>{{ stat.stale_episodes }}</strong>
+        {% blocktrans with count=stat.stale_episodes count counter=stat.stale_episodes %}active participant with no session in 30+ days{% plural %}active participants with no session in 30+ days{% endblocktrans %}
+    </p>
+    {% endif %}
+
+    {# Funder stats (expandable) #}
+    {% if stat.funder_stats %}
+    <details class="exec-funder-stats">
+        <summary><small>{% trans "Funder-ready statistics" %}</small></summary>
+        <div class="funder-stat-cards" role="list" aria-label="{% trans 'Funder statistics' %}">
+            {% for fs in stat.funder_stats %}
+            <div class="funder-stat-card" role="listitem">
+                <div class="funder-stat-label">
+                    {% if fs.confidence == "reliable" %}
+                    <span class="completeness-indicator" aria-hidden="true">&#9679;</span>
+                    <span class="sr-only">{% trans "Reliable" %}:</span>
+                    {% elif fs.confidence == "partial" %}
+                    <span class="completeness-indicator completeness-partial" aria-hidden="true">&#9680;</span>
+                    <span class="sr-only">{% trans "Partial data" %}:</span>
+                    {% else %}
+                    <span class="completeness-indicator completeness-low" aria-hidden="true">&#9675;</span>
+                    <span class="sr-only">{% trans "Insufficient data" %}:</span>
+                    {% endif %}
+                    {{ fs.label }}
+                </div>
+                <div class="funder-stat-value">{{ fs.value }}</div>
+                {% if fs.note %}
+                <div class="funder-stat-note muted"><small>{{ fs.note }}</small></div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
+</div>
+{% endif %}

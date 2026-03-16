@@ -355,6 +355,16 @@
 {% endif %}
 
 {# ══════════════════════════════════════════════════════════════════ #}
+{# ── Section 3b: Practice Quality (Features A, B, C) ──────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% include "reports/_insights_practice_quality.html" %}
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# ── Section 3c: Cohort Comparison (Feature E) ────────────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% include "reports/_insights_cohort.html" %}
+
+{# ══════════════════════════════════════════════════════════════════ #}
 {# ── Section 4: Staff Assessments Over Time (Layer 3, relabelled) ─ #}
 {# ══════════════════════════════════════════════════════════════════ #}
 {% if structured.descriptor_trend %}
@@ -471,5 +481,10 @@
 {% if metric_trends_json %}
 {{ metric_trends_json|json_script:"metric-trends-data" }}
 {# Chart init moved to app.js — inline scripts break when loaded via HTMX due to CSP nonce mismatch #}
+{% endif %}
+
+{# Chart.js for goal source distribution (Feature A) #}
+{% if goal_source_dist.sufficient %}
+{{ goal_source_dist|json_script:"goal-source-data" }}
 {% endif %}
 
