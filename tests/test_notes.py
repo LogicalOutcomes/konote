@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
-from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.clients.models import ClientFile, ClientProgramEnrolment, ServiceEpisode
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
 from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
 import konote.encryption as enc_module
@@ -1631,3 +1631,87 @@ class TestAllianceRotation(TestCase):
         for key, label in existing_labels.items():
             # existing labels are lazy strings, compare as str
             self.assertEqual(set0_anchors[key], str(label))
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EpisodeAutoLinkTest(TestCase):
+    """Tests for automatic ProgressNote -> ServiceEpisode linking."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program")
+        self.user = User.objects.create_user(
+            username="episodetest_worker", password="testpass123"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        self.episode = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+
+    def test_note_auto_links_to_active_episode(self):
+        """New note automatically links to active episode for same client+program."""
+        note = ProgressNote(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="quick",
+            interaction_type="session",
+        )
+        note.notes_text = "Session notes"
+        note.save()
+        self.assertEqual(note.episode_id, self.episode.pk)
+
+    def test_note_no_link_when_no_active_episode(self):
+        """No episode link when episode is finished."""
+        self.episode.status = "finished"
+        self.episode.save()
+        note = ProgressNote(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="quick",
+            interaction_type="session",
+        )
+        note.notes_text = "Session notes"
+        note.save()
+        self.assertIsNone(note.episode_id)
+
+    def test_note_no_link_when_no_program(self):
+        """No episode link when note has no author_program."""
+        note = ProgressNote(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=None,
+            note_type="quick",
+            interaction_type="session",
+        )
+        note.notes_text = "Quick note"
+        note.save()
+        self.assertIsNone(note.episode_id)
+
+    def test_episode_not_overwritten_on_update(self):
+        """Episode link preserved when note is updated."""
+        note = ProgressNote(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="quick",
+            interaction_type="session",
+        )
+        note.notes_text = "Session notes"
+        note.save()
+        original_episode_id = note.episode_id
+        self.assertEqual(original_episode_id, self.episode.pk)
+        # Finish episode and resave note
+        self.episode.status = "finished"
+        self.episode.save()
+        note.notes_text = "Updated notes"
+        note.save()
+        self.assertEqual(note.episode_id, original_episode_id)
