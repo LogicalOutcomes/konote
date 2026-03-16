@@ -317,57 +317,43 @@
 {% endif %}
 
 {# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 2: Where Participants Are (Layer 1 — distributions) ── #}
+{# ── Section 2: Outcome Progress (merged distributions + outcomes) ─ #}
 {# ══════════════════════════════════════════════════════════════════ #}
-{% if metric_distributions %}
-<details id="section-distributions" {% if expand_distributions %}open{% endif %} class="insights-section">
+{% if metric_distributions or achievement_rates or instrument_aggregates %}
+<details id="section-outcome-progress" {% if expand_distributions or expand_outcomes %}open{% endif %} class="insights-section">
     <summary>
-        <strong>{% trans "Where Participants Are" %}</strong> —
-        {% if distributions_summary %}{{ distributions_summary }}{% endif %}
+        <strong>{% trans "Outcome Progress" %}</strong> —
+        {% if outcomes_summary %}{{ outcomes_summary }}
+        {% elif distributions_summary %}{{ distributions_summary }}
+        {% endif %}
     </summary>
+
+    {% if metric_distributions %}
+    <h3>{% trans "Where Participants Are" %}</h3>
     {% include "reports/_insights_distributions.html" %}
-</details>
-{% endif %}
+    {% endif %}
 
-{# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 2b: Instrument Battery Aggregates ──────────────────── #}
-{# ══════════════════════════════════════════════════════════════════ #}
-{% if instrument_aggregates %}
-<details id="section-instruments" {% if expand_distributions %}open{% endif %} class="insights-section">
-    <summary>
-        <strong>{% trans "Instrument Batteries" %}</strong>
-    </summary>
-    {% include "reports/_insights_instruments.html" %}
-</details>
-{% endif %}
-
-{# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 3: Program Outcomes (Layer 2 — achievement rates) ──── #}
-{# ══════════════════════════════════════════════════════════════════ #}
-{% if achievement_rates %}
-<details id="section-outcomes" {% if expand_outcomes %}open{% endif %} class="insights-section">
-    <summary>
-        <strong>{% trans "Program Outcomes" %}</strong> —
-        {% if outcomes_summary %}{{ outcomes_summary }}{% endif %}
-    </summary>
+    {% if achievement_rates %}
+    <h3>{% trans "Achievement Rates" %}</h3>
     {% include "reports/_insights_metrics.html" %}
+    {% endif %}
+
+    {% if instrument_aggregates %}
+    <h3>{% trans "Instrument Batteries" %}</h3>
+    {% include "reports/_insights_instruments.html" %}
+    {% endif %}
 </details>
 {% endif %}
 
 {# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 3b: Practice Quality (Features A, B, C) ──────────── #}
+{# ── Section 3: Practice Indicators (goal source + voice) ──────── #}
 {# ══════════════════════════════════════════════════════════════════ #}
 {% include "reports/_insights_practice_quality.html" %}
 
 {# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 3c: Cohort Comparison (Feature E) ────────────────── #}
+{# ── Section 4: Staff Assessments & Engagement ─────────────────── #}
 {# ══════════════════════════════════════════════════════════════════ #}
-{% include "reports/_insights_cohort.html" %}
-
-{# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 4: Staff Assessments Over Time (Layer 3, relabelled) ─ #}
-{# ══════════════════════════════════════════════════════════════════ #}
-{% if structured.descriptor_trend %}
+{% if structured.descriptor_trend or structured.engagement_distribution %}
 <details id="section-staff-assessments" {% if expand_staff_assessments %}open{% endif %} class="insights-section">
     <summary>
         <strong>{% trans "Staff Assessments" %}</strong> —
@@ -376,6 +362,7 @@
         {% endif %}
     </summary>
 
+    {% if structured.descriptor_trend %}
     <h3>{% trans "Staff Assessments Over Time" %}</h3>
     <p class="chart-description muted">{% trans "How workers rate participant progress at each session — a professional judgment, not a measured score." %}</p>
     {% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
@@ -412,7 +399,7 @@
         </table>
     </details>
 
-    {# ── Descriptor snapshot (current totals) ── #}
+    {# Descriptor snapshot (current totals) #}
     {% if structured.descriptor_distribution %}
     <h4>{% trans "Current Period" %}</h4>
     <div class="descriptor-pills">
@@ -422,18 +409,10 @@
     </div>
     {% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
     {% endif %}
-</details>
-{% endif %}
+    {% endif %}
 
-{# ══════════════════════════════════════════════════════════════════ #}
-{# ── Section 5: Engagement (Layer 3) ────────────────────────────── #}
-{# ══════════════════════════════════════════════════════════════════ #}
-{% if structured.engagement_distribution %}
-<details id="section-engagement" {% if expand_engagement %}open{% endif %} class="insights-section">
-    <summary>
-        <strong>{% trans "Engagement" %}</strong> —
-        {% for label, pct in structured.engagement_distribution.items %}{% if forloop.first %}{{ pct }}% {{ label|lower }}{% endif %}{% endfor %}
-    </summary>
+    {# Engagement (folded into staff assessments) #}
+    {% if structured.engagement_distribution %}
     <h3>{% trans "Engagement" %}</h3>
     <p class="chart-description muted">{% trans "How actively participants are engaging with their program — based on what staff observe during sessions." %}</p>
     <div class="descriptor-pills">
@@ -442,6 +421,7 @@
         {% endfor %}
     </div>
     {% if interp_engagement %}<p class="insight-interpretation">{{ interp_engagement }}</p>{% endif %}
+    {% endif %}
 </details>
 {% endif %}
 
@@ -483,8 +463,5 @@
 {# Chart init moved to app.js — inline scripts break when loaded via HTMX due to CSP nonce mismatch #}
 {% endif %}
 
-{# Chart.js for goal source distribution (Feature A) #}
-{% if goal_source_dist.sufficient %}
-{{ goal_source_dist|json_script:"goal-source-data" }}
-{% endif %}
+{# Goal source chart removed — table is clearer for 3-4 categories #}
 

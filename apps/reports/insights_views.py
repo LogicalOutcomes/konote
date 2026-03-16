@@ -38,9 +38,7 @@ from .metric_insights import (
 )
 from .insights_fhir import (
     get_goal_source_distribution,
-    get_goal_source_vs_achievement,
     get_practice_health,
-    get_cohort_comparison,
 )
 
 # Map DB values to human-readable labels for suggestion priorities
@@ -293,9 +291,7 @@ def program_insights(request):
 
         # ── FHIR metadata features ──
         goal_source_dist = get_goal_source_distribution(program, date_from, date_to)
-        goal_source_crosstab = get_goal_source_vs_achievement(program, date_from, date_to)
         practice_health = get_practice_health(program, date_from, date_to)
-        cohort_data = get_cohort_comparison(program, date_from, date_to)
 
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():
@@ -384,9 +380,7 @@ def program_insights(request):
             "outcomes_summary": outcomes_summary,
             # FHIR metadata features
             "goal_source_dist": goal_source_dist,
-            "goal_source_crosstab": goal_source_crosstab,
             "practice_health": practice_health,
-            "cohort_data": cohort_data,
             **expand_flags,
             **interp,
         })
