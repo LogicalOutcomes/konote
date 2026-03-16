@@ -1,0 +1,125 @@
+{% load i18n %}
+{# Practice Health Bar (Feature C) + Goal Source Distribution (Feature A) + Cross-tab (Feature B) #}
+
+{% if practice_health %}
+{% with ph=practice_health %}
+{# Show section if at least one indicator is visible #}
+{% if ph.jointly_developed.show or ph.data_completeness.show or ph.participant_voice.show or ph.sessions_per_participant.show %}
+<details id="section-practice-quality" class="insights-section">
+    <summary>
+        <strong>{% trans "Practice Quality" %}</strong> —
+        {% if ph.jointly_developed.show %}{{ ph.jointly_developed.value }} {% trans "jointly developed" %}{% endif %}
+        {% if ph.jointly_developed.show and ph.participant_voice.show %} · {% endif %}
+        {% if ph.participant_voice.show %}{{ ph.participant_voice.value }} {% trans "participant voice" %}{% endif %}
+    </summary>
+
+    {# ── Practice Health Bar ── #}
+    <h3>{% trans "Practice Health" %}</h3>
+    <p class="chart-description muted">{% trans "Key indicators of collaborative practice quality. Green means strong, amber is developing, red needs attention." %}</p>
+
+    <div class="practice-health-bar" role="list" aria-label="{% trans 'Practice health indicators' %}">
+        {% if ph.jointly_developed.show %}
+        <div class="practice-health-item practice-health-{{ ph.jointly_developed.level }}" role="listitem">
+            <span class="practice-health-value">{{ ph.jointly_developed.value }}</span>
+            <span class="practice-health-label">{{ ph.jointly_developed.label }}</span>
+        </div>
+        {% endif %}
+        {% if ph.data_completeness.show %}
+        <div class="practice-health-item practice-health-{{ ph.data_completeness.level }}" role="listitem">
+            <span class="practice-health-value">{{ ph.data_completeness.value }}</span>
+            <span class="practice-health-label">{{ ph.data_completeness.label }}</span>
+        </div>
+        {% endif %}
+        {% if ph.participant_voice.show %}
+        <div class="practice-health-item practice-health-{{ ph.participant_voice.level }}" role="listitem">
+            <span class="practice-health-value">{{ ph.participant_voice.value }}</span>
+            <span class="practice-health-label">{{ ph.participant_voice.label }}</span>
+        </div>
+        {% endif %}
+        {% if ph.sessions_per_participant.show %}
+        <div class="practice-health-item practice-health-neutral" role="listitem">
+            <span class="practice-health-value">{{ ph.sessions_per_participant.value }}</span>
+            <span class="practice-health-label">{{ ph.sessions_per_participant.label }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Goal Source Distribution (Feature A) ── #}
+    {% if goal_source_dist.sufficient %}
+    <h3>{% trans "Goal Source Distribution" %}</h3>
+    <p class="chart-description muted">{% trans "Who initiated each goal — jointly developed goals reflect collaborative practice." %}</p>
+
+    {# Accessible data table (always visible) #}
+    <table role="table" aria-label="{% trans 'Goal source distribution' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Source" %}</th>
+                <th scope="col" style="text-align: right;">{% trans "Count" %}</th>
+                <th scope="col" style="text-align: right;">{% trans "%" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for src in goal_source_dist.sources %}
+            <tr>
+                <td>{{ src.label }}</td>
+                <td style="text-align: right;">{% if src.suppressed %}<span class="muted">&lt; 5</span>{% else %}{{ src.count }}{% endif %}</td>
+                <td style="text-align: right;">{% if src.suppressed %}<span class="muted">—</span>{% else %}{{ src.pct }}%{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th scope="row">{% trans "Total" %}</th>
+                <td style="text-align: right;"><strong>{{ goal_source_dist.total }}</strong></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {# Chart.js horizontal bar chart #}
+    <div class="chart-container" style="position: relative; height: 200px;">
+        <canvas id="goal-source-chart"
+                aria-label="{% trans 'Bar chart showing goal source distribution' %}"
+                role="img"></canvas>
+    </div>
+    {% endif %}
+
+    {# ── Goal Source vs Achievement Cross-tab (Feature B) ── #}
+    {% if goal_source_crosstab.sufficient %}
+    <details>
+        <summary>
+            <strong>{% trans "Goal Source vs. Achievement" %}</strong>
+        </summary>
+        <p class="chart-description muted">{% trans "Does who initiated the goal affect whether it's achieved? Larger differences suggest goal-setting process matters." %}</p>
+
+        <table role="table" aria-label="{% trans 'Goal source vs achievement cross-tabulation' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Source" %}</th>
+                    <th scope="col" style="text-align: right;">{% trans "Achieved" %}</th>
+                    <th scope="col" style="text-align: right;">{% trans "Total" %}</th>
+                    <th scope="col" style="text-align: right;">{% trans "Rate" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in goal_source_crosstab.rows %}
+                <tr>
+                    <td>{{ row.label }}</td>
+                    <td style="text-align: right;">{{ row.achieved }}</td>
+                    <td style="text-align: right;">{{ row.total }}</td>
+                    <td style="text-align: right;">{{ row.rate }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if goal_source_crosstab.comparison_sentence %}
+        <p class="insight-interpretation">{{ goal_source_crosstab.comparison_sentence }}</p>
+        {% endif %}
+    </details>
+    {% endif %}
+
+</details>
+{% endif %}
+{% endwith %}
+{% endif %}
