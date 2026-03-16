@@ -23619,3 +23619,7 @@ msgstr "Que signifient ces termes\\u00a0?"
 
 msgid "Intake assessment"
 msgstr "Évaluation initiale"
+
+msgid ""
+"Are you sure? This marks the theme as something that won’t be acted on."
+msgstr ""
