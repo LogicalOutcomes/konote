@@ -422,9 +422,15 @@ class PlanTarget(models.Model):
 
     STATUS_CHOICES = [
         ("default", _("Active")),
+        ("on_hold", _("On Hold")),
         ("completed", _("Completed")),
         ("deactivated", _("Deactivated")),
     ]
+
+    # Statuses that mean "not done yet" — visible in plan views, count as active.
+    # Use this for queries that mean "goals still in play."
+    # Metric collection (note forms) should use status="default" only.
+    ACTIVE_STATUSES = ["default", "on_hold"]
 
     plan_section = models.ForeignKey(PlanSection, on_delete=models.CASCADE, related_name="targets")
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="plan_targets")

@@ -211,7 +211,7 @@ def _calc_goal_completion(program):
 
     targets = PlanTarget.objects.filter(
         plan_section__program=program,
-        status__in=["default", "completed"],
+        status__in=["default", "on_hold", "completed"],
     )
     total = targets.count()
     if total == 0:
@@ -372,7 +372,7 @@ def _batch_goal_completion(filtered_program_ids):
     rows = (
         PlanTarget.objects.filter(
             plan_section__program_id__in=filtered_program_ids,
-            status__in=["default", "completed"],
+            status__in=["default", "on_hold", "completed"],
             client_file__is_demo=False,
         )
         .values("plan_section__program_id")

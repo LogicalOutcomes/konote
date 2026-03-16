@@ -700,7 +700,7 @@ def dashboard(request):
         ).count()
         goals_count = PlanTarget.objects.filter(
             client_file=client_file,
-            status="default",
+            status__in=PlanTarget.ACTIVE_STATUSES,
             updated_at__gt=participant.last_login,
         ).count()
         new_count = notes_count + goals_count
@@ -1082,7 +1082,7 @@ def goals_list(request):
     participant-facing client_goal text.
     """
     from apps.notes.models import ProgressNoteTarget
-    from apps.plans.models import PlanSection
+    from apps.plans.models import PlanSection, PlanTarget
 
     client_file = _get_client_file(request)
 
@@ -1098,7 +1098,7 @@ def goals_list(request):
     filtered_sections = []
     for section in sections:
         active_targets = [
-            t for t in section.targets.all() if t.status == "default"
+            t for t in section.targets.all() if t.status in PlanTarget.ACTIVE_STATUSES
         ]
         if active_targets:
             # Attach latest progress descriptor to each target

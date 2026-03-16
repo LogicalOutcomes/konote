@@ -1565,4 +1565,20 @@ class FHIRGoalMetadataTest(TestCase):
         target.save()
         self.assertEqual(target.goal_source_method, "heuristic")
 
+    def test_on_hold_status_valid_and_in_active_statuses(self):
+        """on_hold is a valid status and included in ACTIVE_STATUSES."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test goal"
+        target.save()
+        target.status = "on_hold"
+        target.save()
+        target.refresh_from_db()
+        self.assertEqual(target.status, "on_hold")
+        self.assertIn("on_hold", PlanTarget.ACTIVE_STATUSES)
+        self.assertIn("default", PlanTarget.ACTIVE_STATUSES)
+        self.assertNotIn("completed", PlanTarget.ACTIVE_STATUSES)
+
 

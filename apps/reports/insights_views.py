@@ -430,7 +430,7 @@ def client_insights_partial(request, client_id):
         .values_list("program_id", flat=True)
     )
     active_targets = list(
-        PlanTarget.objects.filter(client_file=client, status="default")
+        PlanTarget.objects.filter(client_file=client, status__in=PlanTarget.ACTIVE_STATUSES)
         .filter(
             Q(plan_section__program_id__isnull=True)
             | Q(plan_section__program_id__in=user_program_ids)
