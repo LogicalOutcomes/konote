@@ -37,15 +37,16 @@ def get_goal_source_distribution(program, date_from=None, date_to=None):
     if date_to:
         qs = qs.filter(created_at__lte=date_to)
 
-    rows = qs.values("goal_source").annotate(
+    rows = list(qs.values("goal_source").annotate(
         count=Count("id"),
-        participants=Count("client_file_id", distinct=True),
-    ).order_by("-count")
+    ).order_by("-count"))
 
     total = sum(r["count"] for r in rows)
-    total_participants = len(set(
-        qs.values_list("client_file_id", flat=True)
-    ))
+    # Distinct participant count (single efficient query)
+    total_participants = (
+        qs.values("client_file_id").distinct().count()
+        if total >= MIN_GOALS_FOR_SOURCE_DIST else 0
+    )
     sufficient = (
         total >= MIN_GOALS_FOR_SOURCE_DIST
         and total_participants >= MIN_DISTINCT_PARTICIPANTS
@@ -106,7 +107,7 @@ def get_goal_source_vs_achievement(program, date_from=None, date_to=None):
         if total < SMALL_PROGRAM_THRESHOLD:
             continue  # suppress small cells
         achieved = group.filter(
-            achievement_status__in=["achieved", "sustaining", "improving"]
+            achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
         ).count()
         rate = round(achieved / total * 100) if total else 0
         rows.append({
@@ -153,8 +154,15 @@ def get_goal_source_vs_achievement(program, date_from=None, date_to=None):
     }
 
 
-def get_practice_health(program, date_from=None, date_to=None):
+def get_practice_health(program, date_from=None, date_to=None,
+                        goal_source_dist=None, data_completeness=None):
     """Practice quality indicators for the health bar (Feature C).
+
+    Args:
+        goal_source_dist: Pre-computed result from get_goal_source_distribution
+            (avoids redundant query when caller already has it).
+        data_completeness: Pre-computed result from get_data_completeness
+            (avoids redundant query when caller already has it).
 
     Returns dict of indicator dicts, each with:
         value, label, level (good/fair/low), show (bool)
@@ -162,7 +170,7 @@ def get_practice_health(program, date_from=None, date_to=None):
     indicators = {}
 
     # 1. % goals jointly developed
-    source_dist = get_goal_source_distribution(program, date_from, date_to)
+    source_dist = goal_source_dist or get_goal_source_distribution(program, date_from, date_to)
     if source_dist["sufficient"]:
         joint_row = next(
             (s for s in source_dist["sources"] if s["source"] == "joint"),
@@ -183,9 +191,11 @@ def get_practice_health(program, date_from=None, date_to=None):
     else:
         indicators["jointly_developed"] = {"show": False}
 
-    # 2. Data completeness (reuse existing function)
-    from apps.reports.metric_insights import get_data_completeness
-    completeness = get_data_completeness(program, date_from, date_to)
+    # 2. Data completeness (reuse existing function or pre-computed value)
+    if data_completeness is None:
+        from apps.reports.metric_insights import get_data_completeness
+        data_completeness = get_data_completeness(program, date_from, date_to)
+    completeness = data_completeness
     if completeness and completeness.get("enrolled_count", 0) > 0:
         pct = completeness.get("completeness_pct", 0)
         level = "good" if pct >= 80 else ("fair" if pct >= 50 else "low")
@@ -328,7 +338,7 @@ def get_cohort_comparison(program, date_from=None, date_to=None):
         with_achievement = target_qs.filter(achievement_status__gt="")
         total_with = with_achievement.count()
         achieved = with_achievement.filter(
-            achievement_status__in=["achieved", "sustaining", "improving"]
+            achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
         ).count()
         ach_pct = (
             round(achieved / total_with * 100) if total_with >= 10 else None
@@ -433,7 +443,7 @@ def build_program_summary(program, enrolment_stats, period_label="quarter"):
     with_achievement = goal_qs.filter(achievement_status__gt="")
     total_tracked = with_achievement.count()
     positive = with_achievement.filter(
-        achievement_status__in=["achieved", "sustaining", "improving"]
+        achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
     ).count()
 
     if total_tracked >= 10:
@@ -562,7 +572,7 @@ def build_funder_stats(program, date_from=None, date_to=None):
     ).count()
     if total_tracked >= 10:
         positive = ach_qs.filter(
-            achievement_status__in=["achieved", "sustaining", "improving"]
+            achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
         ).count()
         pct = round(positive / total_tracked * 100)
         coverage = (
