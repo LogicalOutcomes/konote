@@ -23755,6 +23755,9 @@ msgid "%(with_reason)d of %(total)d have discharge reason"
 msgstr "%(with_reason)d de %(total)d ont un motif de fin de service"
 
 #: templates/reports/_insights_practice_quality.html
+msgid "Practice Indicators"
+msgstr "Indicateurs de pratique"
+
 msgid "Practice Quality"
 msgstr "Qualité de la pratique"
 
