@@ -466,6 +466,10 @@ You can also see insights for an individual participant:
 
 This shows the same trend chart and quotes, but for that one person. Unlike program-level insights, dates are shown and there's no minimum participant threshold.
 
+### Episode-Based Reporting
+
+Reports now automatically include episode-level statistics — such as total service hours and number of contacts per episode — for each participant. You don't need to do anything differently; the system tracks this in the background based on the notes and events you already record. When you generate a report, these statistics appear alongside the other outcome data.
+
 ### Exporting Data
 
 **Program managers and admins** can export data:

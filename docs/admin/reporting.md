@@ -75,4 +75,61 @@ The command is **stateless and idempotent** -- running it multiple times in the 
 
 ---
 
+## What's New in Reporting
+
+KoNote now automatically tracks additional data about service episodes and goals. This happens in the background — staff don't enter anything new — but it makes reports significantly more detailed.
+
+### Episode-Based Statistics
+
+Every progress note is now automatically linked to the participant's service episode (their enrolment in a program). This means reports can answer questions like:
+
+| Report Question | What It Tells You |
+|---|---|
+| **Service hours per episode** | Total hours of service delivered to each participant in a program |
+| **Number of contacts per episode** | How many sessions, calls, or other interactions per participant |
+| **Service intensity** | Average hours or contacts for participants who completed vs. those who withdrew |
+| **New vs. returning participants** | How many participants are first-time intakes vs. re-enrolments |
+| **Completion rate** | Percentage of participants who completed the program or met their goals |
+
+These statistics were previously impossible to calculate because notes weren't connected to episodes. They now update automatically as staff write notes.
+
+### Goal Source Tracking
+
+KoNote now classifies who initiated each goal:
+
+| Classification | How It's Determined |
+|---|---|
+| **Jointly developed** | Both the worker's description and the participant's own words are recorded |
+| **Participant-initiated** | The participant's own words are recorded but no worker description |
+| **Worker-initiated** | Only the worker's description is recorded |
+| **Funder-required** | Classified by the system based on program metric templates |
+
+This classification is automatic — it reads what staff already enter and categorises it. No new fields or forms.
+
+**Why it matters:** Funders increasingly ask whether goals are participant-driven. Reports can now show "72% of goals were jointly developed with participants" — a quality metric that demonstrates person-centred practice.
+
+### Goal Timeline Tracking
+
+If you set a **default review period** for a program, every new goal in that program automatically gets a target date.
+
+**To set this:**
+1. Go to **Manage** > **Programs**
+2. Edit the program
+3. Set **Default goal review days** (e.g., 90 for a 3-month review cycle)
+
+Reports can then answer: "Were goals achieved on time?" and "What's the average time to goal achievement?"
+
+### On-Hold Goals
+
+Goals can now be paused ("on hold") when a participant is in crisis or temporarily unavailable. On-hold goals:
+
+- Still appear in the participant's plan (they're not deleted or deactivated)
+- Still count toward active goal statistics
+- Do **not** prompt for metric entry during progress notes (since the participant isn't actively working on them)
+- Can be resumed at any time
+
+This gives more accurate reporting — paused goals aren't counted as failures or dropouts.
+
+---
+
 [Back to Admin Guide](index.md)
