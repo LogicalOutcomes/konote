@@ -80,6 +80,10 @@ def get_goal_source_distribution(program, date_from=None, date_to=None):
 def get_goal_source_vs_achievement(program, date_from=None, date_to=None):
     """Goal source crossed with achievement status (Feature B).
 
+    NOTE: Not currently wired to any view (cross-tab removed from Insights
+    page during simplification). Retained for potential future use; tested
+    in test_insights_fhir.py.
+
     Returns dict with:
         rows: list of {source, label, achieved, total, rate}
         sufficient: bool
@@ -269,6 +273,9 @@ def get_practice_health(program, date_from=None, date_to=None,
 def get_cohort_comparison(program, date_from=None, date_to=None):
     """New intakes vs. re-enrolments outcome comparison (Feature E).
 
+    NOTE: Not currently wired to any view (removed from Insights page —
+    insufficient N at typical nonprofit scales). Retained for future use.
+
     Returns dict with:
         cohorts: list of {type, label, participants, goals_per,
                           sessions_per, achievement_pct}
@@ -395,6 +402,9 @@ def get_cohort_comparison(program, date_from=None, date_to=None):
 def build_program_summary(program, enrolment_stats, period_label="quarter"):
     """Build structured summary sentence for a program (Feature D).
 
+    NOTE: Dashboard uses _batch_fhir_enrichment (batched version) instead.
+    This per-program version is retained for single-program contexts.
+
     Args:
         program: Program instance
         enrolment_stats: dict from _batch_enrolment_stats with total,
@@ -478,7 +488,10 @@ def build_program_summary(program, enrolment_stats, period_label="quarter"):
 
 
 def build_funder_stats(program, date_from=None, date_to=None):
-    """Pre-computed funder-ready stat cards (Feature F).
+    """Pre-computed stat cards with confidence levels (Feature F).
+
+    NOTE: Removed from dashboard UI (duplicated metric rows). Retained
+    for potential export/report contexts.
 
     Returns list of dicts: {label, value, confidence, note}
     confidence: 'reliable', 'partial', 'insufficient'
