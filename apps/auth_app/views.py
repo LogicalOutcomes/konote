@@ -174,6 +174,7 @@ def login_view(request):
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def _local_login(request):
     """Username/password login with rate limiting and account lockout."""
+    from apps.admin_settings.models import FeatureToggle
     from apps.auth_app.forms import LoginForm
     from apps.auth_app.models import User
 
@@ -243,6 +244,9 @@ def _local_login(request):
     demo_users = []
     demo_portal_participants = []
     if settings.DEMO_MODE:
+        feature_flags = FeatureToggle.get_all_flags()
+        portal_enabled = feature_flags.get("participant_portal", False)
+
         # Auto-detect: if instance-specific demo users exist (any group
         # other than 'default'/blank), show only those and suppress the defaults.
         all_demo = User.objects.filter(is_demo=True, is_active=True)
@@ -255,9 +259,10 @@ def _local_login(request):
             qs.order_by("display_name")
             .values("username", "display_name")
         )
-        from apps.portal.models import get_demo_portal_participants
+        if portal_enabled:
+            from apps.portal.models import get_demo_portal_participants
 
-        demo_portal_participants = get_demo_portal_participants()
+            demo_portal_participants = get_demo_portal_participants()
 
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))
     return render(request, "auth/login.html", {

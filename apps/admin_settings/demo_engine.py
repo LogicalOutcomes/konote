@@ -17,6 +17,7 @@ Usage:
 """
 import json
 import logging
+import os
 import random
 from datetime import timedelta
 from pathlib import Path
@@ -1041,6 +1042,17 @@ class DemoDataEngine:
         first = random.choice(FIRST_NAMES)
         return first, f"{random.choice(LAST_NAMES)}-{random.randint(1, 99)}"
 
+    def _classify_goal_source(self, description="", client_goal=""):
+        """Classify demo goal provenance for required PlanTarget metadata."""
+        has_description = bool((description or "").strip())
+        has_client_goal = bool((client_goal or "").strip())
+
+        if has_description and has_client_goal:
+            return "joint"
+        if has_client_goal:
+            return "participant"
+        return "worker"
+
     # ----- Plan generation -----
 
     def generate_plan(self, client, program, metrics, trend, worker, goal, profile):
@@ -1066,6 +1078,10 @@ class DemoDataEngine:
                         client_file=client,
                         name=target_tmpl.name,
                         description=target_tmpl.description,
+                        goal_source=self._classify_goal_source(
+                            target_tmpl.description,
+                        ),
+                        goal_source_method="heuristic",
                         sort_order=target_tmpl.sort_order,
                     )
                     PlanTargetRevision.objects.create(
@@ -1113,6 +1129,8 @@ class DemoDataEngine:
                         client_file=client,
                         name=target_name,
                         description=target_desc,
+                        goal_source=self._classify_goal_source(target_desc),
+                        goal_source_method="heuristic",
                         sort_order=t_idx,
                     )
                     PlanTargetRevision.objects.create(
@@ -1134,6 +1152,11 @@ class DemoDataEngine:
                 first_target.client_goal = goal
             else:
                 first_target.client_goal = random.choice(GENERIC_GOALS)
+            first_target.goal_source = self._classify_goal_source(
+                first_target.description,
+                first_target.client_goal,
+            )
+            first_target.goal_source_method = "heuristic"
             first_target.save()
 
         return all_targets
@@ -1840,77 +1863,107 @@ class DemoDataEngine:
         if existing and force:
             self.cleanup_demo_data()
 
-        # 1. Discover programs
-        programs = self.discover_programs()
-        if not programs:
-            return False
+        previous_skip_recompute = os.environ.get("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE")
+        os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = "1"
 
-        # 1b. Ensure metrics used in demo plans are portal-visible
-        self._ensure_portal_visible_metrics(programs)
+        try:
+            # 1. Discover programs
+            programs = self.discover_programs()
+            if not programs:
+                return False
 
-        # 2. Create demo users
-        users = self.create_demo_users(programs, profile)
+            # 1b. Ensure metrics used in demo plans are portal-visible
+            self._ensure_portal_visible_metrics(programs)
 
-        # 3. Create demo clients
-        client_assignments = self.create_demo_clients(
-            programs, users, clients_per_program, profile,
-        )
+            # 2. Create demo users
+            users = self.create_demo_users(programs, profile)
 
-        # 4. For each client: create plan, notes, events
-        for client, program, trend, worker, goal in client_assignments:
-            metrics = self.discover_metrics_for_program(program)
-            note_count = random.randint(note_count_range[0], note_count_range[1])
-
-            # Create plan
-            all_targets = self.generate_plan(
-                client, program, metrics, trend, worker, goal, profile,
+            # 3. Create demo clients
+            client_assignments = self.create_demo_clients(
+                programs, users, clients_per_program, profile,
             )
 
-            # Create notes with metric values
-            self.generate_notes(
-                client, program, all_targets, trend, worker,
-                note_count, days_span, profile,
-            )
+            plan_targets_to_recompute = []
 
-            # Create events
-            self.generate_events(client, program, worker, days_span)
+            # 4. For each client: create plan, notes, events
+            for client, program, trend, worker, goal in client_assignments:
+                metrics = self.discover_metrics_for_program(program)
+                note_count = random.randint(note_count_range[0], note_count_range[1])
 
+                # Create plan
+                all_targets = self.generate_plan(
+                    client, program, metrics, trend, worker, goal, profile,
+                )
+                plan_targets_to_recompute.extend(target for target, _ in all_targets)
+
+                # Create notes with metric values
+                self.generate_notes(
+                    client, program, all_targets, trend, worker,
+                    note_count, days_span, profile,
+                )
+
+                # Create events
+                self.generate_events(client, program, worker, days_span)
+
+                self.log(
+                    f"  {client.record_id}: {client.first_name} {client.last_name} "
+                    f"— {program.name} ({trend})"
+                )
+
+            self._recompute_achievement_statuses(plan_targets_to_recompute)
+
+            # 5. Create alerts for struggling/crisis clients
+            self.generate_alerts(client_assignments)
+
+            # 6. Create suggestion themes
+            self.generate_suggestion_themes(programs, users, profile)
+
+            # 7. Create portal accounts for demo participants
+            self.create_demo_portal_accounts(client_assignments)
+
+            # 8. Create portal content (journals, messages, staff notes)
+            self.create_demo_portal_content(client_assignments, users, profile)
+
+            # 9. Create portal surveys with assignments and responses
+            self.create_demo_portal_surveys(client_assignments, users, profile)
+
+            # 10. Create portal resource links
+            self.create_demo_portal_resources(client_assignments, users, profile)
+
+            # Warn about profile program names that didn't match any active program
+            if profile and "programs" in profile:
+                active_names = {p.name for p in programs}
+                for profile_name in profile["programs"]:
+                    if profile_name not in active_names:
+                        self.log_warning(
+                            f"  Profile program '{profile_name}' did not match "
+                            f"any active program — its content was not used."
+                        )
+
+            total_clients = len(client_assignments)
             self.log(
-                f"  {client.record_id}: {client.first_name} {client.last_name} "
-                f"— {program.name} ({trend})"
+                f"  Demo data generated: {total_clients} clients across "
+                f"{len(programs)} programs."
             )
+            return True
+        finally:
+            if previous_skip_recompute is None:
+                os.environ.pop("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE", None)
+            else:
+                os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = previous_skip_recompute
 
-        # 5. Create alerts for struggling/crisis clients
-        self.generate_alerts(client_assignments)
+    def _recompute_achievement_statuses(self, plan_targets):
+        """Recompute achievement statuses once after bulk demo generation."""
+        from apps.plans.achievement import update_achievement_status
 
-        # 6. Create suggestion themes
-        self.generate_suggestion_themes(programs, users, profile)
+        unique_targets = {}
+        for target in plan_targets:
+            unique_targets[target.pk] = target
 
-        # 7. Create portal accounts for demo participants
-        self.create_demo_portal_accounts(client_assignments)
+        for target in unique_targets.values():
+            update_achievement_status(target)
 
-        # 8. Create portal content (journals, messages, staff notes)
-        self.create_demo_portal_content(client_assignments, users, profile)
-
-        # 9. Create portal surveys with assignments and responses
-        self.create_demo_portal_surveys(client_assignments, users, profile)
-
-        # 10. Create portal resource links
-        self.create_demo_portal_resources(client_assignments, users, profile)
-
-        # Warn about profile program names that didn't match any active program
-        if profile and "programs" in profile:
-            active_names = {p.name for p in programs}
-            for profile_name in profile["programs"]:
-                if profile_name not in active_names:
-                    self.log_warning(
-                        f"  Profile program '{profile_name}' did not match "
-                        f"any active program — its content was not used."
-                    )
-
-        total_clients = len(client_assignments)
-        self.log(
-            f"  Demo data generated: {total_clients} clients across "
-            f"{len(programs)} programs."
-        )
-        return True
+        if unique_targets:
+            self.log(
+                f"  Recomputed achievement status for {len(unique_targets)} plan targets."
+            )
