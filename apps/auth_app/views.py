@@ -342,7 +342,7 @@ def azure_callback(request):
 
 @csrf_exempt
 @require_POST
-@ratelimit(key="ip", rate="10/m", method=["POST"])
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def demo_login(request, role):
     """Quick-login as a demo user. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:

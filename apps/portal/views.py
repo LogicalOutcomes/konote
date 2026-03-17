@@ -962,7 +962,7 @@ def password_reset_request(request):
 
 
 @portal_feature_required
-@ratelimit(key="ip", rate="10/m", method=["POST"])
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def password_reset_confirm(request):
     """Enter the emailed reset code and set a new password."""
     from apps.portal.forms import PortalPasswordResetConfirmForm
