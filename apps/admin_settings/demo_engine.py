@@ -2843,7 +2843,7 @@ class DemoDataEngine:
             # 6. Create suggestion themes
             self.generate_suggestion_themes(programs, users, profile)
 
-            portal_enabled = FeatureToggle.get_all_flags().get("participant_portal", False)
+            portal_enabled = FeatureToggle.get_all_flags().get("participant_portal", True)
             if portal_enabled:
                 # 7. Create portal accounts for demo participants
                 self.create_demo_portal_accounts(client_assignments)

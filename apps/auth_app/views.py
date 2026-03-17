@@ -245,7 +245,7 @@ def _local_login(request):
     demo_portal_participants = []
     if settings.DEMO_MODE:
         feature_flags = FeatureToggle.get_all_flags()
-        portal_enabled = feature_flags.get("participant_portal", False)
+        portal_enabled = feature_flags.get("participant_portal", True)
 
         # Auto-detect: if instance-specific demo users exist (any group
         # other than 'default'/blank), show only those and suppress the defaults.
