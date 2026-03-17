@@ -70,7 +70,7 @@ def client_progress_pdf(request, client_id):
     # Build metric tables: for each target, collect metric values
     metric_tables = []
     targets = PlanTarget.objects.filter(
-        client_file=client, status="default"
+        client_file=client, status__in=PlanTarget.ACTIVE_STATUSES
     ).prefetch_related("metrics")
 
     for target in targets:
@@ -336,7 +336,7 @@ def _collect_client_data(client, include_plans, include_notes, include_metrics, 
     if include_metrics:
         metric_tables = []
         targets = PlanTarget.objects.filter(
-            client_file=client, status="default"
+            client_file=client, status__in=PlanTarget.ACTIVE_STATUSES
         ).prefetch_related("metrics")
 
         for target in targets:

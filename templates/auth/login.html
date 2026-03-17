@@ -21,15 +21,17 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 
+    {% with product_name=site.product_name|default:"KoNote" %}
+
     {% if not has_language_cookie %}
     {# ── First visit: bilingual hero with language chooser ── #}
     <main id="main-content" class="container login-container" tabindex="-1" aria-label="{% trans 'Main content' %}">
         {% if site.logo_url %}
         <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
-        <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
+        <h1 class="login-wordmark">{{ product_name }}</h1>
         {% else %}
-        <img src="{% static 'img/konote-logo.png' %}" alt="KoNote" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
-        <h1 class="visually-hidden">KoNote</h1>
+        <img src="{% static 'img/konote-logo.png' %}" alt="{{ product_name }}" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
+        <h1 class="login-wordmark">{{ product_name }}</h1>
         {% endif %}
         <p class="login-tagline-bilingual">
             Participant Outcome Management<br>
@@ -57,10 +59,10 @@
     <main id="main-content" class="container login-container" tabindex="-1" aria-label="{% trans 'Main content' %}">
         {% if site.logo_url %}
         <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
-        <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
+        <h1 class="login-wordmark">{{ product_name }}</h1>
         {% else %}
-        <img src="{% static 'img/konote-logo.png' %}" alt="KoNote" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
-        <h1 class="visually-hidden">KoNote</h1>
+        <img src="{% static 'img/konote-logo.png' %}" alt="{{ product_name }}" class="login-logo" style="max-height:70px; width:auto; max-width:200px;">
+        <h1 class="login-wordmark">{{ product_name }}</h1>
         {% endif %}
         <p class="login-tagline">{% trans "Participant Outcome Management" %}</p>
     {% endif %}
@@ -149,5 +151,6 @@
             </div>
         </div>
     </footer>
+    {% endwith %}
 </body>
 </html>

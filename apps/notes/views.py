@@ -423,7 +423,7 @@ def note_list(request, client_id):
     # Get participant's active plan targets for the filter dropdown
     # Scoped by user's accessible programs so workers only see their targets
     client_targets = PlanTarget.objects.filter(
-        client_file=client, status="default"
+        client_file=client, status__in=PlanTarget.ACTIVE_STATUSES
     ).filter(
         Q(plan_section__program_id__in=user_program_ids) | Q(plan_section__program__isnull=True)
     ).select_related("plan_section").order_by("plan_section__sort_order", "sort_order")
@@ -1131,7 +1131,7 @@ def qualitative_summary(request, client_id):
 
     # Get all active plan targets for this client
     targets = (
-        PlanTarget.objects.filter(client_file=client, status="default")
+        PlanTarget.objects.filter(client_file=client, status__in=PlanTarget.ACTIVE_STATUSES)
         .select_related("plan_section")
         .order_by("plan_section__sort_order", "sort_order")
     )

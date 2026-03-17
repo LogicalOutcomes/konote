@@ -10,7 +10,7 @@ Usage:
 {% endcomment %}{% load i18n form_tags %}{% describedby_ids field as desc_ids %}
 {% if field.field.widget.input_type == "checkbox" %}
 <label>
-    {% if desc_ids %}{{ field|aria_describedby:desc_ids }}{% else %}{{ field }}{% endif %}
+    {% if desc_ids %}{{ field|aria_invalid|aria_describedby:desc_ids }}{% else %}{{ field|aria_invalid }}{% endif %}
     {{ field.label }}
 </label>
 {% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
@@ -20,7 +20,7 @@ Usage:
     {{ field.label }}
     {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
 </label>
-{% if desc_ids %}{{ field|aria_describedby:desc_ids }}{% else %}{{ field }}{% endif %}
+{% if desc_ids %}{{ field|aria_invalid|aria_describedby:desc_ids }}{% else %}{{ field|aria_invalid }}{% endif %}
 {% if field.help_text %}<small id="{{ field.id_for_label }}_helptext">{{ field.help_text }}</small>{% endif %}
 {% if field.errors %}<small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ field.errors.0 }}</small>{% endif %}
 {% endif %}

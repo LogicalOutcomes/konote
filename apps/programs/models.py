@@ -68,6 +68,11 @@ class Program(models.Model):
         max_length=100, blank=True, default="",
         help_text=_("Funder-assigned program identifier."),
     )
+    # ── FHIR-informed defaults ───────────────────────────────────────
+    default_goal_review_days = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text=_("Default target date offset (days) for goals created in this program."),
+    )
 
     class Meta:
         app_label = "programs"

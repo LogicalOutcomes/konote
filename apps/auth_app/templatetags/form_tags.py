@@ -25,6 +25,22 @@ def describedby_ids(field):
     return " ".join(ids)
 
 
+@register.filter(name="aria_invalid")
+def aria_invalid(bound_field):
+    """Add aria-invalid="true" attribute to a rendered form widget if there are errors."""
+    if getattr(bound_field, "errors", None):
+        html = str(bound_field)
+        if "aria-invalid=" not in html:
+            html = re.sub(
+                r"(<(?:input|select|textarea)\b)",
+                r'\1 aria-invalid="true"',
+                html,
+                count=1,
+            )
+            return mark_safe(html)
+    return bound_field
+
+
 @register.filter(name="aria_describedby")
 def aria_describedby(bound_field, describedby_id):
     """Add aria-describedby attribute to a rendered form widget."""

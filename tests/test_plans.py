@@ -1447,3 +1447,138 @@ class GoalSaveFromSuggestionTest(TestCase):
                     section=section,
                 )
 
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class FHIRGoalMetadataTest(TestCase):
+    """Tests for FHIR-informed metadata auto-population on PlanTarget."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program")
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file,
+            name="Test Section",
+            program=self.program,
+        )
+
+    def test_goal_source_joint_when_both_fields(self):
+        """Goal source = joint when both description and client_goal populated."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Find housing"
+        target.description = "Worker notes about housing plan"
+        target.client_goal = "I want a safe place to live"
+        target.save()
+        self.assertEqual(target.goal_source, "joint")
+        self.assertEqual(target.goal_source_method, "heuristic")
+
+    def test_goal_source_participant_when_only_client_goal(self):
+        """Goal source = participant when only client_goal is populated."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Find housing"
+        target.client_goal = "I want a safe place to live"
+        target.save()
+        self.assertEqual(target.goal_source, "participant")
+
+    def test_goal_source_worker_when_only_description(self):
+        """Goal source = worker when only description is populated."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Improve coping skills"
+        target.description = "Build resilience strategies"
+        target.save()
+        self.assertEqual(target.goal_source, "worker")
+
+    def test_goal_source_empty_when_neither_populated(self):
+        """Goal source left empty when neither description nor client_goal set."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Generic goal"
+        target.save()
+        self.assertEqual(target.goal_source, "")
+
+    def test_target_date_from_program_default(self):
+        """Target date auto-set from program.default_goal_review_days."""
+        self.program.default_goal_review_days = 90
+        self.program.save()
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test goal"
+        target.save()
+        self.assertIsNotNone(target.target_date)
+        # Verify it's approximately today + 90 days
+        from datetime import timedelta
+        from django.utils import timezone
+        expected = (timezone.now() + timedelta(days=90)).date()
+        self.assertEqual(target.target_date, expected)
+
+    def test_no_target_date_without_program_default(self):
+        """No target date when program has no default_goal_review_days."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test goal"
+        target.save()
+        self.assertIsNone(target.target_date)
+
+    def test_goal_source_not_overwritten_on_update(self):
+        """Goal source preserved on subsequent saves (only set on creation)."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test goal"
+        target.description = "Worker description"
+        target.save()
+        self.assertEqual(target.goal_source, "worker")
+        # Add client_goal and resave — should NOT change goal_source
+        target.client_goal = "My own words"
+        target.save()
+        self.assertEqual(target.goal_source, "worker")
+
+    def test_goal_source_method_set(self):
+        """goal_source_method records 'heuristic' when auto-classified."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test"
+        target.description = "Desc"
+        target.save()
+        self.assertEqual(target.goal_source_method, "heuristic")
+
+    def test_on_hold_status_valid_and_in_active_statuses(self):
+        """on_hold is a valid status and included in ACTIVE_STATUSES."""
+        target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        target.name = "Test goal"
+        target.save()
+        target.status = "on_hold"
+        target.save()
+        target.refresh_from_db()
+        self.assertEqual(target.status, "on_hold")
+        self.assertIn("on_hold", PlanTarget.ACTIVE_STATUSES)
+        self.assertIn("default", PlanTarget.ACTIVE_STATUSES)
+        self.assertNotIn("completed", PlanTarget.ACTIVE_STATUSES)
+
+

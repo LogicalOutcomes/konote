@@ -25,8 +25,8 @@ KoNote supports three deployment tiers. All maintain the same data isolation and
 | Tier | Who | Monthly Cost | Key Feature |
 |---|---|---|---|
 | **1. Self-hosted** | Agencies with technical capacity | ~$17/mo (VPS + Key Vault) | Cheapest. Secure by default via built-in encryption. |
-| **2. Managed OVHcloud** (recommended) | Most agencies | ~$67-94/agency | LO manages infrastructure. Shared monitoring, isolated data. |
-| **3. Azure** | Agencies requiring Azure | ~$77-171/agency | Azure managed services. Higher cost, US CLOUD Act trade-off. |
+| **2. Managed OVHcloud** (recommended) | Most agencies | ~$67-96/agency | LO manages infrastructure. Shared monitoring, isolated data. |
+| **3. Azure** | Agencies requiring Azure | ~$79-173/agency | Azure managed services. Higher cost, US CLOUD Act trade-off. |
 
 See the `/deployment-planning` skill for full tier descriptions and the cost source chain.
 

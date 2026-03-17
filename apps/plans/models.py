@@ -422,9 +422,17 @@ class PlanTarget(models.Model):
 
     STATUS_CHOICES = [
         ("default", _("Active")),
+        ("on_hold", _("On Hold")),
         ("completed", _("Completed")),
         ("deactivated", _("Deactivated")),
     ]
+
+    # Statuses that mean "not done yet" — visible in plan views, count as active.
+    # Use this for queries that mean "goals still in play."
+    # Metric collection (note forms) should use status="default" only.
+    ACTIVE_STATUSES = ["default", "on_hold"]
+    # Achievement statuses that count as positive outcomes.
+    POSITIVE_ACHIEVEMENT_STATUSES = ["achieved", "sustaining", "improving"]
 
     plan_section = models.ForeignKey(PlanSection, on_delete=models.CASCADE, related_name="targets")
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="plan_targets")
@@ -473,6 +481,57 @@ class PlanTarget(models.Model):
         null=True, blank=True,
         help_text=_("When first achieved. Never cleared once set."),
     )
+
+    # ── FHIR Goal metadata (auto-populated) ──────────────────────────
+    GOAL_SOURCE_CHOICES = [
+        ("participant", _("Participant-initiated")),
+        ("worker", _("Worker-initiated")),
+        ("joint", _("Jointly developed")),
+        ("funder_required", _("Funder-required")),
+    ]
+
+    goal_source = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=GOAL_SOURCE_CHOICES,
+        help_text=_("Who established this goal. Auto-classified from content."),
+    )
+    target_date = models.DateField(
+        null=True, blank=True,
+        help_text=_("Target completion date. Auto-set from program default."),
+    )
+    goal_source_method = models.CharField(
+        max_length=20, blank=True, default="",
+        help_text=_("How goal_source was derived: heuristic, worker_set, or ai_inferred."),
+    )
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+
+        # Auto-classify goal source from field population patterns
+        if is_new and not self.goal_source:
+            has_description = bool(self._description_encrypted and self._description_encrypted != b"")
+            has_client_goal = bool(self._client_goal_encrypted and self._client_goal_encrypted != b"")
+            if has_client_goal and has_description:
+                self.goal_source = "joint"
+            elif has_client_goal:
+                self.goal_source = "participant"
+            elif has_description:
+                self.goal_source = "worker"
+            if self.goal_source:
+                self.goal_source_method = "heuristic"
+
+        # Auto-set target_date from program default
+        if is_new and not self.target_date and self.plan_section_id:
+            try:
+                program = self.plan_section.program
+                if program and program.default_goal_review_days:
+                    from datetime import timedelta
+                    from django.utils import timezone
+                    self.target_date = (timezone.now() + timedelta(days=program.default_goal_review_days)).date()
+            except (AttributeError, TypeError):
+                pass  # Plan section may not have a program
+
+        super().save(*args, **kwargs)
 
     @property
     def name(self):
