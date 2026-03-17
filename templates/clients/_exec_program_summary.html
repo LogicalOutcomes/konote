@@ -1,0 +1,16 @@
+{% load i18n %}
+{# Program summary sentence (Feature D) + stale episodes attention signal (Feature G) #}
+
+{% if stat.summary_sentence %}
+<div class="exec-program-summary" aria-label="{% trans 'Program summary' %}">
+    <p class="exec-summary-sentence">{{ stat.summary_sentence }}</p>
+
+    {# Enhanced attention signal: stale episodes #}
+    {% if stat.stale_episodes > 0 %}
+    <p class="exec-attention-signal" role="status">
+        <strong>{{ stat.stale_episodes }}</strong>
+        {% blocktrans with count=stat.stale_episodes count counter=stat.stale_episodes %}active participant with no session in 30+ days{% plural %}active participants with no session in 30+ days{% endblocktrans %}
+    </p>
+    {% endif %}
+</div>
+{% endif %}

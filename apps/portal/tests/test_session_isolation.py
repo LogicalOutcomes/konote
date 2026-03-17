@@ -107,7 +107,7 @@ class SessionIsolationTests(TestCase):
         session.save()
 
         # Try to access a staff-only page
-        response = self.client.get("/clients/")
+        response = self.client.get("/participants/")
 
         # Should be denied access (redirect to staff login, 403, or 404)
         self.assertIn(
@@ -136,7 +136,7 @@ class SessionIsolationTests(TestCase):
         session.save()
 
         # Staff user should still have staff access
-        response = self.client.get("/clients/")
+        response = self.client.get("/participants/")
         # Staff access should work (200 for list, or whatever the normal response is)
         self.assertNotEqual(
             response.status_code,

@@ -228,6 +228,14 @@ class ProgressNote(models.Model):
         blank=True,
         related_name="tagged_notes",
     )
+    # ── FHIR metadata (Encounter → EpisodeOfCare link) ──────────────
+    episode = models.ForeignKey(
+        "clients.ServiceEpisode",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="encounter_notes",
+        help_text=_("Auto-linked service episode for this encounter."),
+    )
     # Encrypted clinical content fields
     _notes_text_encrypted = models.BinaryField(default=b"", blank=True)
     _summary_encrypted = models.BinaryField(default=b"", blank=True)
@@ -380,6 +388,16 @@ class ProgressNote(models.Model):
             ).first()
             if role_obj:
                 self.author_role = role_obj.role
+        # Auto-link to active service episode
+        if not self.pk and not self.episode_id and self.client_file_id and self.author_program_id:
+            from apps.clients.models import ServiceEpisode
+            ep = ServiceEpisode.objects.filter(
+                client_file_id=self.client_file_id,
+                program_id=self.author_program_id,
+                status__in=ServiceEpisode.ACCESSIBLE_STATUSES,
+            ).order_by("-started_at").first()
+            if ep:
+                self.episode = ep
         super().save(*args, **kwargs)
 
     def __str__(self):

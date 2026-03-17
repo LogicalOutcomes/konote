@@ -54,10 +54,21 @@ python manage.py lockdown_audit_db 2>&1 || echo "WARNING: Audit lockdown failed 
 
 # Seed runs all sub-commands in the right order:
 # metrics, features, settings, event types, note templates, intake fields,
-# demo data (if DEMO_MODE), and demo client field values
+# demo data (if DEMO_MODE), and demo client field values.
+#
+# For blank production instances (for example, a new agency deployment that
+# should start without templates or demo content yet), set
+# KONOTE_SKIP_SEED=true to bypass this step.
 echo ""
-echo "Seeding data..."
-python manage.py seed 2>&1 || echo "WARNING: Seed failed (see error above). App will start but may be missing data."
+case "$(printf '%s' "${KONOTE_SKIP_SEED:-}" | tr '[:upper:]' '[:lower:]')" in
+    1|true|yes|on)
+        echo "Skipping seed step because KONOTE_SKIP_SEED is enabled."
+        ;;
+    *)
+        echo "Seeding data..."
+        python manage.py seed 2>&1 || echo "WARNING: Seed failed (see error above). App will start but may be missing data."
+        ;;
+esac
 
 # Merge any duplicate suggestion themes (non-blocking — safe to run repeatedly)
 # TODO: Remove this merge step once migration 0016_unique_theme_per_program

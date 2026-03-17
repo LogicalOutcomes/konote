@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"\n--- Client: {record_id} ---")
 
-        targets = PlanTarget.objects.filter(client_file=client, status="default")
+        targets = PlanTarget.objects.filter(client_file=client, status__in=PlanTarget.ACTIVE_STATUSES)
         self.stdout.write(f"Active targets: {targets.count()}")
 
         for t in targets:

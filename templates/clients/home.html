@@ -7,7 +7,7 @@
 <!-- Organization header -->
 <header class="org-header">
     <div class="org-brand">
-        <h1 class="org-name">{{ org_name }}</h1>
+        <h1 class="org-name">{{ site.product_name|default:org_name|default:"KoNote" }}</h1>
         <p class="org-tagline">{% trans "Participant Outcome Management" %}</p>
     </div>
     <div class="org-welcome">
@@ -19,7 +19,7 @@
 {% if not is_executive %}
 <article class="onboarding-banner" id="onboarding-banner" role="complementary" aria-label="{% trans 'Welcome banner' %}" hidden>
     <header>
-        <strong>{% trans "Welcome to KoNote! Need help getting started?" %}</strong>
+        <strong>{% blocktrans with product_name=site.product_name|default:"KoNote" %}Welcome to {{ product_name }}! Need help getting started?{% endblocktrans %}</strong>
         <button type="button" class="close-btn" id="dismiss-onboarding" aria-label="{% trans 'Dismiss welcome banner' %}">&times;</button>
     </header>
     <ul>

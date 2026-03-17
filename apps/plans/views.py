@@ -273,7 +273,7 @@ def section_status(request, section_id):
     else:
         form = PlanSectionStatusForm(instance=section)
 
-    active_target_count = section.targets.filter(status="default").count()
+    active_target_count = section.targets.filter(status__in=PlanTarget.ACTIVE_STATUSES).count()
     return render(request, "plans/_section_status.html", {
         "section": section,
         "form": form,

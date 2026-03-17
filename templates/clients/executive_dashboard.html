@@ -262,77 +262,10 @@
                 <h3>{{ stat.program.translated_name }}</h3>
             </header>
 
-            {# Metric insight indicators -- quick-scan overview #}
-            <div class="exec-insight-bar" aria-label="{% trans 'Program insight indicators' %}">
-                {% if stat.trend_direction %}
-                <span class="exec-indicator exec-trend-{{ stat.trend_direction }}">
-                    {% if stat.trend_direction == "improving" %}
-                    <span aria-hidden="true">&uarr;</span> {% trans "Improving" %}
-                    {% elif stat.trend_direction == "declining" %}
-                    <span aria-hidden="true">&darr;</span> {% trans "Declining" %}
-                    {% else %}
-                    <span aria-hidden="true">&ndash;</span> {% trans "Stable" %}
-                    {% endif %}
-                </span>
-                {% endif %}
-
-                <span class="exec-indicator exec-completeness-{{ stat.data_completeness_level }}" aria-label="{% trans 'Data completeness' %}: {{ stat.data_completeness_pct }}%">
-                    {% if stat.data_completeness_level == "full" %}
-                    {% trans "Data: Full" %}
-                    {% elif stat.data_completeness_level == "partial" %}
-                    {% trans "Data: Partial" %}
-                    {% else %}
-                    {% trans "Data: Low" %}
-                    {% endif %}
-                </span>
-
-                {% if stat.urgent_theme_count > 0 %}
-                <span class="exec-indicator exec-urgent" aria-label="{% trans 'Urgent suggestion themes' %}">
-                    {{ stat.urgent_theme_count }} {% trans "urgent" %}
-                </span>
-                {% endif %}
-            </div>
+            {% include "clients/_exec_program_summary.html" %}
 
             <div class="program-metrics">
-                {# Census #}
-                <div class="metric-row">
-                    <span class="metric-label">{% trans "Total" %} {{ term.client_plural|default:"Participants" }}</span>
-                    <span class="metric-value">{{ stat.total }}</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">{% trans "Active" %}</span>
-                    <span class="metric-value">{{ stat.active }}</span>
-                </div>
-
-                <hr>
-
-                {# Activity #}
-                <div class="metric-row highlight">
-                    <span class="metric-label">{% trans "New this month" %}</span>
-                    <span class="metric-value">{{ stat.new_this_month }}</span>
-                </div>
-                <div class="metric-row highlight">
-                    <span class="metric-label">{% trans "Notes this week" %}</span>
-                    <span class="metric-value">{{ stat.notes_this_week }}</span>
-                </div>
-
-                <hr>
-
-                {# Engagement & outcomes #}
-                {% if stat.suppress_pct %}
-                <div class="metric-row">
-                    <span class="metric-label secondary"><small>{% trans "Percentages hidden (fewer than 5 active participants)" %}</small></span>
-                </div>
-                {% endif %}
-                {% if stat.engagement_quality is not None %}
-                <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
-                    <span class="metric-label" title="{% trans 'Percentage of sessions this period where staff observed Engaged or Fully invested participation' %}">{% trans "Engagement Quality" %}</span>
-                    <span class="metric-value">{{ stat.engagement_quality }}%
-                        <span class="sr-only">{% if stat.engagement_quality >= 70 %}({% trans "Good" %}){% elif stat.engagement_quality >= 40 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
-                    </span>
-                </div>
-                {% endif %}
-
+                {# Outcomes & activity — only rows that aren't in the summary sentence #}
                 {% if stat.goal_completion is not None %}
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Goal Completion Rate" %}</span>
@@ -353,33 +286,20 @@
                 {% if stat.group_attendance is not None %}
                 <div class="metric-row {% if stat.group_attendance >= 75 %}metric-success{% elif stat.group_attendance >= 50 %}metric-neutral{% else %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Group Attendance" %}</span>
-                    <span class="metric-value">{{ stat.group_attendance }}%
-                        <span class="sr-only">{% if stat.group_attendance >= 75 %}({% trans "Good" %}){% elif stat.group_attendance >= 50 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
-                    </span>
+                    <span class="metric-value">{{ stat.group_attendance }}%</span>
                 </div>
                 {% endif %}
 
-                <hr>
-
-                {# Pipeline & adoption #}
+                {% if stat.intake_pending > 0 %}
                 <div class="metric-row">
                     <span class="metric-label" title="{% trans 'Participants registered but not yet marked Active — waiting for intake to be completed' %}">{% trans "Intake Pipeline" %}</span>
                     <span class="metric-value">{{ stat.intake_pending }}</span>
                 </div>
-
-                {% if show_portal and stat.portal_adoption is not None %}
-                <div class="metric-row">
-                    <span class="metric-label" title="{% trans 'Percentage of active participants who have logged into the participant portal at least once' %}">{% trans "Portal Adoption" %}</span>
-                    <span class="metric-value">{{ stat.portal_adoption }}%</span>
-                </div>
                 {% endif %}
 
+                {# Suggestion themes — named themes with priority badges #}
                 {% if stat.top_themes %}
                 <hr>
-                {# Theme names -- executives see what suggestions are about #}
-                <div class="metric-row">
-                    <span class="metric-label">{% trans "Suggestion Themes" %}</span>
-                </div>
                 <ul class="theme-compact-list" role="list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
                     {% for theme in stat.top_themes %}
                     <li>
@@ -397,12 +317,8 @@
                     <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_overflow }} {% trans "more" %} &rarr;</a>
                 </div>
                 {% endif %}
-                <div class="metric-row">
-                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View themes" %} &rarr;</a>
-                </div>
                 {% elif stat.suggestion_total > 0 %}
                 <hr>
-                {# Fallback: raw suggestion count when no themes exist #}
                 <div class="metric-row {% if stat.suggestion_important > 0 %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Suggestions" %}</span>
                     <span class="metric-value">
@@ -412,20 +328,13 @@
                         {% endif %}
                     </span>
                 </div>
-                <div class="metric-row">
-                    <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View in Outcome Insights" %} &rarr;</a>
-                </div>
                 {% endif %}
 
-                {# Program Learning section #}
+                {# Program Learning — outcome headline, trend, completeness #}
                 {% if stat.learning %}
                 <hr>
                 <div class="program-learning" aria-label="{% trans 'Program Learning' %}">
-                    <div class="metric-row">
-                        <span class="metric-label"><strong>{% trans "Program Learning" %}</strong></span>
-                    </div>
-
-                    {# Line 1: Lead outcome headline #}
+                    {# Lead outcome headline #}
                     {% if stat.learning.suppress %}
                     <div class="metric-row">
                         <span class="metric-label secondary"><small>{% trans "Outcome data suppressed (fewer than 5 participants with data)" %}</small></span>
@@ -446,7 +355,7 @@
                     </div>
                     {% endif %}
 
-                    {# Line 2: Target + trend direction #}
+                    {# Target + trend direction #}
                     {% if stat.learning.target_rate or stat.learning.trend_direction %}
                     <div class="metric-row">
                         <span class="metric-label">
@@ -460,7 +369,7 @@
                     </div>
                     {% endif %}
 
-                    {# Line 3: Data completeness indicator #}
+                    {# Data completeness #}
                     <div class="metric-row">
                         <span class="metric-label">
                             {% if stat.learning.completeness_level == "full" %}
@@ -477,17 +386,6 @@
                         </span>
                     </div>
 
-                    {# Line 4: Feedback themes count + urgency #}
-                    <div class="metric-row {% if stat.learning.has_urgent_theme %}metric-warning{% endif %}">
-                        <span class="metric-label">
-                            {{ stat.learning.theme_open_count }} {% trans "feedback themes to review" %}
-                            {% if stat.learning.has_urgent_theme %}
-                            <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    {# Link to program learning page #}
                     <div class="metric-row">
                         <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View program learning" %} &rarr;</a>
                     </div>
