@@ -35,6 +35,10 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 
+KEY_OPTION_FLAGS = {"--old-key", "--new-key"}
+KNOWN_OPTION_FLAGS = KEY_OPTION_FLAGS | {"--dry-run"}
+
+
 # Registry of (model_class, [encrypted_field_names])
 def _get_encrypted_models():
     """Import models lazily to avoid app-registry issues."""
@@ -102,8 +106,52 @@ def _re_encrypt_bytes(raw_bytes, old_fernet, new_fernet):
     return new_fernet.encrypt(plaintext)
 
 
+def _normalise_key_option_args(args):
+    """Convert key args to --flag=value form when the value starts with '-'.
+
+    Django's ``call_command()`` replays required keyword options through
+    argparse as separate tokens. Valid Fernet keys can begin with ``-``, which
+    makes argparse think the value is another option. Rewriting only the key
+    flags to ``--flag=value`` removes that ambiguity while preserving meaning.
+    """
+    if not args:
+        return args
+
+    normalised = []
+    index = 0
+    while index < len(args):
+        token = args[index]
+        if (
+            token in KEY_OPTION_FLAGS
+            and index + 1 < len(args)
+            and args[index + 1].startswith("-")
+            and args[index + 1] not in KNOWN_OPTION_FLAGS
+        ):
+            normalised.append(f"{token}={args[index + 1]}")
+            index += 2
+            continue
+
+        normalised.append(token)
+        index += 1
+
+    return normalised
+
+
 class Command(BaseCommand):
     help = "Re-encrypt all PII fields from an old Fernet key to a new one."
+
+    def create_parser(self, prog_name, subcommand, **kwargs):
+        parser = super().create_parser(prog_name, subcommand, **kwargs)
+        original_parse_args = parser.parse_args
+
+        def parse_args(args=None, namespace=None):
+            return original_parse_args(
+                _normalise_key_option_args(args),
+                namespace,
+            )
+
+        parser.parse_args = parse_args
+        return parser
 
     def add_arguments(self, parser):
         parser.add_argument(
