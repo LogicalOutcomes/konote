@@ -15,6 +15,13 @@ def _safe_fernet_key():
         if not key.startswith("-"):
             return key
 
+
+def _hyphen_prefixed_fernet_key():
+    while True:
+        key = Fernet.generate_key().decode()
+        if key.startswith("-"):
+            return key
+
 TEST_KEY = _safe_fernet_key()
 OLD_KEY = _safe_fernet_key()
 NEW_KEY = _safe_fernet_key()
@@ -159,7 +166,7 @@ class RotateEncryptionKeyInvalidKeyTest(TestCase):
         enc_module._fernet = None
 
     def test_invalid_old_key_raises_error(self):
-        valid_key = Fernet.generate_key().decode()
+        valid_key = _hyphen_prefixed_fernet_key()
         with self.assertRaises(CommandError) as ctx:
             call_command(
                 "rotate_encryption_key",
