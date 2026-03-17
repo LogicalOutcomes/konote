@@ -1,10 +1,12 @@
 """Tests for the reports app — fiscal year functionality, metric export, demographics, and achievements."""
+from importlib import import_module
 import json
 import shutil
 import tempfile
 from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
+from django.db import connection
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from django.utils.translation import override as translation_override
@@ -67,6 +69,64 @@ def create_test_partner(name="Test Partner", partner_type="funder", **kwargs):
 
 
 TEST_KEY = Fernet.generate_key().decode()
+
+
+class ReportTemplateProgramMigrationFallbackTests(TestCase):
+    """Regression tests for drift-tolerant program copying in reports.0009."""
+
+    databases = {"default"}
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.migration_module = import_module(
+            "apps.reports.migrations.0009_migrate_templates_to_partners"
+        )
+
+    def _drop_table_if_exists(self, table_name):
+        with connection.cursor() as cursor:
+            cursor.execute(f'DROP TABLE IF EXISTS {connection.ops.quote_name(table_name)}')
+
+    def test_get_template_program_ids_reads_legacy_join_table(self):
+        """The migration should fall back to the pre-rename join table when needed."""
+        self._drop_table_if_exists("funder_profiles_programs")
+        self.addCleanup(self._drop_table_if_exists, "funder_profiles_programs")
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                CREATE TABLE funder_profiles_programs (
+                    funderprofile_id bigint NOT NULL,
+                    program_id bigint NOT NULL
+                )
+                """
+            )
+            cursor.execute(
+                """
+                INSERT INTO funder_profiles_programs (funderprofile_id, program_id)
+                VALUES (7, 101), (7, 102), (8, 103)
+                """
+            )
+
+        program_ids = self.migration_module._get_template_program_ids(
+            connection,
+            connection.ops.quote_name,
+            7,
+            {"funder_profiles_programs"},
+        )
+
+        self.assertEqual(program_ids, [101, 102])
+
+    def test_get_template_program_ids_returns_empty_when_join_tables_missing(self):
+        """The migration should skip program copying instead of crashing when both join tables are absent."""
+        program_ids = self.migration_module._get_template_program_ids(
+            connection,
+            connection.ops.quote_name,
+            7,
+            set(),
+        )
+
+        self.assertEqual(program_ids, [])
 
 
 class FiscalYearUtilsTest(TestCase):
