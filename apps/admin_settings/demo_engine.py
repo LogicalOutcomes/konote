@@ -19,6 +19,8 @@ import json
 import logging
 import os
 import random
+import re
+from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 
@@ -55,6 +57,31 @@ from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+DEMO_ATTENDANCE_GROUP_MARKER = "[DEMO ATTENDANCE]"
+HOUSEHOLD_RELATIONSHIP_PARENT = "Parent/Guardian"
+HOUSEHOLD_RELATIONSHIP_GRANDPARENT = "Grandparent"
+HOUSEHOLD_RELATIONSHIP_CHILD = "Child"
+HOUSEHOLD_RELATIONSHIP_SUPPORT = "Support Person"
+HOUSEHOLD_RELATIONSHIP_PARTNER = "Partner"
+
+
+@dataclass
+class SeedAssignment:
+    """In-memory seed context for one client-program pairing."""
+
+    client: object
+    program: object
+    trend: str
+    worker: object
+    goal: str = ""
+    location: str = ""
+    circle: object = None
+    member_type: str = "adult"
+    relationship_label: str = ""
+    is_primary_contact: bool = False
+    family_id: str = ""
+    age: int | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -493,6 +520,7 @@ class DemoDataEngine:
             return {}
         with open(path, "r", encoding="utf-8") as f:
             profile = json.load(f)
+        self._profile_path = path.resolve()
         self.log(f"  Loaded demo data profile: {profile_path}")
         self._validate_profile_keys(profile)
         return profile
@@ -501,6 +529,11 @@ class DemoDataEngine:
     _VALID_TOP_KEYS = {
         "description", "defaults", "programs", "portal",
         "demo_group", "users", "feature_toggles",
+        "circles", "single_clients", "attendance_seed", "locations",
+        "seed_scope", "source_files", "sheet_configuration_summary",
+        "program_master_catalog", "program_name_aliases", "resource_types",
+        "reporting_scenarios", "consents", "registration_questions",
+        "seed_assumptions",
     }
     _VALID_PORTAL_KEYS = {
         "journal_pools", "staff_notes_pool", "messages_pool",
@@ -554,6 +587,7 @@ class DemoDataEngine:
         from apps.communications.models import Communication, StaffMessage
         from apps.events.models import CalendarFeedToken
         from apps.circles.models import Circle
+        from apps.groups.models import Group
         from apps.portal.models import (
             ClientResourceLink, CorrectionRequest, ParticipantJournalEntry,
             ParticipantMessage, ParticipantUser, PortalResourceLink,
@@ -639,6 +673,11 @@ class DemoDataEngine:
         # Registration submissions for demo links
         counts["registrations"] = RegistrationSubmission.objects.filter(
             registration_link__slug="demo"
+        ).delete()[0]
+
+        # Demo-seeded attendance groups use an internal marker in description.
+        counts["attendance_groups"] = Group.objects.filter(
+            description__contains=DEMO_ATTENDANCE_GROUP_MARKER,
         ).delete()[0]
 
         # Demo circles
@@ -825,6 +864,22 @@ class DemoDataEngine:
                 ("demo-admin", "Alex Admin", True),
             ]
 
+        default_specs = [
+            ("demo-frontdesk", "Dana Front Desk", False),
+            ("demo-worker-1", "Casey Worker", False),
+            ("demo-worker-2", "Noor Worker", False),
+            ("demo-manager", "Morgan Manager", False),
+            ("demo-executive", "Eva Executive", False),
+            ("demo-admin", "Alex Admin", True),
+        ]
+        seen_usernames = {spec[0] for spec in user_specs}
+        for default_spec in default_specs:
+            if len(user_specs) >= 6:
+                break
+            if default_spec[0] not in seen_usernames:
+                user_specs.append(default_spec)
+                seen_usernames.add(default_spec[0])
+
         users = {}
         for username, display_name, is_admin in user_specs:
             user, created = User.objects.get_or_create(
@@ -962,6 +1017,9 @@ class DemoDataEngine:
 
         Returns a list of (client, program, trend, worker) tuples.
         """
+        if profile.get("circles") or profile.get("single_clients"):
+            return self.create_structured_demo_clients(programs, users, profile)
+
         profile_programs = profile.get("programs", {})
         client_assignments = []
         used_names = set()
@@ -1025,11 +1083,864 @@ class DemoDataEngine:
                     client_file=client, program=prog, status="active",
                 )
 
-                client_assignments.append((client, prog, trend, worker, goal))
+                client_assignments.append(SeedAssignment(
+                    client=client,
+                    program=prog,
+                    trend=trend,
+                    worker=worker,
+                    goal=goal,
+                    relationship_label=HOUSEHOLD_RELATIONSHIP_SUPPORT,
+                ))
                 client_num += 1
 
         self.log(f"  Created {len(client_assignments)} demo clients across {len(programs)} programs.")
         return client_assignments
+
+    def _build_program_worker_map(self, programs, users):
+        """Determine which demo worker should handle each program."""
+        usernames = list(users.keys())
+        worker_usernames = usernames[1:3] if len(usernames) >= 3 else usernames[:1]
+        if not worker_usernames:
+            return {}
+
+        program_workers = {}
+        for prog in programs:
+            for uname in worker_usernames:
+                if UserProgramRole.objects.filter(
+                    user=users[uname], program=prog,
+                ).exists():
+                    program_workers[prog.pk] = users[uname]
+                    break
+            else:
+                program_workers[prog.pk] = users[worker_usernames[0]]
+        return program_workers
+
+    def _resolve_profile_companion_path(self, companion_path):
+        """Resolve a companion file path relative to the loaded profile."""
+        if not companion_path:
+            return None
+
+        candidate = Path(companion_path)
+        if candidate.is_absolute():
+            return candidate if candidate.exists() else None
+
+        candidates = []
+        profile_path = getattr(self, "_profile_path", None)
+        if profile_path:
+            candidates.append(profile_path.parent / companion_path)
+            candidates.append(profile_path.parent.parent / companion_path)
+        candidates.append(Path(companion_path))
+
+        for possible in candidates:
+            if possible.exists():
+                return possible
+        return None
+
+    def _load_generation_plan(self, profile):
+        """Load an optional structured family generation plan."""
+        circles_profile = profile.get("circles", {})
+        plan_path = self._resolve_profile_companion_path(
+            circles_profile.get("generation_plan_file", ""),
+        )
+        if not plan_path:
+            return {}
+
+        try:
+            with open(plan_path, "r", encoding="utf-8") as f:
+                plan = json.load(f)
+            self.log(f"  Loaded circle generation plan: {plan_path}")
+            return plan
+        except (OSError, json.JSONDecodeError) as exc:
+            self.log_warning(f"  Warning: could not load circle generation plan: {exc}")
+            return {}
+
+    def _pick_weighted_value(self, weighted_items, fallback=None):
+        """Pick a value from a sequence of ``(value, weight)`` tuples."""
+        if not weighted_items:
+            return fallback
+
+        total = sum(max(0, weight) for _, weight in weighted_items)
+        if total <= 0:
+            return weighted_items[0][0]
+
+        threshold = random.uniform(0, total)
+        running = 0
+        for value, weight in weighted_items:
+            running += max(0, weight)
+            if running >= threshold:
+                return value
+        return weighted_items[-1][0]
+
+    def _normalise_name_parts(self, full_name):
+        """Split a full name into first and last name parts."""
+        cleaned = " ".join((full_name or "").split()).strip()
+        if not cleaned:
+            first, last = self._pick_unique_name(set())
+            return first, last
+
+        parts = cleaned.split(" ")
+        if len(parts) == 1:
+            return parts[0], "Demo"
+        return " ".join(parts[:-1]), parts[-1]
+
+    def _parse_circle_member_text(self, member_text):
+        """Parse a seed string like ``Mason Harris (age 8)`` into a member spec."""
+        match = re.match(r"^(?P<name>.+?)\s*\((?P<meta>[^)]+)\)\s*$", member_text or "")
+        if match:
+            full_name = match.group("name").strip()
+            meta = match.group("meta").strip()
+        else:
+            full_name = (member_text or "").strip()
+            meta = ""
+
+        first_name, last_name = self._normalise_name_parts(full_name)
+        meta_lower = meta.lower()
+        age_match = re.search(r"age\s+(\d+)", meta_lower)
+        age = int(age_match.group(1)) if age_match else None
+
+        relationship = HOUSEHOLD_RELATIONSHIP_SUPPORT
+        member_type = "adult"
+        if age is not None:
+            member_type = "child"
+            relationship = HOUSEHOLD_RELATIONSHIP_CHILD
+        elif any(term in meta_lower for term in ("child", "infant", "toddler", "youth", "teen")):
+            member_type = "child"
+            relationship = HOUSEHOLD_RELATIONSHIP_CHILD
+        elif "grandparent" in meta_lower:
+            relationship = HOUSEHOLD_RELATIONSHIP_GRANDPARENT
+        elif any(term in meta_lower for term in ("partner", "spouse")):
+            relationship = HOUSEHOLD_RELATIONSHIP_PARTNER
+        elif any(term in meta_lower for term in ("support person", "support-person", "support")):
+            relationship = HOUSEHOLD_RELATIONSHIP_SUPPORT
+        elif any(term in meta_lower for term in ("caregiver", "parent", "guardian")):
+            relationship = HOUSEHOLD_RELATIONSHIP_PARENT
+
+        return {
+            "first_name": first_name,
+            "last_name": last_name,
+            "age": age,
+            "relationship_label": relationship,
+            "member_type": member_type,
+            "is_primary_contact": any(
+                term in meta_lower
+                for term in ("caregiver", "parent", "guardian", "grandparent caregiver")
+            ),
+        }
+
+    def _build_weighted_locations(self, profile, generation_plan):
+        """Return a weighted location list for structured family generation."""
+        weighted_locations = []
+        for location, count in generation_plan.get("location_distribution", {}).items():
+            weighted_locations.extend([location] * max(1, int(count)))
+        if weighted_locations:
+            random.shuffle(weighted_locations)
+            return weighted_locations
+        return list(profile.get("locations", {}).get("all_active", []))
+
+    def _build_household_shapes(self, generation_plan):
+        """Expand household mix weights into a shuffled list of shapes."""
+        household_shapes = []
+        for shape, count in generation_plan.get("household_mix", {}).items():
+            household_shapes.extend([shape] * max(1, int(count)))
+        random.shuffle(household_shapes)
+        return household_shapes
+
+    def _build_family_members(self, household_type, used_names):
+        """Generate a household roster for a given family archetype."""
+        last_name = random.choice(LAST_NAMES)
+
+        def unique_first():
+            for _ in range(200):
+                first = random.choice(FIRST_NAMES)
+                if (first, last_name) not in used_names:
+                    used_names.add((first, last_name))
+                    return first
+            first = f"{random.choice(FIRST_NAMES)}-{random.randint(1, 99)}"
+            used_names.add((first, last_name))
+            return first
+
+        def make_adult(relationship, min_age=23, max_age=52, primary=False):
+            return {
+                "first_name": unique_first(),
+                "last_name": last_name,
+                "age": random.randint(min_age, max_age),
+                "relationship_label": relationship,
+                "member_type": "adult",
+                "is_primary_contact": primary,
+            }
+
+        def make_child(min_age=1, max_age=12):
+            return {
+                "first_name": unique_first(),
+                "last_name": last_name,
+                "age": random.randint(min_age, max_age),
+                "relationship_label": HOUSEHOLD_RELATIONSHIP_CHILD,
+                "member_type": "child",
+                "is_primary_contact": False,
+            }
+
+        members = []
+        if household_type == "single_parent_one_to_two_children":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            for _ in range(random.randint(1, 2)):
+                members.append(make_child(2, 12))
+        elif household_type == "single_parent_three_plus_children":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            for _ in range(random.randint(3, 5)):
+                members.append(make_child(1, 14))
+        elif household_type == "two_caregiver_households":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARTNER, 24, 55))
+            for _ in range(random.randint(1, 3)):
+                members.append(make_child(1, 14))
+        elif household_type == "multigenerational_households":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARTNER, 24, 55))
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_GRANDPARENT, 55, 78))
+            for _ in range(random.randint(1, 2)):
+                members.append(make_child(2, 13))
+        elif household_type == "grandparent_led_households":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_GRANDPARENT, 55, 78, primary=True))
+            if random.random() < 0.35:
+                members.append(make_adult(HOUSEHOLD_RELATIONSHIP_GRANDPARENT, 56, 80))
+            for _ in range(random.randint(1, 3)):
+                members.append(make_child(3, 14))
+        elif household_type == "couple_with_infants_or_toddlers":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARTNER, 24, 50))
+            for _ in range(random.randint(1, 2)):
+                members.append(make_child(0, 4))
+        elif household_type == "couple_with_school_age_children":
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARENT, primary=True))
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARTNER, 25, 52))
+            for _ in range(random.randint(1, 3)):
+                members.append(make_child(5, 12))
+        else:
+            members.append(make_adult(HOUSEHOLD_RELATIONSHIP_SUPPORT, primary=True))
+            if random.random() < 0.7:
+                members.append(make_adult(HOUSEHOLD_RELATIONSHIP_PARTNER, 24, 58))
+
+        return members
+
+    def _attendance_program_map(self, profile):
+        """Return attendance-program config keyed by program name."""
+        attendance_settings = self._get_attendance_seed_settings(profile)
+        program_map = {}
+        for program_cfg in attendance_settings.get("programs", []):
+            program_name = program_cfg.get("program_name", "")
+            if program_name:
+                program_map[program_name] = program_cfg
+        return program_map
+
+    def _member_matches_attendance_config(self, member_type, age, relationship_label,
+                                          is_primary_contact, program_cfg):
+        """Return True when a member should be enrolled in an attendance program."""
+        include_member_types = set(program_cfg.get("include_member_types", ["adult", "child"]))
+        if include_member_types and member_type not in include_member_types:
+            return False
+
+        if (
+            member_type == "adult"
+            and program_cfg.get("primary_contact_only_for_adults", False)
+            and not is_primary_contact
+        ):
+            return False
+
+        relationship_labels = set(program_cfg.get("relationship_labels", []))
+        if relationship_labels and relationship_label not in relationship_labels:
+            return False
+
+        max_child_age = program_cfg.get("max_child_age")
+        if (
+            max_child_age is not None
+            and member_type == "child"
+            and age is not None
+            and age > int(max_child_age)
+        ):
+            return False
+
+        return True
+
+    def _location_matches_attendance_config(self, profile, program_cfg, location):
+        """Return True when a location is eligible for an attendance program."""
+        locations = self._resolve_attendance_locations(profile, program_cfg, [])
+        if not locations:
+            return True
+        return location in locations
+
+    def _select_family_programs(self, profile, active_program_names, generation_plan,
+                                location, members):
+        """Choose active program assignments for a generated family."""
+        active_program_names = set(active_program_names)
+        if not active_program_names:
+            return []
+
+        plan_targets = generation_plan.get("program_enrolment_targets", {})
+        attendance_program_map = self._attendance_program_map(profile)
+        attendance_program_names = {
+            name for name in attendance_program_map if name in active_program_names
+        }
+        adult_program_candidates = [
+            name for name in active_program_names if name not in attendance_program_names
+        ]
+        selected_programs = []
+        if adult_program_candidates:
+            weighted = [
+                (name, plan_targets.get(name, 1)) for name in adult_program_candidates
+            ]
+            primary = self._pick_weighted_value(weighted, adult_program_candidates[0])
+            selected_programs.append(primary)
+            secondary_candidates = [name for name in adult_program_candidates if name != primary]
+            if secondary_candidates and random.random() < 0.22:
+                selected_programs.append(secondary_candidates[0])
+
+        max_target = max(plan_targets.values(), default=1)
+        for program_name, program_cfg in attendance_program_map.items():
+            if program_name not in active_program_names:
+                continue
+            if not self._location_matches_attendance_config(profile, program_cfg, location):
+                continue
+            if not any(
+                self._member_matches_attendance_config(
+                    member.get("member_type", "adult"),
+                    member.get("age"),
+                    member.get("relationship_label", HOUSEHOLD_RELATIONSHIP_SUPPORT),
+                    member.get("is_primary_contact", False),
+                    program_cfg,
+                )
+                for member in members
+            ):
+                continue
+
+            include_member_types = set(program_cfg.get("include_member_types", ["adult", "child"]))
+            target_ratio = min(1.0, plan_targets.get(program_name, 0) / max_target) if max_target else 0
+            base_probability = 0.25
+            if "child" in include_member_types:
+                base_probability = 0.55
+            elif include_member_types == {"adult"}:
+                base_probability = 0.18
+            probability = min(0.92, base_probability + (0.28 * target_ratio))
+            if random.random() < probability:
+                selected_programs.append(program_name)
+
+        if not selected_programs:
+            weighted_all = [
+                (name, plan_targets.get(name, 1)) for name in sorted(active_program_names)
+            ]
+            selected_programs.append(
+                self._pick_weighted_value(weighted_all, sorted(active_program_names)[0])
+            )
+
+        return list(dict.fromkeys(selected_programs))
+
+    def _expand_structured_circles(self, profile, generation_plan, used_names, active_program_names):
+        """Expand hand-authored seed circles into a 100-family structured roster."""
+        circles_profile = profile.get("circles", {})
+        seed_pool = circles_profile.get("circle_seed_pool", [])
+        target_count = circles_profile.get("generated_family_target", len(seed_pool))
+        try:
+            target_count = int(target_count)
+        except (TypeError, ValueError):
+            target_count = len(seed_pool)
+        target_count = max(target_count, len(seed_pool))
+
+        weighted_locations = self._build_weighted_locations(profile, generation_plan)
+        household_shapes = self._build_household_shapes(generation_plan)
+        used_circle_names = set()
+        circles = []
+
+        for idx, seed_circle in enumerate(seed_pool[:target_count], start=1):
+            members = [self._parse_circle_member_text(item) for item in seed_circle.get("members", [])]
+            for member in members:
+                used_names.add((member["first_name"], member["last_name"]))
+            circle_name = seed_circle.get("circle_name") or f"Demo Family Circle {idx:03d}"
+            used_circle_names.add(circle_name)
+            circles.append({
+                "family_id": f"DEMO-FAM-{idx:03d}",
+                "circle_name": circle_name,
+                "location": seed_circle.get("home_location", ""),
+                "members": members,
+                "active_programs": [
+                    name for name in seed_circle.get("active_programs", [])
+                    if name in active_program_names
+                ],
+                "seed_focus": seed_circle.get("seed_focus", ""),
+            })
+
+        for idx in range(len(circles) + 1, target_count + 1):
+            location = weighted_locations[(idx - 1) % len(weighted_locations)] if weighted_locations else "Catchment"
+            household_type = household_shapes[(idx - 1) % len(household_shapes)] if household_shapes else "two_caregiver_households"
+            members = self._build_family_members(household_type, used_names)
+            family_last_name = members[0]["last_name"] if members else f"Family {idx:03d}"
+            circle_name = f"{family_last_name} Family Circle"
+            if circle_name in used_circle_names:
+                circle_name = f"{family_last_name} Family Circle — {location}"
+            if circle_name in used_circle_names:
+                circle_name = f"{family_last_name} Family Circle {idx:03d}"
+            used_circle_names.add(circle_name)
+            circles.append({
+                "family_id": f"DEMO-FAM-{idx:03d}",
+                "circle_name": circle_name,
+                "location": location,
+                "members": members,
+                "active_programs": self._select_family_programs(
+                    profile,
+                    active_program_names,
+                    generation_plan,
+                    location,
+                    members,
+                ),
+                "seed_focus": household_type.replace("_", " "),
+            })
+
+        return circles
+
+    def _create_structured_client(self, first_name, last_name, age, record_id):
+        """Create one structured demo client with a realistic birth date."""
+        client = ClientFile()
+        client.first_name = first_name
+        client.last_name = last_name
+        age = max(0, int(age if age is not None else random.randint(24, 55)))
+        age_days = max(1, age * 365 + random.randint(0, 364))
+        client.birth_date = (self.now - timedelta(days=age_days)).strftime("%Y-%m-%d")
+        client.record_id = record_id
+        client.status = "active"
+        client.is_demo = True
+        client.consent_given_at = self.now - timedelta(days=random.randint(5, 90))
+        client.consent_type = random.choice(["written", "verbal", "electronic"])
+        client.save()
+        return client
+
+    def _trend_for_demo_profile(self, program_name, member_type, program_profile=None):
+        """Return a plausible trend for a structured demo client."""
+        program_profile = program_profile or {}
+        weighted = [
+            ("improving", 30),
+            ("stable", 24),
+            ("mixed", 20),
+            ("crisis_then_improving", 16),
+            ("struggling", 10),
+        ]
+        if program_profile.get("referrals_enabled") or program_profile.get("resources_enabled"):
+            weighted = [
+                ("crisis_then_improving", 28),
+                ("mixed", 24),
+                ("improving", 22),
+                ("struggling", 16),
+                ("stable", 10),
+            ]
+        elif (
+            member_type == "child"
+            or program_profile.get("attendance_required")
+            or program_profile.get("registration_required")
+        ):
+            weighted = [
+                ("improving", 34),
+                ("stable", 28),
+                ("mixed", 20),
+                ("crisis_then_improving", 12),
+                ("struggling", 6),
+            ]
+        return self._pick_weighted_value(weighted, "improving")
+
+    def create_structured_demo_clients(self, programs, users, profile):
+        """Create structured demo clients with family circles."""
+        from apps.circles.models import Circle, CircleMembership
+
+        programs_by_name = {program.name: program for program in programs}
+        profile_programs = profile.get("programs", {})
+        generation_plan = self._load_generation_plan(profile)
+        program_workers = self._build_program_worker_map(programs, users)
+        attendance_program_map = self._attendance_program_map(profile)
+        attendance_program_names = set(attendance_program_map)
+        used_names = set()
+        client_assignments = []
+        created_clients = 0
+        created_circles = 0
+        first_creator = next(iter(users.values()), None)
+        circle_feature_enabled = FeatureToggle.get_all_flags().get("circles", False)
+
+        circle_defs = self._expand_structured_circles(
+            profile,
+            generation_plan,
+            used_names,
+            programs_by_name.keys(),
+        )
+
+        for circle_def in circle_defs:
+            family_programs = [
+                name for name in circle_def.get("active_programs", []) if name in programs_by_name
+            ]
+            adult_programs = [
+                name for name in family_programs if name not in attendance_program_names
+            ]
+            circle = None
+            if circle_feature_enabled:
+                circle = Circle(is_demo=True, created_by=first_creator)
+                circle.name = circle_def["circle_name"]
+                circle.save()
+                created_circles += 1
+
+            for member_idx, member in enumerate(circle_def.get("members", []), start=1):
+                record_id = f"{circle_def['family_id']}-{member_idx:02d}"
+                client = self._create_structured_client(
+                    member["first_name"],
+                    member["last_name"],
+                    member.get("age"),
+                    record_id,
+                )
+                created_clients += 1
+
+                member_programs = []
+                if member.get("member_type") == "adult":
+                    member_programs.extend(adult_programs)
+                for program_name in family_programs:
+                    program_cfg = attendance_program_map.get(program_name)
+                    if not program_cfg:
+                        continue
+                    if self._member_matches_attendance_config(
+                        member.get("member_type", "adult"),
+                        member.get("age"),
+                        member.get("relationship_label", HOUSEHOLD_RELATIONSHIP_SUPPORT),
+                        member.get("is_primary_contact", False),
+                        program_cfg,
+                    ):
+                        member_programs.append(program_name)
+
+                for program_name in dict.fromkeys(member_programs):
+                    program = programs_by_name.get(program_name)
+                    if not program:
+                        continue
+                    ClientProgramEnrolment.objects.create(
+                        client_file=client, program=program, status="active",
+                    )
+                    worker = program_workers.get(program.pk, first_creator)
+                    trend = self._trend_for_demo_profile(
+                        program_name,
+                        member.get("member_type", "adult"),
+                        profile_programs.get(program_name, {}),
+                    )
+                    goal = circle_def.get("seed_focus", "")
+                    client_assignments.append(SeedAssignment(
+                        client=client,
+                        program=program,
+                        trend=trend,
+                        worker=worker,
+                        goal=goal,
+                        location=circle_def.get("location", ""),
+                        circle=circle,
+                        member_type=member.get("member_type", "adult"),
+                        relationship_label=member.get("relationship_label", HOUSEHOLD_RELATIONSHIP_SUPPORT),
+                        is_primary_contact=member.get("is_primary_contact", False),
+                        family_id=circle_def.get("family_id", ""),
+                        age=member.get("age"),
+                    ))
+
+                if circle is not None:
+                    CircleMembership.objects.create(
+                        circle=circle,
+                        client_file=client,
+                        relationship_label=member.get("relationship_label", "member"),
+                        is_primary_contact=member.get("is_primary_contact", False),
+                    )
+
+        for idx, single_client in enumerate(profile.get("single_clients", []), start=1):
+            first_name, last_name = self._normalise_name_parts(
+                single_client.get("name", f"Demo Single {idx}"),
+            )
+            if (first_name, last_name) in used_names:
+                last_name = f"{last_name}-{idx}"
+            used_names.add((first_name, last_name))
+
+            client = self._create_structured_client(
+                first_name,
+                last_name,
+                random.randint(24, 76),
+                f"DEMO-SNG-{idx:03d}",
+            )
+            created_clients += 1
+
+            primary_program_name = single_client.get("primary_program", "")
+            program = programs_by_name.get(primary_program_name)
+            if not program and programs_by_name:
+                program = next(iter(programs_by_name.values()))
+            if not program:
+                continue
+
+            ClientProgramEnrolment.objects.create(
+                client_file=client, program=program, status="active",
+            )
+            worker = program_workers.get(program.pk, first_creator)
+            trend = self._trend_for_demo_profile(
+                program.name,
+                "adult",
+                profile_programs.get(program.name, {}),
+            )
+            goal = single_client.get("seed_focus", "")
+            client_assignments.append(SeedAssignment(
+                client=client,
+                program=program,
+                trend=trend,
+                worker=worker,
+                goal=goal,
+                location=single_client.get("location", ""),
+                member_type="adult",
+                relationship_label=HOUSEHOLD_RELATIONSHIP_SUPPORT,
+            ))
+
+        self.log(
+            f"  Created {created_clients} structured demo clients"
+            f" and {created_circles} family circles."
+        )
+        return client_assignments
+
+    def _get_attendance_seed_settings(self, profile):
+        """Return attendance seed config when enabled."""
+        settings = profile.get("attendance_seed", {})
+        if not isinstance(settings, dict):
+            return {}
+        if not settings.get("enabled", False):
+            return {}
+        return settings
+
+    def _resolve_attendance_locations(self, profile, program_cfg, assignments):
+        """Resolve the locations to seed for a configured attendance program."""
+        locations = list(program_cfg.get("locations", []))
+        if locations:
+            return locations
+
+        locations_key = program_cfg.get("locations_key", "")
+        if locations_key:
+            return list(profile.get("locations", {}).get(locations_key, []))
+
+        discovered = sorted({a.location for a in assignments if a.location})
+        return discovered
+
+    def _assignment_matches_attendance_group(self, assignment, program_cfg):
+        """Return True when an assignment should become a group membership."""
+        return self._member_matches_attendance_config(
+            assignment.member_type,
+            assignment.age,
+            assignment.relationship_label,
+            assignment.is_primary_contact,
+            program_cfg,
+        )
+
+    def _get_or_create_demo_attendance_group(self, program, location, program_cfg):
+        """Create or reuse a demo-seeded attendance group safely."""
+        from apps.groups.models import Group
+
+        group_name = program_cfg.get(
+            "group_name_template",
+            "{program} - {location}",
+        ).format(program=program.name, location=location)
+        existing = Group.objects.filter(name=group_name, program=program).first()
+        if existing:
+            if DEMO_ATTENDANCE_GROUP_MARKER in (existing.description or ""):
+                return existing, False
+            self.log_warning(
+                f"  Skipping seeded attendance group '{group_name}' because a non-demo group already exists."
+            )
+            return None, False
+
+        group = Group.objects.create(
+            name=group_name,
+            group_type="group",
+            program=program,
+            description=(
+                f"{DEMO_ATTENDANCE_GROUP_MARKER} "
+                f"Seeded attendance roster for {program.name} at {location}."
+            ),
+            status="active",
+        )
+        return group, True
+
+    def _seed_group_memberships(self, group, assignments, program_cfg):
+        """Add active demo clients to a seeded attendance group."""
+        from apps.groups.models import GroupMembership
+
+        created_count = 0
+        for assignment in assignments:
+            if not assignment.client:
+                continue
+            _, created = GroupMembership.objects.get_or_create(
+                group=group,
+                client_file=assignment.client,
+                defaults={"role": "member", "status": "active"},
+            )
+            if created:
+                created_count += 1
+        return created_count
+
+    def _seed_group_sessions(self, group, assignments, profile, program_cfg):
+        """Create backdated session history and attendance for a seeded group."""
+        from apps.groups.models import GroupSession, GroupSessionAttendance
+
+        memberships = list(group.memberships.filter(status="active").select_related("client_file"))
+        if not memberships:
+            return 0, 0
+        if GroupSession.objects.filter(group=group).exists():
+            return 0, 0
+
+        sessions_per_group = max(0, int(program_cfg.get("sessions_per_group", 0)))
+        days_between = max(1, int(program_cfg.get("days_between_sessions", 7)))
+        if sessions_per_group == 0:
+            return 0, 0
+
+        note_pool = list(program_cfg.get("session_note_pool", []))
+        if not note_pool:
+            note_pool = list(
+                profile.get("programs", {}).get(group.program.name, {}).get("note_text_pool", [])
+            )
+        if not note_pool:
+            note_pool = ["Attendance session recorded from seeded demo roster."]
+
+        group_vibes = ["low", "solid", "great"]
+        facilitator_map = {
+            assignment.worker.pk: assignment.worker
+            for assignment in assignments
+            if assignment.worker is not None and getattr(assignment.worker, "pk", None)
+        }
+        facilitators = list(facilitator_map.values())
+        assignment_by_client = {
+            assignment.client.pk: assignment
+            for assignment in assignments
+            if assignment.client is not None and getattr(assignment.client, "pk", None)
+        }
+        attendance_prob = program_cfg.get("attendance_probability", {})
+        default_prob = float(attendance_prob.get("default", 0.82))
+
+        sessions_created = 0
+        attendance_created = 0
+        for idx in range(sessions_per_group):
+            days_ago = (sessions_per_group - idx) * days_between
+            session = GroupSession.objects.create(
+                group=group,
+                session_date=(self.now - timedelta(days=days_ago)).date(),
+                facilitator=random.choice(facilitators) if facilitators else None,
+                group_vibe=random.choice(group_vibes),
+            )
+            session.notes = random.choice(note_pool)
+            session.save()
+            sessions_created += 1
+
+            attendance_rows = []
+            for membership in memberships:
+                assignment = assignment_by_client.get(membership.client_file_id)
+                member_type = assignment.member_type if assignment else "adult"
+                probability = float(attendance_prob.get(member_type, default_prob))
+                present = random.random() < probability
+                attendance_rows.append(
+                    GroupSessionAttendance.objects.create(
+                        group_session=session,
+                        membership=membership,
+                        present=present,
+                    )
+                )
+                attendance_created += 1
+
+            if attendance_rows and not any(row.present for row in attendance_rows):
+                lucky_row = random.choice(attendance_rows)
+                lucky_row.present = True
+                lucky_row.save(update_fields=["present"])
+
+        return sessions_created, attendance_created
+
+    def seed_attendance_demo_data(self, programs, client_assignments, profile):
+        """Create demo attendance groups, memberships, and session history."""
+        attendance_settings = self._get_attendance_seed_settings(profile)
+        if not attendance_settings:
+            return
+
+        programs_by_name = {program.name: program for program in programs}
+        groups_created = 0
+        memberships_created = 0
+        sessions_created = 0
+        attendance_created = 0
+
+        for program_cfg in attendance_settings.get("programs", []):
+            program_name = program_cfg.get("program_name", "")
+            program = programs_by_name.get(program_name)
+            if not program:
+                self.log_warning(
+                    f"  Attendance seed skipped — active program '{program_name}' was not found."
+                )
+                continue
+
+            program_assignments = [
+                assignment
+                for assignment in client_assignments
+                if assignment.program == program
+            ]
+            locations = self._resolve_attendance_locations(profile, program_cfg, program_assignments)
+            for location in locations:
+                group, created = self._get_or_create_demo_attendance_group(
+                    program, location, program_cfg,
+                )
+                if group is None:
+                    continue
+                if created:
+                    groups_created += 1
+
+                eligible_assignments = [
+                    assignment
+                    for assignment in program_assignments
+                    if assignment.location == location
+                    and self._assignment_matches_attendance_group(assignment, program_cfg)
+                ]
+                memberships_created += self._seed_group_memberships(
+                    group, eligible_assignments, program_cfg,
+                )
+                session_count, attendance_count = self._seed_group_sessions(
+                    group, eligible_assignments, profile, program_cfg,
+                )
+                sessions_created += session_count
+                attendance_created += attendance_count
+
+        self.log(
+            "  Seeded demo attendance data: "
+            f"{groups_created} groups, {memberships_created} memberships, "
+            f"{sessions_created} sessions, {attendance_created} attendance rows."
+        )
+
+    def seed_field_collection_pilots(self, programs, profile):
+        """Create ProgramFieldConfig rows for configured offline pilot programs."""
+        from apps.field_collection.models import ProgramFieldConfig
+
+        attendance_settings = self._get_attendance_seed_settings(profile)
+        if not attendance_settings:
+            return
+
+        programs_by_name = {program.name: program for program in programs}
+        created_count = 0
+        reused_count = 0
+        for pilot_cfg in attendance_settings.get("field_collection_pilots", []):
+            program_name = pilot_cfg.get("program_name", "")
+            program = programs_by_name.get(program_name)
+            if not program:
+                self.log_warning(
+                    f"  Field collection pilot skipped — active program '{program_name}' was not found."
+                )
+                continue
+
+            _, created = ProgramFieldConfig.objects.get_or_create(
+                program=program,
+                defaults={
+                    "enabled": pilot_cfg.get("enabled", True),
+                    "data_tier": pilot_cfg.get("data_tier", "standard"),
+                    "profile": pilot_cfg.get("profile", "group"),
+                },
+            )
+            if created:
+                created_count += 1
+            else:
+                reused_count += 1
+
+        if created_count or reused_count:
+            self.log(
+                "  Seeded field collection pilots: "
+                f"{created_count} created, {reused_count} left unchanged."
+            )
 
     def _pick_unique_name(self, used_names):
         """Pick a first/last name combination not already used."""
@@ -1380,13 +2291,13 @@ class DemoDataEngine:
             "Has not attended in two weeks. Check-in call scheduled.",
         ]
 
-        for client, program, trend, worker, _ in client_assignments:
-            if trend in ("struggling", "crisis_then_improving"):
+        for assignment in client_assignments:
+            if assignment.trend in ("struggling", "crisis_then_improving"):
                 Alert.objects.create(
-                    client_file=client,
+                    client_file=assignment.client,
                     content=random.choice(alert_messages),
-                    author=worker,
-                    author_program=program,
+                    author=assignment.worker,
+                    author_program=assignment.program,
                 )
 
     # ----- Suggestion theme generation -----
@@ -1464,7 +2375,8 @@ class DemoDataEngine:
         from apps.portal.models import ParticipantUser
 
         created = 0
-        for client, program, trend, worker, goal in client_assignments:
+        for assignment in client_assignments:
+            client = assignment.client
             if hasattr(client, "portal_account"):
                 continue
             email = f"demo-{client.record_id.lower()}@example.com"
@@ -1508,7 +2420,10 @@ class DemoDataEngine:
         note_count = 0
         resource_count = 0
 
-        for client, program, trend, worker, goal in client_assignments:
+        for assignment in client_assignments:
+            client = assignment.client
+            trend = assignment.trend
+            worker = assignment.worker
             participant = ParticipantUser.objects.filter(
                 client_file=client, is_active=True,
             ).first()
@@ -1691,12 +2606,13 @@ class DemoDataEngine:
 
         # Collect participants with portal accounts
         portal_participants = []
-        for client, program, trend, worker, goal in client_assignments:
+        for assignment in client_assignments:
+            client = assignment.client
             pu = ParticipantUser.objects.filter(
                 client_file=client, is_active=True,
             ).first()
             if pu:
-                portal_participants.append((pu, client, worker))
+                portal_participants.append((pu, client, assignment.worker))
 
         assignments_created = 0
         responses_created = 0
@@ -1803,7 +2719,7 @@ class DemoDataEngine:
         creator = users.get(usernames[1]) if len(usernames) > 1 else list(users.values())[0]
 
         # Collect unique programs from client assignments
-        programs = {prog for _, prog, _, _, _ in client_assignments}
+        programs = {assignment.program for assignment in client_assignments}
 
         created_count = 0
         for program in programs:
@@ -1883,10 +2799,19 @@ class DemoDataEngine:
                 programs, users, clients_per_program, profile,
             )
 
+            # 3b. Create structured attendance groups, history, and offline pilot configs
+            self.seed_attendance_demo_data(programs, client_assignments, profile)
+            self.seed_field_collection_pilots(programs, profile)
+
             plan_targets_to_recompute = []
 
             # 4. For each client: create plan, notes, events
-            for client, program, trend, worker, goal in client_assignments:
+            for assignment in client_assignments:
+                client = assignment.client
+                program = assignment.program
+                trend = assignment.trend
+                worker = assignment.worker
+                goal = assignment.goal
                 metrics = self.discover_metrics_for_program(program)
                 note_count = random.randint(note_count_range[0], note_count_range[1])
 
@@ -1918,17 +2843,21 @@ class DemoDataEngine:
             # 6. Create suggestion themes
             self.generate_suggestion_themes(programs, users, profile)
 
-            # 7. Create portal accounts for demo participants
-            self.create_demo_portal_accounts(client_assignments)
+            portal_enabled = FeatureToggle.get_all_flags().get("participant_portal", False)
+            if portal_enabled:
+                # 7. Create portal accounts for demo participants
+                self.create_demo_portal_accounts(client_assignments)
 
-            # 8. Create portal content (journals, messages, staff notes)
-            self.create_demo_portal_content(client_assignments, users, profile)
+                # 8. Create portal content (journals, messages, staff notes)
+                self.create_demo_portal_content(client_assignments, users, profile)
 
-            # 9. Create portal surveys with assignments and responses
-            self.create_demo_portal_surveys(client_assignments, users, profile)
+                # 9. Create portal surveys with assignments and responses
+                self.create_demo_portal_surveys(client_assignments, users, profile)
 
-            # 10. Create portal resource links
-            self.create_demo_portal_resources(client_assignments, users, profile)
+                # 10. Create portal resource links
+                self.create_demo_portal_resources(client_assignments, users, profile)
+            else:
+                self.log("  Participant portal disabled — skipping portal demo content.")
 
             # Warn about profile program names that didn't match any active program
             if profile and "programs" in profile:
