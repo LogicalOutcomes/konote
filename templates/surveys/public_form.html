@@ -137,8 +137,8 @@
     {% endfor %}
 
     <div id="page-nav" style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1rem" hidden>
-        <button type="button" id="page-prev" class="outline">&larr; {% trans "Back" %}</button>
-        <button type="button" id="page-next">{% trans "Next" %} &rarr;</button>
+        <button type="button" id="page-prev" class="outline"><span aria-hidden="true">&larr;</span> {% trans "Back" %}</button>
+        <button type="button" id="page-next">{% trans "Next" %} <span aria-hidden="true">&rarr;</span></button>
     </div>
     <button type="submit" id="submit-btn">{% trans "Submit" %}</button>
 </form>
