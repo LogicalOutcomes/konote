@@ -505,6 +505,7 @@ def consent_flow(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_setup(request):
     """Set up TOTP-based multi-factor authentication.
 
@@ -550,6 +551,7 @@ def mfa_setup(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_verify(request):
     """Verify a TOTP code — used during login (MFA step) and setup confirmation."""
     from apps.portal.forms import MFAVerifyForm
