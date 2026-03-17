@@ -82,11 +82,34 @@ class Command(BaseCommand):
                 "Re-run with --domain <your-domain>."
             )
 
-        # Idempotent: skip if this domain is already registered.
+        # Idempotent: if primary domain is already registered, just ensure
+        # any new ALLOWED_HOSTS entries are registered as secondary domains.
         if AgencyDomain.objects.filter(domain=domain).exists():
-            self.stdout.write(
-                f"Domain '{domain}' is already registered — nothing to do."
-            )
+            agency_domain = AgencyDomain.objects.get(domain=domain)
+            agency = agency_domain.tenant
+            raw = os.environ.get("ALLOWED_HOSTS", "")
+            all_hosts = [h.strip() for h in raw.split(",") if h.strip()]
+            added = False
+            for host in all_hosts:
+                if (
+                    host != domain
+                    and not host.startswith(".")
+                    and host not in ("localhost", "127.0.0.1", "0.0.0.0")
+                    and not AgencyDomain.objects.filter(domain=host).exists()
+                ):
+                    AgencyDomain.objects.create(
+                        domain=host,
+                        tenant=agency,
+                        is_primary=False,
+                    )
+                    self.stdout.write(
+                        self.style.SUCCESS(f"  Secondary domain '{host}' registered.")
+                    )
+                    added = True
+            if not added:
+                self.stdout.write(
+                    f"Domain '{domain}' is already registered — nothing to do."
+                )
             return
 
         # Wrap agency creation + domain registration + localhost registration
@@ -121,6 +144,27 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(f"  Domain '{domain}' registered.")
             )
+
+            # Register all other valid domains from ALLOWED_HOSTS as secondary
+            # domains so requests via alternate domains (e.g. demo-dev.konote.ca
+            # alongside konote-dev.llewelyn.ca) resolve to the same tenant.
+            raw = os.environ.get("ALLOWED_HOSTS", "")
+            all_hosts = [h.strip() for h in raw.split(",") if h.strip()]
+            for host in all_hosts:
+                if (
+                    host != domain
+                    and not host.startswith(".")
+                    and host not in ("localhost", "127.0.0.1", "0.0.0.0")
+                    and not AgencyDomain.objects.filter(domain=host).exists()
+                ):
+                    AgencyDomain.objects.create(
+                        domain=host,
+                        tenant=agency,
+                        is_primary=False,
+                    )
+                    self.stdout.write(
+                        self.style.SUCCESS(f"  Secondary domain '{host}' registered.")
+                    )
 
             # Register 'localhost' as a secondary domain so Docker health checks
             # (curl http://localhost:8000/auth/login/) can resolve to a tenant.
