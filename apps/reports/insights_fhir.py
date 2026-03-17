@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from apps.clients.models import ServiceEpisode
 from apps.notes.models import ProgressNote
 from apps.plans.models import PlanTarget
+from apps.reports.metric_insights import get_data_completeness
 
 logger = logging.getLogger(__name__)
 
@@ -175,16 +176,16 @@ def get_practice_health(program, date_from=None, date_to=None,
 
     # 1. % goals jointly developed
     source_dist = goal_source_dist or get_goal_source_distribution(program, date_from, date_to)
-    if source_dist["sufficient"]:
-        joint_row = next(
-            (s for s in source_dist["sources"] if s["source"] == "joint"),
-            None,
-        )
-        joint_pct = (
-            joint_row["pct"]
-            if joint_row and not joint_row["suppressed"]
-            else 0
-        )
+    joint_row = next(
+        (s for s in source_dist["sources"] if s["source"] == "joint"),
+        None,
+    )
+    can_show_joint_indicator = (
+        source_dist["total"] >= SMALL_PROGRAM_THRESHOLD
+        and (joint_row is None or not joint_row["suppressed"])
+    )
+    if can_show_joint_indicator:
+        joint_pct = joint_row["pct"] if joint_row else 0
         level = "good" if joint_pct >= 60 else ("fair" if joint_pct >= 40 else "low")
         indicators["jointly_developed"] = {
             "value": f"{joint_pct}%",
@@ -197,7 +198,6 @@ def get_practice_health(program, date_from=None, date_to=None,
 
     # 2. Data completeness (reuse existing function or pre-computed value)
     if data_completeness is None:
-        from apps.reports.metric_insights import get_data_completeness
         data_completeness = get_data_completeness(program, date_from, date_to)
     completeness = data_completeness
     if completeness and completeness.get("enrolled_count", 0) > 0:

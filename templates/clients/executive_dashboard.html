@@ -300,6 +300,9 @@
                 {# Suggestion themes — named themes with priority badges #}
                 {% if stat.top_themes %}
                 <hr>
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Suggestion Themes" %}</span>
+                </div>
                 <ul class="theme-compact-list" role="list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
                     {% for theme in stat.top_themes %}
                     <li>
