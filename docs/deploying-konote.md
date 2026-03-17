@@ -138,6 +138,15 @@ If something is missing, the startup check will tell you exactly what's wrong an
 
 For a complete list of all configuration options (exports, email, demo mode, AI features), see the comments in `.env.example`.
 
+### Optional Startup Behaviour
+
+| Variable | Purpose |
+|----------|---------|
+| `DEMO_MODE` | Seeds demo users and demo clients when `python manage.py seed` runs |
+| `KONOTE_SKIP_SEED` | Skips the automatic startup seed entirely, leaving the instance blank |
+
+Use `KONOTE_SKIP_SEED=true` when provisioning a new production instance that should not load default templates, metrics, or demo content yet.
+
 ### Email Configuration
 
 Email is needed for export notifications and the erasure approval workflow. Configure SMTP variables in `.env` — see `.env.example` for variable names and defaults. If not configured, exports and erasure still work but admin notifications fail silently.
@@ -296,6 +305,8 @@ docker-compose exec web python manage.py seed
 Creates the metrics library, default templates, event types, feature toggles, and intake fields. If `DEMO_MODE=true`, also creates 5 demo users (one per role) and 10 demo clients with sample data.
 
 Idempotent — safe to run multiple times (uses `get_or_create`). Runs automatically via `entrypoint.sh` in Docker, but must be run manually for local development without Docker.
+
+If you want a blank environment instead, set `KONOTE_SKIP_SEED=true` before startup. You can always run `python manage.py seed` later when you're ready.
 
 ### Docker Commands Reference
 
@@ -547,7 +558,7 @@ You should see no errors about `FIELD_ENCRYPTION_KEY`, `SECRET_KEY`, or `CSRF`.
 
 | Command | When | Purpose | Dry Run? |
 |---------|------|---------|----------|
-| `seed` | Automatic (startup) | Create metrics, features, settings, event types, templates, intake fields; demo data if `DEMO_MODE` | No |
+| `seed` | Automatic at startup unless `KONOTE_SKIP_SEED=true` | Create metrics, features, settings, event types, templates, intake fields; demo data if `DEMO_MODE` | No |
 | `startup_check` | Automatic (startup) | Validate encryption key, SECRET_KEY, middleware; block startup in production if critical checks fail | No |
 | `cleanup_expired_exports` | Manual/cron (daily) | Remove expired export links and orphan files from disk | Yes (`--dry-run`) |
 | `rotate_encryption_key` | Manual (as needed) | Re-encrypt all PII with a new Fernet key | Yes (`--dry-run`) |

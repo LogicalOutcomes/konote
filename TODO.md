@@ -124,6 +124,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Dashboard & Insights enrichment — FHIR metadata features: program summary sentences, practice indicators, goal source distribution on Insights; stale episodes attention signal on Dashboard; batch query optimization; simplified both pages (removed funder stats, cohort comparison, cross-tab, dashboard bloat — 8 sections → 5 on Insights, ~20 rows → ~8 per program card) — PRs #529-#533 — 2026-03-16 (ENRICH1)
 - [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)
 - [x] AI provider configuration guide for operators — docs/ai-provider-guide.md covering cloud vs self-hosted, data residency, configuration, costs — 2026-03-12 (REV26-AI4)
 - [x] Data retention schedule + breach response workflow — docs/retention-schedule.md and docs/breach-response-workflow.md, with cross-references from privacy-policy-template.md and security-operations.md — 2026-03-12 (REV26-PRIV1)

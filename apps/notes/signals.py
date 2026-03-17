@@ -3,6 +3,7 @@
 Triggers achievement status recomputation when progress data is recorded.
 """
 import logging
+import os
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -10,10 +11,22 @@ from django.dispatch import receiver
 logger = logging.getLogger(__name__)
 
 
+def _skip_achievement_recompute():
+    """Return True when bulk operations temporarily disable recomputation."""
+    return os.environ.get("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE", "").lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
 @receiver(post_save, sender="notes.ProgressNoteTarget")
 def recompute_achievement_on_target_entry(sender, instance, **kwargs):
     """Recompute achievement status when a ProgressNoteTarget is saved."""
     from apps.plans.achievement import update_achievement_status
+
+    if _skip_achievement_recompute():
+        return
 
     if instance.plan_target_id:
         try:
@@ -29,6 +42,9 @@ def recompute_achievement_on_target_entry(sender, instance, **kwargs):
 def recompute_achievement_on_metric_value(sender, instance, **kwargs):
     """Recompute achievement status when a MetricValue is saved."""
     from apps.plans.achievement import update_achievement_status
+
+    if _skip_achievement_recompute():
+        return
 
     pnt = instance.progress_note_target
     if pnt and pnt.plan_target_id:

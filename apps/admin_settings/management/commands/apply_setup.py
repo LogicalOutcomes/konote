@@ -69,7 +69,7 @@ def apply_setup_config(config, dry_run=False, stdout=None):
     with transaction.atomic():
         summary.update(_apply_instance_settings(config.get("instance_settings", {}), stdout))
         summary.update(_apply_terminology(config.get("terminology", {}), stdout))
-        summary.update(_apply_features(config.get("features", {}), stdout))
+        summary.update(_apply_features(_normalise_features(config.get("features", {}), config), stdout))
         summary.update(_apply_programs(config.get("programs", []), stdout))
         summary.update(_apply_metrics(
             config.get("metrics_enabled", []),
@@ -82,6 +82,20 @@ def apply_setup_config(config, dry_run=False, stdout=None):
     return summary
 
 
+def _normalise_features(features_data, config):
+    """Return a copy of feature toggles with safe setup defaults applied."""
+    features = dict(features_data or {})
+
+    if config.get("custom_field_groups") and "custom_fields" not in features:
+        features["custom_fields"] = True
+
+    if not features.get("participant_portal", False):
+        for key in ("portal_journal", "portal_messaging", "portal_resources"):
+            features.setdefault(key, False)
+
+    return features
+
+
 def _preview_config(config):
     """Return a summary of what would be created without making changes."""
     summary = {}
@@ -89,7 +103,7 @@ def _preview_config(config):
     summary["Instance settings"] = f"{len(inst)} setting(s) to configure"
     terms = config.get("terminology", {})
     summary["Terminology"] = f"{len(terms)} term(s) to override"
-    features = config.get("features", {})
+    features = _normalise_features(config.get("features", {}), config)
     summary["Features"] = f"{len(features)} toggle(s) to set"
     programs = config.get("programs", [])
     summary["Programs"] = f"{len(programs)} program(s) to create"

@@ -12,6 +12,7 @@ from apps.auth_app.decorators import _get_user_highest_role, _get_user_highest_r
 
 @login_required
 def home(request):
+    from apps.admin_settings.models import InstanceSetting
     from apps.clients.models import ClientFile, ClientProgramEnrolment
     from apps.clients.views import _get_accessible_clients, _get_accessible_programs, get_client_queryset
     from apps.events.models import Alert
@@ -124,8 +125,13 @@ def home(request):
             })
         needs_attention_count = len(needs_attention)
 
-    # --- Organization name (placeholder — will come from settings later) ---
-    org_name = "LogicalOutcomes"
+    # --- Organization header branding ---
+    site_settings = InstanceSetting.get_all()
+    org_name = (
+        site_settings.get("product_name")
+        or site_settings.get("organization_name")
+        or "KoNote"
+    )
 
     # --- Accessible programs for search filters ---
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)

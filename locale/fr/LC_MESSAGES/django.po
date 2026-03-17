@@ -6778,11 +6778,6 @@ msgid_plural "%(counter)s elevated exports are pending review"
 msgstr[0] "%(counter)s exportation élevée est en attente d’examen"
 msgstr[1] "%(counter)s exportations élevées sont en attente d’examen"
 
-msgid "Achieved"
-msgid_plural "%(counter)s Demo Users"
-msgstr[0] "%(counter)s utilisateur démo"
-msgstr[1] "%(counter)s utilisateurs démo"
-
 msgid "Achievement Rate"
 msgstr "Taux de réussite"
 
@@ -23619,3 +23614,276 @@ msgstr "Que signifient ces termes\\u00a0?"
 
 msgid "Intake assessment"
 msgstr "Évaluation initiale"
+
+#: apps/reports/insights_fhir.py — Practice Quality & Goal Source
+msgid "jointly developed"
+msgstr "développés conjointement"
+
+msgid "data complete"
+msgstr "données complètes"
+
+msgid "participant voice recorded"
+msgstr "voix des participant(e)s enregistrée"
+
+msgid "sessions/participant"
+msgstr "rencontres/participant(e)"
+
+msgid "New Intakes"
+msgstr "Nouvelles admissions"
+
+msgid "Re-enrolments"
+msgstr "Réinscriptions"
+
+msgid ""
+"Goals developed with participants are achieved at a %(diff)d percentage-"
+"point higher rate than worker-initiated goals."
+msgstr ""
+"Les objectifs développés avec les participant(e)s sont atteints à un taux "
+"supérieur de %(diff)d points de pourcentage par rapport aux objectifs "
+"initiés par le personnel."
+
+msgid ""
+"Worker-initiated goals have a higher achievement rate — this may reflect "
+"more conservative goal-setting."
+msgstr ""
+"Les objectifs initiés par le personnel ont un taux de réalisation plus élevé"
+" — cela peut refléter une fixation d'objectifs plus prudente."
+
+msgid "Achievement rates are similar regardless of who initiated the goal."
+msgstr ""
+"Les taux de réalisation sont similaires, peu importe qui a initié "
+"l'objectif."
+
+msgid ""
+"First-time participants are achieving at higher rates than those returning "
+"to the program."
+msgstr ""
+"Les participant(e)s de première fois atteignent des taux plus élevés que "
+"ceux qui reviennent au programme."
+
+msgid ""
+"Returning participants are achieving at higher rates — the program may be "
+"more effective as a 'booster' intervention."
+msgstr ""
+"Les participant(e)s qui reviennent atteignent des taux plus élevés — le "
+"programme pourrait être plus efficace comme intervention de renforcement."
+
+msgid "Achievement rates are similar for new and returning participants."
+msgstr ""
+"Les taux de réalisation sont similaires pour les nouveaux participant(e)s et"
+" ceux qui reviennent."
+
+#: apps/reports/insights_fhir.py — Program Summary (Feature D)
+msgid ""
+"%(program)s has %(active)d active participants. Aggregate statistics are not"
+" shown for programs with fewer than 5 participants to protect privacy."
+msgstr ""
+"%(program)s a %(active)d participant(e)s actif/actives. Les statistiques "
+"agrégées ne sont pas affichées pour les programmes de moins de 5 "
+"participant(e)s afin de protéger la confidentialité."
+
+msgid ""
+"%(program)s is serving %(active)d participants (%(new)d new, %(returning)d "
+"returning this %(period)s). Staff recorded %(sessions)d sessions. %(goals)d "
+"goals are active, %(joint_pct)d%% jointly developed with participants. "
+"%(ach_pct)d%% of tracked goals show improvement or achievement."
+msgstr ""
+"%(program)s dessert %(active)d participant(e)s (%(new)d nouveaux/nouvelles, "
+"%(returning)d de retour ce/cette %(period)s). Le personnel a enregistré "
+"%(sessions)d rencontres. %(goals)d objectifs sont actifs, %(joint_pct)d%% "
+"développés conjointement avec les participant(e)s. %(ach_pct)d%% des "
+"objectifs suivis montrent une amélioration ou une réalisation."
+
+msgid ""
+"%(program)s is serving %(active)d participants (%(new)d new this "
+"%(period)s). Staff recorded %(sessions)d sessions across %(goals)d active "
+"goals, %(joint_pct)d%% jointly developed with participants."
+msgstr ""
+"%(program)s dessert %(active)d participant(e)s (%(new)d nouveaux/nouvelles "
+"ce/cette %(period)s). Le personnel a enregistré %(sessions)d rencontres pour"
+" %(goals)d objectifs actifs, %(joint_pct)d%% développés conjointement avec "
+"les participant(e)s."
+
+msgid "quarter"
+msgstr "trimestre"
+
+#: apps/reports/insights_fhir.py — Funder Stats (Feature F)
+msgid "Served"
+msgstr "Desservis"
+
+msgid "%(total)d participants (%(new)d new, %(returning)d returning)"
+msgstr ""
+"%(total)d participant(e)s (%(new)d nouveaux/nouvelles, %(returning)d de "
+"retour)"
+
+msgid "%(count)d sessions delivered"
+msgstr "%(count)d rencontres réalisées"
+
+msgid "Goals"
+msgstr "Objectifs"
+
+msgid "%(pct)d%% jointly developed with participants"
+msgstr "%(pct)d%% développés conjointement avec les participant(e)s"
+
+msgid "not enough data"
+msgstr "données insuffisantes"
+
+msgid "%(pct)d%% of tracked goals improving or achieved"
+msgstr "%(pct)d%% des objectifs suivis en amélioration ou atteints"
+
+msgid "%(tracked)d of %(total)d have metric data"
+msgstr "%(tracked)d de %(total)d ont des données de mesure"
+
+msgid "%(pct)d%% completed program"
+msgstr "%(pct)d%% ont terminé le programme"
+
+msgid "%(with_reason)d of %(total)d have discharge reason"
+msgstr "%(with_reason)d de %(total)d ont un motif de fin de service"
+
+#: templates/reports/_insights_practice_quality.html
+msgid "Practice Indicators"
+msgstr "Indicateurs de pratique"
+
+msgid "Practice Quality"
+msgstr "Qualité de la pratique"
+
+msgid "participant voice"
+msgstr "voix des participant(e)s"
+
+msgid "Practice Health"
+msgstr "Santé de la pratique"
+
+msgid ""
+"Key indicators of collaborative practice quality. Green means strong, amber "
+"is developing, red needs attention."
+msgstr ""
+"Indicateurs clés de qualité de la pratique collaborative. Vert indique une "
+"bonne performance, orange est en développement, rouge nécessite une "
+"attention."
+
+msgid "Practice health indicators"
+msgstr "Indicateurs de santé de la pratique"
+
+msgid "Goal Source Distribution"
+msgstr "Distribution des sources d'objectifs"
+
+msgid ""
+"Who initiated each goal — jointly developed goals reflect collaborative "
+"practice."
+msgstr ""
+"Qui a initié chaque objectif — les objectifs développés conjointement "
+"reflètent une pratique collaborative."
+
+msgid "Goal source distribution"
+msgstr "Distribution des sources d'objectifs"
+
+msgid "Bar chart showing goal source distribution"
+msgstr "Diagramme à barres montrant la distribution des sources d'objectifs"
+
+msgid "Goal Source vs. Achievement"
+msgstr "Source d'objectif vs. réalisation"
+
+msgid ""
+"Does who initiated the goal affect whether it's achieved? Larger differences"
+" suggest goal-setting process matters."
+msgstr ""
+"L'initiateur de l'objectif affecte-t-il sa réalisation ? Des différences "
+"plus grandes suggèrent que le processus de fixation d'objectifs est "
+"important."
+
+msgid "Goal source vs achievement cross-tabulation"
+msgstr "Tableau croisé source d'objectif vs réalisation"
+
+msgid "Achieved"
+msgstr "Atteint"
+
+#: templates/reports/_insights_cohort.html
+msgid "Cohort Comparison"
+msgstr "Comparaison de cohortes"
+
+msgid "new intakes vs. re-enrolments"
+msgstr "nouvelles admissions vs. réinscriptions"
+
+msgid "New Intakes vs. Re-enrolments"
+msgstr "Nouvelles admissions vs. réinscriptions"
+
+msgid ""
+"How do outcomes differ between participants entering the program for the "
+"first time and those returning?"
+msgstr ""
+"Comment les résultats diffèrent-ils entre les participant(e)s qui entrent "
+"dans le programme pour la première fois et ceux qui reviennent ?"
+
+msgid "Cohort comparison table"
+msgstr "Tableau de comparaison de cohortes"
+
+msgid "Cohort"
+msgstr "Cohorte"
+
+msgid "Goals/person"
+msgstr "Objectifs/personne"
+
+#: templates/clients/_exec_program_summary.html
+msgid "Program summary"
+msgstr "Résumé du programme"
+
+msgid "active participant with no session in 30+ days"
+msgid_plural "active participants with no session in 30+ days"
+msgstr[0] "participant(e) actif/active sans rencontre depuis plus de 30 jours"
+msgstr[1] ""
+"participant(e)s actif/actives sans rencontre depuis plus de 30 jours"
+
+msgid "Funder-ready statistics"
+msgstr "Statistiques prêtes pour les bailleurs de fonds"
+
+msgid "Funder statistics"
+msgstr "Statistiques pour les bailleurs de fonds"
+
+msgid "Reliable"
+msgstr "Fiable"
+
+msgid "Insufficient data"
+msgstr "Données insuffisantes"
+
+msgid "%"
+msgstr ""
+
+msgid "Achievement Rates"
+msgstr ""
+
+msgid ""
+"Are you sure? This marks the theme as something that won’t be acted on."
+msgstr ""
+
+msgid "Auto-linked service episode for this encounter."
+msgstr ""
+
+msgid "Default target date offset (days) for goals created in this program."
+msgstr ""
+
+msgid "Funder-required"
+msgstr ""
+
+msgid "How goal_source was derived: heuristic, worker_set, or ai_inferred."
+msgstr ""
+
+msgid "Jointly developed"
+msgstr ""
+
+msgid "Outcome Progress"
+msgstr ""
+
+msgid "Participant-initiated"
+msgstr ""
+
+msgid "Practice indicators"
+msgstr ""
+
+msgid "Target completion date. Auto-set from program default."
+msgstr ""
+
+msgid "Who established this goal. Auto-classified from content."
+msgstr ""
+
+msgid "Worker-initiated"
+msgstr ""

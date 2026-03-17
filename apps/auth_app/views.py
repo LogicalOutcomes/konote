@@ -174,6 +174,7 @@ def login_view(request):
 @ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def _local_login(request):
     """Username/password login with rate limiting and account lockout."""
+    from apps.admin_settings.models import FeatureToggle
     from apps.auth_app.forms import LoginForm
     from apps.auth_app.models import User
 
@@ -243,6 +244,9 @@ def _local_login(request):
     demo_users = []
     demo_portal_participants = []
     if settings.DEMO_MODE:
+        feature_flags = FeatureToggle.get_all_flags()
+        portal_enabled = feature_flags.get("participant_portal", True)
+
         # Auto-detect: if instance-specific demo users exist (any group
         # other than 'default'/blank), show only those and suppress the defaults.
         all_demo = User.objects.filter(is_demo=True, is_active=True)
@@ -255,9 +259,10 @@ def _local_login(request):
             qs.order_by("display_name")
             .values("username", "display_name")
         )
-        from apps.portal.models import get_demo_portal_participants
+        if portal_enabled:
+            from apps.portal.models import get_demo_portal_participants
 
-        demo_portal_participants = get_demo_portal_participants()
+            demo_portal_participants = get_demo_portal_participants()
 
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))
     return render(request, "auth/login.html", {
@@ -337,7 +342,7 @@ def azure_callback(request):
 
 @csrf_exempt
 @require_POST
-@ratelimit(key="ip", rate="10/m", method=["POST"])
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def demo_login(request, role):
     """Quick-login as a demo user. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
@@ -618,6 +623,7 @@ def mfa_verify(request):
 
 
 @login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_setup(request):
     """Enable TOTP MFA — show QR code and confirm with a verification code."""
     import secrets
@@ -673,6 +679,7 @@ def mfa_setup(request):
 
 
 @login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_disable(request):
     """Disable TOTP MFA — requires re-entering a valid code."""
     from django.contrib import messages

@@ -68,7 +68,7 @@ def get_subject_queryset(subject_type):
         from apps.plans.models import PlanTarget
 
         return PlanTarget.objects.select_related("client_file", "plan_section__program").filter(
-            status="default",
+            status__in=PlanTarget.ACTIVE_STATUSES,
         ).order_by("updated_at")
     raise ValueError(f"Unknown subject type: {subject_type}")
 

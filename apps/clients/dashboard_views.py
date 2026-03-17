@@ -23,6 +23,8 @@ from apps.programs.models import Program, UserProgramRole
 from apps.reports.insights import get_structured_insights
 from apps.reports.insights_views import _compute_trend_direction
 from apps.reports.metric_insights import get_data_completeness
+# build_program_summary logic is inlined in _batch_fhir_enrichment
+# for query batching efficiency.
 
 
 logger = logging.getLogger(__name__)
@@ -63,6 +65,172 @@ def _count_without_notes(active_client_ids, program_ids, month_start):
         ).values_list("client_file_id", flat=True)
     )
     return len(set(active_client_ids) - clients_with_notes)
+
+
+def _batch_fhir_enrichment(filtered_program_ids, enrolment_stats,
+                           programs, thirty_days_ago):
+    """Batch FHIR enrichment data for all programs in minimal queries.
+
+    Computes program summary sentences and stale episode counts using
+    batched queries instead of per-program calls.
+
+    Returns dict of program_id -> {
+        summary_sentence: str,
+        stale_episodes: int,
+    }
+    """
+    from apps.clients.models import ServiceEpisode
+    from apps.plans.models import PlanTarget
+
+    program_map = {p.pk: p for p in programs}
+
+    # ── Batch query 1: ServiceEpisode counts by program × episode_type ──
+    ep_rows = (
+        ServiceEpisode.objects.filter(
+            program_id__in=filtered_program_ids,
+            status__in=["active", "on_hold"],
+        )
+        .values("program_id", "episode_type")
+        .annotate(cnt=Count("id"))
+    )
+    ep_data = {}
+    for pid in filtered_program_ids:
+        ep_data[pid] = {"new_accessible": 0, "returning_accessible": 0}
+    for r in ep_rows:
+        pid = r["program_id"]
+        if pid not in ep_data:
+            continue
+        if r["episode_type"] == "new_intake":
+            ep_data[pid]["new_accessible"] += r["cnt"]
+        elif r["episode_type"] == "re_enrolment":
+            ep_data[pid]["returning_accessible"] += r["cnt"]
+
+    # ── Batch query 2: ProgressNote counts by program ──
+    note_rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            status="default",
+        )
+        .values("author_program_id")
+        .annotate(cnt=Count("id"))
+    )
+    note_counts = {r["author_program_id"]: r["cnt"] for r in note_rows}
+
+    # ── Batch query 3: PlanTarget aggregates by program ──
+    target_rows = (
+        PlanTarget.objects.filter(
+            plan_section__program_id__in=filtered_program_ids,
+            status__in=PlanTarget.ACTIVE_STATUSES,
+        )
+        .values("plan_section__program_id")
+        .annotate(
+            total=Count("id"),
+            joint=Count("id", filter=Q(goal_source="joint")),
+            with_achievement=Count("id", filter=Q(achievement_status__gt="")),
+            positive=Count("id", filter=Q(
+                achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
+            )),
+        )
+    )
+    target_data = {}
+    for r in target_rows:
+        target_data[r["plan_section__program_id"]] = r
+
+    # ── Batch query 4: Stale episodes (active enrolments with no recent note) ──
+    # Use active_ids from enrolment_stats (already queried) to avoid duplicate query.
+    # Query recent notes per-program to avoid cross-program false negatives:
+    # a note in Program B shouldn't clear a stale flag in Program A.
+    active_by_program = {
+        pid: es.get("active_ids", set())
+        for pid, es in enrolment_stats.items()
+    }
+    all_active_cids = set()
+    for ids in active_by_program.values():
+        all_active_cids.update(ids)
+
+    # Fetch recent notes grouped by (program, client) for correct per-program counting
+    recent_by_program = {}
+    if all_active_cids:
+        recent_rows = (
+            ProgressNote.objects.filter(
+                client_file_id__in=all_active_cids,
+                author_program_id__in=filtered_program_ids,
+                created_at__gte=thirty_days_ago,
+                status="default",
+            )
+            .values_list("author_program_id", "client_file_id")
+            .distinct()
+        )
+        for rpid, rcid in recent_rows:
+            recent_by_program.setdefault(rpid, set()).add(rcid)
+
+    # ── Assemble results per program ──
+    result = {}
+    for pid in filtered_program_ids:
+        program = program_map.get(pid)
+        if not program:
+            continue
+
+        es = enrolment_stats.get(pid, {})
+        active = es.get("active", 0)
+        ep = ep_data.get(pid, {})
+        td = target_data.get(pid, {})
+        sessions = note_counts.get(pid, 0)
+        goal_count = td.get("total", 0)
+        joint_count = td.get("joint", 0)
+        joint_pct = round(joint_count / goal_count * 100) if goal_count else 0
+        total_tracked = td.get("with_achievement", 0)
+        positive = td.get("positive", 0)
+
+        # Summary sentence
+        if active < SMALL_PROGRAM_THRESHOLD:
+            summary = _(
+                "%(program)s has %(active)d active participants. "
+                "Aggregate statistics are not shown for programs with fewer "
+                "than 5 participants to protect privacy."
+            ) % {"program": program.name, "active": active}
+        elif total_tracked >= 10:
+            ach_pct = round(positive / total_tracked * 100)
+            summary = _(
+                "%(program)s is serving %(active)d participants "
+                "(%(new)d new, %(returning)d returning this %(period)s). "
+                "Staff recorded %(sessions)d sessions. "
+                "%(goals)d goals are active, %(joint_pct)d%% jointly developed "
+                "with participants. %(ach_pct)d%% of tracked goals show "
+                "improvement or achievement."
+            ) % {
+                "program": program.name, "active": active,
+                "new": ep.get("new_accessible", 0),
+                "returning": ep.get("returning_accessible", 0),
+                "period": _("quarter"), "sessions": sessions,
+                "goals": goal_count, "joint_pct": joint_pct,
+                "ach_pct": ach_pct,
+            }
+        else:
+            summary = _(
+                "%(program)s is serving %(active)d participants "
+                "(%(new)d new this %(period)s). "
+                "Staff recorded %(sessions)d sessions across "
+                "%(goals)d active goals, %(joint_pct)d%% jointly developed "
+                "with participants."
+            ) % {
+                "program": program.name, "active": active,
+                "new": ep.get("new_accessible", 0),
+                "period": _("quarter"), "sessions": sessions,
+                "goals": goal_count, "joint_pct": joint_pct,
+            }
+
+        # Stale episodes (per-program: only notes in THIS program count)
+        prog_active = active_by_program.get(pid, set())
+        prog_recent = recent_by_program.get(pid, set())
+        stale = len(prog_active - prog_recent)
+
+        result[pid] = {
+            "summary_sentence": summary,
+            "stale_episodes": stale,
+        }
+
+    return result
 
 
 def _count_overdue_followups(client_ids, today):
@@ -211,7 +379,7 @@ def _calc_goal_completion(program):
 
     targets = PlanTarget.objects.filter(
         plan_section__program=program,
-        status__in=["default", "completed"],
+        status__in=["default", "on_hold", "completed"],
     )
     total = targets.count()
     if total == 0:
@@ -372,7 +540,7 @@ def _batch_goal_completion(filtered_program_ids):
     rows = (
         PlanTarget.objects.filter(
             plan_section__program_id__in=filtered_program_ids,
-            status__in=["default", "completed"],
+            status__in=["default", "on_hold", "completed"],
             client_file__is_demo=False,
         )
         .values("plan_section__program_id")
@@ -1155,6 +1323,13 @@ def _build_executive_context(request):
         filtered_program_ids, month_start.date(), today,
     )
 
+    # Batch FHIR enrichment (summary sentence + stale episodes)
+    thirty_days_ago = now - timedelta(days=30)
+    fhir_map = _batch_fhir_enrichment(
+        filtered_program_ids, enrolment_stats,
+        filtered_programs, thirty_days_ago,
+    )
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
@@ -1209,6 +1384,11 @@ def _build_executive_context(request):
         stat["data_completeness_level"] = mi.get("data_completeness_level", "low")
         stat["data_completeness_pct"] = mi.get("data_completeness_pct", 0)
         stat["urgent_theme_count"] = mi.get("urgent_theme_count", 0)
+
+        # FHIR enrichment (batched — see _batch_fhir_enrichment)
+        fhir = fhir_map.get(pid, {})
+        stat["summary_sentence"] = fhir.get("summary_sentence", "")
+        stat["stale_episodes"] = fhir.get("stale_episodes", 0)
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)

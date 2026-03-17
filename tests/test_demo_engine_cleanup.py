@@ -5,6 +5,7 @@ and cleanup_demo_data() restores them, and that the method is skipped
 when DEMO_MODE is not enabled.
 """
 from django.test import TestCase, override_settings
+from django.conf import settings
 from cryptography.fernet import Fernet
 
 from apps.admin_settings.demo_engine import DemoDataEngine
@@ -115,7 +116,16 @@ class MetricVisibilityRestorationTest(TestCase):
     def test_skips_when_demo_mode_not_set(self):
         """DEMO_MODE not in settings at all — should skip safely."""
         engine = DemoDataEngine()
-        engine._ensure_portal_visible_metrics([self.program])
+        had_demo_mode = hasattr(settings, "DEMO_MODE")
+        original_demo_mode = getattr(settings, "DEMO_MODE", None)
+        if had_demo_mode:
+            delattr(settings, "DEMO_MODE")
+
+        try:
+            engine._ensure_portal_visible_metrics([self.program])
+        finally:
+            if had_demo_mode:
+                setattr(settings, "DEMO_MODE", original_demo_mode)
 
         self.metric_hidden.refresh_from_db()
         self.assertEqual(self.metric_hidden.portal_visibility, "no")

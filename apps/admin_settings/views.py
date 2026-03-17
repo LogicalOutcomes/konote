@@ -733,7 +733,7 @@ def diagnose_charts(request):
     chart_simulation = []
 
     if client:
-        targets = PlanTarget.objects.filter(client_file=client, status="default")
+        targets = PlanTarget.objects.filter(client_file=client, status__in=PlanTarget.ACTIVE_STATUSES)
         target_data = []
         for t in targets:
             ptm_count = PlanTargetMetric.objects.filter(plan_target=t).count()

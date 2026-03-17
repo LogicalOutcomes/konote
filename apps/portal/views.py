@@ -505,6 +505,7 @@ def consent_flow(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_setup(request):
     """Set up TOTP-based multi-factor authentication.
 
@@ -550,6 +551,7 @@ def mfa_setup(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_verify(request):
     """Verify a TOTP code — used during login (MFA step) and setup confirmation."""
     from apps.portal.forms import MFAVerifyForm
@@ -700,7 +702,7 @@ def dashboard(request):
         ).count()
         goals_count = PlanTarget.objects.filter(
             client_file=client_file,
-            status="default",
+            status__in=PlanTarget.ACTIVE_STATUSES,
             updated_at__gt=participant.last_login,
         ).count()
         new_count = notes_count + goals_count
@@ -849,6 +851,7 @@ def settings_view(request):
 
 
 @portal_login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def password_change(request):
     """Change the participant's password."""
     from apps.portal.forms import PortalPasswordChangeForm
@@ -959,7 +962,7 @@ def password_reset_request(request):
 
 
 @portal_feature_required
-@ratelimit(key="ip", rate="10/m", method=["POST"])
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def password_reset_confirm(request):
     """Enter the emailed reset code and set a new password."""
     from apps.portal.forms import PortalPasswordResetConfirmForm
@@ -1082,7 +1085,7 @@ def goals_list(request):
     participant-facing client_goal text.
     """
     from apps.notes.models import ProgressNoteTarget
-    from apps.plans.models import PlanSection
+    from apps.plans.models import PlanSection, PlanTarget
 
     client_file = _get_client_file(request)
 
@@ -1098,7 +1101,7 @@ def goals_list(request):
     filtered_sections = []
     for section in sections:
         active_targets = [
-            t for t in section.targets.all() if t.status == "default"
+            t for t in section.targets.all() if t.status in PlanTarget.ACTIVE_STATUSES
         ]
         if active_targets:
             # Attach latest progress descriptor to each target

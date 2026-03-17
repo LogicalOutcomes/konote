@@ -36,6 +36,10 @@ from .metric_insights import (
     get_data_completeness,
     get_instrument_aggregates,
 )
+from .insights_fhir import (
+    get_goal_source_distribution,
+    get_practice_health,
+)
 
 # Map DB values to human-readable labels for suggestion priorities
 _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
@@ -285,6 +289,14 @@ def program_insights(request):
                                     structured=structured,
                                     distributions=metric_distributions)
 
+        # ── FHIR metadata features ──
+        goal_source_dist = get_goal_source_distribution(program, date_from, date_to)
+        practice_health = get_practice_health(
+            program, date_from, date_to,
+            goal_source_dist=goal_source_dist,
+            data_completeness=data_completeness,
+        )
+
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():
             ach["not_achieved_count"] = ach["total"] - ach["achieved_count"]
@@ -370,6 +382,9 @@ def program_insights(request):
             "total_new_participants": total_new_participants,
             "distributions_summary": distributions_summary,
             "outcomes_summary": outcomes_summary,
+            # FHIR metadata features
+            "goal_source_dist": goal_source_dist,
+            "practice_health": practice_health,
             **expand_flags,
             **interp,
         })
@@ -430,7 +445,7 @@ def client_insights_partial(request, client_id):
         .values_list("program_id", flat=True)
     )
     active_targets = list(
-        PlanTarget.objects.filter(client_file=client, status="default")
+        PlanTarget.objects.filter(client_file=client, status__in=PlanTarget.ACTIVE_STATUSES)
         .filter(
             Q(plan_section__program_id__isnull=True)
             | Q(plan_section__program_id__in=user_program_ids)
