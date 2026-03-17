@@ -623,6 +623,7 @@ def mfa_verify(request):
 
 
 @login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_setup(request):
     """Enable TOTP MFA — show QR code and confirm with a verification code."""
     import secrets
@@ -678,6 +679,7 @@ def mfa_setup(request):
 
 
 @login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_disable(request):
     """Disable TOTP MFA — requires re-entering a valid code."""
     from django.contrib import messages

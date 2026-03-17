@@ -851,6 +851,7 @@ def settings_view(request):
 
 
 @portal_login_required
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def password_change(request):
     """Change the participant's password."""
     from apps.portal.forms import PortalPasswordChangeForm
