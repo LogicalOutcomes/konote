@@ -12,6 +12,17 @@ def forwards(apps, schema_editor):
     ReportTemplate = apps.get_model("reports", "ReportTemplate")
     Partner = apps.get_model("reports", "Partner")
 
+    # Check if the report_templates table exists — on fresh databases where
+    # FunderProfile was never created, the rename in 0006 may have been faked
+    # and the M2M through table won't exist yet.
+    from django.db import connection
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'report_templates')"
+        )
+        if not cursor.fetchone()[0]:
+            return
+
     for template in ReportTemplate.objects.all():
         partner = Partner.objects.create(
             name=template.name,
