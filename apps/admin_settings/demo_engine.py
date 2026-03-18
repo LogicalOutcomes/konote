@@ -1143,6 +1143,38 @@ class DemoDataEngine:
                 ))
                 client_num += 1
 
+        # Cross-enrol 5 clients into Community Kitchen for PHIPA consent demo
+        kitchen_program = next(
+            (p for p in programs if p.service_model == "group"), None
+        )
+        if kitchen_program:
+            non_kitchen = [
+                a for a in client_assignments if a.program != kitchen_program
+            ]
+            cross_candidates = random.sample(
+                non_kitchen, min(5, len(non_kitchen))
+            )
+            for assignment in cross_candidates:
+                if not ClientProgramEnrolment.objects.filter(
+                    client_file=assignment.client, program=kitchen_program,
+                ).exists():
+                    # Find the Kitchen program's worker
+                    kitchen_worker = None
+                    for upr in UserProgramRole.objects.filter(
+                        program=kitchen_program, role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER],
+                    ):
+                        kitchen_worker = upr.user
+                        break
+                    ClientProgramEnrolment.objects.create(
+                        client_file=assignment.client,
+                        program=kitchen_program,
+                        status="active",
+                        referral_source="agency_internal",
+                        primary_worker=kitchen_worker,
+                        consent_to_aggregate_reporting=True,
+                    )
+            self.log(f"  Cross-enrolled {len(cross_candidates)} clients into {kitchen_program.name}.")
+
         self.log(f"  Created {len(client_assignments)} demo clients across {len(programs)} programs.")
         return client_assignments
 
