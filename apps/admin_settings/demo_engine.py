@@ -735,6 +735,30 @@ class DemoDataEngine:
         demo_users.delete()
         counts["users"] = user_count
 
+        # Clear demo OrganizationProfile
+        from apps.admin_settings.models import OrganizationProfile
+        profile = OrganizationProfile.get_solo()
+        if profile.legal_name == "Maple Community Services":
+            profile.legal_name = ""
+            profile.operating_name = ""
+            profile.description = ""
+            profile.description_fr = ""
+            profile.legal_status = ""
+            profile.sector_codes = []
+            profile.street_address = ""
+            profile.city = ""
+            profile.province = ""
+            profile.postal_code = ""
+            profile.website = ""
+            profile.save()
+            counts["org_profile"] = 1
+
+        # Clear demo taxonomy mappings
+        from apps.admin_settings.models import TaxonomyMapping
+        counts["taxonomy"] = TaxonomyMapping.objects.filter(
+            mapping_source="manual", mapping_status="approved",
+        ).delete()[0]
+
         self.log(
             f"  Removed {counts['clients']} demo clients, {counts['users']} demo users, "
             f"and associated data."
@@ -1068,6 +1092,16 @@ class DemoDataEngine:
             else:
                 program_workers[prog.pk] = users[worker_usernames[0]]
 
+        # Set starting record_id to avoid collisions with existing DEMO-NNN
+        highest_existing = ClientFile.objects.filter(
+            is_demo=True, record_id__startswith="DEMO-",
+        ).order_by("-record_id").values_list("record_id", flat=True).first()
+        if highest_existing:
+            try:
+                client_num = int(highest_existing.split("-")[1]) + 1
+            except (IndexError, ValueError):
+                pass
+
         for prog in programs:
             prog_profile = profile_programs.get(prog.name, {})
             personas = prog_profile.get("client_personas", [])
@@ -1089,16 +1123,6 @@ class DemoDataEngine:
                     f"(target {actual_count}). Skipping."
                 )
                 continue
-
-            # Set starting record_id to avoid collisions with existing DEMO-NNN
-            highest_existing = ClientFile.objects.filter(
-                is_demo=True, record_id__startswith="DEMO-",
-            ).order_by("-record_id").values_list("record_id", flat=True).first()
-            if highest_existing:
-                try:
-                    client_num = int(highest_existing.split("-")[1]) + 1
-                except (IndexError, ValueError):
-                    pass
 
             for i in range(needed):
                 record_id = f"DEMO-{client_num:03d}"
@@ -2202,20 +2226,17 @@ class DemoDataEngine:
             first_target.goal_source_method = "heuristic"
             first_target.save()
 
-        # Override goal_source with weighted distribution and set target_date
-        for target, _metrics in all_targets:
-            goal_source = random.choices(
-                ["joint", "participant", "worker", "funder_required"],
-                weights=[50, 30, 15, 5],
-                k=1,
-            )[0]
-            target.goal_source = goal_source
-            target.goal_source_method = "heuristic"
-            if hasattr(program, 'default_goal_review_days') and program.default_goal_review_days:
-                target.target_date = (
-                    self.now + timedelta(days=program.default_goal_review_days)
-                ).date()
-            target.save(update_fields=["goal_source", "goal_source_method", "target_date"])
+        # Set target_date from program defaults on all targets
+        if hasattr(program, 'default_goal_review_days') and program.default_goal_review_days:
+            for target, _metrics in all_targets:
+                if not target.target_date:
+                    # Offset from the client's enrolment start, not from now
+                    enrolment = ClientProgramEnrolment.objects.filter(
+                        client_file=target.client_file, program=program,
+                    ).first()
+                    base_date = enrolment.started_at.date() if enrolment and enrolment.started_at else self.now.date()
+                    target.target_date = base_date + timedelta(days=program.default_goal_review_days)
+                    target.save(update_fields=["target_date"])
 
         return all_targets
 
@@ -2521,7 +2542,7 @@ class DemoDataEngine:
             program_themes = PROGRAM_SUGGESTION_THEMES.get(prog.name, [])
             for t_idx, (theme_name, priority) in enumerate(program_themes):
                 # Mark roughly 1 in 3 themes as addressed
-                status = "addressed" if t_idx % 3 == 2 else "open"
+                status = "addressed" if random.random() < 0.3 else "open"
                 theme, created = SuggestionTheme.objects.get_or_create(
                     program=prog,
                     name=theme_name,
@@ -2959,8 +2980,8 @@ class DemoDataEngine:
         )
         profile.description_fr = (
             "Un organisme communautaire multiservices en Ontario offrant "
-            "du soutien \u00e0 l\u2019emploi, de la stabilit\u00e9 en logement, des "
-            "programmes jeunesse, de l\u2019\u00e9tablissement pour nouveaux "
+            "du soutien \u00e0 l'emploi, de la stabilit\u00e9 en logement, des "
+            "programmes jeunesse, de l'\u00e9tablissement pour nouveaux "
             "arrivants et des cuisines communautaires."
         )
         profile.legal_status = "Registered charity"
