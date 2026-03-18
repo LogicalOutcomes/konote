@@ -1058,7 +1058,9 @@ class DemoDataEngine:
                 else:
                     # Generate from name bank
                     first_name, last_name = self._pick_unique_name(used_names)
-                    trend = TRENDS[i % len(TRENDS)]
+                    trend = random.choices(
+                        TRENDS, weights=[40, 20, 20, 10, 10], k=1
+                    )[0]
                     goal = ""
 
                 used_names.add((first_name, last_name))
