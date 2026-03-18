@@ -2202,6 +2202,21 @@ class DemoDataEngine:
             first_target.goal_source_method = "heuristic"
             first_target.save()
 
+        # Override goal_source with weighted distribution and set target_date
+        for target, _metrics in all_targets:
+            goal_source = random.choices(
+                ["joint", "participant", "worker", "funder_required"],
+                weights=[50, 30, 15, 5],
+                k=1,
+            )[0]
+            target.goal_source = goal_source
+            target.goal_source_method = "heuristic"
+            if hasattr(program, 'default_goal_review_days') and program.default_goal_review_days:
+                target.target_date = (
+                    self.now + timedelta(days=program.default_goal_review_days)
+                ).date()
+            target.save(update_fields=["goal_source", "goal_source_method", "target_date"])
+
         return all_targets
 
     def _assign_metrics_to_target(self, target, metrics, target_index):
