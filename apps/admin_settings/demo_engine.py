@@ -2902,6 +2902,45 @@ class DemoDataEngine:
             if not programs:
                 return False
 
+            # 1a. Populate Program FHIR fields
+            _program_fhir = {
+                "Supported Employment": {
+                    "cids_sector_code": "group6_employment",
+                    "population_served_codes": ["working_age_adults"],
+                    "default_goal_review_days": 90,
+                },
+                "Housing Stability": {
+                    "cids_sector_code": "group6_housing",
+                    "population_served_codes": ["working_age_adults", "at_risk_homelessness"],
+                    "default_goal_review_days": 90,
+                },
+                "Youth Drop-In": {
+                    "cids_sector_code": "group4_education_youth",
+                    "population_served_codes": ["youth_13_18"],
+                    "default_goal_review_days": 60,
+                },
+                "Newcomer Connections": {
+                    "cids_sector_code": "group6_social_services",
+                    "population_served_codes": ["newcomers_immigrants"],
+                    "default_goal_review_days": 90,
+                },
+                "Community Kitchen": {
+                    "cids_sector_code": "group6_social_services",
+                    "population_served_codes": ["general_community"],
+                    "default_goal_review_days": 30,
+                },
+            }
+            for prog in programs:
+                fhir = _program_fhir.get(prog.name, {})
+                if fhir:
+                    changed = False
+                    for field, value in fhir.items():
+                        if not getattr(prog, field, None):
+                            setattr(prog, field, value)
+                            changed = True
+                    if changed:
+                        prog.save()
+
             # 1b. Ensure metrics used in demo plans are portal-visible
             self._ensure_portal_visible_metrics(programs)
 
