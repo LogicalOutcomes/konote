@@ -50,8 +50,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clients-per-program",
             type=int,
-            default=3,
-            help="Number of demo clients to create per program (default: 3).",
+            default=20,
+            help="Number of demo clients to create per program (default: 20).",
         )
         parser.add_argument(
             "--days",

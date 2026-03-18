@@ -332,6 +332,34 @@ GENERIC_SUGGESTIONS = [
     "More evening or weekend options would make it easier for me to attend",
 ]
 
+PROGRAM_SUGGESTION_THEMES = {
+    "Supported Employment": [
+        ("More flexible scheduling for interviews", "important"),
+        ("Resume workshop follow-up", "noted"),
+        ("Interview practice sessions", "noted"),
+    ],
+    "Housing Stability": [
+        ("Faster landlord reference letters", "urgent"),
+        ("Budgeting workshop request", "noted"),
+        ("Move-in kit supplies", "noted"),
+    ],
+    "Youth Drop-In": [
+        ("More weekend activities", "important"),
+        ("Homework help timing", "noted"),
+        ("Music and art supplies", "noted"),
+    ],
+    "Newcomer Connections": [
+        ("Conversation circle frequency", "important"),
+        ("More translated materials", "noted"),
+        ("Childcare during sessions", "important"),
+    ],
+    "Community Kitchen": [
+        ("Recipe books to take home", "noted"),
+        ("Childcare during sessions", "important"),
+        ("Allergen-free options", "noted"),
+    ],
+}
+
 # ---------------------------------------------------------------------------
 # Portal content pools — journal entries, messages, staff notes
 # ---------------------------------------------------------------------------
@@ -707,6 +735,30 @@ class DemoDataEngine:
         demo_users.delete()
         counts["users"] = user_count
 
+        # Clear demo OrganizationProfile
+        from apps.admin_settings.models import OrganizationProfile
+        profile = OrganizationProfile.get_solo()
+        if profile.legal_name == "Maple Community Services":
+            profile.legal_name = ""
+            profile.operating_name = ""
+            profile.description = ""
+            profile.description_fr = ""
+            profile.legal_status = ""
+            profile.sector_codes = []
+            profile.street_address = ""
+            profile.city = ""
+            profile.province = ""
+            profile.postal_code = ""
+            profile.website = ""
+            profile.save()
+            counts["org_profile"] = 1
+
+        # Clear demo taxonomy mappings
+        from apps.admin_settings.models import TaxonomyMapping
+        counts["taxonomy"] = TaxonomyMapping.objects.filter(
+            mapping_source="manual", mapping_status="approved",
+        ).delete()[0]
+
         self.log(
             f"  Removed {counts['clients']} demo clients, {counts['users']} demo users, "
             f"and associated data."
@@ -1040,12 +1092,39 @@ class DemoDataEngine:
             else:
                 program_workers[prog.pk] = users[worker_usernames[0]]
 
+        # Set starting record_id to avoid collisions with existing DEMO-NNN
+        highest_existing = ClientFile.objects.filter(
+            is_demo=True, record_id__startswith="DEMO-",
+        ).order_by("-record_id").values_list("record_id", flat=True).first()
+        if highest_existing:
+            try:
+                client_num = int(highest_existing.split("-")[1]) + 1
+            except (IndexError, ValueError):
+                pass
+
         for prog in programs:
             prog_profile = profile_programs.get(prog.name, {})
             personas = prog_profile.get("client_personas", [])
             worker = program_workers[prog.pk]
 
-            for i in range(clients_per_program):
+            # Group programs get more clients for realistic attendance
+            actual_count = clients_per_program
+            if prog.service_model == "group":
+                actual_count = max(clients_per_program, 30)
+
+            # Top-up mode: detect existing demo clients and only add more
+            existing_count = ClientProgramEnrolment.objects.filter(
+                program=prog, client_file__is_demo=True, status="active",
+            ).count()
+            needed = actual_count - existing_count
+            if needed <= 0:
+                self.log(
+                    f"  {prog.name}: already has {existing_count} demo clients "
+                    f"(target {actual_count}). Skipping."
+                )
+                continue
+
+            for i in range(needed):
                 record_id = f"DEMO-{client_num:03d}"
 
                 # Use persona from profile if available
@@ -1058,7 +1137,9 @@ class DemoDataEngine:
                 else:
                     # Generate from name bank
                     first_name, last_name = self._pick_unique_name(used_names)
-                    trend = TRENDS[i % len(TRENDS)]
+                    trend = random.choices(
+                        TRENDS, weights=[40, 20, 20, 10, 10], k=1
+                    )[0]
                     goal = ""
 
                 used_names.add((first_name, last_name))
@@ -1079,8 +1160,29 @@ class DemoDataEngine:
                 client.consent_type = random.choice(["written", "verbal", "electronic"])
                 client.save()
 
-                ClientProgramEnrolment.objects.create(
-                    client_file=client, program=prog, status="active",
+                # Referral source distribution
+                referral_weights = {
+                    "self": 30, "agency_external": 25, "healthcare": 15,
+                    "community": 15, "school": 5, "shelter": 5, "other": 5,
+                }
+                referral_source = random.choices(
+                    list(referral_weights.keys()),
+                    weights=list(referral_weights.values()),
+                    k=1,
+                )[0]
+
+                started_at = self.now - timedelta(
+                    days=random.randint(30, 180),
+                )
+
+                enrolment = ClientProgramEnrolment.objects.create(
+                    client_file=client,
+                    program=prog,
+                    status="active",
+                    referral_source=referral_source,
+                    primary_worker=worker,
+                    started_at=started_at,
+                    consent_to_aggregate_reporting=True,
                 )
 
                 client_assignments.append(SeedAssignment(
@@ -1092,6 +1194,60 @@ class DemoDataEngine:
                     relationship_label=HOUSEHOLD_RELATIONSHIP_SUPPORT,
                 ))
                 client_num += 1
+
+        # Cross-enrol 5 clients into Community Kitchen for PHIPA consent demo
+        kitchen_program = next(
+            (p for p in programs if p.service_model == "group"), None
+        )
+        if kitchen_program:
+            non_kitchen = [
+                a for a in client_assignments if a.program != kitchen_program
+            ]
+            cross_candidates = random.sample(
+                non_kitchen, min(5, len(non_kitchen))
+            )
+            for assignment in cross_candidates:
+                if not ClientProgramEnrolment.objects.filter(
+                    client_file=assignment.client, program=kitchen_program,
+                ).exists():
+                    # Find the Kitchen program's worker
+                    kitchen_worker = None
+                    for upr in UserProgramRole.objects.filter(
+                        program=kitchen_program, role__in=[ROLE_STAFF, ROLE_PROGRAM_MANAGER],
+                    ):
+                        kitchen_worker = upr.user
+                        break
+                    ClientProgramEnrolment.objects.create(
+                        client_file=assignment.client,
+                        program=kitchen_program,
+                        status="active",
+                        referral_source="agency_internal",
+                        primary_worker=kitchen_worker,
+                        consent_to_aggregate_reporting=True,
+                    )
+            self.log(f"  Cross-enrolled {len(cross_candidates)} clients into {kitchen_program.name}.")
+
+        # Create finished episodes for discharge demo
+        finished_count = random.randint(5, 8)
+        end_reasons = ["completed", "goals_met", "goals_met", "withdrew",
+                        "lost_contact", "completed", "referred_out", "withdrew"]
+        finished_so_far = 0
+        for i in range(len(client_assignments) - 1, -1, -1):
+            if finished_so_far >= finished_count:
+                break
+            assignment = client_assignments[i]
+            enrolment = ClientProgramEnrolment.objects.filter(
+                client_file=assignment.client,
+                program=assignment.program,
+                status="active",
+            ).first()
+            if enrolment:
+                enrolment.status = "finished"
+                enrolment.end_reason = end_reasons[finished_so_far % len(end_reasons)]
+                enrolment.ended_at = self.now - timedelta(days=random.randint(14, 90))
+                enrolment.save(update_fields=["status", "end_reason", "ended_at"])
+                finished_so_far += 1
+        self.log(f"  Created {finished_so_far} finished episodes.")
 
         self.log(f"  Created {len(client_assignments)} demo clients across {len(programs)} programs.")
         return client_assignments
@@ -2070,6 +2226,18 @@ class DemoDataEngine:
             first_target.goal_source_method = "heuristic"
             first_target.save()
 
+        # Set target_date from program defaults on all targets
+        if hasattr(program, 'default_goal_review_days') and program.default_goal_review_days:
+            for target, _metrics in all_targets:
+                if not target.target_date:
+                    # Offset from the client's enrolment start, not from now
+                    enrolment = ClientProgramEnrolment.objects.filter(
+                        client_file=target.client_file, program=program,
+                    ).first()
+                    base_date = enrolment.started_at.date() if enrolment and enrolment.started_at else self.now.date()
+                    target.target_date = base_date + timedelta(days=program.default_goal_review_days)
+                    target.save(update_fields=["target_date"])
+
         return all_targets
 
     def _assign_metrics_to_target(self, target, metrics, target_index):
@@ -2303,7 +2471,11 @@ class DemoDataEngine:
     # ----- Suggestion theme generation -----
 
     def generate_suggestion_themes(self, programs, users, profile):
-        """Create suggestion themes for each program."""
+        """Create suggestion themes for each program.
+
+        Uses profile-defined themes first, then program-specific themes from
+        PROGRAM_SUGGESTION_THEMES, falling back to generic themes.
+        """
         profile_programs = profile.get("programs", {})
         # Use the first worker (index 1) or fall back to any available user
         usernames = list(users.keys())
@@ -2357,6 +2529,51 @@ class DemoDataEngine:
                         .order_by("?")[:random.randint(2, 4)]
                     )
                     for note in available_notes:
+                        SuggestionLink.objects.get_or_create(
+                            theme=theme,
+                            progress_note=note,
+                            defaults={
+                                "auto_linked": False,
+                                "linked_by": creator,
+                            },
+                        )
+
+            # Program-specific suggestion themes from constant
+            program_themes = PROGRAM_SUGGESTION_THEMES.get(prog.name, [])
+            for t_idx, (theme_name, priority) in enumerate(program_themes):
+                # Mark roughly 1 in 3 themes as addressed
+                status = "addressed" if random.random() < 0.3 else "open"
+                theme, created = SuggestionTheme.objects.get_or_create(
+                    program=prog,
+                    name=theme_name,
+                    defaults={
+                        "description": "",
+                        "status": status,
+                        "source": "manual",
+                        "created_by": creator,
+                    },
+                )
+
+                if created:
+                    # Link 3-8 recent notes to each theme
+                    link_count = random.randint(3, 8)
+                    available_notes = list(
+                        ProgressNote.objects.filter(
+                            author_program=prog,
+                            client_file__is_demo=True,
+                        )
+                        .exclude(
+                            pk__in=SuggestionLink.objects.filter(
+                                theme__program=prog
+                            ).values_list("progress_note_id", flat=True)
+                        )
+                        .order_by("-backdate")[:link_count]
+                    )
+                    for note in available_notes:
+                        # Set the linked notes' suggestion_priority
+                        if not note.suggestion_priority or note.suggestion_priority == "":
+                            note.suggestion_priority = priority
+                            note.save(update_fields=["suggestion_priority"])
                         SuggestionLink.objects.get_or_create(
                             theme=theme,
                             progress_note=note,
@@ -2743,6 +2960,126 @@ class DemoDataEngine:
         if created_count:
             self.log(f"  Created {created_count} portal resource links.")
 
+    # ----- Organization profile -----
+
+    def _seed_organization_profile(self):
+        """Seed a realistic Canadian nonprofit OrganizationProfile."""
+        from apps.admin_settings.models import OrganizationProfile
+
+        profile = OrganizationProfile.get_solo()
+        if profile.legal_name:
+            self.log("  OrganizationProfile already populated.")
+            return
+
+        profile.legal_name = "Maple Community Services"
+        profile.operating_name = "Maple Community Services"
+        profile.description = (
+            "A multi-service community agency in Ontario providing "
+            "employment support, housing stability, youth programming, "
+            "newcomer settlement, and community kitchen services."
+        )
+        profile.description_fr = (
+            "Un organisme communautaire multiservices en Ontario offrant "
+            "du soutien \u00e0 l'emploi, de la stabilit\u00e9 en logement, des "
+            "programmes jeunesse, de l'\u00e9tablissement pour nouveaux "
+            "arrivants et des cuisines communautaires."
+        )
+        profile.legal_status = "Registered charity"
+        profile.sector_codes = [
+            "group6_employment", "group6_housing", "group6_social_services",
+        ]
+        profile.street_address = "150 Main Street"
+        profile.city = "Ottawa"
+        profile.province = "ON"
+        profile.postal_code = "K1A 0B1"
+        profile.country = "CA"
+        profile.website = "https://demo.konote.ca"
+        profile.save()
+        self.log("  OrganizationProfile seeded: Maple Community Services.")
+
+    # ----- CIDS and Taxonomy seeding -----
+
+    def _seed_cids_code_lists(self):
+        """Seed IRIS theme and SDG goal code list entries for FHIR demo."""
+        from apps.admin_settings.models import CidsCodeList
+
+        sdg_goals = [
+            ("1", "No Poverty", "Pas de pauvret\u00e9"),
+            ("2", "Zero Hunger", "Faim z\u00e9ro"),
+            ("3", "Good Health and Well-being", "Bonne sant\u00e9 et bien-\u00eatre"),
+            ("4", "Quality Education", "\u00c9ducation de qualit\u00e9"),
+            ("5", "Gender Equality", "\u00c9galit\u00e9 entre les sexes"),
+            ("8", "Decent Work and Economic Growth", "Travail d\u00e9cent et croissance \u00e9conomique"),
+            ("10", "Reduced Inequalities", "In\u00e9galit\u00e9s r\u00e9duites"),
+            ("11", "Sustainable Cities and Communities", "Villes et communaut\u00e9s durables"),
+        ]
+        created = 0
+        for code, label, label_fr in sdg_goals:
+            _, was_created = CidsCodeList.objects.get_or_create(
+                list_name="SDGGoals",
+                code=code,
+                defaults={
+                    "label": label,
+                    "label_fr": label_fr,
+                    "defined_by_name": "United Nations",
+                    "defined_by_uri": "https://sdgs.un.org/goals",
+                },
+            )
+            if was_created:
+                created += 1
+
+        iris_codes = [
+            ("PI2061", "Job Placement Rate", "Taux de placement en emploi"),
+        ]
+        for code, label, label_fr in iris_codes:
+            _, was_created = CidsCodeList.objects.get_or_create(
+                list_name="IrisMetric53",
+                code=code,
+                defaults={
+                    "label": label,
+                    "label_fr": label_fr,
+                    "defined_by_name": "GIIN",
+                    "defined_by_uri": "https://iris.thegiin.org/",
+                },
+            )
+            if was_created:
+                created += 1
+        self.log(f"  CidsCodeList: {created} entries seeded.")
+
+    def _seed_taxonomy_mappings(self, programs):
+        """Seed sample taxonomy mappings for universal and program metrics."""
+        from apps.admin_settings.models import TaxonomyMapping
+
+        mappings = [
+            ("Goal Progress", "sdg", "1", "SDGGoals", "SDG 1: No Poverty"),
+            ("Self-Efficacy", "common_approach", "CA-IND-001", "", "Individual Wellbeing"),
+            ("Job Placement", "iris_plus", "PI2061", "IrisMetric53", "Job Placement Rate"),
+            ("Job Placement", "sdg", "8", "SDGGoals", "SDG 8: Decent Work"),
+            ("Housing Secured", "sdg", "11", "SDGGoals", "SDG 11: Sustainable Cities"),
+            ("School Enrolment", "sdg", "4", "SDGGoals", "SDG 4: Quality Education"),
+        ]
+        created = 0
+        for metric_name, system, code, list_name, label in mappings:
+            md = MetricDefinition.objects.filter(
+                name=metric_name, is_enabled=True,
+            ).first()
+            if not md:
+                continue
+            _, was_created = TaxonomyMapping.objects.get_or_create(
+                metric_definition=md,
+                taxonomy_system=system,
+                taxonomy_code=code,
+                defaults={
+                    "taxonomy_list_name": list_name,
+                    "taxonomy_label": label,
+                    "mapping_status": "approved",
+                    "mapping_source": "manual",
+                },
+            )
+            if was_created:
+                created += 1
+        self.log(f"  TaxonomyMapping: {created} mappings seeded.")
+
     # ----- Main orchestrator -----
 
     @transaction.atomic
@@ -2772,12 +3109,22 @@ class DemoDataEngine:
 
         # Check for existing demo data
         existing = ClientFile.objects.filter(is_demo=True).exists()
-        if existing and not force:
-            self.log("  Demo data already exists. Use --force to regenerate.")
-            return False
-
         if existing and force:
             self.cleanup_demo_data()
+        elif existing:
+            # Top-up mode: check if all programs are at target count
+            all_at_target = True
+            for prog in self.discover_programs():
+                current = ClientProgramEnrolment.objects.filter(
+                    program=prog, client_file__is_demo=True, status="active",
+                ).count()
+                if current < clients_per_program:
+                    all_at_target = False
+                    break
+            if all_at_target:
+                self.log("  Demo data already exists and all programs at target. Use --force to regenerate.")
+                return False
+            self.log("  Demo data exists but some programs need more clients. Running in top-up mode.")
 
         previous_skip_recompute = os.environ.get("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE")
         os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = "1"
@@ -2788,7 +3135,53 @@ class DemoDataEngine:
             if not programs:
                 return False
 
-            # 1b. Ensure metrics used in demo plans are portal-visible
+            # 1a. Populate Program FHIR fields
+            _program_fhir = {
+                "Supported Employment": {
+                    "cids_sector_code": "group6_employment",
+                    "population_served_codes": ["working_age_adults"],
+                    "default_goal_review_days": 90,
+                },
+                "Housing Stability": {
+                    "cids_sector_code": "group6_housing",
+                    "population_served_codes": ["working_age_adults", "at_risk_homelessness"],
+                    "default_goal_review_days": 90,
+                },
+                "Youth Drop-In": {
+                    "cids_sector_code": "group4_education_youth",
+                    "population_served_codes": ["youth_13_18"],
+                    "default_goal_review_days": 60,
+                },
+                "Newcomer Connections": {
+                    "cids_sector_code": "group6_social_services",
+                    "population_served_codes": ["newcomers_immigrants"],
+                    "default_goal_review_days": 90,
+                },
+                "Community Kitchen": {
+                    "cids_sector_code": "group6_social_services",
+                    "population_served_codes": ["general_community"],
+                    "default_goal_review_days": 30,
+                },
+            }
+            for prog in programs:
+                fhir = _program_fhir.get(prog.name, {})
+                if fhir:
+                    changed = False
+                    for field, value in fhir.items():
+                        if not getattr(prog, field, None):
+                            setattr(prog, field, value)
+                            changed = True
+                    if changed:
+                        prog.save()
+
+            # 1b. Seed OrganizationProfile
+            self._seed_organization_profile()
+
+            # 1c. Seed CIDS code lists and taxonomy mappings
+            self._seed_cids_code_lists()
+            self._seed_taxonomy_mappings(programs)
+
+            # 1d. Ensure metrics used in demo plans are portal-visible
             self._ensure_portal_visible_metrics(programs)
 
             # 2. Create demo users
