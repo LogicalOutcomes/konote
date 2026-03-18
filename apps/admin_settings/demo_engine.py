@@ -1104,8 +1104,29 @@ class DemoDataEngine:
                 client.consent_type = random.choice(["written", "verbal", "electronic"])
                 client.save()
 
-                ClientProgramEnrolment.objects.create(
-                    client_file=client, program=prog, status="active",
+                # Referral source distribution
+                referral_weights = {
+                    "self": 30, "agency_external": 25, "healthcare": 15,
+                    "community": 15, "school": 5, "shelter": 5, "other": 5,
+                }
+                referral_source = random.choices(
+                    list(referral_weights.keys()),
+                    weights=list(referral_weights.values()),
+                    k=1,
+                )[0]
+
+                started_at = self.now - timedelta(
+                    days=random.randint(30, 180),
+                )
+
+                enrolment = ClientProgramEnrolment.objects.create(
+                    client_file=client,
+                    program=prog,
+                    status="active",
+                    referral_source=referral_source,
+                    primary_worker=worker,
+                    started_at=started_at,
+                    consent_to_aggregate_reporting=True,
                 )
 
                 client_assignments.append(SeedAssignment(
