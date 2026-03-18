@@ -133,6 +133,12 @@ class Command(BaseCommand):
                     "assessment_interval_days": m.get("assessment_interval_days"),
                     "assessment_at_intake": m.get("assessment_at_intake", False),
                     "assessment_at_discharge": m.get("assessment_at_discharge", False),
+                    # FHIR metadata
+                    "evidence_type": m.get("evidence_type", ""),
+                    "measure_basis": m.get("measure_basis", ""),
+                    "derivation_method": m.get("derivation_method", ""),
+                    "iris_metric_code": m.get("iris_metric_code", ""),
+                    "sdg_goals": m.get("sdg_goals", []),
                 },
             )
             if was_created:
@@ -169,6 +175,15 @@ class Command(BaseCommand):
                     changed = True
                 if m.get("assessment_at_discharge") and not obj.assessment_at_discharge:
                     obj.assessment_at_discharge = True
+                    changed = True
+                # Backfill FHIR metadata fields
+                for fhir_field in ("evidence_type", "measure_basis", "derivation_method", "iris_metric_code"):
+                    new_val = m.get(fhir_field, "")
+                    if new_val and not getattr(obj, fhir_field):
+                        setattr(obj, fhir_field, new_val)
+                        changed = True
+                if m.get("sdg_goals") and not obj.sdg_goals:
+                    obj.sdg_goals = m["sdg_goals"]
                     changed = True
                 if changed:
                     obj.save()
