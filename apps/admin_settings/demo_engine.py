@@ -332,6 +332,34 @@ GENERIC_SUGGESTIONS = [
     "More evening or weekend options would make it easier for me to attend",
 ]
 
+PROGRAM_SUGGESTION_THEMES = {
+    "Supported Employment": [
+        ("More flexible scheduling for interviews", "important"),
+        ("Resume workshop follow-up", "noted"),
+        ("Interview practice sessions", "noted"),
+    ],
+    "Housing Stability": [
+        ("Faster landlord reference letters", "urgent"),
+        ("Budgeting workshop request", "noted"),
+        ("Move-in kit supplies", "noted"),
+    ],
+    "Youth Drop-In": [
+        ("More weekend activities", "important"),
+        ("Homework help timing", "noted"),
+        ("Music and art supplies", "noted"),
+    ],
+    "Newcomer Connections": [
+        ("Conversation circle frequency", "important"),
+        ("More translated materials", "noted"),
+        ("Childcare during sessions", "important"),
+    ],
+    "Community Kitchen": [
+        ("Recipe books to take home", "noted"),
+        ("Childcare during sessions", "important"),
+        ("Allergen-free options", "noted"),
+    ],
+}
+
 # ---------------------------------------------------------------------------
 # Portal content pools — journal entries, messages, staff notes
 # ---------------------------------------------------------------------------
@@ -2407,7 +2435,11 @@ class DemoDataEngine:
     # ----- Suggestion theme generation -----
 
     def generate_suggestion_themes(self, programs, users, profile):
-        """Create suggestion themes for each program."""
+        """Create suggestion themes for each program.
+
+        Uses profile-defined themes first, then program-specific themes from
+        PROGRAM_SUGGESTION_THEMES, falling back to generic themes.
+        """
         profile_programs = profile.get("programs", {})
         # Use the first worker (index 1) or fall back to any available user
         usernames = list(users.keys())
@@ -2461,6 +2493,51 @@ class DemoDataEngine:
                         .order_by("?")[:random.randint(2, 4)]
                     )
                     for note in available_notes:
+                        SuggestionLink.objects.get_or_create(
+                            theme=theme,
+                            progress_note=note,
+                            defaults={
+                                "auto_linked": False,
+                                "linked_by": creator,
+                            },
+                        )
+
+            # Program-specific suggestion themes from constant
+            program_themes = PROGRAM_SUGGESTION_THEMES.get(prog.name, [])
+            for t_idx, (theme_name, priority) in enumerate(program_themes):
+                # Mark roughly 1 in 3 themes as addressed
+                status = "addressed" if t_idx % 3 == 2 else "open"
+                theme, created = SuggestionTheme.objects.get_or_create(
+                    program=prog,
+                    name=theme_name,
+                    defaults={
+                        "description": "",
+                        "status": status,
+                        "source": "manual",
+                        "created_by": creator,
+                    },
+                )
+
+                if created:
+                    # Link 3-8 recent notes to each theme
+                    link_count = random.randint(3, 8)
+                    available_notes = list(
+                        ProgressNote.objects.filter(
+                            author_program=prog,
+                            client_file__is_demo=True,
+                        )
+                        .exclude(
+                            pk__in=SuggestionLink.objects.filter(
+                                theme__program=prog
+                            ).values_list("progress_note_id", flat=True)
+                        )
+                        .order_by("-backdate")[:link_count]
+                    )
+                    for note in available_notes:
+                        # Set the linked notes' suggestion_priority
+                        if not note.suggestion_priority or note.suggestion_priority == "":
+                            note.suggestion_priority = priority
+                            note.save(update_fields=["suggestion_priority"])
                         SuggestionLink.objects.get_or_create(
                             theme=theme,
                             progress_note=note,
