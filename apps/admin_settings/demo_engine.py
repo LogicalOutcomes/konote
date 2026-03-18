@@ -1045,8 +1045,12 @@ class DemoDataEngine:
             personas = prog_profile.get("client_personas", [])
             worker = program_workers[prog.pk]
 
-            # Top-up mode: detect existing demo clients and only add more
+            # Group programs get more clients for realistic attendance
             actual_count = clients_per_program
+            if prog.service_model == "group":
+                actual_count = max(clients_per_program, 30)
+
+            # Top-up mode: detect existing demo clients and only add more
             existing_count = ClientProgramEnrolment.objects.filter(
                 program=prog, client_file__is_demo=True, status="active",
             ).count()
