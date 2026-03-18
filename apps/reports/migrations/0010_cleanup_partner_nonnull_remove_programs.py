@@ -11,8 +11,14 @@ from django.db import connection, migrations, models
 
 def _table_exists(table_name):
     with connection.cursor() as cursor:
+        if connection.vendor == "sqlite":
+            cursor.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=%s",
+                [table_name],
+            )
+            return cursor.fetchone()[0] > 0
         cursor.execute(
-            "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = %s)",
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)",
             [table_name],
         )
         return cursor.fetchone()[0]
@@ -20,8 +26,12 @@ def _table_exists(table_name):
 
 def _column_exists(table_name, column_name):
     with connection.cursor() as cursor:
+        if connection.vendor == "sqlite":
+            cursor.execute("PRAGMA table_info(%s)" % table_name)
+            columns = [row[1] for row in cursor.fetchall()]
+            return column_name in columns
         cursor.execute(
-            "SELECT EXISTS (SELECT FROM information_schema.columns "
+            "SELECT EXISTS (SELECT 1 FROM information_schema.columns "
             "WHERE table_name = %s AND column_name = %s)",
             [table_name, column_name],
         )
@@ -36,13 +46,16 @@ def forwards(apps, schema_editor):
     """
     # Make partner FK non-nullable (only if the column exists and is nullable)
     if _table_exists("report_templates") and _column_exists("report_templates", "partner_id"):
-        schema_editor.execute(
-            'ALTER TABLE "report_templates" ALTER COLUMN "partner_id" SET NOT NULL'
-        )
+        if connection.vendor != "sqlite":
+            schema_editor.execute(
+                'ALTER TABLE "report_templates" ALTER COLUMN "partner_id" SET NOT NULL'
+            )
+        # SQLite doesn't support ALTER COLUMN; Django handles NOT NULL via
+        # table recreation which SeparateDatabaseAndState's state_operations cover.
 
     # Drop the programs M2M through table (only if it exists)
     if _table_exists("report_templates_programs"):
-        schema_editor.execute('DROP TABLE "report_templates_programs"')
+        schema_editor.execute('DROP TABLE IF EXISTS "report_templates_programs"')
 
 
 class Migration(migrations.Migration):
