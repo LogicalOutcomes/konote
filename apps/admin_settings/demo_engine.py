@@ -1175,6 +1175,28 @@ class DemoDataEngine:
                     )
             self.log(f"  Cross-enrolled {len(cross_candidates)} clients into {kitchen_program.name}.")
 
+        # Create finished episodes for discharge demo
+        finished_count = random.randint(5, 8)
+        end_reasons = ["completed", "goals_met", "goals_met", "withdrew",
+                        "lost_contact", "completed", "referred_out", "withdrew"]
+        finished_so_far = 0
+        for i in range(len(client_assignments) - 1, -1, -1):
+            if finished_so_far >= finished_count:
+                break
+            assignment = client_assignments[i]
+            enrolment = ClientProgramEnrolment.objects.filter(
+                client_file=assignment.client,
+                program=assignment.program,
+                status="active",
+            ).first()
+            if enrolment:
+                enrolment.status = "finished"
+                enrolment.end_reason = end_reasons[finished_so_far % len(end_reasons)]
+                enrolment.ended_at = self.now - timedelta(days=random.randint(14, 90))
+                enrolment.save(update_fields=["status", "end_reason", "ended_at"])
+                finished_so_far += 1
+        self.log(f"  Created {finished_so_far} finished episodes.")
+
         self.log(f"  Created {len(client_assignments)} demo clients across {len(programs)} programs.")
         return client_assignments
 
