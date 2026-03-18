@@ -1045,7 +1045,30 @@ class DemoDataEngine:
             personas = prog_profile.get("client_personas", [])
             worker = program_workers[prog.pk]
 
-            for i in range(clients_per_program):
+            # Top-up mode: detect existing demo clients and only add more
+            actual_count = clients_per_program
+            existing_count = ClientProgramEnrolment.objects.filter(
+                program=prog, client_file__is_demo=True, status="active",
+            ).count()
+            needed = actual_count - existing_count
+            if needed <= 0:
+                self.log(
+                    f"  {prog.name}: already has {existing_count} demo clients "
+                    f"(target {actual_count}). Skipping."
+                )
+                continue
+
+            # Set starting record_id to avoid collisions with existing DEMO-NNN
+            highest_existing = ClientFile.objects.filter(
+                is_demo=True, record_id__startswith="DEMO-",
+            ).order_by("-record_id").values_list("record_id", flat=True).first()
+            if highest_existing:
+                try:
+                    client_num = int(highest_existing.split("-")[1]) + 1
+                except (IndexError, ValueError):
+                    pass
+
+            for i in range(needed):
                 record_id = f"DEMO-{client_num:03d}"
 
                 # Use persona from profile if available
@@ -2774,12 +2797,22 @@ class DemoDataEngine:
 
         # Check for existing demo data
         existing = ClientFile.objects.filter(is_demo=True).exists()
-        if existing and not force:
-            self.log("  Demo data already exists. Use --force to regenerate.")
-            return False
-
         if existing and force:
             self.cleanup_demo_data()
+        elif existing:
+            # Top-up mode: check if all programs are at target count
+            all_at_target = True
+            for prog in self.discover_programs():
+                current = ClientProgramEnrolment.objects.filter(
+                    program=prog, client_file__is_demo=True, status="active",
+                ).count()
+                if current < clients_per_program:
+                    all_at_target = False
+                    break
+            if all_at_target:
+                self.log("  Demo data already exists and all programs at target. Use --force to regenerate.")
+                return False
+            self.log("  Demo data exists but some programs need more clients. Running in top-up mode.")
 
         previous_skip_recompute = os.environ.get("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE")
         os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = "1"
