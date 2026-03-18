@@ -1467,7 +1467,11 @@ class Command(BaseCommand):
                     client.preferred_name = value
                     client.save()
                 try:
-                    field_def = CustomFieldDefinition.objects.get(name=field_name)
+                    field_def = CustomFieldDefinition.objects.filter(
+                        name=field_name,
+                    ).order_by("pk").first()
+                    if field_def is None:
+                        raise CustomFieldDefinition.DoesNotExist
                     cdv, _ = ClientDetailValue.objects.get_or_create(
                         client_file=client,
                         field_def=field_def,
