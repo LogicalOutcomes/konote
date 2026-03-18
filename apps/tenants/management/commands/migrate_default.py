@@ -76,20 +76,35 @@ class Command(DjangoMigrateCommand):
         parser.set_defaults(database="default")
 
     def _constraint_exists(self, cursor, table_name, constraint_name):
-        """Return True when a named constraint already exists on a public table."""
+        """Return True when a named constraint already exists on a public table.
+
+        Checks both pg_constraint (table constraints) and pg_class (indexes),
+        because Django implements UniqueConstraint with a condition as a partial
+        unique index which appears in pg_class but not pg_constraint.
+        """
         if cursor.db.vendor != "postgresql":
             constraints = cursor.db.introspection.get_constraints(cursor, table_name)
             return constraint_name in constraints
 
         cursor.execute(
             """
-            SELECT 1
-            FROM pg_constraint c
-            JOIN pg_class t ON c.conrelid = t.oid
-            JOIN pg_namespace n ON t.relnamespace = n.oid
-            WHERE n.nspname = 'public'
-              AND t.relname = %s
-              AND c.conname = %s
+            SELECT 1 FROM (
+                -- Table constraints (CHECK, FK, UNIQUE without condition, etc.)
+                SELECT c.conname AS name
+                FROM pg_constraint c
+                JOIN pg_class t ON c.conrelid = t.oid
+                JOIN pg_namespace n ON t.relnamespace = n.oid
+                WHERE n.nspname = 'public'
+                  AND t.relname = %s
+                UNION
+                -- Indexes (partial unique indexes from conditional UniqueConstraint)
+                SELECT i.relname AS name
+                FROM pg_class i
+                JOIN pg_namespace n ON i.relnamespace = n.oid
+                WHERE n.nspname = 'public'
+                  AND i.relkind = 'i'
+            ) combined
+            WHERE combined.name = %s
             """,
             [table_name, constraint_name],
         )
