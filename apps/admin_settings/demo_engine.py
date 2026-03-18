@@ -2847,6 +2847,126 @@ class DemoDataEngine:
         if created_count:
             self.log(f"  Created {created_count} portal resource links.")
 
+    # ----- Organization profile -----
+
+    def _seed_organization_profile(self):
+        """Seed a realistic Canadian nonprofit OrganizationProfile."""
+        from apps.admin_settings.models import OrganizationProfile
+
+        profile = OrganizationProfile.get_solo()
+        if profile.legal_name:
+            self.log("  OrganizationProfile already populated.")
+            return
+
+        profile.legal_name = "Maple Community Services"
+        profile.operating_name = "Maple Community Services"
+        profile.description = (
+            "A multi-service community agency in Ontario providing "
+            "employment support, housing stability, youth programming, "
+            "newcomer settlement, and community kitchen services."
+        )
+        profile.description_fr = (
+            "Un organisme communautaire multiservices en Ontario offrant "
+            "du soutien \u00e0 l\u2019emploi, de la stabilit\u00e9 en logement, des "
+            "programmes jeunesse, de l\u2019\u00e9tablissement pour nouveaux "
+            "arrivants et des cuisines communautaires."
+        )
+        profile.legal_status = "Registered charity"
+        profile.sector_codes = [
+            "group6_employment", "group6_housing", "group6_social_services",
+        ]
+        profile.street_address = "150 Main Street"
+        profile.city = "Ottawa"
+        profile.province = "ON"
+        profile.postal_code = "K1A 0B1"
+        profile.country = "CA"
+        profile.website = "https://demo.konote.ca"
+        profile.save()
+        self.log("  OrganizationProfile seeded: Maple Community Services.")
+
+    # ----- CIDS and Taxonomy seeding -----
+
+    def _seed_cids_code_lists(self):
+        """Seed IRIS theme and SDG goal code list entries."""
+        from apps.admin_settings.models import CidsCodeList
+
+        sdg_goals = [
+            ("1", "No Poverty", "Pas de pauvret\u00e9"),
+            ("2", "Zero Hunger", "Faim z\u00e9ro"),
+            ("3", "Good Health and Well-being", "Bonne sant\u00e9 et bien-\u00eatre"),
+            ("4", "Quality Education", "\u00c9ducation de qualit\u00e9"),
+            ("5", "Gender Equality", "\u00c9galit\u00e9 entre les sexes"),
+            ("8", "Decent Work and Economic Growth", "Travail d\u00e9cent et croissance \u00e9conomique"),
+            ("10", "Reduced Inequalities", "In\u00e9galit\u00e9s r\u00e9duites"),
+            ("11", "Sustainable Cities and Communities", "Villes et communaut\u00e9s durables"),
+        ]
+        created = 0
+        for code, label, label_fr in sdg_goals:
+            _, was_created = CidsCodeList.objects.get_or_create(
+                list_name="SDGGoals",
+                code=code,
+                defaults={
+                    "label": label,
+                    "label_fr": label_fr,
+                    "defined_by_name": "United Nations",
+                    "defined_by_uri": "https://sdgs.un.org/goals",
+                },
+            )
+            if was_created:
+                created += 1
+
+        iris_codes = [
+            ("PI2061", "Job Placement Rate", "Taux de placement en emploi"),
+        ]
+        for code, label, label_fr in iris_codes:
+            _, was_created = CidsCodeList.objects.get_or_create(
+                list_name="IrisMetric53",
+                code=code,
+                defaults={
+                    "label": label,
+                    "label_fr": label_fr,
+                    "defined_by_name": "GIIN",
+                    "defined_by_uri": "https://iris.thegiin.org/",
+                },
+            )
+            if was_created:
+                created += 1
+        self.log(f"  CidsCodeList: {created} entries seeded.")
+
+    def _seed_taxonomy_mappings(self, programs):
+        """Seed sample taxonomy mappings for universal and program metrics."""
+        from apps.admin_settings.models import TaxonomyMapping
+
+        mappings = [
+            ("Goal Progress", "sdg", "1", "SDGGoals", "SDG 1: No Poverty"),
+            ("Self-Efficacy", "common_approach", "CA-IND-001", "", "Individual Wellbeing"),
+            ("Job Placement", "iris_plus", "PI2061", "IrisMetric53", "Job Placement Rate"),
+            ("Job Placement", "sdg", "8", "SDGGoals", "SDG 8: Decent Work"),
+            ("Housing Secured", "sdg", "11", "SDGGoals", "SDG 11: Sustainable Cities"),
+            ("School Enrolment", "sdg", "4", "SDGGoals", "SDG 4: Quality Education"),
+        ]
+        created = 0
+        for metric_name, system, code, list_name, label in mappings:
+            md = MetricDefinition.objects.filter(
+                name=metric_name, is_enabled=True,
+            ).first()
+            if not md:
+                continue
+            _, was_created = TaxonomyMapping.objects.get_or_create(
+                metric_definition=md,
+                taxonomy_system=system,
+                taxonomy_code=code,
+                defaults={
+                    "taxonomy_list_name": list_name,
+                    "taxonomy_label": label,
+                    "mapping_status": "approved",
+                    "mapping_source": "manual",
+                },
+            )
+            if was_created:
+                created += 1
+        self.log(f"  TaxonomyMapping: {created} mappings seeded.")
+
     # ----- Main orchestrator -----
 
     @transaction.atomic
@@ -2941,7 +3061,14 @@ class DemoDataEngine:
                     if changed:
                         prog.save()
 
-            # 1b. Ensure metrics used in demo plans are portal-visible
+            # 1b. Seed OrganizationProfile
+            self._seed_organization_profile()
+
+            # 1c. Seed CIDS code lists and taxonomy mappings
+            self._seed_cids_code_lists()
+            self._seed_taxonomy_mappings(programs)
+
+            # 1d. Ensure metrics used in demo plans are portal-visible
             self._ensure_portal_visible_metrics(programs)
 
             # 2. Create demo users
