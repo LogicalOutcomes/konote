@@ -988,8 +988,15 @@ class DemoDataEngine:
                 defaults={"role": ROLE_EXECUTIVE},
             )
 
-        # Distribute workers and manager across programs
-        if len(programs) == 1:
+        # Distribute workers and manager across programs — but only if they
+        # don't already have program roles (seed.py may have assigned specific
+        # roles that we should not override or extend).
+        existing_roles = UserProgramRole.objects.filter(
+            user__in=[worker1, worker2, manager],
+        ).exists()
+        if existing_roles:
+            pass  # Roles already set by seed.py — skip generic distribution
+        elif len(programs) == 1:
             # Single program: both workers + manager
             for worker in (worker1, worker2):
                 UserProgramRole.objects.get_or_create(
