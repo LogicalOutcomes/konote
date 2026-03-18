@@ -13,11 +13,36 @@
     "is_standardized_instrument": true,
     "higher_is_better": false,
     "scoring_bands": [
-      {"min": 0, "max": 4, "label": "Minimal", "label_fr": "Minimale"},
-      {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
-      {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
-      {"min": 15, "max": 19, "label": "Moderately Severe", "label_fr": "Modérément sévère"},
-      {"min": 20, "max": 27, "label": "Severe", "label_fr": "Sévère"}
+      {
+        "min": 0,
+        "max": 4,
+        "label": "Minimal",
+        "label_fr": "Minimale"
+      },
+      {
+        "min": 5,
+        "max": 9,
+        "label": "Mild",
+        "label_fr": "Légère"
+      },
+      {
+        "min": 10,
+        "max": 14,
+        "label": "Moderate",
+        "label_fr": "Modérée"
+      },
+      {
+        "min": 15,
+        "max": 19,
+        "label": "Moderately Severe",
+        "label_fr": "Modérément sévère"
+      },
+      {
+        "min": 20,
+        "max": 27,
+        "label": "Severe",
+        "label_fr": "Sévère"
+      }
     ],
     "rationale_log": [
       {
@@ -26,6 +51,13 @@
         "note_fr": "Questionnaire de santé du patient-9 (Kroenke et al., 2001). Outil validé de dépistage et de suivi de la sévérité de la dépression avec seuils publiés largement utilisés. Courant en santé mentale communautaire, en soins primaires et dans les services de counseling communautaires.",
         "author": "System"
       }
+    ],
+    "evidence_type": "self_report",
+    "measure_basis": "published_validated",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      3
     ]
   },
   {
@@ -42,10 +74,30 @@
     "is_standardized_instrument": true,
     "higher_is_better": false,
     "scoring_bands": [
-      {"min": 0, "max": 4, "label": "Minimal", "label_fr": "Minimale"},
-      {"min": 5, "max": 9, "label": "Mild", "label_fr": "Légère"},
-      {"min": 10, "max": 14, "label": "Moderate", "label_fr": "Modérée"},
-      {"min": 15, "max": 21, "label": "Severe", "label_fr": "Sévère"}
+      {
+        "min": 0,
+        "max": 4,
+        "label": "Minimal",
+        "label_fr": "Minimale"
+      },
+      {
+        "min": 5,
+        "max": 9,
+        "label": "Mild",
+        "label_fr": "Légère"
+      },
+      {
+        "min": 10,
+        "max": 14,
+        "label": "Moderate",
+        "label_fr": "Modérée"
+      },
+      {
+        "min": 15,
+        "max": 21,
+        "label": "Severe",
+        "label_fr": "Sévère"
+      }
     ],
     "rationale_log": [
       {
@@ -54,6 +106,13 @@
         "note_fr": "Échelle du trouble d'anxiété généralisée-7 (Spitzer et al., 2006). Outil validé de dépistage et de suivi de la sévérité de l'anxiété généralisée avec seuils publiés. Largement utilisé en counseling communautaire, en soins primaires et pour le suivi des résultats.",
         "author": "System"
       }
+    ],
+    "evidence_type": "self_report",
+    "measure_basis": "published_validated",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      3
     ]
   },
   {
@@ -70,10 +129,30 @@
     "is_standardized_instrument": true,
     "higher_is_better": false,
     "scoring_bands": [
-      {"min": 10, "max": 19, "label": "Likely well", "label_fr": "Probablement bien"},
-      {"min": 20, "max": 24, "label": "Mild", "label_fr": "Légère"},
-      {"min": 25, "max": 29, "label": "Moderate", "label_fr": "Modérée"},
-      {"min": 30, "max": 50, "label": "Severe", "label_fr": "Sévère"}
+      {
+        "min": 10,
+        "max": 19,
+        "label": "Likely well",
+        "label_fr": "Probablement bien"
+      },
+      {
+        "min": 20,
+        "max": 24,
+        "label": "Mild",
+        "label_fr": "Légère"
+      },
+      {
+        "min": 25,
+        "max": 29,
+        "label": "Moderate",
+        "label_fr": "Modérée"
+      },
+      {
+        "min": 30,
+        "max": 50,
+        "label": "Severe",
+        "label_fr": "Sévère"
+      }
     ],
     "rationale_log": [
       {
@@ -82,6 +161,13 @@
         "note_fr": "Échelle de détresse psychologique de Kessler (Kessler et al., 2002). Outil de dépistage validé pour la détresse psychologique non spécifique. Scores de 10 à 50 avec bandes de sévérité publiées. Largement utilisé dans les services communautaires canadiens et les enquêtes de santé publique.",
         "author": "System"
       }
+    ],
+    "evidence_type": "self_report",
+    "measure_basis": "published_validated",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      3
     ]
   },
   {
@@ -94,7 +180,14 @@
     "max_value": 30,
     "unit": "nights",
     "unit_fr": "nuits",
-    "higher_is_better": false
+    "higher_is_better": false,
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      11
+    ]
   },
   {
     "name": "Monthly Income",
@@ -105,7 +198,14 @@
     "min_value": 0,
     "max_value": null,
     "unit": "$",
-    "unit_fr": "$"
+    "unit_fr": "$",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      11
+    ]
   },
   {
     "name": "Hours Worked (past week)",
@@ -116,7 +216,14 @@
     "min_value": 0,
     "max_value": 168,
     "unit": "hours",
-    "unit_fr": "heures"
+    "unit_fr": "heures",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      8
+    ]
   },
   {
     "name": "School Attendance Rate",
@@ -127,7 +234,14 @@
     "min_value": 0,
     "max_value": 100,
     "unit": "%",
-    "unit_fr": "%"
+    "unit_fr": "%",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      4
+    ]
   },
   {
     "name": "How are you feeling today?",
@@ -138,7 +252,12 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Since we last met, how are things going?",
@@ -149,7 +268,12 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "How ready do you feel for work?",
@@ -160,7 +284,14 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      8
+    ]
   },
   {
     "name": "Confidence in your job search",
@@ -171,7 +302,14 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      8
+    ]
   },
   {
     "name": "How safe do you feel where you live?",
@@ -182,7 +320,14 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      11
+    ]
   },
   {
     "name": "How connected do you feel to the group?",
@@ -193,7 +338,14 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      4
+    ]
   },
   {
     "name": "Confidence navigating services",
@@ -204,7 +356,12 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Comfort with English in daily life",
@@ -215,7 +372,12 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Cooking confidence",
@@ -226,7 +388,12 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score",
-    "unit_fr": "pointage"
+    "unit_fr": "pointage",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Healthy meals prepared this week",
@@ -237,7 +404,12 @@
     "min_value": 0,
     "max_value": 14,
     "unit": "meals",
-    "unit_fr": "repas"
+    "unit_fr": "repas",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Sessions attended this month",
@@ -249,7 +421,12 @@
     "max_value": 20,
     "unit": "sessions",
     "unit_fr": "séances",
-    "computation_type": "session_count"
+    "computation_type": "session_count",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Community connections this month",
@@ -260,7 +437,12 @@
     "min_value": 0,
     "max_value": 20,
     "unit": "connections",
-    "unit_fr": "liens"
+    "unit_fr": "liens",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Goal Progress",
@@ -272,7 +454,12 @@
     "max_value": 5,
     "unit": "score",
     "unit_fr": "pointage",
-    "is_universal": true
+    "is_universal": true,
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Self-Efficacy",
@@ -284,7 +471,12 @@
     "max_value": 5,
     "unit": "score",
     "unit_fr": "pointage",
-    "is_universal": true
+    "is_universal": true,
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Satisfaction",
@@ -296,7 +488,12 @@
     "max_value": 5,
     "unit": "score",
     "unit_fr": "pointage",
-    "is_universal": true
+    "is_universal": true,
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "Job Placement",
@@ -305,9 +502,24 @@
     "definition_fr": "Le participant a-t-il trouvé un emploi? Mis à jour à chaque séance pour refléter le statut actuel.",
     "category": "employment",
     "metric_type": "achievement",
-    "achievement_options": ["Not placed", "Interview stage", "Placed — part-time", "Placed — full-time"],
-    "achievement_success_values": ["Placed — part-time", "Placed — full-time"],
-    "target_rate": 65
+    "achievement_options": [
+      "Not placed",
+      "Interview stage",
+      "Placed — part-time",
+      "Placed — full-time"
+    ],
+    "achievement_success_values": [
+      "Placed — part-time",
+      "Placed — full-time"
+    ],
+    "target_rate": 65,
+    "evidence_type": "staff_observed",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "staff_rating",
+    "iris_metric_code": "PI2061",
+    "sdg_goals": [
+      8
+    ]
   },
   {
     "name": "Housing Secured",
@@ -316,9 +528,23 @@
     "definition_fr": "Le participant a-t-il obtenu un logement stable? Mis à jour à chaque séance pour refléter le statut actuel.",
     "category": "housing",
     "metric_type": "achievement",
-    "achievement_options": ["No housing", "Emergency shelter", "Transitional", "Permanent housing"],
-    "achievement_success_values": ["Permanent housing"],
-    "target_rate": 50
+    "achievement_options": [
+      "No housing",
+      "Emergency shelter",
+      "Transitional",
+      "Permanent housing"
+    ],
+    "achievement_success_values": [
+      "Permanent housing"
+    ],
+    "target_rate": 50,
+    "evidence_type": "staff_observed",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "staff_rating",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      11
+    ]
   },
   {
     "name": "School Enrolment",
@@ -327,9 +553,23 @@
     "definition_fr": "Le jeune est-il inscrit à l'école ou à un programme éducatif?",
     "category": "youth",
     "metric_type": "achievement",
-    "achievement_options": ["Not enrolled", "Enrolled part-time", "Enrolled full-time"],
-    "achievement_success_values": ["Enrolled part-time", "Enrolled full-time"],
-    "target_rate": 80
+    "achievement_options": [
+      "Not enrolled",
+      "Enrolled part-time",
+      "Enrolled full-time"
+    ],
+    "achievement_success_values": [
+      "Enrolled part-time",
+      "Enrolled full-time"
+    ],
+    "target_rate": 80,
+    "evidence_type": "staff_observed",
+    "measure_basis": "custom_staff_designed",
+    "derivation_method": "staff_rating",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      4
+    ]
   },
   {
     "name": "Everyone is made to feel welcome",
@@ -342,7 +582,14 @@
     "max_value": 4,
     "unit": "score",
     "unit_fr": "pointage",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "published_adapted",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      10
+    ]
   },
   {
     "name": "Everyone is valued equally",
@@ -355,7 +602,14 @@
     "max_value": 4,
     "unit": "score",
     "unit_fr": "pointage",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "published_adapted",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      10
+    ]
   },
   {
     "name": "I am treated with respect",
@@ -368,7 +622,14 @@
     "max_value": 4,
     "unit": "score",
     "unit_fr": "pointage",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "published_adapted",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      10
+    ]
   },
   {
     "name": "People help each other",
@@ -381,7 +642,14 @@
     "max_value": 4,
     "unit": "score",
     "unit_fr": "pointage",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "published_adapted",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      10
+    ]
   },
   {
     "name": "I get help when I need it",
@@ -394,7 +662,14 @@
     "max_value": 4,
     "unit": "score",
     "unit_fr": "pointage",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "published_adapted",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": [
+      10
+    ]
   },
   {
     "name": "How has taking part in this program changed things for you?",
@@ -403,7 +678,12 @@
     "definition_fr": "Réflexion ouverte sur l'impact auto-déclaré du programme. Le participant décrit dans ses propres mots ce qui a changé. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Les réponses peuvent être citées anonymement dans les rapports. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   },
   {
     "name": "How can we improve our program or services?",
@@ -412,6 +692,11 @@
     "definition_fr": "Suggestion ouverte pour l'amélioration du programme. Le participant donne ses commentaires dans ses propres mots. Peut être utilisé dans les notes du personnel, le portail participant ou les sondages anonymes. Source : LogicalOutcomes (2025-12-01).",
     "category": "client_experience",
     "metric_type": "open_text",
-    "portal_visibility": "self_reported"
+    "portal_visibility": "self_reported",
+    "evidence_type": "self_report",
+    "measure_basis": "custom_participatory",
+    "derivation_method": "direct_response",
+    "iris_metric_code": "",
+    "sdg_goals": []
   }
 ]
