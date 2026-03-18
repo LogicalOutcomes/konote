@@ -30,14 +30,11 @@ class Command(BaseCommand):
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
-            demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
-            if demo_profile:
-                # Use config-aware demo data engine with a profile
-                self._generate_config_aware_demo_data(demo_profile)
-            else:
-                # Use the hardcoded default demo data
-                self._create_demo_users_and_clients()
-                self._update_demo_client_fields()
+            # Step 1: Create named personas (DEMO-001 through DEMO-015)
+            self._create_demo_users_and_clients()
+            self._update_demo_client_fields()
+            # Step 2: Top up each program to 20-30 clients with engine
+            self._top_up_demo_data()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _generate_config_aware_demo_data(self, profile_path):
@@ -66,6 +63,32 @@ class Command(BaseCommand):
             self.stderr.write("  Falling back to default demo data...")
             self._create_demo_users_and_clients()
             self._update_demo_client_fields()
+
+    def _top_up_demo_data(self):
+        """Top up demo data to 20-30 clients per program using the engine."""
+        import os
+
+        from apps.admin_settings.demo_engine import DemoDataEngine
+
+        demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
+        self.stdout.write("  Topping up demo data with config-aware engine...")
+        engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
+
+        try:
+            success = engine.run(
+                clients_per_program=20,
+                profile_path=demo_profile if demo_profile else None,
+                force=False,
+            )
+            if success:
+                self.stdout.write("  Demo data topped up successfully.")
+            else:
+                self.stdout.write("  Demo data already at target volume.")
+        except Exception as e:
+            self.stderr.write(f"  WARNING: Demo data top-up failed: {e}")
+            import traceback
+            self.stderr.write(traceback.format_exc())
+            self.stderr.write("  Named personas are seeded; engine top-up skipped.")
 
     def _seed_event_types(self):
         """Delegate to the seed_event_types command so all seeding runs in one place."""
@@ -133,6 +156,12 @@ class Command(BaseCommand):
                     "assessment_interval_days": m.get("assessment_interval_days"),
                     "assessment_at_intake": m.get("assessment_at_intake", False),
                     "assessment_at_discharge": m.get("assessment_at_discharge", False),
+                    # FHIR metadata
+                    "evidence_type": m.get("evidence_type", ""),
+                    "measure_basis": m.get("measure_basis", ""),
+                    "derivation_method": m.get("derivation_method", ""),
+                    "iris_metric_code": m.get("iris_metric_code", ""),
+                    "sdg_goals": m.get("sdg_goals", []),
                 },
             )
             if was_created:
@@ -169,6 +198,15 @@ class Command(BaseCommand):
                     changed = True
                 if m.get("assessment_at_discharge") and not obj.assessment_at_discharge:
                     obj.assessment_at_discharge = True
+                    changed = True
+                # Backfill FHIR metadata fields
+                for fhir_field in ("evidence_type", "measure_basis", "derivation_method", "iris_metric_code"):
+                    new_val = m.get(fhir_field, "")
+                    if new_val and not getattr(obj, fhir_field):
+                        setattr(obj, fhir_field, new_val)
+                        changed = True
+                if m.get("sdg_goals") and not obj.sdg_goals:
+                    obj.sdg_goals = m["sdg_goals"]
                     changed = True
                 if changed:
                     obj.save()
