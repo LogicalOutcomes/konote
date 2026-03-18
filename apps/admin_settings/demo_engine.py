@@ -2840,15 +2840,20 @@ class DemoDataEngine:
                 # participant 1 completed survey 1 / pending survey 0, etc.
                 is_completed = (p_idx % 2) != (s_idx % 2)
 
-                assignment, a_created = SurveyAssignment.objects.get_or_create(
+                assignment = SurveyAssignment.objects.filter(
                     survey=survey,
                     participant_user=participant,
-                    defaults={
-                        "client_file": client,
-                        "status": "completed" if is_completed else "pending",
-                        "assigned_by": worker,
-                    },
-                )
+                ).order_by("pk").first()
+                a_created = False
+                if not assignment:
+                    assignment = SurveyAssignment.objects.create(
+                        survey=survey,
+                        participant_user=participant,
+                        client_file=client,
+                        status="completed" if is_completed else "pending",
+                        assigned_by=worker,
+                    )
+                    a_created = True
                 if a_created:
                     assignments_created += 1
                     # Backdate the assignment
