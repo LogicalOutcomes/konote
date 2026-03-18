@@ -2979,7 +2979,7 @@ class DemoDataEngine:
     # ----- CIDS and Taxonomy seeding -----
 
     def _seed_cids_code_lists(self):
-        """Seed IRIS theme and SDG goal code list entries."""
+        """Seed IRIS theme and SDG goal code list entries for FHIR demo."""
         from apps.admin_settings.models import CidsCodeList
 
         sdg_goals = [
