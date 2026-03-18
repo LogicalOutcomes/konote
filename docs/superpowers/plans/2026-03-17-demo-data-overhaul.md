@@ -6,6 +6,8 @@
 
 **Architecture:** Four independent file groups are modified: (1) `metric_library.json` gets FHIR metadata fields, (2) `seed.py` gets backfill logic and flow changes, (3) `demo_engine.py` gets volume increases, ServiceEpisode fields, cross-enrolments, FHIR seeding methods, and weighted trends, (4) `generate_demo_data.py` gets a default change. Tasks 1-2 can run in parallel with Task 3. Task 4 depends on Tasks 1-3.
 
+**Named Personas Strategy:** The 15 named personas (DEMO-001 through DEMO-015) are created by `seed.py`'s `_create_demo_users_and_clients()` which calls `seed_demo_data`. The new flow keeps this call, THEN runs the engine to top up each program to 20-30 clients. The engine's `create_demo_clients()` must check how many demo clients already exist in each program and only create enough additional clients to reach the target. Existing DEMO-001 through DEMO-015 clients are counted toward the target.
+
 **Tech Stack:** Django 5, Python 3.12, PostgreSQL 16
 
 **Spec:** `docs/superpowers/specs/2026-03-17-demo-data-overhaul-design.md`
@@ -187,26 +189,30 @@ Read `apps/admin_settings/management/commands/seed.py` lines 32-68.
 
 - [ ] **Step 6: Replace the DEMO_MODE block**
 
-Replace the entire `if settings.DEMO_MODE:` block (lines 32-68) with:
+Replace the entire `if settings.DEMO_MODE:` block (lines 32-41) with:
 
 ```python
         if settings.DEMO_MODE:
-            self._generate_demo_data()
+            # Step 1: Create named personas (DEMO-001 through DEMO-015)
+            self._create_demo_users_and_clients()
+            self._update_demo_client_fields()
+            # Step 2: Top up each program to 20-30 clients with engine
+            self._top_up_demo_data()
 ```
 
-- [ ] **Step 7: Replace _generate_config_aware_demo_data method**
+- [ ] **Step 7: Add _top_up_demo_data method**
 
-Replace the `_generate_config_aware_demo_data` method (lines 43-68) with a new `_generate_demo_data` method:
+Add a new method (keep the old `_generate_config_aware_demo_data` and `_create_demo_users_and_clients` methods intact):
 
 ```python
-    def _generate_demo_data(self):
-        """Generate demo data using the config-aware engine."""
+    def _top_up_demo_data(self):
+        """Top up demo data to 20-30 clients per program using the engine."""
         import os
 
         from apps.admin_settings.demo_engine import DemoDataEngine
 
         demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
-        self.stdout.write("  Using configuration-aware demo data engine...")
+        self.stdout.write("  Topping up demo data with config-aware engine...")
         engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
 
         try:
@@ -216,20 +222,21 @@ Replace the `_generate_config_aware_demo_data` method (lines 43-68) with a new `
                 force=False,
             )
             if success:
-                self.stdout.write("  Demo data generated successfully.")
+                self.stdout.write("  Demo data topped up successfully.")
             else:
-                self.stdout.write("  Demo data already exists (use --force to regenerate).")
+                self.stdout.write("  Demo data already at target volume.")
         except Exception as e:
-            self.stderr.write(f"  ERROR: Demo data generation failed: {e}")
+            self.stderr.write(f"  WARNING: Demo data top-up failed: {e}")
             import traceback
             self.stderr.write(traceback.format_exc())
+            self.stderr.write("  Named personas are seeded; engine top-up skipped.")
 ```
 
 - [ ] **Step 8: Commit Part B**
 
 ```bash
 git add apps/admin_settings/management/commands/seed.py
-git commit -m "feat: use config-aware engine as default demo data path
+git commit -m "feat: top up demo data to 20-30 clients per program via engine
 
 Always use DemoDataEngine with clients_per_program=20 when DEMO_MODE
 is enabled. Engine skips if demo data already exists (force=False).
