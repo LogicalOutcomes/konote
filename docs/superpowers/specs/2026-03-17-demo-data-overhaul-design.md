@@ -40,8 +40,12 @@ High-quality demo data is essential for marketing and demonstrating KoNote's val
 **Flow after change:**
 1. `seed.py` runs on container startup when `DEMO_MODE=True`
 2. Always calls `DemoDataEngine.run()` with `clients_per_program=20`
-3. If `DEMO_DATA_PROFILE` env var is set, loads that profile for richer content
-4. Falls back to hardcoded `seed_demo_data` only if the engine fails
+3. If `DEMO_DATA_PROFILE` env var is set, loads that profile for richer content; profile `defaults.clients_per_program` overrides the 20 if explicitly set
+4. On engine failure, log the error and exit — do not fall back to the hardcoded path (which produces only 15 clients, insufficient for any threshold)
+
+**Idempotency strategy:** Pass `force=False`. The engine checks whether demo data already exists and skips generation if so. This means container restarts are fast (no re-seeding). To regenerate, operators run `generate_demo_data --force` manually. FHIR metadata backfill on MetricDefinition happens in `_seed_metrics()`, which is always idempotent (uses `get_or_create` + field backfill) and runs every startup regardless of whether demo data generation is skipped.
+
+**Performance note:** First-time seeding with ~110 clients and ~1,040 notes takes approximately 30-60 seconds inside a single `@transaction.atomic` block. Subsequent startups skip generation entirely.
 
 ---
 
@@ -75,6 +79,8 @@ Realistic Canadian nonprofit outcome trends, applied per-participant:
 | mixed | 20% | Two steps forward, one step back |
 | struggling | 10% | Declining or stuck |
 | crisis_then_improving | 10% | Initial crisis followed by recovery |
+
+**Implementation note:** The current engine assigns trends using even modulo distribution (`TRENDS[i % len(TRENDS)]` = 20% each). Change to weighted random selection using `random.choices(TRENDS, weights=[40, 20, 20, 10, 10], k=1)[0]` to produce the proportions above.
 
 ---
 
@@ -156,11 +162,13 @@ Populate during demo seeding:
 
 | Program | `cids_sector_code` | `population_served_codes` | `default_goal_review_days` |
 |---------|-------------------|--------------------------|---------------------------|
-| Supported Employment | `6100` (Employment and training) | `["working_age_adults"]` | 90 |
-| Housing Stability | `6200` (Housing) | `["working_age_adults", "at_risk_homelessness"]` | 90 |
-| Youth Drop-In | `6300` (Social services — youth) | `["youth_13_18"]` | 60 |
-| Newcomer Connections | `6400` (Social services — newcomers) | `["newcomers_immigrants"]` | 90 |
-| Community Kitchen | `6500` (Social services — community) | `["general_community"]` | 30 |
+| Supported Employment | `group6_employment` | `["working_age_adults"]` | 90 |
+| Housing Stability | `group6_housing` | `["working_age_adults", "at_risk_homelessness"]` | 90 |
+| Youth Drop-In | `group4_education_youth` | `["youth_13_18"]` | 60 |
+| Newcomer Connections | `group6_social_services` | `["newcomers_immigrants"]` | 90 |
+| Community Kitchen | `group6_social_services` | `["general_community"]` | 30 |
+
+**Note:** These codes are KoNote-internal identifiers, not raw ICNPO numbers. They map to ICNPO Group 4 (Education and Research) and Group 6 (Development and Housing / Social Services). The mapping to external taxonomy codes happens via `TaxonomyMapping`, not via these fields. If CidsCodeList entries for ICNPO sectors are seeded, these values should match the `code` field in that list.
 
 ### OrganizationProfile Seeding
 
@@ -202,9 +210,15 @@ Seed the IRIS theme code list entries needed for the taxonomy mappings above, pl
 
 ## ServiceEpisode Lifecycle Data
 
+**Model note:** `ServiceEpisode` extends the original `ClientProgramEnrolment` in-place (same `db_table`, backward-compatible alias). The engine currently creates records via `ClientProgramEnrolment`. To populate FHIR fields (`episode_type`, `referral_source`, `primary_worker`, etc.), the engine must either:
+- Import and use `ServiceEpisode` directly for creation (preferred — `save()` auto-derives `episode_type`), or
+- Create via `ClientProgramEnrolment` then update FHIR fields in a second pass
+
+**Recommended approach:** Import `ServiceEpisode` and use it for all enrolment creation. The alias means existing code still works.
+
 ### Active Episodes (majority)
 - `status`: `active`
-- `episode_type`: auto-derived (80% `new_intake`, 15% `re_enrolment`, 5% `transfer_in`)
+- `episode_type`: auto-derived by `ServiceEpisode.save()` from episode history (80% `new_intake`, 15% `re_enrolment`, 5% `transfer_in`)
 - `referral_source`: distributed (30% `self`, 25% `agency_external`, 15% `healthcare`, 15% `community`, 15% mixed)
 - `primary_worker`: assigned to Casey or Noor based on program
 - `consent_to_aggregate_reporting`: `True` for all demo data
@@ -215,6 +229,16 @@ Seed the IRIS theme code list entries needed for the taxonomy mappings above, pl
 - `end_reason`: mix of `completed` (2), `goals_met` (2), `withdrew` (1-2), `lost_contact` (1)
 - `ended_at`: 1-3 months ago
 - These participants keep their notes and metric data for historical reporting
+
+### Cross-Enrolments
+
+The engine must create cross-enrolments (participants enrolled in multiple programs) to demonstrate PHIPA consent filtering. The current engine creates one enrolment per client per program. Add cross-enrolment logic:
+
+- **5+ clients** cross-enrolled in Community Kitchen from their primary program
+- These clients get a second `ServiceEpisode` record linking them to Kitchen
+- When Casey (PM in Employment, Staff in Kitchen) views a cross-enrolled client in Kitchen, they should NOT see that client's Employment notes — PHIPA consent enforcement handles this
+
+**Implementation:** After creating primary enrolments, randomly select 5 clients from Employment, Housing, and Newcomer programs and create additional Kitchen enrolments for them. The existing 15 named personas already have 3 cross-enrolments (DEMO-001, DEMO-004, DEMO-010); the engine adds more to reach 5+.
 
 ---
 
@@ -279,24 +303,75 @@ Each theme linked to 3-8 participant suggestions via `SuggestionLink`.
 - Change default `--clients-per-program` from 3 to 20
 
 ### File: `apps/admin_settings/demo_engine.py`
-- Add `_seed_organization_profile()` method
-- Add `_seed_taxonomy_mappings()` method
-- Add `_seed_cids_code_lists()` method
-- Populate ServiceEpisode fields: `episode_type`, `referral_source`, `primary_worker`
-- Create 5-8 finished episodes with `end_reason`
-- Set `goal_source` on PlanTarget records
-- Set `target_date` on PlanTarget records from program defaults
-- Increase suggestion themes to 3-4 per program with `SuggestionLink` records
-- Populate Program FHIR fields: `cids_sector_code`, `population_served_codes`, `default_goal_review_days`
-- Use 30 clients for group programs (`service_model="group"`)
+
+**New methods (called early in `run()`, after user creation, before client creation):**
+- Add `_seed_organization_profile()` method — uses `OrganizationProfile.get_solo()` + update fields
+- Add `_seed_cids_code_lists()` method — populates IRIS theme entries and SDG goals 1-17
+- Add `_seed_taxonomy_mappings()` method — creates mappings with `metric_definition` FK set (other FKs null)
+
+**Enrolment changes:**
+- Import and use `ServiceEpisode` instead of `ClientProgramEnrolment` for all enrolment creation
+- Populate `referral_source`, `primary_worker` at creation time
+- `episode_type` auto-derives via `ServiceEpisode.save()` — no manual setting needed
+- After primary enrolments, create 5+ cross-enrolments into Community Kitchen
+- Create 5-8 finished episodes: set `status="finished"`, `end_reason`, `ended_at`
+
+**PlanTarget changes:**
+- Set `goal_source` on PlanTarget records (50% joint, 30% participant, 15% worker, 5% funder_required)
+- Set `target_date` from `program.default_goal_review_days` offset from episode `started_at`
+
+**Suggestion theme changes:**
+- Increase to 3-4 themes per program with program-specific content (see Suggestion Themes section)
+- Create `SuggestionLink` records linking 3-8 notes to each theme
+- Mark 1 theme per 2 programs as `status="addressed"`
+
+**Program FHIR field changes:**
+- Populate `cids_sector_code`, `population_served_codes`, `default_goal_review_days` on all programs
+
+**Trend distribution change:**
+- Replace `TRENDS[i % len(TRENDS)]` with weighted random selection (40/20/20/10/10)
+
+**Volume change:**
+- Use 30 clients for programs with `service_model="group"` only; 20 for `"individual"` and `"both"`
+
+**Named personas integration:**
+- The 15 hardcoded DEMO-001 through DEMO-015 personas are created by the separate `seed_demo_data` command (called from `seed.py` before the engine runs). The engine's `create_demo_clients()` must detect existing demo clients in each program and only create additional clients to reach the target count (e.g., if Employment already has 3 named clients, create 17 more to reach 20)
+
+**GroupSession changes:**
+- The existing `seed_attendance_demo_data()` method handles group sessions. With 30 clients in Community Kitchen and 20 in Youth Drop-In, verify that the method scales correctly (it should — it iterates over enrolled clients)
 
 ### File: `apps/admin_settings/management/commands/seed.py`
 - Change default DEMO_MODE path to always use config-aware engine
 - Pass `clients_per_program=20` (not the engine's default of 3)
-- Fall back to hardcoded `seed_demo_data` only on engine failure
+- On engine failure, log the error and exit — do not fall back to the hardcoded 15-client path
+- The hardcoded `_create_demo_users_and_clients()` method remains in the codebase for reference but is no longer called by default
 
-### File: `apps/admin_settings/management/commands/seed.py` (seed_metrics)
-- Ensure new metric_library.json fields are persisted via `get_or_create` defaults and backfill logic
+### File: `apps/admin_settings/management/commands/seed.py` (`_seed_metrics`)
+
+The `_seed_metrics()` method must be updated to handle the five new FHIR metadata fields from `metric_library.json`. Currently it handles `get_or_create` defaults and backfill for French translations, `is_universal`, `instrument_name`, rationale, and assessment fields — but NOT `evidence_type`, `measure_basis`, `derivation_method`, `iris_metric_code`, or `sdg_goals`.
+
+**Add to `get_or_create` defaults dict:**
+```python
+"evidence_type": m.get("evidence_type", ""),
+"measure_basis": m.get("measure_basis", ""),
+"derivation_method": m.get("derivation_method", ""),
+"iris_metric_code": m.get("iris_metric_code", ""),
+"sdg_goals": m.get("sdg_goals", []),
+```
+
+**Add to backfill block (for existing records):**
+```python
+for field in ("evidence_type", "measure_basis", "derivation_method", "iris_metric_code"):
+    new_val = m.get(field, "")
+    if new_val and not getattr(obj, field):
+        setattr(obj, field, new_val)
+        changed = True
+if m.get("sdg_goals") and not obj.sdg_goals:
+    obj.sdg_goals = m["sdg_goals"]
+    changed = True
+```
+
+This ensures that adding FHIR metadata to `metric_library.json` takes effect on databases that were already seeded with older versions of the library.
 
 ---
 
