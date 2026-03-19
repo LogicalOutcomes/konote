@@ -43,6 +43,9 @@ class Command(BaseCommand):
             except json.JSONDecodeError as e:
                 raise CommandError(f"Invalid JSON: {e}")
 
+        if not isinstance(config, dict):
+            raise CommandError("Configuration must be a JSON object (not an array or scalar).")
+
         dry_run = options["dry_run"]
         summary = apply_setup_config(config, dry_run=dry_run, stdout=self.stdout)
 
@@ -102,7 +105,7 @@ def _normalise_features(features_data, config):
     if config.get("custom_field_groups") and "custom_fields" not in features:
         features["custom_fields"] = True
 
-    if not features.get("participant_portal", False):
+    if "participant_portal" in features and not features["participant_portal"]:
         for key in ("portal_journal", "portal_messaging", "portal_resources"):
             features.setdefault(key, False)
 
@@ -165,9 +168,15 @@ def _apply_terminology(terms_data, stdout):
 
     count = 0
     for key, value in terms_data.items():
+        if isinstance(value, dict):
+            defaults = {"display_value": value.get("en", "")}
+            if "fr" in value:
+                defaults["display_value_fr"] = value["fr"]
+        else:
+            defaults = {"display_value": str(value)}
         TerminologyOverride.objects.update_or_create(
             term_key=key,
-            defaults={"display_value": str(value)},
+            defaults=defaults,
         )
         count += 1
     _log(stdout, f"  Terminology: {count} term(s) set.")
@@ -193,12 +202,15 @@ def _apply_programs(programs_data, stdout):
 
     created = 0
     for prog in programs_data:
+        defaults = {
+            "description": prog.get("description", ""),
+            "colour_hex": prog.get("colour_hex", "#3B82F6"),
+        }
+        if "service_model" in prog:
+            defaults["service_model"] = prog["service_model"]
         _, was_created = Program.objects.get_or_create(
             name=prog["name"],
-            defaults={
-                "description": prog.get("description", ""),
-                "colour_hex": prog.get("colour_hex", "#3B82F6"),
-            },
+            defaults=defaults,
         )
         if was_created:
             created += 1
@@ -233,28 +245,33 @@ def _apply_plan_templates(templates_data, stdout):
     target_count = 0
 
     for tpl in templates_data:
-        template = PlanTemplate.objects.create(
+        template, was_created = PlanTemplate.objects.get_or_create(
             name=tpl["name"],
-            description=tpl.get("description", ""),
+            defaults={"description": tpl.get("description", "")},
         )
-        template_count += 1
+        if was_created:
+            template_count += 1
 
         for i, sec in enumerate(tpl.get("sections", [])):
-            section = PlanTemplateSection.objects.create(
+            section, sec_created = PlanTemplateSection.objects.get_or_create(
                 plan_template=template,
                 name=sec["name"],
-                sort_order=i,
+                defaults={"sort_order": i},
             )
-            section_count += 1
+            if sec_created:
+                section_count += 1
 
             for j, tgt in enumerate(sec.get("targets", [])):
-                PlanTemplateTarget.objects.create(
+                _, tgt_created = PlanTemplateTarget.objects.get_or_create(
                     template_section=section,
                     name=tgt["name"],
-                    description=tgt.get("description", ""),
-                    sort_order=j,
+                    defaults={
+                        "description": tgt.get("description", ""),
+                        "sort_order": j,
+                    },
                 )
-                target_count += 1
+                if tgt_created:
+                    target_count += 1
 
     _log(stdout, f"  Plan templates: {template_count} templates, {section_count} sections, {target_count} targets.")
     return {
@@ -269,24 +286,30 @@ def _apply_custom_fields(groups_data, stdout):
     field_count = 0
 
     for i, grp in enumerate(groups_data):
-        group = CustomFieldGroup.objects.create(
+        group, grp_created = CustomFieldGroup.objects.get_or_create(
             title=grp["title"],
-            sort_order=i,
-            admin_only=grp.get("admin_only", False),
+            defaults={
+                "sort_order": i,
+                "admin_only": grp.get("admin_only", False),
+            },
         )
-        group_count += 1
+        if grp_created:
+            group_count += 1
 
         for j, fld in enumerate(grp.get("fields", [])):
-            CustomFieldDefinition.objects.create(
+            _, fld_created = CustomFieldDefinition.objects.get_or_create(
                 group=group,
                 name=fld["name"],
-                input_type=fld.get("input_type", "text"),
-                is_required=fld.get("is_required", False),
-                is_sensitive=fld.get("is_sensitive", False),
-                options_json=fld.get("options", []),
-                sort_order=j,
+                defaults={
+                    "input_type": fld.get("input_type", "text"),
+                    "is_required": fld.get("is_required", False),
+                    "is_sensitive": fld.get("is_sensitive", False),
+                    "options_json": fld.get("options", []),
+                    "sort_order": j,
+                },
             )
-            field_count += 1
+            if fld_created:
+                field_count += 1
 
     _log(stdout, f"  Custom fields: {group_count} groups, {field_count} fields.")
     return {"Custom fields": f"{group_count} group(s), {field_count} field(s)"}
