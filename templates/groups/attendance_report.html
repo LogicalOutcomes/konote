@@ -4,7 +4,11 @@
 {% block title %}{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
+{% if show_attendance_navigation %}
+<p><a href="{% url 'groups:attendance_hub' %}" class="back-link">&larr; {% trans "Back to Attendance" %}</a></p>
+{% else %}
 <p><a href="{% url 'groups:group_detail' group_id=group.pk %}" class="back-link">&larr; {% blocktrans with name=group.name %}Back to {{ name }}{% endblocktrans %}</a></p>
+{% endif %}
 
 <hgroup>
     <h1>{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %}</h1>
@@ -46,6 +50,9 @@
     <thead>
         <tr>
             <th scope="col">{% trans "Member" %}</th>
+            {% if show_relationship_column %}
+            <th scope="col">{% trans "Relationship" %}</th>
+            {% endif %}
             {% for s in sessions %}
             <th scope="col"><small>{{ s.session_date|date:"M j" }}</small></th>
             {% endfor %}
@@ -57,6 +64,9 @@
         {% for row in rows %}
         <tr>
             <td><strong>{{ row.name }}</strong></td>
+            {% if show_relationship_column %}
+            <td data-label="{% trans 'Relationship' %}">{{ row.relationship|default:"—" }}</td>
+            {% endif %}
             {% for present in row.sessions %}
             <td data-label="{{ forloop.counter }}">
                 {% if present == True %}

@@ -32,6 +32,7 @@ urlpatterns = [
     path("check-duplicate/", views.check_duplicate, name="check_duplicate"),
     path("search/", views.client_search, name="client_search"),
     path("<int:client_id>/", views.client_detail, name="client_detail"),
+    path("<int:client_id>/programs/", views.client_programs, name="client_programs"),
     path("<int:client_id>/edit/", views.client_edit, name="client_edit"),
     path("<int:client_id>/transfer/", views.client_transfer, name="client_transfer"),
     path("<int:client_id>/discharge/", views.client_discharge, name="client_discharge"),

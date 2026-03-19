@@ -8,6 +8,7 @@ Usage:
 import json
 from pathlib import Path
 
+from django.core.cache import cache
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
@@ -78,8 +79,20 @@ def apply_setup_config(config, dry_run=False, stdout=None):
         ))
         summary.update(_apply_plan_templates(config.get("plan_templates", []), stdout))
         summary.update(_apply_custom_fields(config.get("custom_field_groups", []), stdout))
+        transaction.on_commit(_invalidate_setup_caches)
 
     return summary
+
+
+def _invalidate_setup_caches():
+    """Clear cached template context that depends on setup-managed records."""
+    for cache_key in (
+        "feature_toggles",
+        "instance_settings",
+        "terminology_overrides_en",
+        "terminology_overrides_fr",
+    ):
+        cache.delete(cache_key)
 
 
 def _normalise_features(features_data, config):

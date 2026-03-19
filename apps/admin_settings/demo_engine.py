@@ -704,8 +704,13 @@ class DemoDataEngine:
         ).delete()[0]
 
         # Demo-seeded attendance groups use an internal marker in description.
+        demo_attendance_group_ids = [
+            group.pk
+            for group in Group.objects.only("pk", "description")
+            if self._is_demo_attendance_group_description(group.description)
+        ]
         counts["attendance_groups"] = Group.objects.filter(
-            description__contains=DEMO_ATTENDANCE_GROUP_MARKER,
+            pk__in=demo_attendance_group_ids,
         ).delete()[0]
 
         # Demo circles
@@ -1899,7 +1904,8 @@ class DemoDataEngine:
         ).format(program=program.name, location=location)
         existing = Group.objects.filter(name=group_name, program=program).first()
         if existing:
-            if DEMO_ATTENDANCE_GROUP_MARKER in (existing.description or ""):
+            if self._is_demo_attendance_group_description(existing.description):
+                self._normalise_demo_attendance_group_description(existing)
                 return existing, False
             self.log_warning(
                 f"  Skipping seeded attendance group '{group_name}' because a non-demo group already exists."
@@ -1918,9 +1924,60 @@ class DemoDataEngine:
         )
         return group, True
 
+    def _is_demo_attendance_group_description(self, description):
+        """Return True when a group description uses any demo-attendance marker.
+
+        Accepts the current canonical marker plus older bracketed variants like
+        ``[AGENCY DEMO ATTENDANCE]`` so legacy demo groups can be repaired and
+        cleaned up without embedding tenant-specific names in shared code.
+        """
+        description = (description or "").strip()
+        if not description:
+            return False
+        if DEMO_ATTENDANCE_GROUP_MARKER in description:
+            return True
+        return bool(re.search(r"\[[^\]]*DEMO ATTENDANCE\]", description, re.IGNORECASE))
+
+    def _normalise_demo_attendance_group_description(self, group):
+        """Rewrite any legacy demo-attendance marker to the canonical marker."""
+        description = group.description or ""
+        if DEMO_ATTENDANCE_GROUP_MARKER in description:
+            return
+
+        normalised = re.sub(
+            r"\[[^\]]*DEMO ATTENDANCE\]",
+            DEMO_ATTENDANCE_GROUP_MARKER,
+            description,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        if normalised != description:
+            group.description = normalised
+            group.save(update_fields=["description"])
+
+    def _prune_invalid_demo_group_memberships(self, group):
+        """Remove orphaned blank memberships from a demo attendance group.
+
+        Older demo seed runs could leave memberships with neither a linked
+        client nor a fallback member name. Those rows render as "Unknown" in
+        rosters and attendance screens. When reseeding a demo attendance group,
+        it is always safe to remove these invalid placeholders before adding the
+        current eligible roster.
+        """
+        from apps.groups.models import GroupMembership
+
+        deleted_count, _details = GroupMembership.objects.filter(
+            group=group,
+            client_file__isnull=True,
+            member_name="",
+        ).delete()
+        return deleted_count
+
     def _seed_group_memberships(self, group, assignments, program_cfg):
         """Add active demo clients to a seeded attendance group."""
         from apps.groups.models import GroupMembership
+
+        self._prune_invalid_demo_group_memberships(group)
 
         created_count = 0
         for assignment in assignments:

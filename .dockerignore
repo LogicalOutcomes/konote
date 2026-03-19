@@ -38,6 +38,7 @@ incidents/
 
 # Local artifacts
 Pasted image*.png
+*.db
 *.sqlite3
 backups/
 qa/
