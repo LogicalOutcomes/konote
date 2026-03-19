@@ -32,7 +32,7 @@
 
 <!-- Action buttons -->
 <div role="group">
-    <a href="{% url 'groups:group_edit' group_id=group.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
+    <a href="{% url 'groups:group_edit' group_id=group.pk %}" role="button" class="outline">{% blocktrans with group_term=term.group|default:"Group" %}Edit {{ group_term }}{% endblocktrans %}</a>
     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button">{% trans "Log Session" %}</a>
     <a href="{% url 'groups:membership_add' group_id=group.pk %}" role="button" class="outline">{% trans "Add Member" %}</a>
     <a href="{% url 'groups:attendance_report' group_id=group.pk %}" role="button" class="outline">{% trans "Attendance Report" %}</a>
@@ -44,10 +44,13 @@
 
     {% if memberships %}
     <figure>
-    <table role="grid" aria-label="{% trans 'Group roster' %}">
+    <table role="grid" aria-label="{% blocktrans with group_term=term.group|default:'Group' %}{{ group_term }} roster{% endblocktrans %}">
         <thead>
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
+                {% if show_relationship_column %}
+                <th scope="col">{% trans "Relationship" %}</th>
+                {% endif %}
                 <th scope="col">{% trans "Role" %}</th>
                 <th scope="col">{% trans "Status" %}</th>
                 <th scope="col">{% trans "Actions" %}</th>
@@ -57,6 +60,9 @@
             {% for m in memberships %}
             <tr>
                 <td>{{ m.display_name }}</td>
+                {% if show_relationship_column %}
+                <td data-label="{% trans 'Relationship' %}">{{ m.relationship_display|default:"—" }}</td>
+                {% endif %}
                 <td data-label="{% trans 'Role' %}">
                     {% if m.role == "leader" %}
                         <span class="badge badge-primary">{% trans "Leader" %}</span>

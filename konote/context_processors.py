@@ -16,6 +16,14 @@ def nav_active(request):
     Views that explicitly pass nav_active in their context will override this.
     """
     path = request.path
+    match = getattr(request, "resolver_match", None)
+    url_name = match.url_name if match else ""
+
+    if url_name in {"attendance_hub", "session_log", "attendance_report"}:
+        from apps.admin_settings.models import FeatureToggle
+
+        if FeatureToggle.get_all_flags().get("attendance_navigation", False):
+            return {"nav_active": "attendance"}
 
     # Order matters — more specific prefixes first
     if path.startswith("/events/alerts/recommendations"):
@@ -24,6 +32,8 @@ def nav_active(request):
         section = "insights"
     elif path.startswith("/reports/"):
         section = "reports"
+    elif path.startswith("/groups/attendance"):
+        section = "attendance"
     elif path.startswith("/programs/"):
         section = "programs"
     elif path.startswith("/groups/"):

@@ -121,6 +121,9 @@
             {% endif %}
             {% if features.groups and can_see_groups %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
+            {% if features.attendance_navigation %}
+            <li><a href="{% url 'groups:attendance_hub' %}"{% if nav_active == "attendance" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Attendance" %}</a></li>
+            {% endif %}
             {% endif %}
             {% if features.circles and user_permissions.circle_view %}
             <li><a href="/circles/"{% if nav_active == "circles" %} class="nav-active" aria-current="page"{% endif %}>{{ term.circle_plural|default:"Circles" }}</a></li>

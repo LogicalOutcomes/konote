@@ -45,10 +45,15 @@
         {% for att in attendance_data %}
         <label class="checkbox-item">
             <input type="checkbox" name="present_{{ att.membership.pk }}" checked>
-            <span class="checkbox-label-text">{{ att.membership.display_name }}</span>
+            <span class="checkbox-label-text">
+                {{ att.membership.display_name }}
+                {% if show_relationship_column and att.relationship_display %}
+                <small class="secondary">— {% trans "Relationship" %}: {{ att.relationship_display }}</small>
+                {% endif %}
+            </span>
         </label>
         {% empty %}
-        <p><em>{% trans "No members in this group yet." %}</em></p>
+        <p><em>{% blocktrans with group_term=term.group|default:"group" %}No members in this {{ group_term }} yet.{% endblocktrans %}</em></p>
         {% endfor %}
     </fieldset>
 

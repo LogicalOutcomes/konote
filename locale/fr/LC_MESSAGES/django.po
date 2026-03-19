@@ -23846,44 +23846,81 @@ msgid "Insufficient data"
 msgstr "Données insuffisantes"
 
 msgid "%"
-msgstr ""
+msgstr "%"
 
 msgid "Achievement Rates"
-msgstr ""
+msgstr "Taux de réalisation"
 
 msgid ""
 "Are you sure? This marks the theme as something that won’t be acted on."
-msgstr ""
+msgstr "Êtes-vous sûr(e) ? Cela marque le thème comme non retenu."
 
 msgid "Auto-linked service episode for this encounter."
-msgstr ""
+msgstr "Épisode de service lié automatiquement à cette rencontre."
 
 msgid "Default target date offset (days) for goals created in this program."
 msgstr ""
+"Décalage par défaut (jours) pour la date cible des objectifs créés dans ce "
+"programme."
 
 msgid "Funder-required"
-msgstr ""
+msgstr "Exigé par le bailleur"
 
 msgid "How goal_source was derived: heuristic, worker_set, or ai_inferred."
 msgstr ""
+"Comment la source de l’objectif a été déterminée : heuristique, définie par "
+"l’intervenant ou inférée par l’IA."
 
 msgid "Jointly developed"
-msgstr ""
+msgstr "Élaboré conjointement"
 
 msgid "Outcome Progress"
-msgstr ""
+msgstr "Progression des résultats"
 
 msgid "Participant-initiated"
-msgstr ""
+msgstr "Initié par le participant"
 
 msgid "Practice indicators"
-msgstr ""
+msgstr "Indicateurs de pratique"
 
 msgid "Target completion date. Auto-set from program default."
 msgstr ""
+"Date cible de réalisation. Définie automatiquement selon les paramètres du "
+"programme."
 
 msgid "Who established this goal. Auto-classified from content."
 msgstr ""
+"Qui a établi cet objectif. Classé automatiquement à partir du contenu."
 
 msgid "Worker-initiated"
-msgstr ""
+msgstr "Initié par l’intervenant"
+
+msgid "%(group_label)s created."
+msgstr "%(group_label)s créé."
+
+msgid "%(group_label)s updated."
+msgstr "%(group_label)s mis à jour."
+
+msgid "Attendance groups list"
+msgstr "Liste des groupes de présences"
+
+msgid "Back to Attendance"
+msgstr "Retour aux présences"
+
+msgid "Episode Type"
+msgstr "Type d’épisode"
+
+msgid "Optional — choose this person's role in the circle."
+msgstr "Facultatif — choisissez le rôle de cette personne dans le cercle."
+
+msgid "Referral Source"
+msgstr "Source de référence"
+
+msgid "Select one of the configured relationship types."
+msgstr "Sélectionnez l’un des types de relation configurés."
+
+msgid "Service Started"
+msgstr "Début du service"
+
+msgid "You do not have access to this %(group_label)s."
+msgstr "Vous n’avez pas accès à ce %(group_label)s."

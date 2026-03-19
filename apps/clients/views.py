@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -1085,35 +1085,72 @@ def client_confirm_phone(request, client_id):
     return redirect("clients:client_detail", client_id=client.pk)
 
 
-@login_required
-def client_detail(request, client_id):
-    # Security: Only fetch clients matching user's demo status
-    base_queryset = get_client_queryset(request.user)
-    client = get_object_or_404(base_queryset, pk=client_id)
-    # Track recently viewed clients in session (most recent first, max 10)
+def _is_client_programs_tab_enabled():
+    """Return whether the split Profile/Programs client layout is enabled."""
+    from apps.admin_settings.models import FeatureToggle
+
+    flags = FeatureToggle.get_all_flags()
+    return flags.get("programs", False) and flags.get("client_programs_tab", False)
+
+
+def _build_client_detail_base_context(request, client, *, active_tab):
+    """Build the shared context required by all participant-detail tabs."""
     recent = request.session.get("recent_clients", [])
-    if client_id in recent:
-        recent.remove(client_id)
-    recent.insert(0, client_id)
+    if client.pk in recent:
+        recent.remove(client.pk)
+    recent.insert(0, client.pk)
     request.session["recent_clients"] = recent[:10]
 
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == ROLE_RECEPTIONIST
 
-    # Only show enrolments in programs the user has access to.
-    # Prevents leaking confidential program names.
-    # Include on_hold episodes so they appear with a badge.
     user_program_ids = _get_user_program_ids(request.user)
     enrolments = ClientProgramEnrolment.objects.filter(
-        client_file=client, status__in=["active", "on_hold"],
+        client_file=client,
+        status__in=["active", "on_hold"],
         program_id__in=user_program_ids,
-    ).select_related("program")
-    # IMPROVE-5: Check if client has programs hidden from this user
+    ).select_related("program", "primary_worker")
     all_enrolled_count = ClientProgramEnrolment.objects.filter(
         client_file=client, status__in=["active", "on_hold"],
     ).count()
-    visible_count = enrolments.count()
-    has_hidden_programs = all_enrolled_count > visible_count
+    has_hidden_programs = all_enrolled_count > enrolments.count()
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": "", "label": f"{client.display_name} {client.last_name}"},
+    ]
+    tab_counts = {} if is_receptionist else get_client_tab_counts(client)
+
+    from .models import ErasureRequest
+    pending_erasure = ErasureRequest.objects.filter(
+        client_file=client, status="pending",
+    ).exists()
+
+    return {
+        "client": client,
+        "enrolments": enrolments,
+        "active_tab": active_tab,
+        "user_role": user_role,
+        "is_receptionist": is_receptionist,
+        "is_pm_or_admin": user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False),
+        "pending_erasure": pending_erasure,
+        "document_folder_url": get_document_folder_url(client),
+        "has_hidden_programs": has_hidden_programs,
+        "breadcrumbs": breadcrumbs,
+        **tab_counts,
+    }, user_program_ids
+
+
+@login_required
+def client_detail(request, client_id):
+    # Security: Only fetch clients matching user's demo status
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    context, user_program_ids = _build_client_detail_base_context(
+        request, client, active_tab="info",
+    )
+    user_role = context["user_role"]
+    is_receptionist = context["is_receptionist"]
 
     # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
     custom_fields_ctx = _get_custom_fields_context(
@@ -1122,21 +1159,7 @@ def client_detail(request, client_id):
     )
     custom_data = custom_fields_ctx["custom_data"]
     has_editable_fields = custom_fields_ctx["has_editable_fields"]
-    # Breadcrumbs: Participants > [Name]
-    breadcrumbs = [
-        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
-        {"url": "", "label": f"{client.display_name} {client.last_name}"},
-    ]
-    # Tab counts for badges (only for non-front-desk roles, only for full page loads)
-    tab_counts = {} if is_receptionist else get_client_tab_counts(client)
-
-    # Check for pending erasure request (ERASE8)
-    from .models import ErasureRequest
-    pending_erasure = ErasureRequest.objects.filter(
-        client_file=client, status="pending",
-    ).exists()
-
-    is_pm_or_admin = user_role in MANAGEMENT_ROLES or getattr(request.user, "is_admin", False)
+    is_pm_or_admin = context["is_pm_or_admin"]
 
     # Circles sidebar (only when feature toggle is on and user is not front desk)
     client_circles = []
@@ -1197,24 +1220,13 @@ def client_detail(request, client_id):
     else:  # "default"
         sharing_effective = _agency_shares
 
-    context = {
-        "client": client,
-        "enrolments": enrolments,
+    context.update({
         "custom_data": custom_data,
         "has_editable_fields": has_editable_fields,
-        "active_tab": "info",
-        "user_role": user_role,
-        "is_receptionist": is_receptionist,
-        "is_pm_or_admin": is_pm_or_admin,
-        "pending_erasure": pending_erasure,
         "visible_fields": visible_fields,
         "sharing_effective": sharing_effective,
-        "document_folder_url": get_document_folder_url(client),
-        "has_hidden_programs": has_hidden_programs,
         "client_circles": client_circles,
-        "breadcrumbs": breadcrumbs,
-        **tab_counts,  # notes_count, events_count, targets_count
-    }
+    })
 
     # Active alerts — shown on Info tab for immediate visibility
     if not is_receptionist:
@@ -1240,6 +1252,23 @@ def client_detail(request, client_id):
     if request.headers.get("HX-Request"):
         return render(request, "clients/_tab_info.html", context)
     return render(request, "clients/detail.html", context)
+
+
+@login_required
+def client_programs(request, client_id):
+    """Dedicated participant Programs tab, enabled only for opted-in tenants."""
+    if not _is_client_programs_tab_enabled():
+        raise Http404
+
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    context, _user_program_ids = _build_client_detail_base_context(
+        request, client, active_tab="programs",
+    )
+
+    if request.headers.get("HX-Request"):
+        return render(request, "clients/_tab_programs.html", context)
+    return render(request, "clients/programs.html", context)
 
 
 @login_required
