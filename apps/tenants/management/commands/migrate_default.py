@@ -76,20 +76,35 @@ class Command(DjangoMigrateCommand):
         parser.set_defaults(database="default")
 
     def _constraint_exists(self, cursor, table_name, constraint_name):
-        """Return True when a named constraint already exists on a public table."""
+        """Return True when a named constraint already exists on a public table.
+
+        Checks both pg_constraint (table constraints) and pg_class (indexes),
+        because Django implements UniqueConstraint with a condition as a partial
+        unique index which appears in pg_class but not pg_constraint.
+        """
         if cursor.db.vendor != "postgresql":
             constraints = cursor.db.introspection.get_constraints(cursor, table_name)
             return constraint_name in constraints
 
         cursor.execute(
             """
-            SELECT 1
-            FROM pg_constraint c
-            JOIN pg_class t ON c.conrelid = t.oid
-            JOIN pg_namespace n ON t.relnamespace = n.oid
-            WHERE n.nspname = 'public'
-              AND t.relname = %s
-              AND c.conname = %s
+            SELECT 1 FROM (
+                -- Table constraints (CHECK, FK, UNIQUE without condition, etc.)
+                SELECT c.conname AS name
+                FROM pg_constraint c
+                JOIN pg_class t ON c.conrelid = t.oid
+                JOIN pg_namespace n ON t.relnamespace = n.oid
+                WHERE n.nspname = 'public'
+                  AND t.relname = %s
+                UNION
+                -- Indexes (partial unique indexes from conditional UniqueConstraint)
+                SELECT i.relname AS name
+                FROM pg_class i
+                JOIN pg_namespace n ON i.relnamespace = n.oid
+                WHERE n.nspname = 'public'
+                  AND i.relkind = 'i'
+            ) combined
+            WHERE combined.name = %s
             """,
             [table_name, constraint_name],
         )
@@ -111,7 +126,10 @@ class Command(DjangoMigrateCommand):
                 return None
 
             # M2M fields don't have a column on the source table.
-            if col_name is None:
+            # Check both the column value and the field type, because
+            # ManyToManyField with through tables returns a non-None
+            # .column (the attname) despite having no physical column.
+            if col_name is None or field.many_to_many:
                 return None
 
             cursor.execute(
@@ -197,6 +215,12 @@ class Command(DjangoMigrateCommand):
 
         # --- Phase 1: physically detect missing schema ---
         to_remove = set()
+        # Constraints missing from migrations already recorded as applied.
+        # These are NOT removed — instead, created directly after Phase 3
+        # to break the fake_initial cycle where initial migrations containing
+        # both CreateModel and AddConstraint get fully faked (tables exist),
+        # leaving the constraint un-created forever.
+        missing_constraints = []  # list of (app_label, AddConstraint op)
 
         with connection.cursor() as cursor:
             for app_label in sorted(apps_to_check):
@@ -214,12 +238,25 @@ class Command(DjangoMigrateCommand):
                             continue
 
                         if not exists:
+                            # Missing constraints are handled separately: we
+                            # create them directly rather than re-queuing the
+                            # whole migration (which fake_initial would skip).
+                            from django.db.migrations.operations.models import AddConstraint
+                            if isinstance(op, AddConstraint):
+                                missing_constraints.append((app_label, op))
+                                self.stdout.write(
+                                    self.style.WARNING(
+                                        f"  Missing constraint detected:"
+                                        f" {app_label}.{migration_name}"
+                                        f" — {op.constraint.name}. Will create directly."
+                                    )
+                                )
+                                continue
+
                             to_remove.add((app_label, migration_name))
 
                             if hasattr(op, "model_name") and hasattr(op, "name"):
                                 missing_object = f"column {op.model_name}.{op.name}"
-                            elif hasattr(op, "constraint"):
-                                missing_object = f"constraint {op.constraint.name}"
                             else:
                                 missing_object = "schema object"
 
@@ -296,6 +333,33 @@ class Command(DjangoMigrateCommand):
                 )
             )
 
+        # --- Phase 3.5: create missing constraints directly ---
+        #
+        # Constraints detected as missing in Phase 1 are NOT re-queued (which
+        # would cause fake_initial to skip them along with the CreateModel in
+        # their initial migration).  Instead, create them directly via
+        # schema_editor so they exist before Django's migrate runs.
+        if missing_constraints:
+            from django.apps import apps as django_apps
+
+            for app_label, op in missing_constraints:
+                try:
+                    model = django_apps.get_model(app_label, op.model_name)
+                    with connection.schema_editor() as editor:
+                        editor.add_constraint(model, op.constraint)
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f"    Created constraint: {op.constraint.name}"
+                        )
+                    )
+                except Exception as exc:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"    Could not create constraint"
+                            f" {op.constraint.name}: {exc}"
+                        )
+                    )
+
         # --- Phase 4: direct consistency pre-flight ---
         #
         # Phases 1–3 propagate through the dependency graph but Phase 2 skips
@@ -322,7 +386,7 @@ class Command(DjangoMigrateCommand):
                 )
                 phase4_removed = True
 
-        return bool(to_remove or phase4_removed)
+        return bool(to_remove or phase4_removed or missing_constraints)
 
     # ------------------------------------------------------------------
     # Main entry point

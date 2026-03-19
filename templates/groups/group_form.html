@@ -5,7 +5,7 @@
 
 {% block content %}
 <hgroup>
-    <h1>{% if editing %}{% blocktrans with name=group.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% trans "What are you setting up?" %}{% endif %}</h1>
+    <h1>{% if editing %}{% blocktrans with group_term=term.group|default:"Group" name=group.name %}Edit {{ group_term }} — {{ name }}{% endblocktrans %}{% else %}{% blocktrans with group_term=term.group|default:"Group" %}Set up a {{ group_term }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
 <form method="post">
@@ -21,7 +21,7 @@
                    style="margin-top: 0.25rem;">
             <span>
                 {% if radio.choice_value == "group" %}
-                <strong>{% trans "A recurring group" %}</strong>
+                <strong>{% blocktrans with group_term=term.group|default:"Group" %}A recurring {{ group_term }}{% endblocktrans %}</strong>
                 <br><small class="secondary">{% trans "For regular meetings — like a support group, workshop series, or drop-in program. You'll track attendance and record what happens each session." %}</small>
                 {% elif radio.choice_value == "project" %}
                 <strong>{% trans "A project" %}</strong>

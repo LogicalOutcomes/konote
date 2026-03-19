@@ -1,0 +1,69 @@
+{% load i18n %}
+
+<section>
+    <h2>{{ term.program_plural|default:"Programs" }}</h2>
+    <p class="secondary">{% blocktrans with programs=term.program_plural|default:"programs" %}Current visible {{ programs }} and service episode details for this participant.{% endblocktrans %}</p>
+
+    {% if enrolments %}
+    <div style="display: grid; gap: var(--kn-space-base);">
+        {% for enrolment in enrolments %}
+        <article>
+            <header style="display: flex; justify-content: space-between; gap: var(--kn-space-sm); align-items: center; flex-wrap: wrap;">
+                <div>
+                    <strong>
+                        <span class="program-dot" style="background-color: {{ enrolment.program.colour_hex }}; display: inline-block; margin-right: 0.35rem;" aria-hidden="true"></span>
+                        {{ enrolment.program.translated_name }}
+                    </strong>
+                </div>
+                <div>
+                    {% if enrolment.status == "on_hold" %}
+                    <span class="badge badge-warning">{% trans "On Hold" %}</span>
+                    {% elif enrolment.status == "active" %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                    {% else %}
+                    <span class="badge badge-neutral">{{ enrolment.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </header>
+
+            <dl class="info-grid-compact" style="margin-top: var(--kn-space-sm);">
+                {% if enrolment.episode_type %}
+                <div class="info-field">
+                    <dt>{% trans "Episode Type" %}</dt>
+                    <dd>{{ enrolment.get_episode_type_display }}</dd>
+                </div>
+                {% endif %}
+                {% if enrolment.started_at %}
+                <div class="info-field">
+                    <dt>{% trans "Service Started" %}</dt>
+                    <dd>{{ enrolment.started_at|date }}</dd>
+                </div>
+                {% endif %}
+                {% if not is_receptionist and enrolment.primary_worker %}
+                <div class="info-field">
+                    <dt>{{ term.worker|default:"Worker" }}</dt>
+                    <dd>{{ enrolment.primary_worker.display_name|default:enrolment.primary_worker }}</dd>
+                </div>
+                {% endif %}
+                {% if not is_receptionist and enrolment.referral_source %}
+                <div class="info-field">
+                    <dt>{% trans "Referral Source" %}</dt>
+                    <dd>{{ enrolment.get_referral_source_display }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+
+            {% if enrolment.status_reason and not is_receptionist %}
+            <p class="secondary" style="margin-top: var(--kn-space-sm);"><small>{{ enrolment.status_reason }}</small></p>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="secondary" role="status">{% blocktrans with programs=term.program_plural|default:"programs" %}No visible {{ programs }} for this participant.{% endblocktrans %}</p>
+    {% endif %}
+
+    {% if has_hidden_programs %}
+    <p class="secondary" role="note" style="margin-top: var(--kn-space-sm);"><small>{% blocktrans with programs=term.program_plural|default:"programs" %}This participant is also enrolled in other {{ programs }} you don't have access to. Contact your program manager for details.{% endblocktrans %}</small></p>
+    {% endif %}
+</section>

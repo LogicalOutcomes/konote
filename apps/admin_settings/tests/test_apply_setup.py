@@ -11,6 +11,7 @@ import json
 import os
 import tempfile
 
+from django.core.cache import cache
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
@@ -575,3 +576,24 @@ class ApplySetupTests(TestCase):
 
         # Programs should not have been touched
         self.assertEqual(Program.objects.count(), 0)
+
+    def test_apply_setup_invalidates_cached_template_context(self):
+        """Setup writes should refresh cached settings, terms, and feature flags."""
+        config = {
+            "instance_settings": {"product_name": "Fresh Name"},
+            "terminology": {"group_plural": "Templates"},
+            "features": {"attendance_navigation": True},
+        }
+        path = self._write_config(config)
+
+        cache.set("instance_settings", {"product_name": "Stale Name"}, 300)
+        cache.set("terminology_overrides_en", {"group_plural": "Groups"}, 300)
+        cache.set("terminology_overrides_fr", {"group_plural": "Groupes"}, 300)
+        cache.set("feature_toggles", {"attendance_navigation": False}, 300)
+
+        call_command("apply_setup", path, stdout=StringIO())
+
+        self.assertIsNone(cache.get("instance_settings"))
+        self.assertIsNone(cache.get("terminology_overrides_en"))
+        self.assertIsNone(cache.get("terminology_overrides_fr"))
+        self.assertIsNone(cache.get("feature_toggles"))

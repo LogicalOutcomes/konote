@@ -26,7 +26,7 @@
         <select name="client_file" id="id_client_file"{% if form.non_field_errors %} aria-describedby="form-errors"{% endif %}>
             <option value="">— {% trans "Select" %} —</option>
             {% for pk, name in client_choices %}
-            <option value="{{ pk }}">{{ name }}</option>
+            <option value="{{ pk }}"{% if form.client_file.value|stringformat:'s' == pk|stringformat:'s' %} selected{% endif %}>{{ name }}</option>
             {% endfor %}
         </select>
     </fieldset>
@@ -36,17 +36,22 @@
     <fieldset>
         <legend>{% blocktrans with term=term.client|default:"participant" %}Add a non-{{ term }} member{% endblocktrans %}</legend>
         <label for="id_member_name">{% trans "Name" %}</label>
-        <input type="text" name="member_name" id="id_member_name" placeholder="{% trans 'Full name' %}"{% if form.non_field_errors %} aria-describedby="form-errors"{% endif %}>
+        <input type="text" name="member_name" id="id_member_name" placeholder="{% trans 'Full name' %}" value="{{ form.member_name.value|default_if_none:'' }}"{% if form.non_field_errors %} aria-describedby="form-errors"{% endif %}>
     </fieldset>
 
-    <label for="id_relationship_label">{% trans "Relationship" %}</label>
-    <input type="text" name="relationship_label" id="id_relationship_label"
-           placeholder="{% trans 'e.g. parent, spouse, child, caregiver' %}"
-           aria-describedby="relationship-help">
-    <small id="relationship-help">{% trans "Optional — describes this person's role in the circle." %}</small>
+    <label for="id_relationship_label">{{ form.relationship_label.label }}</label>
+    {{ form.relationship_label }}
+    {% if form.relationship_label.errors %}
+    <div id="relationship-errors" role="alert">
+        {% for error in form.relationship_label.errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <small id="relationship-help">{{ form.relationship_label.help_text }}</small>
 
     <label>
-        <input type="checkbox" name="is_primary_contact" id="id_is_primary_contact">
+        <input type="checkbox" name="is_primary_contact" id="id_is_primary_contact"{% if form.is_primary_contact.value %} checked{% endif %}>
         {% trans "Primary contact" %}
     </label>
 

@@ -51,6 +51,7 @@
             <dd>{{ client.birth_date }}</dd>
         </div>
         {% endif %}
+        {% if not features.client_programs_tab or not features.programs %}
         {% if enrolments %}
         <div class="quick-info-item">
             <dt>{{ term.program_plural|default:"Programs" }}</dt>
@@ -66,9 +67,12 @@
             </dd>
         </div>
         {% endif %}
+        {% endif %}
     </dl>
+    {% if not features.client_programs_tab or not features.programs %}
     {% if has_hidden_programs %}
     <p class="secondary" role="note"><small>{% blocktrans with programs=term.program_plural|default:"programs" %}This participant is also enrolled in other {{ programs }} you don't have access to. Contact your program manager for details.{% endblocktrans %}</small></p>
+    {% endif %}
     {% endif %}
 </section>
 

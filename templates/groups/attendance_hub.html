@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Attendance" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<div class="page-header">
+    <h1>{% trans "Attendance" %}</h1>
+    <p>{% blocktrans with groups=term.group_plural|default:"Groups" %}Go straight to session logging and attendance reports for the {{ groups }} you can access.{% endblocktrans %}</p>
+</div>
+
+{% if groups %}
+<figure>
+<table role="grid" aria-label="{% trans 'Attendance groups list' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{{ term.program|default:"Program" }}</th>
+            <th scope="col">{% trans "Members" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for group in groups %}
+        <tr>
+            <td>
+                <a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>
+            </td>
+            <td data-label="{{ term.program|default:'Program' }}">{{ group.program.translated_name|default:"—" }}</td>
+            <td data-label="{% trans 'Members' %}">{{ group.active_member_count }}</td>
+            <td data-label="{% trans 'Actions' %}">
+                <div role="group">
+                    <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button">{% trans "Log Session" %}</a>
+                    <a href="{% url 'groups:attendance_report' group_id=group.pk %}" role="button" class="outline">{% trans "Attendance Report" %}</a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% blocktrans with groups=term.group_plural|default:"Groups" %}No active {{ groups }} are available for attendance yet.{% endblocktrans %}</p>
+    <a href="{% url 'groups:group_list' %}" role="button" class="outline">{{ term.group_plural|default:"Groups" }}</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1467,7 +1467,11 @@ class Command(BaseCommand):
                     client.preferred_name = value
                     client.save()
                 try:
-                    field_def = CustomFieldDefinition.objects.get(name=field_name)
+                    field_def = CustomFieldDefinition.objects.filter(
+                        name=field_name,
+                    ).order_by("pk").first()
+                    if field_def is None:
+                        raise CustomFieldDefinition.DoesNotExist
                     cdv, _ = ClientDetailValue.objects.get_or_create(
                         client_file=client,
                         field_def=field_def,
@@ -4797,16 +4801,22 @@ class Command(BaseCommand):
             assigned_by = workers.get(worker_username, worker1)
 
             # Assign satisfaction survey to all 3 portal participants
-            assign_sat, a_created = SurveyAssignment.objects.get_or_create(
+            assign_sat = SurveyAssignment.objects.filter(
                 survey=satisfaction,
                 participant_user=participant,
                 client_file=client,
-                defaults={
-                    "status": "completed" if record_id in ("DEMO-001", "DEMO-010") else "pending",
-                    "assigned_by": assigned_by,
-                    "due_date": (now + timedelta(days=14)).date(),
-                },
-            )
+            ).order_by("pk").first()
+            a_created = False
+            if not assign_sat:
+                assign_sat = SurveyAssignment.objects.create(
+                    survey=satisfaction,
+                    participant_user=participant,
+                    client_file=client,
+                    status="completed" if record_id in ("DEMO-001", "DEMO-010") else "pending",
+                    assigned_by=assigned_by,
+                    due_date=(now + timedelta(days=14)).date(),
+                )
+                a_created = True
             if a_created:
                 assignments_created += 1
                 # Backdate
@@ -4894,16 +4904,22 @@ class Command(BaseCommand):
 
             # Assign programme feedback survey to DEMO-001 and DEMO-010
             if record_id in ("DEMO-001", "DEMO-010"):
-                assign_fb, fb_created = SurveyAssignment.objects.get_or_create(
+                assign_fb = SurveyAssignment.objects.filter(
                     survey=feedback,
                     participant_user=participant,
                     client_file=client,
-                    defaults={
-                        "status": "completed" if record_id == "DEMO-001" else "in_progress",
-                        "assigned_by": assigned_by,
-                        "due_date": (now + timedelta(days=21)).date(),
-                    },
-                )
+                ).order_by("pk").first()
+                fb_created = False
+                if not assign_fb:
+                    assign_fb = SurveyAssignment.objects.create(
+                        survey=feedback,
+                        participant_user=participant,
+                        client_file=client,
+                        status="completed" if record_id == "DEMO-001" else "in_progress",
+                        assigned_by=assigned_by,
+                        due_date=(now + timedelta(days=21)).date(),
+                    )
+                    fb_created = True
                 if fb_created:
                     assignments_created += 1
 

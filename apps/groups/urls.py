@@ -5,6 +5,7 @@ from . import views
 app_name = "groups"
 urlpatterns = [
     path("", views.group_list, name="group_list"),
+    path("attendance/", views.attendance_hub, name="attendance_hub"),
     path("<int:group_id>/", views.group_detail, name="group_detail"),
     path("create/", views.group_create, name="group_create"),
     path("<int:group_id>/edit/", views.group_edit, name="group_edit"),
