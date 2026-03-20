@@ -347,6 +347,28 @@ a.portal-card article {
     font-style: italic;
 }
 
+/* ---- Empty states ---- */
+.portal-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--pico-muted-color, #666);
+    background: #f5f0eb;
+    border-radius: 8px;
+    border: 1px dashed var(--pico-muted-border-color, #ddd);
+}
+.portal-empty-state::before {
+    content: "\1F4CB" / "";
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+    margin: 0 auto 1rem;
+    opacity: 0.45;
+}
+.portal-empty-state p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
 /* ---- Progress page redesign ---- */
 
 /* Card grid — single column, comfortable spacing */
