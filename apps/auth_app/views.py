@@ -385,6 +385,7 @@ def demo_login(request, role):
 
 @csrf_exempt
 @require_POST
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def demo_portal_login(request, record_id):
     """Quick-login as a demo participant. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
