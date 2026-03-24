@@ -5,6 +5,9 @@
 ## 2025-03-10 - Add ARIA Labels to Copy Buttons
 **Learning:** Many "Copy" buttons in the app use the `copy-btn` class but lack `aria-label`s. Screen readers might just read "Copy" out of context, which can be confusing (e.g., "Copy what?").
 **Action:** Add descriptive `aria-label` attributes to these buttons (e.g., `aria-label="{% trans 'Copy calendar link' %}"`) to improve accessibility.
+## 2024-05-24 - Screen Reader Compatibility for HTML Entities
+**Learning:** Decorative HTML entities like `&larr;` (left arrow), `&rarr;` (right arrow), and `&times;` (multiply/close icon) are read aloud by screen readers, creating confusing navigation text like "leftwards arrow Back to sign in" instead of just "Back to sign in".
+**Action:** Always wrap decorative HTML entities in a `<span aria-hidden="true">` to hide them from assistive technologies while keeping them visible on screen.
 
 ## 2025-03-11 - Add Empty State Styles to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`, which left these states looking like unstyled text blocks and failing to guide users who have no content yet.
