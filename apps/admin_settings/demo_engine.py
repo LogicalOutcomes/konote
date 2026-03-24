@@ -20,9 +20,12 @@ import logging
 import os
 import random
 import re
+from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
+from time import perf_counter
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -536,6 +539,21 @@ class DemoDataEngine:
         else:
             logger.warning(msg)
 
+    @contextmanager
+    def timed_stage(self, label):
+        """Log start/end timing for a demo-seed stage."""
+        self.log(f"  [stage] {label} — start")
+        started_at = perf_counter()
+        try:
+            yield
+        except Exception:
+            elapsed = perf_counter() - started_at
+            self.log_warning(f"  [stage] {label} — failed after {elapsed:.2f}s")
+            raise
+        else:
+            elapsed = perf_counter() - started_at
+            self.log(f"  [stage] {label} — done in {elapsed:.2f}s")
+
     # ----- Profile loading -----
 
     def load_profile(self, profile_path):
@@ -843,6 +861,65 @@ class DemoDataEngine:
                 owning_program__isnull=True, status="active",
             ).first()
         return template
+
+    def _cache_plan_template_structure(self, template):
+        """Cache template sections/targets to avoid repeated per-client reads."""
+        if not template or hasattr(template, "_demo_sections"):
+            return template
+
+        sections = list(template.sections.order_by("sort_order"))
+        for section in sections:
+            section._demo_targets = list(section.targets.order_by("sort_order"))
+        template._demo_sections = sections
+        return template
+
+    def _build_program_seed_contexts(self, programs):
+        """Resolve per-program seed context once per run."""
+        contexts = {}
+        template_cache = {}
+
+        for program in programs:
+            metrics = self.discover_metrics_for_program(program)
+            template = self.discover_plan_template(program)
+            if template:
+                template = template_cache.setdefault(
+                    template.pk,
+                    self._cache_plan_template_structure(template),
+                )
+
+            contexts[program.pk] = {
+                "metrics": metrics,
+                "template": template,
+            }
+
+        return contexts
+
+    def _resolve_note_context(self, client, program, worker):
+        """Resolve note save context once per client-program assignment."""
+        from apps.clients.models import ServiceEpisode
+
+        author_role = ""
+        if worker and program:
+            role_obj = UserProgramRole.objects.filter(
+                user_id=worker.pk,
+                program_id=program.pk,
+                status="active",
+            ).only("role").first()
+            if role_obj:
+                author_role = role_obj.role
+
+        episode = None
+        if client and program:
+            episode = ServiceEpisode.objects.filter(
+                client_file_id=client.pk,
+                program_id=program.pk,
+                status__in=ServiceEpisode.ACCESSIBLE_STATUSES,
+            ).order_by("-started_at").only("pk").first()
+
+        return {
+            "author_role": author_role,
+            "episode": episode,
+        }
 
     # ----- Metric portal visibility -----
 
@@ -2186,24 +2263,35 @@ class DemoDataEngine:
 
     # ----- Plan generation -----
 
-    def generate_plan(self, client, program, metrics, trend, worker, goal, profile):
+    def generate_plan(self, client, program, metrics, trend, worker, goal, profile,
+                      template=None):
         """Create a plan for a client using configured templates or generic structure.
 
         Returns list of (PlanTarget, [MetricDefinition, ...]) tuples.
         """
-        template = self.discover_plan_template(program)
+        template = template if template is not None else self.discover_plan_template(program)
         all_targets = []
 
-        if template and template.sections.exists():
+        template_sections = getattr(template, "_demo_sections", None) if template else None
+        if template and template_sections is None:
+            template = self._cache_plan_template_structure(template)
+            template_sections = getattr(template, "_demo_sections", None)
+
+        if template and template_sections:
             # Use the actual plan template
-            for section_tmpl in template.sections.order_by("sort_order"):
+            for section_tmpl in template_sections:
                 section = PlanSection.objects.create(
                     client_file=client,
                     name=section_tmpl.name,
                     program=program,
                     sort_order=section_tmpl.sort_order,
                 )
-                for target_tmpl in section_tmpl.targets.order_by("sort_order"):
+                target_templates = getattr(section_tmpl, "_demo_targets", None)
+                if target_templates is None:
+                    target_templates = list(section_tmpl.targets.order_by("sort_order"))
+                    section_tmpl._demo_targets = target_templates
+
+                for target_tmpl in target_templates:
                     target = PlanTarget.objects.create(
                         plan_section=section,
                         client_file=client,
@@ -2335,7 +2423,8 @@ class DemoDataEngine:
     # ----- Note generation -----
 
     def generate_notes(self, client, program, all_targets, trend, worker,
-                       note_count, days_span, profile):
+                       note_count, days_span, profile, author_role="",
+                       episode=None):
         """Create progress notes with metric values following a trend pattern."""
         prog_profile = profile.get("programs", {}).get(program.name, {})
 
@@ -2400,6 +2489,8 @@ class DemoDataEngine:
                 interaction_type=interaction,
                 author=worker,
                 author_program=program,
+                author_role=author_role,
+                episode=episode,
                 backdate=backdate,
                 notes_text=(
                     random.choice(quick_notes) if is_quick else ""
@@ -2453,23 +2544,38 @@ class DemoDataEngine:
                     len(client_words) - 1,
                 )
 
+                target_entry_specs = []
+                target_entries = []
                 for target, target_metrics in all_targets:
-                    pnt = ProgressNoteTarget.objects.create(
+                    pnt = ProgressNoteTarget(
                         progress_note=note,
                         plan_target=target,
-                        notes=random.choice(full_summaries),
                         progress_descriptor=descriptor,
-                        client_words=client_words[words_idx],
                     )
+                    pnt.notes = random.choice(full_summaries)
+                    pnt.client_words = client_words[words_idx]
+                    target_entries.append(pnt)
+                    target_entry_specs.append((target, target_metrics))
+
+                created_entries = ProgressNoteTarget.objects.bulk_create(
+                    target_entries,
+                    batch_size=1000,
+                )
+
+                metric_values = []
+                for created_entry, (target, target_metrics) in zip(created_entries, target_entry_specs):
                     for md in target_metrics:
                         key = (target.pk, md.pk)
                         seq = metric_sequences[key]
                         val = seq[note_idx] if note_idx < len(seq) else seq[-1]
-                        MetricValue.objects.create(
-                            progress_note_target=pnt,
+                        metric_values.append(MetricValue(
+                            progress_note_target=created_entry,
                             metric_def=md,
                             value=str(val),
-                        )
+                        ))
+
+                if metric_values:
+                    MetricValue.objects.bulk_create(metric_values, batch_size=1000)
 
     # ----- Event generation -----
 
@@ -3151,6 +3257,101 @@ class DemoDataEngine:
 
     # ----- Main orchestrator -----
 
+    def _direction_from_pair(self, prev, current, higher_is_better):
+        """Simple 2-point comparison for achievement recompute."""
+        if higher_is_better:
+            if current > prev:
+                return "improving"
+            if current < prev:
+                return "worsening"
+        else:
+            if current < prev:
+                return "improving"
+            if current > prev:
+                return "worsening"
+        return "no_change"
+
+    def _trend_from_three(self, values, higher_is_better):
+        """3-point trend helper for achievement recompute."""
+        improving_count = 0
+        worsening_count = 0
+
+        for idx in range(1, len(values)):
+            previous = values[idx - 1]
+            current = values[idx]
+            if higher_is_better:
+                if current > previous:
+                    improving_count += 1
+                elif current < previous:
+                    worsening_count += 1
+            else:
+                if current < previous:
+                    improving_count += 1
+                elif current > previous:
+                    worsening_count += 1
+
+        if improving_count >= 2:
+            return "improving"
+        if worsening_count >= 2:
+            return "worsening"
+        return "no_change"
+
+    def _compute_batched_quantitative_status(self, plan_target, metric_def, values):
+        """Compute quantitative achievement status using prefetched metric values."""
+        numeric_values = []
+        for value in values:
+            try:
+                numeric_values.append(float(value))
+            except (TypeError, ValueError):
+                continue
+
+        if not numeric_values:
+            return "in_progress"
+
+        higher_is_better = metric_def.higher_is_better
+        target_threshold = metric_def.max_value
+        latest = numeric_values[-1]
+        was_achieved = bool(plan_target.first_achieved_at)
+
+        if target_threshold is not None:
+            if higher_is_better:
+                meets_target = latest >= target_threshold
+            else:
+                meets_target = latest <= target_threshold
+
+            if meets_target:
+                return "sustaining" if was_achieved else "achieved"
+
+            if was_achieved:
+                return "worsening"
+
+        count = len(numeric_values)
+        if count == 1:
+            return "in_progress"
+        if count == 2:
+            return self._direction_from_pair(
+                numeric_values[-2],
+                numeric_values[-1],
+                higher_is_better,
+            )
+        return self._trend_from_three(numeric_values[-3:], higher_is_better)
+
+    def _compute_batched_qualitative_status(self, plan_target, descriptor):
+        """Compute qualitative achievement status using the latest descriptor."""
+        if not descriptor:
+            return "in_progress"
+
+        was_achieved = bool(plan_target.first_achieved_at)
+        if descriptor == "good_place":
+            return "sustaining" if was_achieved else "achieved"
+
+        descriptor_map = {
+            "harder": "worsening",
+            "holding": "no_change",
+            "shifting": "improving",
+        }
+        return descriptor_map.get(descriptor, "in_progress")
+
     @transaction.atomic
     def run(self, clients_per_program=3, days_span=180, profile_path=None,
             force=False):
@@ -3200,7 +3401,8 @@ class DemoDataEngine:
 
         try:
             # 1. Discover programs
-            programs = self.discover_programs()
+            with self.timed_stage("discover programs"):
+                programs = self.discover_programs()
             if not programs:
                 return False
 
@@ -3253,40 +3455,56 @@ class DemoDataEngine:
             # 1d. Ensure metrics used in demo plans are portal-visible
             self._ensure_portal_visible_metrics(programs)
 
+            # 1e. Cache per-program seed context used throughout assignment processing
+            program_seed_contexts = self._build_program_seed_contexts(programs)
+
             # 2. Create demo users
-            users = self.create_demo_users(programs, profile)
+            with self.timed_stage("create demo users"):
+                users = self.create_demo_users(programs, profile)
 
             # 3. Create demo clients
-            client_assignments = self.create_demo_clients(
-                programs, users, clients_per_program, profile,
-            )
+            with self.timed_stage("create demo clients"):
+                client_assignments = self.create_demo_clients(
+                    programs, users, clients_per_program, profile,
+                )
 
             # 3b. Create structured attendance groups, history, and offline pilot configs
-            self.seed_attendance_demo_data(programs, client_assignments, profile)
-            self.seed_field_collection_pilots(programs, profile)
+            with self.timed_stage("seed attendance demo data"):
+                self.seed_attendance_demo_data(programs, client_assignments, profile)
+            with self.timed_stage("seed field collection pilots"):
+                self.seed_field_collection_pilots(programs, profile)
 
             plan_targets_to_recompute = []
 
             # 4. For each client: create plan, notes, events
-            for assignment in client_assignments:
+            total_assignments = len(client_assignments)
+            self.log(f"  [stage] process client assignments — start ({total_assignments} assignments)")
+            assignment_stage_started_at = perf_counter()
+            for assignment_index, assignment in enumerate(client_assignments, start=1):
                 client = assignment.client
                 program = assignment.program
                 trend = assignment.trend
                 worker = assignment.worker
                 goal = assignment.goal
-                metrics = self.discover_metrics_for_program(program)
+                program_context = program_seed_contexts.get(program.pk, {})
+                metrics = program_context.get("metrics", [])
                 note_count = random.randint(note_count_range[0], note_count_range[1])
 
                 # Create plan
                 all_targets = self.generate_plan(
                     client, program, metrics, trend, worker, goal, profile,
+                    template=program_context.get("template"),
                 )
                 plan_targets_to_recompute.extend(target for target, _ in all_targets)
+
+                note_context = self._resolve_note_context(client, program, worker)
 
                 # Create notes with metric values
                 self.generate_notes(
                     client, program, all_targets, trend, worker,
                     note_count, days_span, profile,
+                    author_role=note_context["author_role"],
+                    episode=note_context["episode"],
                 )
 
                 # Create events
@@ -3297,27 +3515,46 @@ class DemoDataEngine:
                     f"— {program.name} ({trend})"
                 )
 
-            self._recompute_achievement_statuses(plan_targets_to_recompute)
+                if assignment_index % 25 == 0 or assignment_index == total_assignments:
+                    elapsed = perf_counter() - assignment_stage_started_at
+                    self.log(
+                        f"  [stage] process client assignments — "
+                        f"{assignment_index}/{total_assignments} done in {elapsed:.2f}s"
+                    )
+
+            total_assignment_elapsed = perf_counter() - assignment_stage_started_at
+            self.log(
+                f"  [stage] process client assignments — done in {total_assignment_elapsed:.2f}s"
+            )
+
+            with self.timed_stage("recompute achievement statuses"):
+                self._recompute_achievement_statuses(plan_targets_to_recompute)
 
             # 5. Create alerts for struggling/crisis clients
-            self.generate_alerts(client_assignments)
+            with self.timed_stage("generate alerts"):
+                self.generate_alerts(client_assignments)
 
             # 6. Create suggestion themes
-            self.generate_suggestion_themes(programs, users, profile)
+            with self.timed_stage("generate suggestion themes"):
+                self.generate_suggestion_themes(programs, users, profile)
 
             portal_enabled = FeatureToggle.get_all_flags().get("participant_portal", True)
             if portal_enabled:
                 # 7. Create portal accounts for demo participants
-                self.create_demo_portal_accounts(client_assignments)
+                with self.timed_stage("create demo portal accounts"):
+                    self.create_demo_portal_accounts(client_assignments)
 
                 # 8. Create portal content (journals, messages, staff notes)
-                self.create_demo_portal_content(client_assignments, users, profile)
+                with self.timed_stage("create demo portal content"):
+                    self.create_demo_portal_content(client_assignments, users, profile)
 
                 # 9. Create portal surveys with assignments and responses
-                self.create_demo_portal_surveys(client_assignments, users, profile)
+                with self.timed_stage("create demo portal surveys"):
+                    self.create_demo_portal_surveys(client_assignments, users, profile)
 
                 # 10. Create portal resource links
-                self.create_demo_portal_resources(client_assignments, users, profile)
+                with self.timed_stage("create demo portal resources"):
+                    self.create_demo_portal_resources(client_assignments, users, profile)
             else:
                 self.log("  Participant portal disabled — skipping portal demo content.")
 
@@ -3344,17 +3581,103 @@ class DemoDataEngine:
                 os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = previous_skip_recompute
 
     def _recompute_achievement_statuses(self, plan_targets):
-        """Recompute achievement statuses once after bulk demo generation."""
-        from apps.plans.achievement import update_achievement_status
+        """Recompute achievement statuses in batches after bulk demo generation."""
+        from apps.notes.models import MetricValue, ProgressNoteTarget
+        from apps.plans.models import PlanTarget
 
         unique_targets = {}
         for target in plan_targets:
             unique_targets[target.pk] = target
 
-        for target in unique_targets.values():
-            update_achievement_status(target)
+        auto_targets = [
+            target for target in unique_targets.values()
+            if target.achievement_status_source != "worker_assessed"
+        ]
+        if not auto_targets:
+            return
 
-        if unique_targets:
+        target_ids = [target.pk for target in auto_targets]
+
+        primary_metric_by_target = {}
+        primary_metric_id_by_target = {}
+        prefetched_targets = PlanTarget.objects.filter(pk__in=target_ids).prefetch_related("metrics")
+        for target in prefetched_targets:
+            metrics = list(target.metrics.all())
+            if metrics:
+                primary_metric = metrics[0]
+                primary_metric_by_target[target.pk] = primary_metric
+                primary_metric_id_by_target[target.pk] = primary_metric.pk
+
+        metric_values_by_target = defaultdict(list)
+        if primary_metric_id_by_target:
+            metric_rows = MetricValue.objects.filter(
+                progress_note_target__plan_target_id__in=target_ids,
+                metric_def_id__in=set(primary_metric_id_by_target.values()),
+            ).order_by(
+                "progress_note_target__plan_target_id",
+                "metric_def_id",
+                "created_at",
+                "pk",
+            ).values_list(
+                "progress_note_target__plan_target_id",
+                "metric_def_id",
+                "value",
+            )
+            for target_id, metric_def_id, value in metric_rows:
+                if primary_metric_id_by_target.get(target_id) == metric_def_id:
+                    metric_values_by_target[target_id].append(value)
+
+        latest_descriptor_by_target = {}
+        descriptor_rows = ProgressNoteTarget.objects.filter(
+            plan_target_id__in=target_ids,
+            progress_descriptor__in=["harder", "holding", "shifting", "good_place"],
+        ).order_by("plan_target_id", "-created_at", "-pk").values_list(
+            "plan_target_id",
+            "progress_descriptor",
+        )
+        for target_id, descriptor in descriptor_rows:
+            if target_id not in latest_descriptor_by_target:
+                latest_descriptor_by_target[target_id] = descriptor
+
+        now = timezone.now()
+        targets_to_update = []
+        for target in auto_targets:
+            metric_def = primary_metric_by_target.get(target.pk)
+            if metric_def:
+                status = self._compute_batched_quantitative_status(
+                    target,
+                    metric_def,
+                    metric_values_by_target.get(target.pk, []),
+                )
+            else:
+                status = self._compute_batched_qualitative_status(
+                    target,
+                    latest_descriptor_by_target.get(target.pk, ""),
+                )
+
+            if status == "not_attainable":
+                continue
+
+            target.achievement_status = status
+            target.achievement_status_source = "auto_computed"
+            target.achievement_status_updated_at = now
+            if status in ("achieved", "sustaining") and not target.first_achieved_at:
+                target.first_achieved_at = now
+            targets_to_update.append(target)
+
+        if targets_to_update:
+            PlanTarget.objects.bulk_update(
+                targets_to_update,
+                [
+                    "achievement_status",
+                    "achievement_status_source",
+                    "achievement_status_updated_at",
+                    "first_achieved_at",
+                ],
+                batch_size=500,
+            )
+
+        if targets_to_update:
             self.log(
-                f"  Recomputed achievement status for {len(unique_targets)} plan targets."
+                f"  Recomputed achievement status for {len(targets_to_update)} plan targets."
             )

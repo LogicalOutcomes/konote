@@ -264,7 +264,8 @@ PERMISSIONS = {
 
         "group.view_roster": ALLOW,
         "group.view_detail": ALLOW,  # Phase 3: GATED for session content
-        "group.log_session": DENY,
+        "group.log_session": PROGRAM,  # PMs need to cover attendance/session logging
+                        # when direct-service staff are unavailable.
         "group.edit": ALLOW,  # Can configure groups
         "group.manage_members": ALLOW,  # Can add/remove members. Enforced by @requires_permission
         "group.create": ALLOW,  # Managers configure program groups. Enforced by @requires_permission
