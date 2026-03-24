@@ -5,3 +5,14 @@
 ## 2025-03-10 - Add ARIA Labels to Copy Buttons
 **Learning:** Many "Copy" buttons in the app use the `copy-btn` class but lack `aria-label`s. Screen readers might just read "Copy" out of context, which can be confusing (e.g., "Copy what?").
 **Action:** Add descriptive `aria-label` attributes to these buttons (e.g., `aria-label="{% trans 'Copy calendar link' %}"`) to improve accessibility.
+## 2024-05-24 - Screen Reader Compatibility for HTML Entities
+**Learning:** Decorative HTML entities like `&larr;` (left arrow), `&rarr;` (right arrow), and `&times;` (multiply/close icon) are read aloud by screen readers, creating confusing navigation text like "leftwards arrow Back to sign in" instead of just "Back to sign in".
+**Action:** Always wrap decorative HTML entities in a `<span aria-hidden="true">` to hide them from assistive technologies while keeping them visible on screen.
+
+## 2025-03-11 - Add Empty State Styles to Portal
+**Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`, which left these states looking like unstyled text blocks and failing to guide users who have no content yet.
+**Action:** When creating new layouts (like the portal application), ensure that foundational components like empty states are properly styled to avoid "broken" looking pages for new users.
+
+## 2025-03-11 - Add Empty State Styles with A11y to Portal
+**Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
+**Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.

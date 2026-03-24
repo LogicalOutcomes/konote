@@ -157,18 +157,18 @@
 
     <div class="survey-nav">
         {% if is_multi_page and page_num > 1 %}
-        <a href="?page={{ page_num|add:"-1" }}" class="outline">&larr; {% trans "Back" %}</a>
+        <a href="?page={{ page_num|add:"-1" }}" class="outline"><span aria-hidden="true">&larr;</span> {% trans "Back" %}</a>
         {% endif %}
 
         {% if is_multi_page and not is_last_page %}
-        <button type="submit" name="action" value="next">{% trans "Next" %} &rarr;</button>
+        <button type="submit" name="action" value="next">{% trans "Next" %} <span aria-hidden="true">&rarr;</span></button>
         {% else %}
         <button type="submit" name="action" value="submit">{% trans "Submit" %}</button>
         {% endif %}
     </div>
 </form>
 
-<p><a href="{% url 'portal:surveys' %}">&larr; {% trans "Back to surveys" %}</a></p>
+<p><a href="{% url 'portal:surveys' %}"><span aria-hidden="true">&larr;</span> {% trans "Back to surveys" %}</a></p>
 
 <style>
 .survey-progress { margin-bottom: 1rem; }
