@@ -20,7 +20,7 @@
 <article class="onboarding-banner" id="onboarding-banner" role="complementary" aria-label="{% trans 'Welcome banner' %}" hidden>
     <header>
         <strong>{% blocktrans with product_name=site.product_name|default:"KoNote" %}Welcome to {{ product_name }}! Need help getting started?{% endblocktrans %}</strong>
-        <button type="button" class="close-btn" id="dismiss-onboarding" aria-label="{% trans 'Dismiss welcome banner' %}">&times;</button>
+        <button type="button" class="close-btn" id="dismiss-onboarding" aria-label="{% trans 'Dismiss welcome banner' %}"><span aria-hidden="true">&times;</span></button>
     </header>
     <ul>
         <li>{% blocktrans with clients=term.client_plural|default:"participants" %}Use the search bar to find {{ clients }}, or the "+ New" button to register one{% endblocktrans %}</li>
