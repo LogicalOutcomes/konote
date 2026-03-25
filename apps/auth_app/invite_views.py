@@ -8,6 +8,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django_ratelimit.decorators import ratelimit
 
 from apps.programs.models import UserProgramRole
 
@@ -52,6 +53,7 @@ def invite_create(request):
     return render(request, "auth_app/invite_form.html", {"form": form})
 
 
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def invite_accept(request, code):
     """Public view — new user registers via invite link."""
     invite = get_object_or_404(Invite, code=code)
