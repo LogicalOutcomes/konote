@@ -2,7 +2,7 @@
 # to the matching Container App.
 #
 # Branches:
-#   main    → image tagged :YYYY-MM-DD.<sha> + :latest  → deploys to konote-web (production)
+#   main    → image tagged :YYYY-MM-DD.<sha> + :latest  → deploys to konote-web + konote-crc (production)
 #   staging → image tagged :YYYY-MM-DD.<sha> + :staging → deploys to konote-staging
 #
 # Required GitHub secrets:
@@ -74,6 +74,15 @@ jobs:
         run: |
           az containerapp update \
             --name ${{ steps.tags.outputs.app_name }} \
+            --resource-group KoNote-prod \
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }} \
+            --output none
+
+      - name: Deploy to konote-crc
+        if: github.ref_name == 'main'
+        run: |
+          az containerapp update \
+            --name konote-crc \
             --resource-group KoNote-prod \
             --image ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }} \
             --output none
