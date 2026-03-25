@@ -18,6 +18,9 @@ on:
   push:
     branches: [main, staging]
 
+permissions:
+  contents: read
+
 jobs:
   build-push-deploy:
     name: Build, push, and deploy
