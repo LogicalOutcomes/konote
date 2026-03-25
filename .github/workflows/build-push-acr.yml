@@ -72,4 +72,5 @@ jobs:
           az containerapp update \
             --name ${{ steps.tags.outputs.app_name }} \
             --resource-group KoNote-prod \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }}
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/konote:${{ steps.tags.outputs.versioned }} \
+            --output none
