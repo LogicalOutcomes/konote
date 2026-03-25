@@ -152,8 +152,8 @@
 </section>
 {% endif %}
 
-{# Additional details - only if client has middle name or custom data #}
-{% if client.middle_name or custom_data %}
+{# Additional details - middle name and/or custom fields #}
+{% if client.middle_name or custom_data or has_editable_fields %}
 <section>
     {% if client.middle_name %}
     <dl class="info-grid-compact" style="margin-top: var(--kn-space-base);">
@@ -164,11 +164,9 @@
     </dl>
     {% endif %}
 
-    {% if custom_data %}
     <div id="custom-fields-section">
         {% include "clients/_custom_fields_display.html" %}
     </div>
-    {% endif %}
 </section>
 {% endif %}
 

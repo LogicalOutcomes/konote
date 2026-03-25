@@ -21,7 +21,7 @@ from apps.groups.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
-from apps.auth_app.constants import ROLE_STAFF
+from apps.auth_app.constants import ROLE_PROGRAM_MANAGER, ROLE_STAFF
 
 TEST_KEY = Fernet.generate_key().decode()
 
@@ -232,11 +232,20 @@ class SessionLogHappyPathTest(TestCase):
         self.staff = User.objects.create_user(
             username="staff", password="testpass123", is_admin=False,
         )
+        self.manager = User.objects.create_user(
+            username="manager", password="testpass123", is_admin=False,
+        )
         self.program = Program.objects.create(
             name="Youth Group", service_model="group",
         )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program, role=ROLE_STAFF, status="active",
+        )
+        UserProgramRole.objects.create(
+            user=self.manager,
+            program=self.program,
+            role=ROLE_PROGRAM_MANAGER,
+            status="active",
         )
         self.group = Group.objects.create(
             name="Monday Group", program=self.program, group_type="group",
@@ -326,6 +335,20 @@ class SessionLogHappyPathTest(TestCase):
         resp = self.client.get(self._session_url())
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Session Date")
+
+    def test_session_log_program_manager_can_log_session(self):
+        """Program managers can open and submit group session logs in their program."""
+        self.client.login(username="manager", password="testpass123")
+        resp = self.client.get(self._session_url())
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Session Date")
+
+        post_resp = self.client.post(self._session_url(), self._valid_post_data())
+        self.assertEqual(post_resp.status_code, 302)
+        self.assertIn(str(self.group.pk), post_resp.url)
+        self.assertEqual(GroupSession.objects.count(), 1)
+        session = GroupSession.objects.first()
+        self.assertEqual(session.facilitator, self.manager)
 
     def test_session_log_access_denied_for_other_program(self):
         """User with a role in a different program gets 403."""
