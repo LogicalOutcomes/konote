@@ -127,7 +127,7 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 // and links the preceding input/select/textarea
 (function () {
     function linkErrorMessages() {
-        var errors = document.querySelectorAll("small.error, small.badge-danger");
+        var errors = document.querySelectorAll("small.error, small.badge-danger, small.portal-field-error");
         errors.forEach(function (errorEl) {
             // Walk backwards through siblings to find the form control
             var sibling = errorEl.previousElementSibling;
@@ -440,7 +440,7 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 
     function hasValidationErrors(target) {
         if (!target || !(target instanceof Element)) return false;
-        var selector = "[aria-invalid='true'], .error-summary, small.error, small.badge-danger";
+        var selector = "[aria-invalid='true'], .error-summary, small.error, small.badge-danger, small.portal-field-error";
         return target.matches(selector) || !!target.querySelector(selector);
     }
 
