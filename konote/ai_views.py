@@ -685,6 +685,8 @@ def goal_builder_chat(request, client_id):
 
 @login_required
 @require_POST
+# 🛡️ Sentinel: Rate limiting added to prevent abuse/DoS of AI goal saving endpoint
+@ratelimit(key="user", rate="20/h", method="POST", block=False)
 def goal_builder_save(request, client_id):
     """Save a goal from the Goal Builder — POST creates target + metric + section.
 
@@ -692,6 +694,8 @@ def goal_builder_save(request, client_id):
     + metric creation. Custom metric creation (from AI) is handled here before
     calling the helper.
     """
+    if getattr(request, "limited", False):
+        return ai_rate_limited_response(request, template_name="plans/_goal_builder.html")
 
     from apps.clients.models import ClientFile
     from apps.plans.models import MetricDefinition, PlanSection
