@@ -13,7 +13,7 @@
     <article>
         <header>{% trans "Agency Coverage" %}</header>
         <p><strong>{{ all_classes_count }} / {{ total_classes }}</strong> {% trans "CIDS classes" %}</p>
-        <progress value="{{ all_classes_count }}" max="{{ total_classes }}"></progress>
+        <progress value="{{ all_classes_count }}" max="{{ total_classes }}" aria-label="{% trans 'Total CIDS classes coverage' %}"></progress>
     </article>
     <article>
         <header>{% trans "Programs" %}</header>
@@ -35,7 +35,7 @@
                 <strong>{{ summary.program.name }}</strong>
                 <span>{{ summary.present }} / {{ summary.total }} ({{ summary.pct }}%)</span>
             </div>
-            <progress value="{{ summary.present }}" max="{{ summary.total }}"></progress>
+            <progress value="{{ summary.present }}" max="{{ summary.total }}" aria-label="{% blocktrans with name=summary.program.name %}CIDS coverage for {{ name }}{% endblocktrans %}"></progress>
         </header>
         <figure>
         <table role="grid">

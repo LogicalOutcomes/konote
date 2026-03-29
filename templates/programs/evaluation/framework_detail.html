@@ -21,7 +21,7 @@
 <section>
     <h2>{% trans "CIDS Class Coverage" %}</h2>
     <p>{{ cids_coverage|length }} / {{ total_cids_classes }} {% trans "classes mapped" %} ({{ coverage_pct }}%)</p>
-    <progress value="{{ cids_coverage|length }}" max="{{ total_cids_classes }}"></progress>
+    <progress value="{{ cids_coverage|length }}" max="{{ total_cids_classes }}" aria-label="{% trans 'CIDS class coverage' %}"></progress>
 
     {% if framework.is_attested %}
     <article>

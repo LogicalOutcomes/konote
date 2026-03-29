@@ -9,7 +9,7 @@
     <p>{{ program.name }} — {{ present }} / {{ total }} {% trans "classes" %} ({{ pct }}%)</p>
 </hgroup>
 
-<progress value="{{ present }}" max="{{ total }}"></progress>
+<progress value="{{ present }}" max="{{ total }}" aria-label="{% trans 'CIDS export status progress' %}"></progress>
 
 {% if framework %}
 <article>
