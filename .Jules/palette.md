@@ -16,3 +16,7 @@
 ## 2025-03-11 - Add Empty State Styles with A11y to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
 **Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.
+
+## 2025-02-28 - Missing ARIA labels on progress elements
+**Learning:** Found that `<progress>` elements used for CIDS coverage tracking in report and program templates were missing `aria-label` attributes. Without these labels, screen reader users would only hear the value and max limits without knowing what the progress bar represents.
+**Action:** Added `aria-label` attributes to `<progress>` elements in `templates/reports/cids_coverage_dashboard.html`, `templates/reports/cids_export_status.html`, and `templates/programs/evaluation/framework_detail.html` to clearly describe the tracked metric, ensuring compliance with accessibility standards (WCAG 4.1.2 Name, Role, Value).
