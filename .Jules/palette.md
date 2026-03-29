@@ -16,3 +16,7 @@
 ## 2025-03-11 - Add Empty State Styles with A11y to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
 **Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.
+
+## 2024-05-18 - Wrapped Decorative HTML Entities in `aria-hidden`
+**Learning:** When creating elements with decorative HTML entities (like `&times;` or `&rarr;`) inside elements that are already labeled using `aria-label` or `aria-labelledby`, the decorative entity should be wrapped in an element with `aria-hidden="true"` (like `<span aria-hidden="true">&times;</span>`). If not wrapped, screen readers might read out the literal symbol names alongside the intended accessible label, leading to confusing or redundant announcements for screen reader users.
+**Action:** Always verify if a visual-only character has meaning that conflicts with or duplicates the element's existing aria-label, and wrap it in `<span aria-hidden="true">` to preserve a clean auditory experience.
