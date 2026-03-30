@@ -7,3 +7,8 @@
 **Vulnerability:** The `demo_portal_login` view was missing rate limiting, making it vulnerable to brute-force or DoS attacks.
 **Learning:** Even endpoints designed for demo purposes need to be protected. The `django-ratelimit` decorator with `block=True` should be applied uniformly to all authentication-related endpoints.
 **Prevention:** Always ensure the `@ratelimit(key="ip", rate="...", method="POST", block=True)` decorator is present on any view that processes login or authentication requests. Also make sure the import is present: `from django_ratelimit.decorators import ratelimit`.
+
+## 2024-03-05 - [Missing Rate Limiting on Staff-Assisted Login]
+**Vulnerability:** The `staff_assisted_login` endpoint (which authenticates users via a one-time token and sets session cookies) lacked rate-limiting, making it vulnerable to brute-force attacks against the token and potentially DoS attacks.
+**Learning:** All authentication boundaries, including GET requests that consume one-time tokens, must be rate-limited.
+**Prevention:** Apply `@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)` to all authentication entry points, ensuring `django_ratelimit.decorators` is imported.
