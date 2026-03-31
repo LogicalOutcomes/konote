@@ -7,3 +7,8 @@
 **Vulnerability:** The `demo_portal_login` view was missing rate limiting, making it vulnerable to brute-force or DoS attacks.
 **Learning:** Even endpoints designed for demo purposes need to be protected. The `django-ratelimit` decorator with `block=True` should be applied uniformly to all authentication-related endpoints.
 **Prevention:** Always ensure the `@ratelimit(key="ip", rate="...", method="POST", block=True)` decorator is present on any view that processes login or authentication requests. Also make sure the import is present: `from django_ratelimit.decorators import ratelimit`.
+
+## 2024-03-05 - [Missing Rate Limiting on Goal Builder Save]
+**Vulnerability:** The `goal_builder_save` view in `konote/ai_views.py` was missing rate limiting, exposing the AI-powered endpoint to potential abuse and resource exhaustion (costly AI API calls).
+**Learning:** Endpoints that handle AI operations or custom metric creation need protection against DoS and financial exhaustion, even if they are authenticated.
+**Prevention:** Ensure the `@ratelimit(key="user", rate="...", method="POST", block=False)` decorator and manual check `if getattr(request, "limited", False): return ai_rate_limited_response(...)` are applied to all AI-powered endpoints.
