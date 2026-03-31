@@ -1767,6 +1767,7 @@ button.outline.secondary:hover {
 /* Static icon above empty state text */
 .empty-state::before {
     content: "\1F4CB";  /* clipboard emoji — renders as text glyph */
+    content: "\1F4CB" / ""; /* hide from screen readers */
     display: block;
     font-size: 2rem;
     line-height: 1;

@@ -16,3 +16,6 @@
 ## 2025-03-11 - Add Empty State Styles with A11y to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
 **Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.
+## 2026-03-31 - Empty State Icons Accessibility
+**Learning:** The project uses the `.empty-state::before` pseudo-element in `static/css/main.css` with `content: "\1F4CB";` to render a decorative clipboard emoji. By default, screen readers read this as "clipboard", polluting the accessibility tree and adding no context.
+**Action:** Updated the CSS to include the accessible modern fallback `content: "\1F4CB" / "";` immediately after the original definition, safely hiding the element from screen readers on supporting browsers without causing regressions.
