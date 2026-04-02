@@ -1,13 +1,14 @@
 """
-Django system checks for French translation completeness.
+Django system checks for translation completeness and demo data health.
 
 These run automatically with every manage.py command (runserver, migrate, etc.).
-They catch missing translations early — especially useful when Claude Code or
-other AI tools are the primary developer and will see the warnings.
+They catch issues early — especially useful when Claude Code or other AI tools
+are the primary developer and will see the warnings.
 
 Check IDs:
     KoNote.W010 — Translation gap detected (Warning)
     KoNote.W011 — .mo file missing or stale (Warning)
+    KoNote.W012 — Demo data below report suppression threshold (Warning)
 
 Run checks manually:
     python manage.py check
@@ -157,3 +158,55 @@ def _count_po_entries(po_path):
         i += 1
 
     return count
+
+
+@register()
+def check_demo_data_health(app_configs, **kwargs):
+    """W012: Warn if demo data exists but is below the report suppression threshold.
+
+    Only runs when DEMO_MODE is enabled.  Catches degraded demo data that
+    would cause reports to show "< 5" or empty results — whether from
+    low client counts, manual deletions, or migration side-effects.
+    """
+    warnings = []
+
+    if not getattr(settings, "DEMO_MODE", False):
+        return warnings
+
+    try:
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.programs.models import Program
+        from apps.reports.suppression import SMALL_CELL_THRESHOLD
+    except Exception:
+        return warnings  # App not ready yet (e.g. during initial migrate)
+
+    # Only check if demo data exists at all
+    if not ClientFile.objects.filter(is_demo=True).exists():
+        return warnings
+
+    programs = Program.objects.filter(is_active=True)
+    low_programs = []
+
+    for prog in programs:
+        count = ClientProgramEnrolment.objects.filter(
+            program=prog, client_file__is_demo=True, status="active",
+        ).count()
+        if 0 < count < SMALL_CELL_THRESHOLD:
+            low_programs.append(f"{prog.name} ({count})")
+
+    if low_programs:
+        warnings.append(
+            Warning(
+                f"Demo data below suppression threshold in: "
+                f"{', '.join(low_programs)}. "
+                f"Reports will show '< {SMALL_CELL_THRESHOLD}' instead of "
+                f"actual counts.",
+                hint=(
+                    "Regenerate demo data: "
+                    "python manage.py generate_demo_data --force"
+                ),
+                id="KoNote.W012",
+            )
+        )
+
+    return warnings
