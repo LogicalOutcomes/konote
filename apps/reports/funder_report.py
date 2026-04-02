@@ -14,7 +14,7 @@ fields, or calculations.
 
 Canadian spelling conventions used throughout (organisation, colour).
 """
-from datetime import date
+from datetime import date, datetime, time
 from typing import Any
 
 from django.db.models import Q
@@ -117,6 +117,7 @@ def get_new_clients_count(
     program,
     date_from: date,
     date_to: date,
+    client_ids: list | None = None,
 ) -> int:
     """
     Count clients who were enrolled during the reporting period.
@@ -128,16 +129,21 @@ def get_new_clients_count(
         program: The Program object to filter by.
         date_from: Start of reporting period.
         date_to: End of reporting period.
+        client_ids: Optional pre-filtered list of client IDs to restrict
+            the count to (e.g. demo-only or real-only clients).
 
     Returns:
         Count of new client enrolments in the period.
     """
-    return ClientProgramEnrolment.objects.filter(
+    qs = ClientProgramEnrolment.objects.filter(
         program=program,
         status="active",
         enrolled_at__date__gte=date_from,
         enrolled_at__date__lte=date_to,
-    ).count()
+    )
+    if client_ids is not None:
+        qs = qs.filter(client_file_id__in=client_ids)
+    return qs.count()
 
 
 def format_fiscal_year_label(start_year: int) -> str:
@@ -293,7 +299,6 @@ def generate_funder_report_data(
         enrolled_client_ids = [cid for cid in enrolled_client_ids if cid in accessible_ids]
 
     # Build date-range boundaries for note queries
-    from datetime import datetime, time
     date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
     date_to_dt = timezone.make_aware(datetime.combine(date_to, time.max))
 
@@ -313,13 +318,16 @@ def generate_funder_report_data(
     total_individuals_served = len(active_client_ids)
 
     # Count new clients enrolled in the period
-    new_clients = get_new_clients_count(program, date_from, date_to)
+    new_clients = get_new_clients_count(
+        program, date_from, date_to, client_ids=enrolled_client_ids,
+    )
 
     # Count total progress notes (contacts) in the period
     total_contacts = count_notes_by_program(
         program,
         date_from=date_from,
         date_to=date_to,
+        client_ids=enrolled_client_ids,
     )
 
     # Contact attempt breakdown (phone/sms/email notes by outcome)
@@ -327,6 +335,7 @@ def generate_funder_report_data(
         program,
         date_from=date_from,
         date_to=date_to,
+        client_ids=enrolled_client_ids,
     )
 
     # Age demographics
