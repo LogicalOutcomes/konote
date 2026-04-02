@@ -26,7 +26,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.notes.models import MetricValue, ProgressNote
 
 from .achievements import get_achievement_summary
-from .aggregations import count_clients_by_program, count_contacts_by_outcome, count_notes_by_program
+from .aggregations import count_contacts_by_outcome, count_notes_by_program
 from .demographics import get_age_range, group_clients_by_age, group_clients_by_custom_field
 from .utils import get_fiscal_year_range
 
@@ -292,13 +292,25 @@ def generate_funder_report_data(
             accessible_ids = set(ClientFile.objects.real().values_list("pk", flat=True))
         enrolled_client_ids = [cid for cid in enrolled_client_ids if cid in accessible_ids]
 
-    # Count unique clients with activity in the period
-    total_individuals_served = count_clients_by_program(
-        program,
-        date_from=date_from,
-        date_to=date_to,
-        active_only=True,
+    # Build date-range boundaries for note queries
+    from datetime import datetime, time
+    date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
+    date_to_dt = timezone.make_aware(datetime.combine(date_to, time.max))
+
+    # Get clients who had activity in the period.
+    # Uses enrolled_client_ids (already filtered by demo/real status above)
+    # so the count is consistent with the rest of the report.
+    active_client_ids = list(
+        ProgressNote.objects.filter(
+            client_file_id__in=enrolled_client_ids,
+            status="default",
+        ).filter(
+            Q(backdate__range=(date_from_dt, date_to_dt))
+            | Q(backdate__isnull=True, created_at__range=(date_from_dt, date_to_dt))
+        ).values_list("client_file_id", flat=True).distinct()
     )
+
+    total_individuals_served = len(active_client_ids)
 
     # Count new clients enrolled in the period
     new_clients = get_new_clients_count(program, date_from, date_to)
@@ -315,22 +327,6 @@ def generate_funder_report_data(
         program,
         date_from=date_from,
         date_to=date_to,
-    )
-
-    # Get clients who had activity in the period for demographics
-    # (use same logic as count_clients_by_program but get IDs)
-    from datetime import datetime, time
-    date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
-    date_to_dt = timezone.make_aware(datetime.combine(date_to, time.max))
-
-    active_client_ids = list(
-        ProgressNote.objects.filter(
-            client_file_id__in=enrolled_client_ids,
-            status="default",
-        ).filter(
-            Q(backdate__range=(date_from_dt, date_to_dt))
-            | Q(backdate__isnull=True, created_at__range=(date_from_dt, date_to_dt))
-        ).values_list("client_file_id", flat=True).distinct()
     )
 
     # Age demographics
