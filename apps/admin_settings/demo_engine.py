@@ -517,9 +517,13 @@ PORTAL_SURVEY_DEFINITIONS = [
 
 # Minimum demo clients per program.  Must exceed the small-cell
 # suppression threshold (5) so that reports show real counts instead
-# of "< 5".  Import this constant wherever a default is needed —
-# never hardcode a number.
+# of "< 5".  Used for floor enforcement and admin UI default.
 DEMO_MIN_CLIENTS_PER_PROGRAM = 10
+
+# Target demo clients for rich demos (presentations, funder meetings).
+# Higher than the minimum to produce convincing charts, demographics,
+# and outcome summaries.  Used by CLI and seed top-up.
+DEMO_TARGET_CLIENTS_PER_PROGRAM = 20
 
 
 class DemoDataEngine:

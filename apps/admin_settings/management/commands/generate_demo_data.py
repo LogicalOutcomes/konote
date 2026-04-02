@@ -15,7 +15,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from apps.admin_settings.demo_engine import DEMO_MIN_CLIENTS_PER_PROGRAM, DemoDataEngine
+from apps.admin_settings.demo_engine import DEMO_TARGET_CLIENTS_PER_PROGRAM, DemoDataEngine
 
 
 class Command(BaseCommand):
@@ -50,10 +50,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clients-per-program",
             type=int,
-            default=DEMO_MIN_CLIENTS_PER_PROGRAM,
+            default=DEMO_TARGET_CLIENTS_PER_PROGRAM,
             help=(
                 f"Number of demo clients to create per program "
-                f"(default: {DEMO_MIN_CLIENTS_PER_PROGRAM}, "
+                f"(default: {DEMO_TARGET_CLIENTS_PER_PROGRAM}, "
                 f"minimum enforced by engine: 5)."
             ),
         )

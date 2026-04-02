@@ -68,7 +68,7 @@ class Command(BaseCommand):
         """Top up demo data to target clients per program using the engine."""
         import os
 
-        from apps.admin_settings.demo_engine import DEMO_MIN_CLIENTS_PER_PROGRAM, DemoDataEngine
+        from apps.admin_settings.demo_engine import DEMO_TARGET_CLIENTS_PER_PROGRAM, DemoDataEngine
 
         demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
         self.stdout.write("  Topping up demo data with config-aware engine...")
@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         try:
             success = engine.run(
-                clients_per_program=DEMO_MIN_CLIENTS_PER_PROGRAM,
+                clients_per_program=DEMO_TARGET_CLIENTS_PER_PROGRAM,
                 profile_path=demo_profile if demo_profile else None,
                 force=False,
             )
