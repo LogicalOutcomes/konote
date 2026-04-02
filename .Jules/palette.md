@@ -16,3 +16,7 @@
 ## 2025-03-11 - Add Empty State Styles with A11y to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
 **Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.
+
+## 2025-03-12 - Screen Reader Compatibility for Close Buttons
+**Learning:** Decorative HTML entities like `&times;` (multiply/close icon) are often used in modal and toast close buttons. Screen readers read these aloud (e.g., "multiply"), creating confusing navigation text instead of just "Close".
+**Action:** Always wrap decorative HTML entities in a `<span aria-hidden="true">` to hide them from assistive technologies while keeping them visible on screen, and rely on `aria-label` on the parent button to provide context.

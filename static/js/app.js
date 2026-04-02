@@ -202,7 +202,7 @@ document.body.addEventListener("htmx:configRequest", function (event) {
         closeBtn.type = "button";
         closeBtn.className = "message-close";
         closeBtn.setAttribute("aria-label", t("dismissMessage", "Dismiss message"));
-        closeBtn.innerHTML = "&times;";
+        closeBtn.innerHTML = '<span aria-hidden="true">&times;</span>';
         closeBtn.addEventListener("click", function () {
             dismissMessage(messageEl);
         });

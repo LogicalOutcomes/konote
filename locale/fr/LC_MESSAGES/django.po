@@ -23924,3 +23924,6 @@ msgstr "Début du service"
 
 msgid "You do not have access to this %(group_label)s."
 msgstr "Vous n’avez pas accès à ce %(group_label)s."
+
+msgid "Print report"
+msgstr ""
