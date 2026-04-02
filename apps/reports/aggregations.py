@@ -349,6 +349,7 @@ def count_notes_by_program(
     date_from: date | None = None,
     date_to: date | None = None,
     note_type: str | None = None,
+    client_ids: list | None = None,
 ) -> int:
     """
     Count progress notes for clients in a program.
@@ -358,13 +359,16 @@ def count_notes_by_program(
         date_from: Start of date range (inclusive).
         date_to: End of date range (inclusive).
         note_type: Optional filter for note type ("quick" or "full").
+        client_ids: Optional pre-filtered list of client IDs to restrict
+            the count to (e.g. demo-only or real-only clients).
 
     Returns:
         Count of progress notes.
     """
-    client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="active"
-    ).values_list("client_file_id", flat=True)
+    if client_ids is None:
+        client_ids = ClientProgramEnrolment.objects.filter(
+            program=program, status="active"
+        ).values_list("client_file_id", flat=True)
 
     note_filter = Q(client_file_id__in=client_ids, status="default")
 
@@ -382,6 +386,7 @@ def count_contacts_by_outcome(
     program,
     date_from: date | None = None,
     date_to: date | None = None,
+    client_ids: list | None = None,
 ) -> dict[str, int]:
     """
     Count contact notes by outcome for funder reporting.
@@ -389,12 +394,20 @@ def count_contacts_by_outcome(
     Counts ProgressNotes with contact interaction types (phone, sms, email)
     and splits by outcome (reached vs. attempted).
 
+    Args:
+        program: A Program instance to filter by.
+        date_from: Start of date range (inclusive).
+        date_to: End of date range (inclusive).
+        client_ids: Optional pre-filtered list of client IDs to restrict
+            the count to (e.g. demo-only or real-only clients).
+
     Returns:
         Dict with keys: total_contacts, successful_contacts, contact_attempts
     """
-    client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="active"
-    ).values_list("client_file_id", flat=True)
+    if client_ids is None:
+        client_ids = ClientProgramEnrolment.objects.filter(
+            program=program, status="active"
+        ).values_list("client_file_id", flat=True)
 
     note_filter = Q(
         client_file_id__in=client_ids,
