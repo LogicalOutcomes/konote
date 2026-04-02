@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KoNote Demo Reports</title>
+  <style>
+    :root {
+      --kn-primary: #3176aa;
+      --kn-primary-dark: #245d8a;
+      --kn-bg: #f8f9fa;
+      --kn-card-bg: #ffffff;
+      --kn-border: #dee2e6;
+      --kn-text: #212529;
+      --kn-text-secondary: #555;
+      --kn-muted: #6c757d;
+      --kn-radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--kn-bg);
+      color: var(--kn-text);
+      line-height: 1.5;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--kn-primary) 0%, var(--kn-primary-dark) 100%);
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .header p { opacity: 0.85; font-size: 0.95rem; }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .category {
+      margin-bottom: 2rem;
+    }
+    .category h2 {
+      font-size: 1.1rem;
+      color: var(--kn-primary-dark);
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid var(--kn-primary);
+      margin-bottom: 1rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1.25rem;
+      text-decoration: none;
+      color: var(--kn-text);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      border-color: var(--kn-primary);
+      box-shadow: 0 2px 8px rgba(49, 118, 170, 0.15);
+    }
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--kn-primary);
+      margin-bottom: 0.4rem;
+    }
+    .card p {
+      font-size: 0.85rem;
+      color: var(--kn-text-secondary);
+      flex: 1;
+    }
+    .card .tag {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      align-self: flex-start;
+    }
+    .tag-funder { background: #e3f2fd; color: #1565c0; }
+    .tag-agency { background: #e8f5e9; color: #2e7d32; }
+    .tag-wireframe { background: #f3e5f5; color: #6a1b9a; }
+    .tag-cids { background: #fff3e0; color: #e65100; }
+
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--kn-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--kn-border);
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>KoNote Demo Reports</h1>
+  <p>Open this page before a presentation. All demo materials in one place.</p>
+</div>
+
+<div class="container">
+
+  <div class="category">
+    <h2>Funder Portfolio View</h2>
+    <div class="card-grid">
+      <a class="card" href="preview_funder_portfolio_dashboard.html">
+        <h3>Funder Portfolio Dashboard</h3>
+        <p>United Way looking across 32 agencies and 87 programs. Shows how CIDS enables cross-agency outcome aggregation. The "why CIDS matters" demo.</p>
+        <span class="tag tag-funder">Funder view</span>
+      </a>
+      <a class="card" href="preview_multi_program_report.html">
+        <h3>Multi-Program Outcome Report</h3>
+        <p>Agency-level report covering 3 programs with metrics, demographics, CIDS alignment, and achievement summaries. What an agency submits to a funder.</p>
+        <span class="tag tag-agency">Agency report</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="category">
+    <h2>Single Program Reports</h2>
+    <div class="card-grid">
+      <a class="card" href="tasks/wireframes/funder-outcome-dashboard.html">
+        <h3>Program Outcome Dashboard</h3>
+        <p>CIDS Full Tier export for one program: theory of change, headline outcomes, counterfactual, impact risks, stakeholders, and evaluator attestation.</p>
+        <span class="tag tag-cids">CIDS Full Tier</span>
+      </a>
+      <a class="card" href="preview_funder_outcome_report.html">
+        <h3>Program Outcome Report (PDF-style)</h3>
+        <p>Single-program funder report with service stats, metrics table, demographics, narrative, and CIDS alignment. Print-ready format.</p>
+        <span class="tag tag-agency">Agency report</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="category">
+    <h2>Configuration &amp; Standards</h2>
+    <div class="card-grid">
+      <a class="card" href="tasks/wireframes/evaluation-framework-editor.html">
+        <h3>Evaluation Framework Editor</h3>
+        <p>Where agencies define their program's evaluation framework: indicators, measurement tools, targets, and CIDS code mappings.</p>
+        <span class="tag tag-wireframe">Wireframe</span>
+      </a>
+      <a class="card" href="tasks/wireframes/common-approach-working-document.html">
+        <h3>CIDS Implementation Working Document</h3>
+        <p>Technical overview of how KoNote implements the Common Impact Data Standard. For conversations with Common Approach.</p>
+        <span class="tag tag-cids">CIDS reference</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  KoNote Demo Materials &middot; Not for distribution &middot; <a href="https://www.konote.ca" style="color: var(--kn-muted);">www.konote.ca</a>
+</div>
+
+</body>
+</html>

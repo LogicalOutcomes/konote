@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Funder Portfolio Dashboard — United Way Greater Toronto</title>
+  <style>
+    :root {
+      --kn-primary: #3176aa;
+      --kn-primary-dark: #245d8a;
+      --kn-success: #2e7d32;
+      --kn-success-light: #e8f5e9;
+      --kn-warning: #f57f17;
+      --kn-warning-light: #fff8e1;
+      --kn-info: #1565c0;
+      --kn-info-light: #e3f2fd;
+      --kn-danger: #c62828;
+      --kn-danger-light: #ffebee;
+      --kn-muted: #6c757d;
+      --kn-bg: #f8f9fa;
+      --kn-card-bg: #ffffff;
+      --kn-border: #dee2e6;
+      --kn-text: #212529;
+      --kn-text-secondary: #555;
+      --kn-radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--kn-bg);
+      color: var(--kn-text);
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--kn-primary) 0%, var(--kn-primary-dark) 100%);
+      color: white;
+      padding: 2rem 2rem 1.5rem;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 700; }
+    .header .subtitle { opacity: 0.9; font-size: 1rem; margin-bottom: 0.75rem; }
+    .header-meta {
+      display: flex; gap: 2rem; margin-top: 0.75rem;
+      font-size: 0.85rem; opacity: 0.8;
+    }
+    .cids-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+    /* Explanation banner */
+    .explainer {
+      background: var(--kn-info-light);
+      border: 1px solid #90caf9;
+      border-radius: var(--kn-radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--kn-info);
+    }
+    .explainer strong { color: var(--kn-primary-dark); }
+
+    /* Portfolio summary row */
+    .portfolio-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .portfolio-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .portfolio-card .big-number {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--kn-primary);
+      line-height: 1.1;
+    }
+    .portfolio-card .card-label {
+      font-size: 0.8rem;
+      color: var(--kn-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* Section headings */
+    .section { margin-bottom: 2rem; }
+    .section h2 {
+      font-size: 1.2rem;
+      color: var(--kn-primary-dark);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--kn-primary);
+    }
+    .section-desc {
+      font-size: 0.9rem;
+      color: var(--kn-text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* Outcome aggregation cards */
+    .outcome-group {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .outcome-group-header {
+      background: #f1f3f5;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .outcome-group-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--kn-text);
+    }
+    .cids-code {
+      font-family: "SF Mono", Monaco, Consolas, monospace;
+      font-size: 0.75rem;
+      background: var(--kn-info-light);
+      color: var(--kn-info);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .outcome-group-body {
+      padding: 1.25rem;
+    }
+    .outcome-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .outcome-stat {
+      text-align: center;
+    }
+    .outcome-stat .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+    .outcome-stat .stat-label {
+      font-size: 0.75rem;
+      color: var(--kn-muted);
+    }
+    .val-green { color: var(--kn-success); }
+    .val-blue { color: var(--kn-info); }
+    .val-amber { color: var(--kn-warning); }
+
+    /* Progress bar */
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* Agency breakdown table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    thead { background: #f8f9fa; }
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      font-weight: 600;
+      color: var(--kn-text-secondary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 2px solid var(--kn-border);
+    }
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    tr:hover td { background: #f8f9fa; }
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 0.3rem;
+      vertical-align: middle;
+    }
+    .status-received { background: var(--kn-success); }
+    .status-pending { background: var(--kn-warning); }
+    .status-overdue { background: var(--kn-danger); }
+    .bar-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .bar-cell .progress-bar-container {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .tag-sector { background: #f3e5f5; color: #6a1b9a; }
+    .tag-sdg { background: #fce4ec; color: #c62828; }
+    .tag-theme { background: #e3f2fd; color: #1565c0; }
+
+    /* Reporting status summary */
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .status-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1rem;
+      text-align: center;
+    }
+    .status-card .count {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .status-card .status-label {
+      font-size: 0.8rem;
+      color: var(--kn-muted);
+    }
+
+    /* Comparison highlight */
+    .comparison-banner {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-left: 4px solid var(--kn-primary);
+      border-radius: var(--kn-radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .comparison-banner h3 {
+      font-size: 0.95rem;
+      color: var(--kn-primary-dark);
+      margin-bottom: 0.5rem;
+    }
+    .comparison-banner p {
+      font-size: 0.9rem;
+      color: var(--kn-text-secondary);
+    }
+
+    /* Taxonomy lens summary */
+    .lens-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .lens-card {
+      background: var(--kn-card-bg);
+      border: 1px solid var(--kn-border);
+      border-radius: var(--kn-radius);
+      padding: 1rem;
+    }
+    .lens-card h4 {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      color: var(--kn-primary-dark);
+    }
+    .lens-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+    }
+    .lens-bar-label {
+      width: 140px;
+      flex-shrink: 0;
+      color: var(--kn-text-secondary);
+    }
+    .lens-bar-container {
+      flex: 1;
+      height: 14px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .lens-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+    .lens-bar-value {
+      width: 50px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--kn-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--kn-border);
+      margin-top: 1rem;
+    }
+
+    /* Attestation */
+    .attestation {
+      background: var(--kn-success-light);
+      border: 1px solid #a5d6a7;
+      border-radius: var(--kn-radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .attestation h4 { color: var(--kn-success); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .attestation p { font-size: 0.85rem; color: var(--kn-text-secondary); }
+
+    @media print {
+      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: white; }
+    }
+
+    @media (max-width: 800px) {
+      .portfolio-row { grid-template-columns: repeat(3, 1fr); }
+      .outcome-stats { grid-template-columns: repeat(2, 1fr); }
+      .status-grid { grid-template-columns: 1fr; }
+      .lens-grid { grid-template-columns: 1fr; }
+      .header-meta { flex-direction: column; gap: 0.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Funder Portfolio Dashboard</h1>
+      <div class="subtitle">United Way Greater Toronto &mdash; Q1 2026 Outcome Report</div>
+    </div>
+    <span class="cids-badge">CIDS v3.2.0 &middot; Common Approach</span>
+  </div>
+  <div class="header-meta">
+    <span>Reporting period: January &ndash; March 2026</span>
+    <span>Generated: April 2, 2026</span>
+    <span>32 agencies &middot; 87 programs</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Why this works -->
+  <div class="explainer">
+    <strong>How does this work?</strong> Each agency uses KoNote to track outcomes using their own language. When they export a funder report, KoNote maps their indicators to <strong>Common Impact Data Standard (CIDS)</strong> codes. Because every agency maps to the same standard, this dashboard can aggregate results across programs that measure the same things &mdash; even if they call them different names.
+  </div>
+
+  <!-- Portfolio overview -->
+  <div class="portfolio-row">
+    <div class="portfolio-card">
+      <div class="big-number">32</div>
+      <div class="card-label">Funded Agencies</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="big-number">87</div>
+      <div class="card-label">Active Programs</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="big-number">4,218</div>
+      <div class="card-label">Participants Served</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="big-number">23,491</div>
+      <div class="card-label">Service Contacts</div>
+    </div>
+    <div class="portfolio-card">
+      <div class="big-number">71%</div>
+      <div class="card-label">Avg. Achievement Rate</div>
+    </div>
+  </div>
+
+  <!-- Reporting status -->
+  <div class="section">
+    <h2>Reporting Status</h2>
+    <div class="status-grid">
+      <div class="status-card">
+        <div class="count val-green">26</div>
+        <div class="status-label"><span class="status-dot status-received"></span> Reports Received</div>
+      </div>
+      <div class="status-card">
+        <div class="count val-amber">4</div>
+        <div class="status-label"><span class="status-dot status-pending"></span> Pending (due Apr 15)</div>
+      </div>
+      <div class="status-card">
+        <div class="count" style="color: var(--kn-danger);">2</div>
+        <div class="status-label"><span class="status-dot status-overdue"></span> Overdue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============================== -->
+  <!-- AGGREGATED OUTCOMES BY CIDS CODE -->
+  <!-- =============================== -->
+  <div class="section">
+    <h2>Aggregated Outcomes by CIDS Indicator</h2>
+    <p class="section-desc">Because agencies map their metrics to CIDS codes, we can compare and aggregate across programs that track the same outcomes &mdash; even when they use different instruments or terminology.</p>
+
+    <!-- Outcome 1: Employment -->
+    <div class="outcome-group">
+      <div class="outcome-group-header">
+        <h3>Employment Attainment</h3>
+        <span class="cids-code">OC-EM-01</span>
+      </div>
+      <div class="outcome-group-body">
+        <div class="outcome-stats">
+          <div class="outcome-stat">
+            <div class="stat-value val-green">68%</div>
+            <div class="stat-label">Avg. Achievement</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-blue">14</div>
+            <div class="stat-label">Programs Reporting</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value">892</div>
+            <div class="stat-label">Participants Measured</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-green">607</div>
+            <div class="stat-label">Achieved Target</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Program</th>
+              <th>Participants</th>
+              <th>Achievement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bright Futures Community Services</td>
+              <td>Youth Employment Services</td>
+              <td>112</td>
+              <td>
+                <div class="bar-cell">
+                  <span>78%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:78%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Eastside Settlement Services</td>
+              <td>Newcomer Job Readiness</td>
+              <td>84</td>
+              <td>
+                <div class="bar-cell">
+                  <span>72%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:72%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Northern Youth Alliance</td>
+              <td>Trades Apprenticeship Pathway</td>
+              <td>56</td>
+              <td>
+                <div class="bar-cell">
+                  <span>82%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:82%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Community Action Network</td>
+              <td>Second Career Support</td>
+              <td>138</td>
+              <td>
+                <div class="bar-cell">
+                  <span>61%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:61%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Horizon Centre for Women</td>
+              <td>Women in Skilled Trades</td>
+              <td>42</td>
+              <td>
+                <div class="bar-cell">
+                  <span>74%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:74%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="color: var(--kn-muted); font-style: italic;">+ 9 more programs reporting on this indicator</td>
+              <td>460</td>
+              <td>
+                <div class="bar-cell">
+                  <span>63%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:63%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Outcome 2: Wellbeing -->
+    <div class="outcome-group">
+      <div class="outcome-group-header">
+        <h3>Improved Personal Wellbeing</h3>
+        <span class="cids-code">OC-WB-01</span>
+      </div>
+      <div class="outcome-group-body">
+        <div class="outcome-stats">
+          <div class="outcome-stat">
+            <div class="stat-value val-green">74%</div>
+            <div class="stat-label">Avg. Achievement</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-blue">21</div>
+            <div class="stat-label">Programs Reporting</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value">1,547</div>
+            <div class="stat-label">Participants Measured</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-green">1,145</div>
+            <div class="stat-label">Achieved Target</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Program</th>
+              <th>Participants</th>
+              <th>Achievement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Riverdale Mental Health Centre</td>
+              <td>Peer Support Network</td>
+              <td>215</td>
+              <td>
+                <div class="bar-cell">
+                  <span>81%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:81%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>South Asian Family Services</td>
+              <td>Culturally-Responsive Counselling</td>
+              <td>178</td>
+              <td>
+                <div class="bar-cell">
+                  <span>76%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:76%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Indigenous Wellness Collective</td>
+              <td>Land-Based Healing</td>
+              <td>64</td>
+              <td>
+                <div class="bar-cell">
+                  <span>88%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:88%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Scarborough Youth Collective</td>
+              <td>Youth Wellness Drop-In</td>
+              <td>142</td>
+              <td>
+                <div class="bar-cell">
+                  <span>69%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:69%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Newcomer Health Alliance</td>
+              <td>Refugee Wellness Program</td>
+              <td>93</td>
+              <td>
+                <div class="bar-cell">
+                  <span>71%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:71%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-pending"></span> Pending</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="color: var(--kn-muted); font-style: italic;">+ 16 more programs reporting on this indicator</td>
+              <td>855</td>
+              <td>
+                <div class="bar-cell">
+                  <span>73%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:73%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Outcome 3: Financial Literacy -->
+    <div class="outcome-group">
+      <div class="outcome-group-header">
+        <h3>Improved Financial Literacy</h3>
+        <span class="cids-code">OC-FL-01</span>
+      </div>
+      <div class="outcome-group-body">
+        <div class="outcome-stats">
+          <div class="outcome-stat">
+            <div class="stat-value val-green">66%</div>
+            <div class="stat-label">Avg. Achievement</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-blue">9</div>
+            <div class="stat-label">Programs Reporting</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value">623</div>
+            <div class="stat-label">Participants Measured</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-green">411</div>
+            <div class="stat-label">Achieved Target</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Program</th>
+              <th>Participants</th>
+              <th>Achievement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Eastside Community Services</td>
+              <td>Family Financial Literacy</td>
+              <td>85</td>
+              <td>
+                <div class="bar-cell">
+                  <span>65%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:65%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Parkdale Financial Empowerment</td>
+              <td>Tax Clinic &amp; Benefits Access</td>
+              <td>312</td>
+              <td>
+                <div class="bar-cell">
+                  <span>71%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:71%; background: var(--kn-success);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>North York Newcomer Centre</td>
+              <td>Financial Foundations for Newcomers</td>
+              <td>98</td>
+              <td>
+                <div class="bar-cell">
+                  <span>58%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:58%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="color: var(--kn-muted); font-style: italic;">+ 6 more programs reporting on this indicator</td>
+              <td>128</td>
+              <td>
+                <div class="bar-cell">
+                  <span>64%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:64%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Outcome 4: Housing Stability -->
+    <div class="outcome-group">
+      <div class="outcome-group-header">
+        <h3>Housing Stability</h3>
+        <span class="cids-code">OC-HS-01</span>
+      </div>
+      <div class="outcome-group-body">
+        <div class="outcome-stats">
+          <div class="outcome-stat">
+            <div class="stat-value val-amber">52%</div>
+            <div class="stat-label">Avg. Achievement</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-blue">7</div>
+            <div class="stat-label">Programs Reporting</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value">489</div>
+            <div class="stat-label">Participants Measured</div>
+          </div>
+          <div class="outcome-stat">
+            <div class="stat-value val-amber">254</div>
+            <div class="stat-label">Achieved Target</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Agency</th>
+              <th>Program</th>
+              <th>Participants</th>
+              <th>Achievement</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Covenant House Toronto</td>
+              <td>Youth Transitional Housing</td>
+              <td>89</td>
+              <td>
+                <div class="bar-cell">
+                  <span>61%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:61%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Dixon Hall</td>
+              <td>Rapid Rehousing</td>
+              <td>156</td>
+              <td>
+                <div class="bar-cell">
+                  <span>48%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:48%; background: var(--kn-warning);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-received"></span> Received</td>
+            </tr>
+            <tr>
+              <td>Women's Habitat</td>
+              <td>Safe Housing Transition</td>
+              <td>72</td>
+              <td>
+                <div class="bar-cell">
+                  <span>56%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:56%; background: var(--kn-info);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="status-dot status-pending"></span> Pending</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="color: var(--kn-muted); font-style: italic;">+ 4 more programs reporting on this indicator</td>
+              <td>172</td>
+              <td>
+                <div class="bar-cell">
+                  <span>47%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width:47%; background: var(--kn-warning);"></div>
+                  </div>
+                </div>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CIDS Taxonomy Lens -->
+  <div class="section">
+    <h2>Portfolio by CIDS Taxonomy</h2>
+    <p class="section-desc">How funded programs distribute across Common Approach classification codes.</p>
+    <div class="lens-grid">
+      <div class="lens-card">
+        <h4>By Sector (ICNPO)</h4>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Social Services</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:38%; background: var(--kn-primary);"></div></div>
+          <span class="lens-bar-value">33 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Health</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:24%; background: var(--kn-primary);"></div></div>
+          <span class="lens-bar-value">21 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Education</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:18%; background: var(--kn-primary);"></div></div>
+          <span class="lens-bar-value">16 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Housing</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:12%; background: var(--kn-primary);"></div></div>
+          <span class="lens-bar-value">10 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Other</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:8%; background: var(--kn-muted);"></div></div>
+          <span class="lens-bar-value">7 pgms</span>
+        </div>
+      </div>
+      <div class="lens-card">
+        <h4>By SDG Alignment</h4>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">SDG 3: Good Health</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:34%; background: #4caf50;"></div></div>
+          <span class="lens-bar-value">30 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">SDG 8: Decent Work</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:28%; background: #9c27b0;"></div></div>
+          <span class="lens-bar-value">24 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">SDG 10: Reduced Ineq.</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:22%; background: #e91e63;"></div></div>
+          <span class="lens-bar-value">19 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">SDG 11: Sust. Cities</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:10%; background: #ff9800;"></div></div>
+          <span class="lens-bar-value">9 pgms</span>
+        </div>
+        <div class="lens-bar-row">
+          <span class="lens-bar-label">Other SDGs</span>
+          <div class="lens-bar-container"><div class="lens-bar-fill" style="width:6%; background: var(--kn-muted);"></div></div>
+          <span class="lens-bar-value">5 pgms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why CIDS matters -->
+  <div class="comparison-banner">
+    <h3>Why This Dashboard Is Possible</h3>
+    <p>
+      Without a common standard, each agency reports in its own format &mdash; different indicator names, different scales, different definitions of "success." A funder reviewing 87 programs would receive 87 incompatible spreadsheets.
+    </p>
+    <p style="margin-top: 0.5rem;">
+      With <strong>CIDS</strong>, each agency keeps its own terminology and measurement tools, but maps outcomes to shared codes at export time. The funder receives structured, comparable data &mdash; enabling the portfolio view above. The agency's workflow doesn't change; only the export gains a common language.
+    </p>
+  </div>
+
+  <!-- Data integrity note -->
+  <div class="attestation">
+    <h4>Data Integrity</h4>
+    <p>All data is <strong>aggregate</strong>. No individual participant information is included in this dashboard. Each agency's data was approved by their designated report approver before submission. 24 of 26 received reports include evaluator attestation.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Generated from CIDS-mapped KoNote exports &middot; Common Impact Data Standard v3.2.0<br>
+  All data is aggregate. No individual participant information is included.<br>
+  Powered by KoNote &middot; <a href="https://www.konote.ca" style="color: var(--kn-muted);">www.konote.ca</a>
+</div>
+
+</body>
+</html>
