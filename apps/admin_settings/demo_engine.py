@@ -514,6 +514,13 @@ PORTAL_SURVEY_DEFINITIONS = [
 # The engine
 # ---------------------------------------------------------------------------
 
+# Minimum demo clients per program.  Must exceed the small-cell
+# suppression threshold (5) so that reports show real counts instead
+# of "< 5".  Import this constant wherever a default is needed —
+# never hardcode a number.
+DEMO_MIN_CLIENTS_PER_PROGRAM = 10
+
+
 class DemoDataEngine:
     """Generate configuration-aware demo data for any KoNote instance.
 
@@ -3355,29 +3362,43 @@ class DemoDataEngine:
         return descriptor_map.get(descriptor, "in_progress")
 
     @transaction.atomic
-    def run(self, clients_per_program=10, days_span=180, profile_path=None,
+    def run(self, clients_per_program=None, days_span=180, profile_path=None,
             force=False):
         """Generate demo data matching the instance's current configuration.
 
         Args:
-            clients_per_program: Number of demo clients to create per program
-                (default 10 — must exceed the suppression threshold of 5 so
-                reports show real counts instead of "< 5").
+            clients_per_program: Number of demo clients to create per program.
+                Defaults to DEMO_MIN_CLIENTS_PER_PROGRAM (10).  Values below
+                the suppression threshold (5) are raised automatically with
+                a warning.
             days_span: Number of days of historical data to generate.
             profile_path: Optional path to a demo data profile JSON.
             force: If True, clear existing demo data before generating.
         """
+        if clients_per_program is None:
+            clients_per_program = DEMO_MIN_CLIENTS_PER_PROGRAM
+
         random.seed(42)  # Reproducible demo data
 
         profile = self.load_profile(profile_path)
         self.apply_feature_toggles(profile)
 
-        # Apply profile defaults
+        # Apply profile defaults (only when caller used the default)
         profile_defaults = profile.get("defaults", {})
-        if "clients_per_program" in profile_defaults and clients_per_program == 10:
+        if "clients_per_program" in profile_defaults and clients_per_program == DEMO_MIN_CLIENTS_PER_PROGRAM:
             clients_per_program = profile_defaults["clients_per_program"]
         if "days_span" in profile_defaults and days_span == 180:
             days_span = profile_defaults["days_span"]
+
+        # Guard: enforce minimum so reports are never suppressed
+        from apps.reports.suppression import SMALL_CELL_THRESHOLD
+        if clients_per_program < SMALL_CELL_THRESHOLD:
+            self.log(
+                f"  WARNING: clients_per_program={clients_per_program} is below "
+                f"the suppression threshold ({SMALL_CELL_THRESHOLD}). "
+                f"Raising to {DEMO_MIN_CLIENTS_PER_PROGRAM}.",
+            )
+            clients_per_program = DEMO_MIN_CLIENTS_PER_PROGRAM
 
         note_count_range = profile_defaults.get("note_count_range", [7, 12])
 
