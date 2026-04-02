@@ -2443,9 +2443,11 @@ class DemoDataEngine:
         # Client words pool
         client_words = prog_profile.get("client_words_pool", CLIENT_WORDS_POOL)
 
-        # Spread notes over the time span
+        # Spread notes over the time span.
+        # Include recent notes (0-4 days ago) so reports for the current
+        # fiscal year always have data, even right after a year boundary.
         note_days = sorted(
-            [random.randint(5, days_span - 5) for _ in range(note_count)],
+            [random.randint(0, days_span - 5) for _ in range(note_count)],
             reverse=True,
         )
 
@@ -3353,12 +3355,14 @@ class DemoDataEngine:
         return descriptor_map.get(descriptor, "in_progress")
 
     @transaction.atomic
-    def run(self, clients_per_program=3, days_span=180, profile_path=None,
+    def run(self, clients_per_program=10, days_span=180, profile_path=None,
             force=False):
         """Generate demo data matching the instance's current configuration.
 
         Args:
-            clients_per_program: Number of demo clients to create per program.
+            clients_per_program: Number of demo clients to create per program
+                (default 10 — must exceed the suppression threshold of 5 so
+                reports show real counts instead of "< 5").
             days_span: Number of days of historical data to generate.
             profile_path: Optional path to a demo data profile JSON.
             force: If True, clear existing demo data before generating.
@@ -3370,7 +3374,7 @@ class DemoDataEngine:
 
         # Apply profile defaults
         profile_defaults = profile.get("defaults", {})
-        if "clients_per_program" in profile_defaults and clients_per_program == 3:
+        if "clients_per_program" in profile_defaults and clients_per_program == 10:
             clients_per_program = profile_defaults["clients_per_program"]
         if "days_span" in profile_defaults and days_span == 180:
             days_span = profile_defaults["days_span"]
