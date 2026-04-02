@@ -2,7 +2,7 @@
   "_comment": "Demo data profile for KoNote. Place alongside your setup_config.json. Programs not listed here will get auto-generated demo data.",
   "description": "Example demo data profile — customise for your agency",
   "defaults": {
-    "clients_per_program": 3,
+    "clients_per_program": 10,
     "days_span": 180,
     "note_count_range": [7, 12]
   },
