@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
