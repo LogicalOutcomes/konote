@@ -29,6 +29,7 @@ from time import perf_counter
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.admin_settings.models import FeatureToggle
@@ -3598,12 +3599,68 @@ class DemoDataEngine:
                 f"  Demo data generated: {total_clients} clients across "
                 f"{len(programs)} programs."
             )
+
+            # Post-generation health check: verify data is usable for reports
+            self._validate_demo_data_health(programs)
+
             return True
         finally:
             if previous_skip_recompute is None:
                 os.environ.pop("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE", None)
             else:
                 os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = previous_skip_recompute
+
+    def _validate_demo_data_health(self, programs):
+        """Check that generated demo data will produce usable reports.
+
+        Warns (does not fail) if any program has too few clients or if no
+        notes fall in the current fiscal year — these are the two conditions
+        that make reports show "no results" or "< 5".
+        """
+        from apps.reports.suppression import SMALL_CELL_THRESHOLD
+        from apps.reports.utils import get_current_fiscal_year, get_fiscal_year_range
+
+        issues = []
+
+        for prog in programs:
+            enrolled = ClientProgramEnrolment.objects.filter(
+                program=prog, client_file__is_demo=True, status="active",
+            ).count()
+            if enrolled < SMALL_CELL_THRESHOLD:
+                issues.append(
+                    f"  ⚠ {prog.name}: {enrolled} demo clients "
+                    f"(below suppression threshold of {SMALL_CELL_THRESHOLD})"
+                )
+
+        # Check that at least some notes fall in the current fiscal year
+        fy_start_year = get_current_fiscal_year()
+        date_from, date_to = get_fiscal_year_range(fy_start_year)
+
+        from datetime import datetime, time
+        date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
+        date_to_dt = timezone.make_aware(datetime.combine(date_to, time.max))
+
+        current_fy_notes = ProgressNote.objects.filter(
+            client_file__is_demo=True,
+            status="default",
+        ).filter(
+            Q(backdate__range=(date_from_dt, date_to_dt))
+            | Q(backdate__isnull=True, created_at__range=(date_from_dt, date_to_dt))
+        ).count()
+
+        if current_fy_notes == 0:
+            issues.append(
+                f"  ⚠ No demo notes in current fiscal year "
+                f"(FY {fy_start_year}-{str(fy_start_year + 1)[-2:]}). "
+                f"Reports for this period will be empty."
+            )
+
+        if issues:
+            self.log_warning("  Demo data health check — potential report issues:")
+            for issue in issues:
+                self.log_warning(issue)
+        else:
+            self.log("  Demo data health check passed — reports should work.")
 
     def _recompute_achievement_statuses(self, plan_targets):
         """Recompute achievement statuses in batches after bulk demo generation."""
