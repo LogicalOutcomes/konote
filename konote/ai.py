@@ -667,7 +667,8 @@ def generate_outcome_insights(
     user_msg = (
         f"Program: {program_name}\n"
         f"Period: {date_range}\n"
-        f"{lang_line}\n"
+        f"{lang_line}"
+        f"\n"
         f"Descriptor trends (percentages by month):\n"
         f"{json.dumps(structured_data.get('descriptor_trend', []), indent=2)}\n\n"
         f"Current descriptor distribution:\n"
