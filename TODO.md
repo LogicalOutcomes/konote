@@ -123,6 +123,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
+- [ ] Data quality transparency panel on Outcome Insights — show what analysis is based on: % of notes with participant voice fields, how many quotes were filtered (< 10 words), time distribution of data. Inspired by old OpenWebUI qual-analysis prompt's "data inventory" concept. — GK reviews design (INSIGHTS-DQ1)
+- [ ] Language-aware quote collection — detect EN/FR per quote, group or tag on Insights page, ensure AI prompts acknowledge mixed-language data. Matters for bilingual programs. (INSIGHTS-LANG1)
+- [ ] Graduated confidence on theme auto-links — distinguish high-confidence auto-links (3+ word overlap) from suggested links (2 words) that surface for program manager review instead of silently linking. Extends existing `auto_linked` flag. (INSIGHTS-CONF1)
 
 ## Recently Done
 
