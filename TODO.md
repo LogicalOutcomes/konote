@@ -123,12 +123,10 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
-- [ ] Data quality transparency panel on Outcome Insights — show what analysis is based on: % of notes with participant voice fields, how many quotes were filtered (< 10 words), time distribution of data. Inspired by old OpenWebUI qual-analysis prompt's "data inventory" concept. — GK reviews design (INSIGHTS-DQ1)
-- [ ] Language-aware quote collection — detect EN/FR per quote, group or tag on Insights page, ensure AI prompts acknowledge mixed-language data. Matters for bilingual programs. (INSIGHTS-LANG1)
-- [ ] Graduated confidence on theme auto-links — distinguish high-confidence auto-links (3+ word overlap) from suggested links (2 words) that surface for program manager review instead of silently linking. Extends existing `auto_linked` flag. (INSIGHTS-CONF1)
 
 ## Recently Done
 
+- [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
 - [x] Dashboard & Insights enrichment — FHIR metadata features: program summary sentences, practice indicators, goal source distribution on Insights; stale episodes attention signal on Dashboard; batch query optimization; simplified both pages (removed funder stats, cohort comparison, cross-tab, dashboard bloat — 8 sections → 5 on Insights, ~20 rows → ~8 per program card) — PRs #529-#533 — 2026-03-16 (ENRICH1)
 - [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)
 - [x] AI provider configuration guide for operators — docs/ai-provider-guide.md covering cloud vs self-hosted, data residency, configuration, costs — 2026-03-12 (REV26-AI4)
