@@ -74,7 +74,7 @@ class Tier1AutoLinkTests(TestCase):
         )
 
     def test_auto_link_matches_by_keywords(self):
-        note = self._make_note("I wish there were evening sessions available")
+        note = self._make_note("I wish there were evening sessions on a better schedule")
         linked = try_auto_link_suggestion(note)
         self.assertEqual(len(linked), 1)
         self.assertEqual(linked[0].pk, self.theme.pk)
@@ -82,10 +82,16 @@ class Tier1AutoLinkTests(TestCase):
             SuggestionLink.objects.filter(theme=self.theme, progress_note=note).exists()
         )
 
-    def test_auto_link_requires_2_word_overlap(self):
+    def test_auto_link_requires_3_word_overlap(self):
         note = self._make_note("The evening was nice")
         linked = try_auto_link_suggestion(note)
         # "evening" overlaps but only 1 content word — should NOT link
+        self.assertEqual(len(linked), 0)
+
+    def test_auto_link_rejects_2_word_overlap(self):
+        note = self._make_note("I wish there were evening sessions available")
+        linked = try_auto_link_suggestion(note)
+        # "evening" + "sessions" = 2 words — below 3-word threshold
         self.assertEqual(len(linked), 0)
 
     def test_auto_link_skips_addressed_themes(self):
@@ -106,7 +112,7 @@ class Tier1AutoLinkTests(TestCase):
 
     def test_auto_link_recalculates_priority(self):
         self.assertEqual(self.theme.priority, "noted")
-        note = self._make_note("Evening sessions urgently needed", priority="urgent")
+        note = self._make_note("Evening sessions urgently needed on the schedule", priority="urgent")
         try_auto_link_suggestion(note)
         self.theme.refresh_from_db()
         self.assertEqual(self.theme.priority, "urgent")
@@ -177,7 +183,7 @@ class Tier1PrivacyGateTests(TestCase):
             note_type="full",
             author=self.user,
             author_program=self.program,
-            participant_suggestion="Evening sessions would help with schedule",
+            participant_suggestion="Evening sessions during better hours would help",
             suggestion_priority="noted",
         )
         linked = try_auto_link_suggestion(note)
@@ -400,3 +406,38 @@ class FindNoteIdTests(TestCase):
     def test_no_match_returns_none(self):
         qsm = {"something else entirely": 42}
         self.assertIsNone(_find_note_id("no match", qsm))
+
+
+# ── Language Detection Tests ──────────────────────────────────────────
+
+
+class DetectLanguageTests(TestCase):
+    """Test detect_language() EN/FR heuristic."""
+
+    def test_english_text(self):
+        from apps.reports.insights import detect_language
+        text = "I really appreciate the support I have been getting from the program"
+        self.assertEqual(detect_language(text), "en")
+
+    def test_french_text(self):
+        from apps.reports.insights import detect_language
+        text = "Je suis très content du programme et je voudrais continuer avec les sessions"
+        self.assertEqual(detect_language(text), "fr")
+
+    def test_short_text_defaults_to_english(self):
+        from apps.reports.insights import detect_language
+        self.assertEqual(detect_language("merci"), "en")
+
+    def test_empty_text_defaults_to_english(self):
+        from apps.reports.insights import detect_language
+        self.assertEqual(detect_language(""), "en")
+
+    def test_mixed_but_mostly_french(self):
+        from apps.reports.insights import detect_language
+        text = "Le programme est très bien mais il faut plus de sessions le soir"
+        self.assertEqual(detect_language(text), "fr")
+
+    def test_english_with_french_loanwords(self):
+        from apps.reports.insights import detect_language
+        text = "The program has a certain je ne sais quoi but overall it works well for me"
+        self.assertEqual(detect_language(text), "en")

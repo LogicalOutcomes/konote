@@ -235,6 +235,8 @@ def get_practice_health(program, date_from=None, date_to=None,
             "label": _("participant voice recorded"),
             "level": level,
             "show": True,
+            "with_voice": with_voice,
+            "total_full": total_full,
         }
     else:
         indicators["participant_voice"] = {"show": False}
