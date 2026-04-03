@@ -23924,3 +23924,17 @@ msgstr "Début du service"
 
 msgid "You do not have access to this %(group_label)s."
 msgstr "Vous n’avez pas accès à ce %(group_label)s."
+
+#: templates/reports/_insights_basic.html
+msgid "%(months)s month"
+msgid_plural "%(months)s months"
+msgstr[0] "%(months)s mois"
+msgstr[1] "%(months)s mois"
+
+#: templates/reports/_insights_basic.html
+msgid ""
+"Participant reflections were recorded in %(with_voice)s of %(total)s "
+"sessions."
+msgstr ""
+"Les réflexions des participants ont été enregistrées dans %(with_voice)s "
+"des %(total)s sessions."

@@ -78,9 +78,10 @@
 {% if suggestions %}
 <h3>{% trans "Their Suggestions" %}</h3>
 {% for s in suggestions|slice:":5" %}
-<blockquote class="insight-quote">
+<blockquote class="insight-quote" {% if s.lang == "fr" %}lang="fr"{% endif %}>
     <p>&ldquo;{{ s.text }}&rdquo;</p>
     <cite>
+        {% if has_mixed_languages and s.lang == "fr" %}<span class="pill pill--lang">FR</span> {% endif %}
         {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
         {% if s.date %}{{ s.date }} &middot; {% endif %}
         <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
@@ -93,9 +94,10 @@
 {% if quotes %}
 <h3>{% trans "In their words" %}</h3>
 {% for quote in quotes|slice:":5" %}
-<blockquote class="insight-quote">
+<blockquote class="insight-quote" {% if quote.lang == "fr" %}lang="fr"{% endif %}>
     <p>&ldquo;{{ quote.text }}&rdquo;</p>
     <cite>
+        {% if has_mixed_languages and quote.lang == "fr" %}<span class="pill pill--lang">FR</span> {% endif %}
         {% if quote.target_name %}
         {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
         {% endif %}
