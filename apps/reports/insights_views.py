@@ -228,12 +228,15 @@ def program_insights(request):
         # Separate suggestions from other quotes so they display under their own heading
         suggestions = []
         other_quotes = []
+        quote_langs = set()
         for q in quotes:
+            quote_langs.add(q.get("lang", "en"))
             if q.get("source") == "suggestion":
                 q["priority_label"] = _PRIORITY_LABELS.get(q.get("priority", ""), "")
                 suggestions.append(q)
             elif not is_executive_only:
                 other_quotes.append(q)
+        has_mixed_languages = len(quote_langs) > 1
 
         # Active suggestion themes for this program (deduplicated by name)
         active_themes = deduplicate_themes(list(
@@ -366,6 +369,7 @@ def program_insights(request):
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
             "show_results": True,
+            "has_mixed_languages": has_mixed_languages,
             # New metric distribution data
             "metric_distributions": metric_distributions,
             "achievement_rates": achievement_rates_data,
@@ -527,12 +531,15 @@ def client_insights_partial(request, client_id):
     # Separate suggestions from other quotes
     suggestions = []
     other_quotes = []
+    quote_langs = set()
     for q in quotes:
+        quote_langs.add(q.get("lang", "en"))
         if q.get("source") == "suggestion":
             q["priority_label"] = _PRIORITY_LABELS.get(q.get("priority", ""), "")
             suggestions.append(q)
         else:
             other_quotes.append(q)
+    has_mixed_languages = len(quote_langs) > 1
 
     # Plain-language interpretations (only when enough data)
     interp = {}
@@ -557,6 +564,7 @@ def client_insights_partial(request, client_id):
         "data_tier": data_tier,
         "chart_data_json": structured["descriptor_trend"],
         "ai_enabled": ai_enabled,
+        "has_mixed_languages": has_mixed_languages,
         "scope": "client",
         **interp,
     }
