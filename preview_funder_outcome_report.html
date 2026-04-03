@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Program Outcome Report — Youth Wellness Initiative</title>
+    <style>
+/* === Base styles (pdf_base.html) === */
+@page {
+    size: letter;
+    margin: 2cm 1.5cm;
+    @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9pt;
+        color: #718096;
+    }
+}
+* { box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a202c;
+    margin: 0;
+    padding: 2rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #ffffff;
+}
+.pdf-header {
+    border-bottom: 3px solid #3176aa;
+    padding-bottom: 0.4cm;
+    margin-bottom: 0.6cm;
+}
+.pdf-header h1 {
+    font-size: 18pt;
+    margin: 0 0 0.15cm 0;
+    color: #3176aa;
+}
+.pdf-header .subtitle {
+    font-size: 13pt;
+    color: #4a5568;
+    margin-bottom: 0.3cm;
+}
+.pdf-header .meta-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.05cm 0.4cm;
+    font-size: 9pt;
+    color: #718096;
+}
+.pdf-header .meta-grid dt {
+    font-weight: 600;
+    color: #4a5568;
+}
+.pdf-header .meta-grid dd {
+    margin: 0;
+}
+.pdf-header .draft-notice {
+    margin-top: 0.3cm;
+    padding: 0.2cm 0.4cm;
+    background-color: #fef3c7;
+    border-radius: 3px;
+    font-size: 9pt;
+}
+h2 {
+    font-size: 16pt;
+    color: #3176aa;
+    border-bottom: 2px solid #3176aa;
+    padding-bottom: 0.3cm;
+    margin-top: 1cm;
+}
+h3 {
+    font-size: 13pt;
+    color: #1a202c;
+    margin-top: 0.8cm;
+}
+h4 {
+    margin-top: 0.5cm;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5cm 0;
+    font-size: 10pt;
+}
+thead th {
+    background-color: #3176aa;
+    color: #ffffff;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 600;
+}
+tbody td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+tbody tr:nth-child(even) {
+    background-color: #f7f8fa;
+}
+dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.2cm 1cm;
+    margin: 0.5cm 0;
+}
+dt {
+    font-weight: 600;
+    color: #4a5568;
+}
+dd { margin: 0; }
+.page-break { page-break-after: always; }
+.avoid-break { page-break-inside: avoid; }
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5cm;
+    margin: 0.5cm 0;
+}
+.summary-card {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.4cm;
+    text-align: center;
+}
+.summary-card .number {
+    font-size: 20pt;
+    font-weight: 700;
+    color: #3176aa;
+}
+.summary-card .label {
+    font-size: 9pt;
+    color: #718096;
+}
+
+/* === Funder outcome report styles === */
+.report-header {
+    background-color: #3176aa;
+    color: #ffffff;
+    padding: 0.3cm 0.5cm;
+    margin-top: 1cm;
+    font-size: 12pt;
+    font-weight: 600;
+}
+.stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.4cm;
+    margin: 0.5cm 0;
+}
+.stat-box {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.3cm;
+    text-align: center;
+}
+.stat-box .value {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #3176aa;
+}
+.stat-box .label {
+    font-size: 9pt;
+    color: #718096;
+    margin-top: 0.1cm;
+}
+.outcome-card {
+    border: 2px solid #3176aa;
+    border-radius: 4px;
+    padding: 0.4cm;
+    margin: 0.3cm 0;
+}
+.outcome-card h4 {
+    margin: 0 0 0.2cm 0;
+    color: #3176aa;
+    font-size: 11pt;
+}
+.outcome-card .rate {
+    font-size: 24pt;
+    font-weight: 700;
+    color: #3176aa;
+}
+.outcome-card .details {
+    font-size: 9pt;
+    color: #4a5568;
+    margin-top: 0.2cm;
+}
+.demo-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    padding: 4px 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.demo-row.header {
+    background-color: #f7f8fa;
+    font-weight: 600;
+}
+.demo-bar {
+    background-color: #e5e7eb;
+    height: 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.demo-bar-fill {
+    background-color: #3176aa;
+    height: 100%;
+    border-radius: 4px;
+}
+.metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5cm 0;
+}
+.metrics-table th, .metrics-table td {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    text-align: right;
+    font-size: 10pt;
+}
+.metrics-table th:first-child, .metrics-table td:first-child {
+    text-align: left;
+}
+.metrics-table thead th {
+    background-color: #f7f8fa;
+    font-weight: 600;
+}
+.narrative-section {
+    border-left: 4px solid #3176aa;
+    padding: 0.4cm 0.5cm;
+    margin: 0.5cm 0;
+    background-color: #f7f8fa;
+}
+.narrative-section .placeholder {
+    font-style: italic;
+    color: #718096;
+}
+.footer-note {
+    font-size: 9pt;
+    color: #718096;
+    font-style: italic;
+    margin-top: 1cm;
+    padding-top: 0.3cm;
+    border-top: 1px solid #e5e7eb;
+}
+    </style>
+</head>
+<body>
+<!-- Report Header -->
+<div class="pdf-header">
+    <h1>Program Outcome Report</h1>
+    <div class="subtitle">Youth Wellness Initiative</div>
+    <dl class="meta-grid">
+        <dt>Organisation</dt>
+        <dd>Eastside Community Services</dd>
+        <dt>Program</dt>
+        <dd>Youth Wellness Initiative</dd>
+        <dt>Description</dt>
+        <dd>Supporting youth ages 13–24 through individual and group-based wellness programming, including mental health support, life skills, and community engagement.</dd>
+        <dt>Period</dt>
+        <dd>January 1 – March 31, 2026</dd>
+        <dt>Generated</dt>
+        <dd>2026-04-02 by Gillian Kerr</dd>
+    </dl>
+    <div class="draft-notice">
+        <strong>Draft Template:</strong> Verify this format matches the specific reporting requirements before submission.
+    </div>
+</div>
+
+<!-- Service Statistics -->
+<div class="report-header">Service Statistics</div>
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="value">112</div>
+        <div class="label">Total Individuals Served</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">18</div>
+        <div class="label">New Participants This Period</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">486</div>
+        <div class="label">Total Service Contacts</div>
+    </div>
+</div>
+
+<!-- Outcome Metrics -->
+<div class="report-header">Outcome Metrics</div>
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">Metric</th>
+            <th scope="col">All Participants</th>
+            <th scope="col">Youth (13–18)</th>
+            <th scope="col">Young Adults (19–24)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Self-reported wellbeing improvement</td>
+            <td>72%</td>
+            <td>68%</td>
+            <td>78%</td>
+        </tr>
+        <tr>
+            <td>Goal completion rate</td>
+            <td>61%</td>
+            <td>55%</td>
+            <td>69%</td>
+        </tr>
+        <tr>
+            <td>Average sessions attended</td>
+            <td>8.4</td>
+            <td>7.2</td>
+            <td>9.8</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Age Demographics -->
+<div class="report-header">Age Demographics</div>
+<div style="margin: 0.5cm 0;">
+    <div class="demo-row header">
+        <div>Age Group</div>
+        <div style="text-align: right;">Count</div>
+        <div style="text-align: right;">Percentage</div>
+    </div>
+    <div class="demo-row">
+        <div>
+            13–15
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: 27%;"></div>
+            </div>
+        </div>
+        <div style="text-align: right;">30</div>
+        <div style="text-align: right;">27%</div>
+    </div>
+    <div class="demo-row">
+        <div>
+            16–18
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: 38%;"></div>
+            </div>
+        </div>
+        <div style="text-align: right;">43</div>
+        <div style="text-align: right;">38%</div>
+    </div>
+    <div class="demo-row">
+        <div>
+            19–24
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: 35%;"></div>
+            </div>
+        </div>
+        <div style="text-align: right;">39</div>
+        <div style="text-align: right;">35%</div>
+    </div>
+    <div class="demo-row header">
+        <div>Total</div>
+        <div style="text-align: right;">112</div>
+        <div style="text-align: right;">100%</div>
+    </div>
+</div>
+
+<!-- Narrative -->
+<div class="report-header">Program Narrative</div>
+<div class="narrative-section">
+    <p>Describe programme highlights, challenges, and key learnings from this period.</p>
+    <p class="placeholder">[To be added during review]</p>
+</div>
+
+<!-- CIDS Standards Alignment -->
+<div class="report-header">Standards Alignment</div>
+<p style="font-size: 9pt; color: #718096; margin-bottom: 0.5cm;">
+    Aligned with Common Impact Data Standard (CIDS) v3.2.0.
+</p>
+<p><strong>Reporting Lens:</strong> United Way Outcomes</p>
+<p><strong>Sector:</strong> Youth Services</p>
+<p><strong>Funder Program Code:</strong> UW-YTH-2026-041</p>
+
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">Indicator</th>
+            <th scope="col">Selected Code</th>
+            <th scope="col">Selected Label</th>
+            <th scope="col">Code List</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Self-reported wellbeing improvement</td>
+            <td>OC-WB-01</td>
+            <td>Improved personal wellbeing</td>
+            <td>Common Outcomes</td>
+        </tr>
+        <tr>
+            <td>Goal completion rate</td>
+            <td>OC-GC-03</td>
+            <td>Goal attainment</td>
+            <td>Common Outcomes</td>
+        </tr>
+        <tr>
+            <td>Average sessions attended</td>
+            <td>ACT-SA-02</td>
+            <td>Service participation level</td>
+            <td>Common Activities</td>
+        </tr>
+    </tbody>
+</table>
+<p style="font-size: 9pt; color: #718096;">
+    3 of 3 indicators mapped for the selected reporting lens.
+</p>
+
+<h4 style="margin-top: 0.5cm;">United Way Outcomes Summary</h4>
+<ul>
+    <li>Improved personal wellbeing: 72% achievement</li>
+    <li>Goal attainment: 61% achievement</li>
+    <li>Service participation: 8.4 avg sessions</li>
+</ul>
+
+<!-- Overall Summary -->
+<div class="report-header">Overall Summary</div>
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="number">72%</div>
+        <div class="label">Overall Achievement Rate</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">81 / 112</div>
+        <div class="label">Participants Met at Least One Target</div>
+    </div>
+</div>
+
+<div class="footer-note">
+    <strong>Draft Template:</strong> This report was generated using KoNote's Program Outcome Report Template.
+    Verify this format matches the specific reporting requirements before submission.
+    Data reflects client outcomes recorded during the January 1 – March 31, 2026 reporting period.
+</div>
+</body>
+</html>

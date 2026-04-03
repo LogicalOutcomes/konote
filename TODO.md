@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -33,6 +34,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-ops/reviews/` repo. Latest: 2026-03-06 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
+- [ ] **Review demo presentation materials** — before any Common Approach presentation, review `demo.html` and linked HTML reports (funder portfolio dashboard, multi-program report, program outcome dashboard, evaluation framework editor, CIDS working document) for accuracy and current data. Check links aren't broken. (DEMO-PRES1)
 - [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
 
 ## Coming Up
@@ -121,6 +123,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
 - [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
+- [ ] Data quality transparency panel on Outcome Insights — show what analysis is based on: % of notes with participant voice fields, how many quotes were filtered (< 10 words), time distribution of data. Inspired by old OpenWebUI qual-analysis prompt's "data inventory" concept. — GK reviews design (INSIGHTS-DQ1)
+- [ ] Language-aware quote collection — detect EN/FR per quote, group or tag on Insights page, ensure AI prompts acknowledge mixed-language data. Matters for bilingual programs. (INSIGHTS-LANG1)
+- [ ] Graduated confidence on theme auto-links — distinguish high-confidence auto-links (3+ word overlap) from suggested links (2 words) that surface for program manager review instead of silently linking. Extends existing `auto_linked` flag. (INSIGHTS-CONF1)
 
 ## Recently Done
 

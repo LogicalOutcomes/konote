@@ -65,10 +65,10 @@ class Command(BaseCommand):
             self._update_demo_client_fields()
 
     def _top_up_demo_data(self):
-        """Top up demo data to 20-30 clients per program using the engine."""
+        """Top up demo data to target clients per program using the engine."""
         import os
 
-        from apps.admin_settings.demo_engine import DemoDataEngine
+        from apps.admin_settings.demo_engine import DEMO_TARGET_CLIENTS_PER_PROGRAM, DemoDataEngine
 
         demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
         self.stdout.write("  Topping up demo data with config-aware engine...")
@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         try:
             success = engine.run(
-                clients_per_program=20,
+                clients_per_program=DEMO_TARGET_CLIENTS_PER_PROGRAM,
                 profile_path=demo_profile if demo_profile else None,
                 force=False,
             )
