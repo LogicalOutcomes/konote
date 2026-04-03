@@ -187,16 +187,10 @@
         {% endif %}
     </summary>
 
+    {# ── Practice signal: voice coverage (shown only when < 30%) ── #}
     {% if practice_health.participant_voice.show and practice_health.participant_voice.level == "low" %}
     <p class="insight-interpretation">
         {% blocktrans with with_voice=practice_health.participant_voice.with_voice total=practice_health.participant_voice.total_full %}Participant reflections were recorded in {{ with_voice }} of {{ total }} sessions.{% endblocktrans %}
-    </p>
-    {% endif %}
-
-    {# ── Practice signal: voice coverage ── #}
-    {% if practice_health.participant_voice.show and practice_health.participant_voice.level == "low" %}
-    <p class="insight-interpretation">
-        {% blocktrans with voice=practice_health.participant_voice.with_voice total=practice_health.participant_voice.total_full %}Participant reflections were recorded in {{ voice }} of {{ total }} sessions.{% endblocktrans %}
     </p>
     {% endif %}
 
