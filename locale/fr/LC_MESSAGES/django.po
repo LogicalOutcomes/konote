@@ -23936,5 +23936,14 @@ msgid ""
 "Participant reflections were recorded in %(with_voice)s of %(total)s "
 "sessions."
 msgstr ""
-"Les réflexions des participants ont été enregistrées dans %(with_voice)s "
-"des %(total)s sessions."
+"Les réflexions des participants ont été enregistrées dans %(with_voice)s des"
+" %(total)s sessions."
+
+msgid "Agency CIDS class coverage"
+msgstr ""
+
+msgid "Minimum 5 (report suppression threshold). Recommended: 10–20."
+msgstr ""
+
+msgid "Print report"
+msgstr ""

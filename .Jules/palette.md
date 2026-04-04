@@ -16,3 +16,7 @@
 ## 2025-03-11 - Add Empty State Styles with A11y to Portal
 **Learning:** Many pages in the portal application render empty states inside `<article class="portal-empty-state">` blocks. However, the corresponding styling for `.portal-empty-state` was completely missing from `portal.css`. Also, when using CSS pseudo-elements to add an emoji icon (like `content: "\1F4CB"`), screen readers will try to read it. Using the `/ ""` syntax (`content: "\1F4CB" / ""`) ensures it stays decorative and prevents it from being read aloud.
 **Action:** When adding empty state CSS with emojis or icons using `::before`, always include `/ ""` to avoid screen readers announcing decorative visuals.
+
+## 2025-04-04 - ARIA labels for `<progress>` elements
+**Learning:** HTML `<progress>` elements often lack `aria-label` attributes. Without them, screen readers may announce the percentage or value but fail to explain what the progress represents, causing a confusing user experience.
+**Action:** Always include an `aria-label` describing the tracked metric on `<progress>` elements to ensure compliance with WCAG 4.1.2.
