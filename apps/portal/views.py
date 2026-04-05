@@ -332,6 +332,7 @@ def emergency_logout(request):
     return HttpResponse(status=204)
 
 
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 @portal_feature_required
 def accept_invite(request, token):
     """Accept a portal invite — register a new ParticipantUser.
