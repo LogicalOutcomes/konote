@@ -333,6 +333,7 @@ def emergency_logout(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def accept_invite(request, token):
     """Accept a portal invite — register a new ParticipantUser.
 
@@ -1020,6 +1021,7 @@ def password_reset_confirm(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def staff_assisted_login(request, token):
     """Log a participant in via a staff-generated one-time token."""
     from apps.portal.models import StaffAssistedLoginToken
