@@ -242,7 +242,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
+    <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} <span aria-hidden="true">&rarr;</span></a></p>
     {% endif %}
 
     {# Ungrouped suggestions #}

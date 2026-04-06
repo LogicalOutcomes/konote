@@ -177,7 +177,7 @@
             <details>
                 <summary>{% blocktrans with target=term.target|default:"target" %}Tips for writing a good {{ target }}{% endblocktrans %}</summary>
                 <p>{% blocktrans with target=term.target|default:"target" %}Try turning their words into a {{ target }} that is Specific, Measurable, Achievable, Relevant, and Time-bound (SMART).{% endblocktrans %}</p>
-                <p class="secondary">{% trans "For example:" %} <em>&ldquo;{% trans "Make a friend" %}&rdquo;</em> &rarr; <em>&ldquo;{% trans "Build one social connection outside of program activities within 3 months" %}&rdquo;</em></p>
+                <p class="secondary">{% trans "For example:" %} <em>&ldquo;{% trans "Make a friend" %}&rdquo;</em> <span aria-hidden="true">&rarr;</span> <em>&ldquo;{% trans "Build one social connection outside of program activities within 3 months" %}&rdquo;</em></p>
             </details>
         </aside>
         {% endif %}

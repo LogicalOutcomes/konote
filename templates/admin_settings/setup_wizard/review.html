@@ -35,7 +35,7 @@
     {% csrf_token %}
 
     <div class="wizard-nav">
-        <a href="{% url 'admin_settings:setup_wizard_step' step='custom_fields' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <a href="{% url 'admin_settings:setup_wizard_step' step='custom_fields' %}" role="button" class="outline"><span aria-hidden="true">&larr;</span> {% trans "Back" %}</a>
         <span class="spacer"></span>
         <button type="submit" class="contrast">{% trans "Apply Configuration" %}</button>
     </div>
