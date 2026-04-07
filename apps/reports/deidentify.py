@@ -26,6 +26,7 @@ import io
 import json
 import logging
 import os
+import re
 import secrets
 import uuid
 from collections import Counter, defaultdict
@@ -34,7 +35,7 @@ from datetime import date
 from typing import Any
 
 from django.conf import settings
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
 from apps.audit.models import AuditLog
@@ -42,7 +43,6 @@ from apps.clients.models import ClientDetailValue, ClientFile, ServiceEpisode
 from apps.notes.models import MetricValue, ProgressNote
 from apps.plans.models import MetricDefinition, PlanTarget, PlanTargetMetric
 from apps.reports.csv_utils import sanitise_csv_value
-from apps.reports.suppression import SMALL_CELL_THRESHOLD
 
 logger = logging.getLogger(__name__)
 
@@ -160,12 +160,16 @@ class DeidentificationPipeline:
         self._deidentified_records: list[dict[str, Any]] = []
         self._linkage_table: dict[str, int] = {}
         self._generalizations_applied: list[dict[str, Any]] = []
-        self._suppressed_records: list[dict[str, Any]] = []
         self._suppression_reasons: list[dict[str, Any]] = []
         self._blocked = False
         self._block_reason: str | None = None
         self._effective_k = 0
         self._metric_defs: list[MetricDefinition] = []
+
+    @property
+    def _active_records(self) -> list[dict[str, Any]]:
+        """Records not suppressed by k-anonymity resolution."""
+        return [r for r in self._deidentified_records if not r.get("_suppressed")]
 
     # ------------------------------------------------------------------
     # Public interface
@@ -300,48 +304,60 @@ class DeidentificationPipeline:
         Accesses encrypted property accessors (.birth_date, .first_name,
         .last_name) for staging only — these values will be stripped in
         Step 4.
+
+        Uses bulk queries to avoid N+1 patterns — all ProgressNote,
+        MetricValue, and ClientDetailValue data is fetched in a handful
+        of queries rather than per-client.
         """
         self._log_audit("view", "Decrypting and staging records")
+
+        client_ids = [raw["_client_id"] for raw in self._raw_records]
+
+        # Bulk fetch: session counts and total hours per client
+        note_stats = dict(
+            ProgressNote.objects.filter(
+                client_file_id__in=client_ids,
+                created_at__date__range=(self.period_start, self.period_end),
+            ).values("client_file_id").annotate(
+                count=Count("id"),
+                total_minutes=Sum("duration_minutes"),
+            ).values_list("client_file_id", "count", "total_minutes")
+        # Convert to {client_id: (count, total_minutes)}
+        )
+        note_stats_map: dict[int, tuple[int, int]] = {}
+        for row in ProgressNote.objects.filter(
+            client_file_id__in=client_ids,
+            created_at__date__range=(self.period_start, self.period_end),
+        ).values("client_file_id").annotate(
+            count=Count("id"),
+            total_minutes=Sum("duration_minutes"),
+        ):
+            note_stats_map[row["client_file_id"]] = (
+                row["count"], row["total_minutes"] or 0,
+            )
+
+        # Bulk fetch: all metric values for all clients
+        metric_data_map = self._bulk_get_metric_data(client_ids)
+
+        # Bulk fetch: custom field values and postal codes
+        custom_field_map, postal_code_map = self._bulk_get_field_data(client_ids)
 
         for raw in self._raw_records:
             client: ClientFile = raw["_client"]
             episode: ServiceEpisode = raw["_episode"]
+            cid = client.pk
 
-            # Count sessions (progress notes) in the period
-            note_qs = ProgressNote.objects.filter(
-                client_file=client,
-                created_at__date__range=(self.period_start, self.period_end),
-            )
-            sessions_count = note_qs.count()
-
-            # Sum duration minutes, convert to hours
-            duration_agg = note_qs.aggregate(
-                total_minutes=Sum("duration_minutes"),
-            )
-            total_minutes = duration_agg["total_minutes"] or 0
+            sessions_count, total_minutes = note_stats_map.get(cid, (0, 0))
             total_hours = round(total_minutes / 60, 1) if total_minutes else 0.0
 
-            # Get metric values (intake = earliest, latest = most recent)
-            metric_data = self._get_metric_data(client)
-
-            # Get custom field values for QI columns
-            custom_field_values = self._get_custom_field_values(client)
-
-            # Get postal code for geography derivation (if needed)
-            postal_code = self._get_postal_code(client)
-
-            # Build staged record
             staged = {
-                "_client_id": client.pk,
+                "_client_id": cid,
                 "_episode": episode,
-                # PII fields — will be stripped in Step 4
                 "_first_name": client.first_name,
                 "_last_name": client.last_name,
                 "_birth_date": client.birth_date,
-                "_postal_code": postal_code,
-                # Consent flag
+                "_postal_code": postal_code_map.get(cid),
                 "_consent": episode.consent_to_aggregate_reporting,
-                # Non-PII operational data
                 "enrolment_date": (
                     episode.started_at.date()
                     if episode.started_at else None
@@ -352,8 +368,8 @@ class DeidentificationPipeline:
                 ),
                 "sessions_count": sessions_count,
                 "total_hours": total_hours,
-                "metrics": metric_data,
-                "custom_fields": custom_field_values,
+                "metrics": metric_data_map.get(cid, {}),
+                "custom_fields": custom_field_map.get(cid, {}),
             }
             self._staged_records.append(staged)
 
@@ -362,90 +378,101 @@ class DeidentificationPipeline:
             len(self._staged_records),
         )
 
-    def _get_metric_data(self, client: ClientFile) -> dict[str, dict[str, Any]]:
-        """Get intake and latest metric values for a client.
+    def _bulk_get_metric_data(
+        self, client_ids: list[int],
+    ) -> dict[int, dict[str, dict[str, Any]]]:
+        """Bulk-fetch intake and latest metric values for all clients.
 
-        Returns a dict keyed by metric definition name, with intake and
-        latest values for each.
+        Returns {client_id: {metric_slug: {"intake": v, "latest": v}}}.
         """
-        result: dict[str, dict[str, Any]] = {}
+        if not self._metric_defs:
+            return {}
 
-        for metric_def in self._metric_defs:
-            values = MetricValue.objects.filter(
-                progress_note_target__progress_note__client_file=client,
+        all_values = (
+            MetricValue.objects.filter(
+                metric_def__in=self._metric_defs,
+                progress_note_target__progress_note__client_file_id__in=client_ids,
                 progress_note_target__progress_note__created_at__date__range=(
                     self.period_start, self.period_end,
                 ),
-                metric_def=metric_def,
-            ).select_related(
+            )
+            .select_related(
+                "metric_def",
                 "progress_note_target__progress_note",
-            ).order_by("progress_note_target__progress_note__created_at")
+            )
+            .order_by("progress_note_target__progress_note__created_at")
+        )
 
-            if not values.exists():
-                continue
+        # Group by (client_id, metric_def_id)
+        grouped: dict[tuple[int, int], list] = defaultdict(list)
+        metric_name_map: dict[int, str] = {}
+        for mv in all_values:
+            cid = mv.progress_note_target.progress_note.client_file_id
+            mid = mv.metric_def_id
+            grouped[(cid, mid)].append(mv.value)
+            if mid not in metric_name_map:
+                metric_name_map[mid] = self._sanitise_metric_name(
+                    mv.metric_def.name,
+                )
 
-            values_list = list(values)
-            intake_val = values_list[0].value if values_list else None
-            latest_val = values_list[-1].value if values_list else None
-
-            # Sanitise the metric name for use as a column header
-            safe_name = self._sanitise_metric_name(metric_def.name)
-            result[safe_name] = {
-                "intake": intake_val,
-                "latest": latest_val,
+        result: dict[int, dict[str, dict[str, Any]]] = defaultdict(dict)
+        for (cid, mid), values in grouped.items():
+            safe_name = metric_name_map[mid]
+            result[cid][safe_name] = {
+                "intake": values[0] if values else None,
+                "latest": values[-1] if values else None,
             }
 
-        return result
+        return dict(result)
 
-    def _get_custom_field_values(self, client: ClientFile) -> dict[str, str]:
-        """Get custom field values relevant to the selected QI columns.
+    def _bulk_get_field_data(
+        self, client_ids: list[int],
+    ) -> tuple[dict[int, dict[str, str]], dict[int, str | None]]:
+        """Bulk-fetch custom field values and postal codes for all clients.
 
-        Only fetches fields that are used as quasi-identifiers.
+        Returns (custom_field_map, postal_code_map) where:
+        - custom_field_map: {client_id: {qi_col: value}}
+        - postal_code_map: {client_id: postal_code_or_None}
         """
-        result: dict[str, str] = {}
-
-        # QI columns that correspond to custom fields (not age_group or geography)
         custom_qi = [
             col for col in self.qi_columns
             if col not in ("age_group", "geography")
         ]
-        if not custom_qi:
-            return result
 
-        # Query all ClientDetailValue records for this client
-        detail_values = ClientDetailValue.objects.filter(
-            client_file=client,
+        custom_field_map: dict[int, dict[str, str]] = defaultdict(dict)
+        postal_code_map: dict[int, str | None] = {}
+
+        # Single query for all custom field values across all clients
+        all_details = ClientDetailValue.objects.filter(
+            client_file_id__in=client_ids,
             field_def__status="active",
         ).select_related("field_def", "field_def__group")
 
-        for dv in detail_values:
-            field_name_lower = dv.field_def.name.lower().replace(" ", "_")
-            if field_name_lower in custom_qi:
-                raw_val = dv.get_value()
-                # For dropdown fields, resolve to the option label
-                if dv.field_def.input_type in ("select", "select_other"):
-                    raw_val = self._resolve_option_label(dv.field_def, raw_val)
-                result[field_name_lower] = raw_val or ""
+        for dv in all_details:
+            cid = dv.client_file_id
 
-        return result
+            # Check for postal code fields
+            fd = dv.field_def
+            if (
+                cid not in postal_code_map
+                and "geography" in self.qi_columns
+                and (
+                    getattr(fd, "validation_type", None) == "postal_code"
+                    or fd.name.lower() == "postal code"
+                )
+            ):
+                postal_code_map[cid] = dv.get_value() or None
 
-    def _get_postal_code(self, client: ClientFile) -> str | None:
-        """Retrieve postal code from custom field values.
+            # Check for QI custom fields
+            if custom_qi:
+                field_name_lower = fd.name.lower().replace(" ", "_")
+                if field_name_lower in custom_qi:
+                    raw_val = dv.get_value()
+                    if fd.input_type in ("select", "select_other"):
+                        raw_val = self._resolve_option_label(fd, raw_val)
+                    custom_field_map[cid][field_name_lower] = raw_val or ""
 
-        Looks for a field with validation_type="postal_code" or named
-        "Postal Code".
-        """
-        postal_dv = ClientDetailValue.objects.filter(
-            client_file=client,
-            field_def__status="active",
-        ).filter(
-            Q(field_def__validation_type="postal_code")
-            | Q(field_def__name__iexact="Postal Code")
-        ).select_related("field_def").first()
-
-        if postal_dv:
-            return postal_dv.get_value() or None
-        return None
+        return dict(custom_field_map), postal_code_map
 
     def _resolve_option_label(self, field_def, raw_value: str) -> str:
         """Resolve a dropdown value to its display label."""
@@ -461,11 +488,7 @@ class DeidentificationPipeline:
 
     @staticmethod
     def _sanitise_metric_name(name: str) -> str:
-        """Convert a metric name to a safe column name slug.
-
-        Replaces spaces/special chars with underscores and lowercases.
-        """
-        import re
+        """Convert a metric name to a safe column name slug."""
         safe = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
         return safe or "metric"
 
@@ -662,9 +685,7 @@ class DeidentificationPipeline:
         """
         self._log_audit("view", "Computing k-anonymity")
 
-        active_records = [
-            r for r in self._deidentified_records if not r.get("_suppressed")
-        ]
+        active_records = self._active_records
 
         if not active_records:
             self._effective_k = 0
@@ -714,9 +735,7 @@ class DeidentificationPipeline:
         """
         self._log_audit("view", "Resolving k-anonymity violations")
 
-        active_records = [
-            r for r in self._deidentified_records if not r.get("_suppressed")
-        ]
+        active_records = self._active_records
         if not active_records:
             return
 
@@ -775,9 +794,7 @@ class DeidentificationPipeline:
             })
 
         # Final k computation on remaining records
-        remaining = [
-            r for r in self._deidentified_records if not r.get("_suppressed")
-        ]
+        remaining = self._active_records
         if remaining:
             eq_classes = self._build_equivalence_classes(remaining)
             self._effective_k = min(eq_classes.values()) if eq_classes else 0
@@ -913,10 +930,7 @@ class DeidentificationPipeline:
 
         Returns the tier string.
         """
-        exportable = [
-            r for r in self._deidentified_records
-            if not r.get("_suppressed")
-        ]
+        exportable = self._active_records
         n = len(exportable)
         qi_count = len(self.qi_columns)
 
@@ -962,19 +976,14 @@ class DeidentificationPipeline:
         """
         self._log_audit("export", "Generating CSV file")
 
-        export_dir = getattr(
-            settings, "SECURE_EXPORT_DIR", "/tmp/konote_exports",
-        )
+        export_dir = settings.SECURE_EXPORT_DIR
         os.makedirs(export_dir, exist_ok=True)
 
         timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
         filename = f"eval_microdata_{self.program.pk}_{timestamp}.csv"
         filepath = os.path.join(export_dir, filename)
 
-        exportable = [
-            r for r in self._deidentified_records
-            if not r.get("_suppressed")
-        ]
+        exportable = self._active_records
 
         # Build column headers
         columns = self._build_csv_columns()
@@ -1069,23 +1078,15 @@ class DeidentificationPipeline:
         """
         self._log_audit("export", "Generating suppression report")
 
-        export_dir = getattr(
-            settings, "SECURE_EXPORT_DIR", "/tmp/konote_exports",
-        )
+        export_dir = settings.SECURE_EXPORT_DIR
         os.makedirs(export_dir, exist_ok=True)
 
         timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
         filename = f"eval_suppression_report_{self.program.pk}_{timestamp}.json"
         filepath = os.path.join(export_dir, filename)
 
-        exportable = [
-            r for r in self._deidentified_records
-            if not r.get("_suppressed")
-        ]
-        suppressed = [
-            r for r in self._deidentified_records
-            if r.get("_suppressed")
-        ]
+        exportable = self._active_records
+        suppressed_count = len(self._deidentified_records) - len(exportable)
 
         report = {
             "generated_at": timezone.now().isoformat(),
@@ -1099,14 +1100,14 @@ class DeidentificationPipeline:
                 "eligible": len(self._raw_records),
                 "consented": len(self._consented_records),
                 "exportable": len(exportable),
-                "suppressed": len(suppressed),
+                "suppressed": suppressed_count,
             },
             "privacy": {
                 "target_k": TARGET_K,
                 "effective_k": self._effective_k,
                 "suppression_rate": round(
-                    len(suppressed) / (len(exportable) + len(suppressed))
-                    if (len(exportable) + len(suppressed)) > 0
+                    suppressed_count / (len(exportable) + suppressed_count)
+                    if (len(exportable) + suppressed_count) > 0
                     else 0.0,
                     3,
                 ),
@@ -1140,7 +1141,6 @@ class DeidentificationPipeline:
         self._deidentified_records = []
         self._linkage_table = {}
         self._generalizations_applied = []
-        self._suppressed_records = []
         self._suppression_reasons = []
         self._blocked = False
         self._block_reason = None
@@ -1227,22 +1227,16 @@ class DeidentificationPipeline:
 
     def _build_preview_result(self, tier: str) -> PreviewResult:
         """Construct a PreviewResult from current pipeline state."""
-        exportable = [
-            r for r in self._deidentified_records
-            if not r.get("_suppressed")
-        ]
-        suppressed = [
-            r for r in self._deidentified_records
-            if r.get("_suppressed")
-        ]
-        total = len(exportable) + len(suppressed)
+        exportable = self._active_records
+        suppressed_count = len(self._deidentified_records) - len(exportable)
+        total = len(self._deidentified_records)
 
         return PreviewResult(
             eligible_count=len(self._raw_records),
             consented_count=len(self._consented_records),
             exportable_count=len(exportable),
-            suppressed_count=len(suppressed),
-            suppression_rate=len(suppressed) / total if total > 0 else 0.0,
+            suppressed_count=suppressed_count,
+            suppression_rate=suppressed_count / total if total > 0 else 0.0,
             effective_k=self._effective_k,
             qi_columns_used=list(self.qi_columns),
             generalizations_applied=list(self._generalizations_applied),

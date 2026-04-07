@@ -2452,18 +2452,8 @@ def evaluation_export_form(request):
         }),
     )
 
-    # Full audit log entry with structured metadata
-    AuditLog.objects.using("audit").create(
-        event_timestamp=timezone.now(),
-        user_id=request.user.pk,
-        user_display=request.user.display_name,
-        action="export",
-        resource_type="export",
-        program_id=program.pk,
-        ip_address=_get_client_ip(request),
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata=result.audit_metadata,
-    )
+    # Audit logging is handled by the pipeline's run_generate() — no
+    # duplicate entry needed here.
 
     from django.contrib import messages as django_messages
     django_messages.success(

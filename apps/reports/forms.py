@@ -1200,7 +1200,7 @@ class FunderReportApprovalForm(forms.Form):
 # ---------------------------------------------------------------------------
 
 
-class EvaluationExportForm(forms.Form):
+class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
     """Form for generating de-identified evaluation microdata exports.
 
     Captures: program, reporting period, evaluator details (for audit),
@@ -1276,34 +1276,17 @@ class EvaluationExportForm(forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        # Use mixin's program setup but without "All Programs" option
         self._user = user
-
-        # Build program choices — only programs user can access
         if user:
             from .utils import get_manageable_programs
             programs = get_manageable_programs(user)
         else:
             programs = Program.objects.filter(status="active")
-
         program_choices = [("", _("\u2014 Select a program \u2014"))]
         for p in programs.order_by("name"):
             program_choices.append((str(p.pk), str(p)))
         self.fields["program"].choices = program_choices
-
-    def clean_program(self):
-        value = self.cleaned_data.get("program", "")
-        if not value:
-            raise forms.ValidationError(_("Please select a program."))
-        try:
-            program = Program.objects.get(pk=int(value), status="active")
-        except (Program.DoesNotExist, ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid program selection."))
-        # RBAC: verify user has access
-        if self._user:
-            from .utils import get_manageable_programs
-            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
-                raise forms.ValidationError(_("You do not have access to this program."))
-        return program
 
     def clean(self):
         cleaned = super().clean()
