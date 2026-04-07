@@ -58,6 +58,33 @@ def can_download_pii_export(user):
     ).exists()
 
 
+def can_create_evaluation_export(user):
+    """Check if this user can create evaluation microdata exports.
+
+    Evaluation exports are restricted to users with the explicit
+    report.evaluation_export permission or admin users. This is a
+    separate permission from report.program_report because evaluation
+    exports serve a different purpose (external sharing) with different
+    safeguards (evaluator details, enhanced audit).
+
+    Returns:
+        True if the user can create evaluation exports.
+    """
+    if user.is_admin:
+        return True
+    # Check if user has the evaluation_export permission via their role
+    from apps.auth_app.permissions import DENY, can_access
+    from apps.programs.models import UserProgramRole
+
+    roles = UserProgramRole.objects.filter(
+        user=user, status="active"
+    ).values_list("role", flat=True).distinct()
+    for role in roles:
+        if can_access(role, "report.evaluation_export") != DENY:
+            return True
+    return False
+
+
 def can_create_export(user, export_type, program=None):
     """
     Check if a user can create an export of the given type.
