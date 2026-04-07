@@ -335,10 +335,11 @@ class ClientTransferForm(forms.Form):
 class CustomFieldGroupForm(forms.ModelForm):
     class Meta:
         model = CustomFieldGroup
-        fields = ["title", "sort_order", "collapsed_by_default", "status"]
+        fields = ["title", "sort_order", "collapsed_by_default", "is_evaluation_exportable", "status"]
         labels = {
             "sort_order": _("Display order"),
             "collapsed_by_default": _("Collapsed by default (display only — does not restrict access)"),
+            "is_evaluation_exportable": _("Available in evaluation exports"),
         }
 
     def __init__(self, *args, **kwargs):
@@ -346,7 +347,17 @@ class CustomFieldGroupForm(forms.ModelForm):
         self.fields["title"].help_text = _("Use groups to bundle related fields together, such as Intake, Demographics, or Accessibility.")
         self.fields["sort_order"].help_text = _("Lower numbers appear earlier on the participant file.")
         self.fields["collapsed_by_default"].help_text = _("This only affects whether the group starts open or closed on screen.")
+        self.fields["is_evaluation_exportable"].help_text = _("When enabled, fields in this group can be selected as demographic columns in evaluation exports. Only non-sensitive groups should be marked exportable.")
         self.fields["status"].help_text = _("Archived groups stay on old records but are hidden from new use.")
+
+    def clean_is_evaluation_exportable(self):
+        value = self.cleaned_data.get("is_evaluation_exportable", False)
+        if value and self.instance and self.instance.pk:
+            if self.instance.has_sensitive_fields:
+                raise forms.ValidationError(
+                    _("This group contains sensitive fields and cannot be marked as evaluation-exportable.")
+                )
+        return value
 
 
 class CustomFieldValuesForm(forms.Form):
