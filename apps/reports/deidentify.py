@@ -281,6 +281,19 @@ class DeidentificationPipeline:
             ).distinct().order_by("name")
         )
 
+        # Guard against metric name collisions after slugification
+        # (e.g., "Well-being Score" and "Wellbeing Score" → same slug)
+        seen_slugs: dict[str, str] = {}
+        for md in self._metric_defs:
+            slug = self._sanitise_metric_name(md.name)
+            if slug in seen_slugs:
+                logger.warning(
+                    "Metric name collision: '%s' and '%s' both slugify to '%s'",
+                    seen_slugs[slug], md.name, slug,
+                )
+            else:
+                seen_slugs[slug] = md.name
+
         # Build raw records
         for client_id, (client, episode) in client_episodes.items():
             self._raw_records.append({
@@ -396,14 +409,21 @@ class DeidentificationPipeline:
         # Group by (client_id, metric_def_id)
         grouped: dict[tuple[int, int], list] = defaultdict(list)
         metric_name_map: dict[int, str] = {}
+        used_slugs: set[str] = set()
         for mv in all_values:
             cid = mv.progress_note_target.progress_note.client_file_id
             mid = mv.metric_def_id
             grouped[(cid, mid)].append(mv.value)
             if mid not in metric_name_map:
-                metric_name_map[mid] = self._sanitise_metric_name(
-                    mv.metric_def.name,
-                )
+                slug = self._sanitise_metric_name(mv.metric_def.name)
+                # Append suffix if slug collides with another metric
+                if slug in used_slugs:
+                    suffix = 2
+                    while f"{slug}_{suffix}" in used_slugs:
+                        suffix += 1
+                    slug = f"{slug}_{suffix}"
+                used_slugs.add(slug)
+                metric_name_map[mid] = slug
 
         result: dict[int, dict[str, dict[str, Any]]] = defaultdict(dict)
         for (cid, mid), values in grouped.items():
