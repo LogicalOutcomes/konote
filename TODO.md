@@ -111,7 +111,6 @@ _All documentation tasks completed — see Recently Done._
 Scope is clear, just needs time. A session can pick these up without special approval.
 
 - [ ] Extract shared custom field utilities (form builder, save helper, context builder) to reduce duplication between staff and portal views — (REFACTOR2)
-- [ ] De-identified evaluation microdata export — new export tier for external evaluators with k-anonymity, pseudonymous IDs, generalised demographics, enhanced audit trail. DRR: `tasks/design-rationale/evaluation-microdata-export.md`. Session prompt: `tasks/session-prompt-evaluation-export.md` — (EVAL-EXPORT1)
 
 ## Parking Lot: Needs Review
 
@@ -127,6 +126,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
 - [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
 - [x] Dashboard & Insights enrichment — FHIR metadata features: program summary sentences, practice indicators, goal source distribution on Insights; stale episodes attention signal on Dashboard; batch query optimization; simplified both pages (removed funder stats, cohort comparison, cross-tab, dashboard bloat — 8 sections → 5 on Insights, ~20 rows → ~8 per program card) — PRs #529-#533 — 2026-03-16 (ENRICH1)
 - [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)

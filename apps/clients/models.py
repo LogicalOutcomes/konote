@@ -725,6 +725,14 @@ class CustomFieldGroup(models.Model):
             "frontline workers do not need to see."
         ),
     )
+    is_evaluation_exportable = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When enabled, fields in this group can be selected as "
+            "demographic columns in evaluation exports. Only non-sensitive "
+            "groups should be marked exportable."
+        ),
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],
@@ -738,6 +746,11 @@ class CustomFieldGroup(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def has_sensitive_fields(self):
+        """True if any field in this group is marked sensitive."""
+        return self.fields.filter(is_sensitive=True).exists()
 
 
 class CustomFieldDefinition(models.Model):
