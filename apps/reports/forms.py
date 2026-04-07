@@ -1288,6 +1288,21 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             program_choices.append((str(p.pk), str(p)))
         self.fields["program"].choices = program_choices
 
+    def clean_program(self):
+        """Override mixin: evaluation exports require a single program."""
+        value = self.cleaned_data.get("program", "")
+        if not value or value == self.ALL_PROGRAMS_VALUE:
+            raise forms.ValidationError(_("Please select a program."))
+        try:
+            program = Program.objects.get(pk=int(value), status="active")
+        except (Program.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid program selection."))
+        if self._user:
+            from .utils import get_manageable_programs
+            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
+                raise forms.ValidationError(_("You do not have access to this program."))
+        return program
+
     def clean(self):
         cleaned = super().clean()
         period_start = cleaned.get("period_start")

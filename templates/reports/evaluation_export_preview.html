@@ -15,9 +15,9 @@
     {% if preview.block_reason == "population_too_small" %}
     <p>{% blocktrans with count=preview.consented_count %}The consented population ({{ count }} participants) is too small for a de-identified export. A minimum of 15 participants is required. Use aggregate reports instead.{% endblocktrans %}</p>
     {% elif preview.block_reason == "suppression_rate_exceeded" %}
-    <p>{% blocktrans with rate=preview.suppression_rate %}The suppression rate ({{ rate|floatformat:0 }}%) exceeds the 15% ceiling. Too many records would need to be removed to maintain k-anonymity. Try selecting fewer demographic columns.{% endblocktrans %}</p>
+    <p>{% blocktrans with rate=preview.suppression_rate|floatformat:0 %}The suppression rate ({{ rate }}%) exceeds the 15% ceiling. Too many records would need to be removed to maintain k-anonymity. Try selecting fewer demographic columns.{% endblocktrans %}</p>
     {% elif preview.block_reason == "too_many_qi_columns" %}
-    <p>{% blocktrans with count=preview.qi_columns_used|length tier=preview.tier %}Too many demographic columns selected for the population size. The "{{ tier }}" tier limits the number of columns. Reduce the number of selected columns and try again.{% endblocktrans %}</p>
+    <p>{% blocktrans with qi_count=preview.qi_columns_used|length tier=preview.tier %}Too many demographic columns ({{ qi_count }}) selected for the population size. The "{{ tier }}" tier limits the number of columns. Reduce the number of selected columns and try again.{% endblocktrans %}</p>
     {% else %}
     <p>{{ preview.block_reason }}</p>
     {% endif %}

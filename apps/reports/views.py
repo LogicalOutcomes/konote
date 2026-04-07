@@ -2435,22 +2435,21 @@ def evaluation_export_form(request):
         contains_pii=False,
     )
 
-    # Force elevated for evaluation exports (regardless of client count)
-    if not link.is_elevated:
-        SecureExportLink.objects.filter(pk=link.pk).update(
-            is_elevated=True,
-        )
-        _notify_admins_elevated_export(link, request)
-
-    # Store encrypted linkage blob
-    SecureExportLink.objects.filter(pk=link.pk).update(
-        filters_json=json.dumps({
-            **json.loads(link.filters_json),
-            "linkage_key_encrypted": result.linkage_blob.hex()
-            if isinstance(result.linkage_blob, bytes)
-            else str(result.linkage_blob),
-        }),
+    # Force elevated + store encrypted linkage blob in one update
+    link.refresh_from_db()
+    updated_filters = json.loads(link.filters_json)
+    updated_filters["linkage_key_encrypted"] = (
+        result.linkage_blob.hex()
+        if isinstance(result.linkage_blob, bytes)
+        else str(result.linkage_blob)
     )
+    SecureExportLink.objects.filter(pk=link.pk).update(
+        is_elevated=True,
+        filters_json=json.dumps(updated_filters),
+    )
+    if not link.is_elevated:
+        link.refresh_from_db()
+        _notify_admins_elevated_export(link, request)
 
     # Audit logging is handled by the pipeline's run_generate() — no
     # duplicate entry needed here.

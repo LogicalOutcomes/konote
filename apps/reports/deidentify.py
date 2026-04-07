@@ -30,7 +30,7 @@ import re
 import secrets
 import uuid
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
@@ -41,7 +41,7 @@ from django.utils import timezone
 from apps.audit.models import AuditLog
 from apps.clients.models import ClientDetailValue, ClientFile, ServiceEpisode
 from apps.notes.models import MetricValue, ProgressNote
-from apps.plans.models import MetricDefinition, PlanTarget, PlanTargetMetric
+from apps.plans.models import MetricDefinition, PlanTargetMetric
 from apps.reports.csv_utils import sanitise_csv_value
 
 logger = logging.getLogger(__name__)
@@ -314,16 +314,6 @@ class DeidentificationPipeline:
         client_ids = [raw["_client_id"] for raw in self._raw_records]
 
         # Bulk fetch: session counts and total hours per client
-        note_stats = dict(
-            ProgressNote.objects.filter(
-                client_file_id__in=client_ids,
-                created_at__date__range=(self.period_start, self.period_end),
-            ).values("client_file_id").annotate(
-                count=Count("id"),
-                total_minutes=Sum("duration_minutes"),
-            ).values_list("client_file_id", "count", "total_minutes")
-        # Convert to {client_id: (count, total_minutes)}
-        )
         note_stats_map: dict[int, tuple[int, int]] = {}
         for row in ProgressNote.objects.filter(
             client_file_id__in=client_ids,
@@ -442,10 +432,16 @@ class DeidentificationPipeline:
         custom_field_map: dict[int, dict[str, str]] = defaultdict(dict)
         postal_code_map: dict[int, str | None] = {}
 
-        # Single query for all custom field values across all clients
+        # Single query for all custom field values across all clients.
+        # Only include fields from groups marked as evaluation-exportable
+        # (plus postal code fields needed for geography derivation).
         all_details = ClientDetailValue.objects.filter(
             client_file_id__in=client_ids,
             field_def__status="active",
+        ).filter(
+            Q(field_def__group__is_evaluation_exportable=True)
+            | Q(field_def__validation_type="postal_code")
+            | Q(field_def__name__iexact="Postal Code")
         ).select_related("field_def", "field_def__group")
 
         for dv in all_details:
