@@ -2329,3 +2329,146 @@ def session_report_form(request):
         % {"count": client_count, "sessions": report_data["summary"]["total_sessions"]},
     )
     return redirect("reports:download_export", link_id=link.pk)
+
+
+# ---------------------------------------------------------------------------
+# Evaluation Microdata Export (DRR: evaluation-microdata-export.md)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+def evaluation_export_form(request):
+    """View for generating de-identified evaluation microdata exports.
+
+    Two-step flow:
+    1. GET or POST with action=preview — show form or run preview
+    2. POST with action=generate — produce the CSV and SecureExportLink
+
+    Access restricted to users with report.evaluation_export permission.
+    """
+    from .forms import EvaluationExportForm
+    from .deidentify import DeidentificationPipeline
+    from .utils import can_create_evaluation_export
+
+    if not can_create_evaluation_export(request.user):
+        return HttpResponseForbidden(
+            _("Access denied. You do not have permission to create evaluation exports.")
+        )
+
+    if request.method == "GET":
+        form = EvaluationExportForm(user=request.user)
+        return render(request, "reports/evaluation_export.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    # POST — either preview or generate
+    action = request.POST.get("action", "preview")
+    form = EvaluationExportForm(request.POST, user=request.user)
+
+    if not form.is_valid():
+        return render(request, "reports/evaluation_export.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    program = form.cleaned_data["program"]
+    period_start = form.cleaned_data["period_start"]
+    period_end = form.cleaned_data["period_end"]
+    qi_columns = form.get_qi_columns()
+    evaluator_info = form.get_evaluator_info()
+
+    pipeline = DeidentificationPipeline(
+        program=program,
+        period_start=period_start,
+        period_end=period_end,
+        qi_columns=qi_columns,
+        evaluator_info=evaluator_info,
+        user=request.user,
+        request=request,
+    )
+
+    if action == "preview":
+        preview = pipeline.run_preview()
+        return render(request, "reports/evaluation_export_preview.html", {
+            "form": form,
+            "preview": preview,
+            "program": program,
+            "period_start": period_start,
+            "period_end": period_end,
+            "evaluator_info": evaluator_info,
+            "qi_columns": qi_columns,
+            "nav_active": "reports",
+        })
+
+    # action == "generate"
+    try:
+        result = pipeline.run_generate()
+    except ValueError as exc:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, str(exc))
+        return render(request, "reports/evaluation_export.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    # Read the CSV file content for SecureExportLink storage
+    with open(result.csv_path, "r", encoding="utf-8-sig") as f:
+        csv_content = f.read()
+
+    filename = os.path.basename(result.csv_path)
+    link = _save_export_and_create_link(
+        request=request,
+        content=csv_content,
+        filename=filename,
+        export_type="evaluation_microdata",
+        client_count=result.preview.exportable_count,
+        includes_notes=False,
+        recipient=f"{evaluator_info['name']} ({evaluator_info['email']}), {evaluator_info['organisation']}",
+        filters_dict={
+            "program_id": program.pk,
+            "period_start": str(period_start),
+            "period_end": str(period_end),
+            "qi_columns": qi_columns,
+            "evaluator": evaluator_info,
+        },
+        contains_pii=False,
+    )
+
+    # Force elevated for evaluation exports (regardless of client count)
+    if not link.is_elevated:
+        SecureExportLink.objects.filter(pk=link.pk).update(
+            is_elevated=True,
+        )
+        _notify_admins_elevated_export(link, request)
+
+    # Store encrypted linkage blob
+    SecureExportLink.objects.filter(pk=link.pk).update(
+        filters_json=json.dumps({
+            **json.loads(link.filters_json),
+            "linkage_key_encrypted": result.linkage_blob.hex()
+            if isinstance(result.linkage_blob, bytes)
+            else str(result.linkage_blob),
+        }),
+    )
+
+    # Full audit log entry with structured metadata
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="export",
+        resource_type="export",
+        program_id=program.pk,
+        ip_address=_get_client_ip(request),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata=result.audit_metadata,
+    )
+
+    from django.contrib import messages as django_messages
+    django_messages.success(
+        request,
+        _("Evaluation export generated. %(count)d de-identified records.")
+        % {"count": result.preview.exportable_count},
+    )
+    return redirect("reports:download_export", link_id=link.pk)

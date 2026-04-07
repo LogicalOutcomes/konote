@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluation Export Preview" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluation Export Preview" %}</h1>
+    <p>{% trans "Review the de-identification results before generating the export." %}</p>
+</hgroup>
+
+{% if preview.blocked %}
+<article role="alert" style="background: var(--kn-error-bg, #fef2f2); border-left: 4px solid var(--kn-error-fg, #dc2626); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "Export Blocked" %}</strong>
+    {% if preview.block_reason == "population_too_small" %}
+    <p>{% blocktrans with count=preview.consented_count %}The consented population ({{ count }} participants) is too small for a de-identified export. A minimum of 15 participants is required. Use aggregate reports instead.{% endblocktrans %}</p>
+    {% elif preview.block_reason == "suppression_rate_exceeded" %}
+    <p>{% blocktrans with rate=preview.suppression_rate %}The suppression rate ({{ rate|floatformat:0 }}%) exceeds the 15% ceiling. Too many records would need to be removed to maintain k-anonymity. Try selecting fewer demographic columns.{% endblocktrans %}</p>
+    {% elif preview.block_reason == "too_many_qi_columns" %}
+    <p>{% blocktrans with count=preview.qi_columns_used|length tier=preview.tier %}Too many demographic columns selected for the population size. The "{{ tier }}" tier limits the number of columns. Reduce the number of selected columns and try again.{% endblocktrans %}</p>
+    {% else %}
+    <p>{{ preview.block_reason }}</p>
+    {% endif %}
+    <p style="margin-bottom: 0;">
+        <a href="{% url 'reports:evaluation_export' %}" role="button" class="secondary">{% trans "Back to Form" %}</a>
+    </p>
+</article>
+{% endif %}
+
+<article aria-label="{% trans 'Pipeline summary' %}">
+    <header><strong>{% trans "Population Summary" %}</strong></header>
+    <table role="grid">
+        <tbody>
+            <tr>
+                <td>{% trans "Eligible participants" %}</td>
+                <td><strong>{{ preview.eligible_count }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "With consent" %}</td>
+                <td><strong>{{ preview.consented_count }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "Exportable (after de-identification)" %}</td>
+                <td><strong>{{ preview.exportable_count }}</strong></td>
+            </tr>
+            {% if preview.suppressed_count %}
+            <tr>
+                <td>{% trans "Suppressed (k-anonymity)" %}</td>
+                <td><strong>{{ preview.suppressed_count }}</strong></td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>{% trans "Effective k-anonymity" %}</td>
+                <td><strong>{{ preview.effective_k }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "Export tier" %}</td>
+                <td><strong>{{ preview.tier }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</article>
+
+{% if preview.generalizations_applied %}
+<article aria-label="{% trans 'Generalisations applied' %}">
+    <header><strong>{% trans "Generalisations Applied" %}</strong></header>
+    <ul>
+        {% for g in preview.generalizations_applied %}
+        <li><strong>{{ g.field }}</strong>: {{ g.original }} &rarr; {{ g.widened_to }}</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+{% if preview.suppression_details %}
+<article aria-label="{% trans 'Suppression details' %}">
+    <header><strong>{% trans "Suppression Details" %}</strong></header>
+    <ul>
+        {% for s in preview.suppression_details %}
+        <li>{{ s.description }} ({{ s.count }} records)</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+<article aria-label="{% trans 'Evaluator confirmation' %}">
+    <header><strong>{% trans "Evaluator Details" %}</strong></header>
+    <table role="grid">
+        <tbody>
+            <tr>
+                <td>{% trans "Name" %}</td>
+                <td>{{ evaluator_info.name }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Email" %}</td>
+                <td>{{ evaluator_info.email }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Organisation" %}</td>
+                <td>{{ evaluator_info.organisation }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Purpose" %}</td>
+                <td>{{ evaluator_info.purpose }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Agreement expiry" %}</td>
+                <td>{{ evaluator_info.agreement_expiry }}</td>
+            </tr>
+        </tbody>
+    </table>
+</article>
+
+{% if not preview.blocked %}
+<form method="post" action="{% url 'reports:evaluation_export' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="generate">
+    {# Pass through all original form values #}
+    <input type="hidden" name="program" value="{{ form.program.value }}">
+    <input type="hidden" name="period_start" value="{{ form.period_start.value }}">
+    <input type="hidden" name="period_end" value="{{ form.period_end.value }}">
+    <input type="hidden" name="evaluator_name" value="{{ form.evaluator_name.value }}">
+    <input type="hidden" name="evaluator_email" value="{{ form.evaluator_email.value }}">
+    <input type="hidden" name="evaluator_organisation" value="{{ form.evaluator_organisation.value }}">
+    <input type="hidden" name="evaluation_purpose" value="{{ form.evaluation_purpose.value }}">
+    <input type="hidden" name="agreement_expiry" value="{{ form.agreement_expiry.value }}">
+    {% if form.include_age_group.value %}<input type="hidden" name="include_age_group" value="on">{% endif %}
+    {% if form.include_gender.value %}<input type="hidden" name="include_gender" value="on">{% endif %}
+    {% if form.include_ethnicity.value %}<input type="hidden" name="include_ethnicity" value="on">{% endif %}
+    {% if form.include_geography.value %}<input type="hidden" name="include_geography" value="on">{% endif %}
+
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <button type="submit">{% trans "Generate Export" %}</button>
+        <a href="{% url 'reports:evaluation_export' %}" role="button" class="secondary outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

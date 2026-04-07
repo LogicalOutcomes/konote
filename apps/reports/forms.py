@@ -1193,3 +1193,145 @@ class FunderReportApprovalForm(forms.Form):
             "placeholder": _("e.g., Q1 debt figures include a large legal settlement for one participant. This is accurate, not a data entry error."),
         }),
     )
+
+
+# ---------------------------------------------------------------------------
+# Evaluation Microdata Export (DRR: evaluation-microdata-export.md)
+# ---------------------------------------------------------------------------
+
+
+class EvaluationExportForm(forms.Form):
+    """Form for generating de-identified evaluation microdata exports.
+
+    Captures: program, reporting period, evaluator details (for audit),
+    and quasi-identifier column selection.  All evaluator fields are
+    required — they are stored in the immutable audit log, not in a
+    separate model.
+
+    Access is restricted to users with the report.evaluation_export
+    permission (checked in the view, not the form).
+    """
+
+    program = forms.ChoiceField(
+        required=True,
+        label=_("Program"),
+    )
+
+    period_start = forms.DateField(
+        required=True,
+        label=_("Period start"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    period_end = forms.DateField(
+        required=True,
+        label=_("Period end"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    # Evaluator details — all required for audit trail
+    evaluator_name = forms.CharField(
+        max_length=200,
+        label=_("Evaluator name"),
+    )
+    evaluator_email = forms.EmailField(
+        label=_("Evaluator email"),
+    )
+    evaluator_organisation = forms.CharField(
+        max_length=200,
+        label=_("Evaluator organisation"),
+    )
+    evaluation_purpose = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        label=_("Evaluation purpose"),
+        help_text=_("Describe the evaluation and how the data will be used."),
+    )
+    agreement_expiry = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        label=_("Data sharing agreement expiry"),
+        help_text=_("When does the data sharing agreement with this evaluator expire?"),
+    )
+
+    # Quasi-identifier column selection (checkboxes)
+    include_age_group = forms.BooleanField(
+        required=False,
+        initial=True,
+        label=_("Age group"),
+        help_text=_("5-year age bands (e.g., 25-29, 30-34)"),
+    )
+    include_gender = forms.BooleanField(
+        required=False,
+        initial=True,
+        label=_("Gender"),
+    )
+    include_ethnicity = forms.BooleanField(
+        required=False,
+        label=_("Ethnicity"),
+    )
+    include_geography = forms.BooleanField(
+        required=False,
+        label=_("Geography"),
+        help_text=_("Urban / Rural (derived from postal code)"),
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self._user = user
+
+        # Build program choices — only programs user can access
+        if user:
+            from .utils import get_manageable_programs
+            programs = get_manageable_programs(user)
+        else:
+            programs = Program.objects.filter(status="active")
+
+        program_choices = [("", _("\u2014 Select a program \u2014"))]
+        for p in programs.order_by("name"):
+            program_choices.append((str(p.pk), str(p)))
+        self.fields["program"].choices = program_choices
+
+    def clean_program(self):
+        value = self.cleaned_data.get("program", "")
+        if not value:
+            raise forms.ValidationError(_("Please select a program."))
+        try:
+            program = Program.objects.get(pk=int(value), status="active")
+        except (Program.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid program selection."))
+        # RBAC: verify user has access
+        if self._user:
+            from .utils import get_manageable_programs
+            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
+                raise forms.ValidationError(_("You do not have access to this program."))
+        return program
+
+    def clean(self):
+        cleaned = super().clean()
+        period_start = cleaned.get("period_start")
+        period_end = cleaned.get("period_end")
+        if period_start and period_end and period_start > period_end:
+            raise forms.ValidationError(_("Period start must be before period end."))
+        return cleaned
+
+    def get_qi_columns(self):
+        """Return the list of selected quasi-identifier column names."""
+        qi = []
+        if self.cleaned_data.get("include_age_group"):
+            qi.append("age_group")
+        if self.cleaned_data.get("include_gender"):
+            qi.append("gender")
+        if self.cleaned_data.get("include_ethnicity"):
+            qi.append("ethnicity")
+        if self.cleaned_data.get("include_geography"):
+            qi.append("geography")
+        return qi
+
+    def get_evaluator_info(self):
+        """Return evaluator details as a dict for the pipeline."""
+        return {
+            "name": self.cleaned_data.get("evaluator_name", ""),
+            "email": self.cleaned_data.get("evaluator_email", ""),
+            "organisation": self.cleaned_data.get("evaluator_organisation", ""),
+            "purpose": self.cleaned_data.get("evaluation_purpose", ""),
+            "agreement_expiry": self.cleaned_data.get("agreement_expiry"),
+        }
