@@ -111,6 +111,7 @@ _All documentation tasks completed — see Recently Done._
 Scope is clear, just needs time. A session can pick these up without special approval.
 
 - [ ] Extract shared custom field utilities (form builder, save helper, context builder) to reduce duplication between staff and portal views — (REFACTOR2)
+- [ ] De-identified evaluation microdata export — new export tier for external evaluators with k-anonymity, pseudonymous IDs, generalised demographics, enhanced audit trail. DRR: `tasks/design-rationale/evaluation-microdata-export.md`. Session prompt: `tasks/session-prompt-evaluation-export.md` — (EVAL-EXPORT1)
 
 ## Parking Lot: Needs Review
 
