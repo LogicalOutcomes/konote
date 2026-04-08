@@ -110,11 +110,17 @@ def instance_settings(request):
         settings_dict = InstanceSetting.get_all()
         cache.set("instance_settings", settings_dict, 300)
 
+    # Copy before mutating so the cached dict stays clean
+    settings_dict = dict(settings_dict)
+
     # Resolve bilingual organization name based on current language
     lang = get_language() or "en"
     if lang.startswith("fr") and settings_dict.get("organization_name_fr"):
-        settings_dict = dict(settings_dict)  # copy to avoid mutating cache
         settings_dict["organization_name"] = settings_dict["organization_name_fr"]
+
+    # product_name is always "KoNote" — the legacy key was replaced by
+    # organization_name, but templates still reference site.product_name.
+    settings_dict["product_name"] = "KoNote"
 
     return {"site": settings_dict}
 
