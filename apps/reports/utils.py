@@ -72,6 +72,9 @@ def can_create_evaluation_export(user):
     """
     if user.is_admin:
         return True
+    # Check per-user explicit grant (set by admin via admin panel or seed)
+    if getattr(user, "evaluation_export_granted", False):
+        return True
     # Check if user has the evaluation_export permission via their role
     from apps.auth_app.permissions import DENY, can_access
     from apps.programs.models import UserProgramRole
