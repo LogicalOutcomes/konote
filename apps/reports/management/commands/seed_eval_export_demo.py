@@ -9,7 +9,6 @@ Run with: python manage.py seed_eval_export_demo
 Only runs when DEMO_MODE is enabled.
 """
 import random
-from collections import namedtuple
 from datetime import timedelta
 
 from django.conf import settings
@@ -236,12 +235,6 @@ class Command(BaseCommand):
             except (IndexError, ValueError):
                 pass
 
-        used_names = set(
-            ClientFile.objects.filter(is_demo=True).values_list(
-                "_first_name_encrypted", flat=True,
-            )
-        )
-
         # Build age distribution
         age_pool = []
         for (min_days, max_days), age_count in AGE_RANGES:
@@ -250,9 +243,14 @@ class Command(BaseCommand):
             age_pool.extend([(min_days, max_days)] * scaled)
         random.shuffle(age_pool)
 
+        # Track used names to avoid duplicates within this batch.
+        # With 30 first names x 30 last names = 900 combos and only
+        # ~15 new clients, collisions are unlikely but we check anyway.
+        used_names = set()
+
         created = 0
         for i in range(count):
-            # Pick unique name
+            # Pick a name not used in this batch
             for _ in range(50):
                 first = random.choice(FIRST_NAMES)
                 last = random.choice(LAST_NAMES)
@@ -439,11 +437,12 @@ class Command(BaseCommand):
 
     def _set_consent_flags(self, program):
         """Set a few participants to not consent to aggregate reporting."""
+        # Use deterministic ordering (last by record_id) so repeated runs
+        # always mark the same participants as non-consenting.
         consented = ClientProgramEnrolment.objects.filter(
             program=program,
             client_file__is_demo=True,
-            consent_to_aggregate_reporting=True,
-        ).order_by("?")[:NON_CONSENTING_COUNT]
+        ).order_by("-client_file__record_id")[:NON_CONSENTING_COUNT]
 
         ids = list(consented.values_list("pk", flat=True))
         updated = ClientProgramEnrolment.objects.filter(
