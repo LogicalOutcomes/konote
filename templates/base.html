@@ -157,7 +157,7 @@
                         {% endif %}
                         {% has_permission "report.evaluation_export" as can_see_eval_export %}
                         {% if can_see_eval_export or user.is_admin %}
-                        <li role="none"><a role="menuitem" href="{% url 'reports:evaluation_export' %}">{% trans "Evaluation Export" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'reports:evaluation_export' %}">{% trans "Evaluator Export (Confidential)" %}</a></li>
                         {% endif %}
                         {% if can_see_compliance %}
                         <li role="none"><a role="menuitem" href="{% url 'audit:compliance_summary' %}">{% trans "Privacy & Access Audit" %}</a></li>
