@@ -102,6 +102,23 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
+### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
+
+**Code & UI:**
+- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted (EVAL-GOV1)
+- [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
+- [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
+- [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
+- [ ] Agreement expiry warning — banner on export history when evaluator agreement has passed (EVAL-GOV5)
+- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns (EVAL-GOV6)
+- [ ] Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output (EVAL-GOV7)
+
+**Documentation:**
+- [ ] Update admin reporting guide with evaluation export section — `docs/admin/reporting.md` (EVAL-DOC1)
+- [ ] Update deployment protocol — add evaluation export to permissions interview — `tasks/agency-permissions-interview.md` Section 7 (EVAL-DOC2)
+- [ ] Add evaluation export section to user guide — `docs/help.md` (EVAL-DOC3)
+- [ ] ED-facing one-page evaluation export reference — `docs/evaluation-export-guide.md` (EVAL-DOC4)
+
 ### Phase: Documentation & Website Updates
 
 _All documentation tasks completed — see Recently Done._
