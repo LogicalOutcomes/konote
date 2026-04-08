@@ -56,6 +56,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, help_text="Django admin access (rarely used).")
 
     # Per-user permission grants (explicit grants beyond role defaults)
+    # TODO: EVAL-GOV1 will replace this boolean with a grant model that
+    # captures who granted, when, and why. See tasks/eval-export-governance.md.
     evaluation_export_granted = models.BooleanField(
         default=False,
         help_text="Explicitly granted permission to generate de-identified evaluation exports.",
