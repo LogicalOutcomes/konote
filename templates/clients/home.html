@@ -27,7 +27,7 @@
         <li>{% blocktrans with client=term.client|default:"participant" %}Open a {{ client }} profile to view their plan, notes, and progress{% endblocktrans %}</li>
         <li>{% trans "Need help? Ask your program manager or administrator" %}</li>
     </ul>
-    <p class="onboarding-help-link"><a href="{% url 'help' %}">{% trans "View help guide" %} &rarr;</a></p>
+    <p class="onboarding-help-link"><a href="{% url 'help' %}">{% trans "View help guide" %} <span aria-hidden="true">&rarr;</span></a></p>
 </article>
 {% endif %}
 
@@ -276,7 +276,7 @@
         <p class="empty-message"><em>{% blocktrans with clients=term.client_plural|default:"participants" %}No recent {{ clients }} yet. Start by searching above.{% endblocktrans %}</em></p>
         {% endif %}
         <footer class="card-footer">
-            <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"participants" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
+            <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"participants" %}View all {{ clients }}{% endblocktrans %} <span aria-hidden="true">&rarr;</span></a>
         </footer>
     </article>
     {% endif %}

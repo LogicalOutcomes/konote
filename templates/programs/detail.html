@@ -32,7 +32,7 @@
     {% if is_admin %}
     <a href="{% url 'programs:program_edit' program_id=program.pk %}" role="button" class="outline">{% blocktrans with program=term.program|default:"Program" %}Edit {{ program }}{% endblocktrans %}</a>
     {% endif %}
-    <a href="{% url 'programs:program_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
+    <a href="{% url 'programs:program_list' %}" class="back-link"><span aria-hidden="true">&larr;</span> {% trans "Back to List" %}</a>
 </div>
 
 <hr>
@@ -69,11 +69,11 @@
 
     <div role="group">
         <a href="{% url 'reports:program_insights' %}?program={{ program.pk }}&time_period=6m"
-           role="button" class="outline">{% trans "View Program Results" %} &rarr;</a>
+           role="button" class="outline">{% trans "View Program Results" %} <span aria-hidden="true">&rarr;</span></a>
         {% has_permission "report.program_report" as can_see_reports %}
         {% if can_see_reports or user.is_admin %}
         <a href="{% url 'reports:export_form' %}"
-           role="button" class="outline secondary">{% trans "Export Program Data" %} &rarr;</a>
+           role="button" class="outline secondary">{% trans "Export Program Data" %} <span aria-hidden="true">&rarr;</span></a>
         {% endif %}
     </div>
     {% else %}

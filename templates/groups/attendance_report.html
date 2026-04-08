@@ -5,9 +5,9 @@
 
 {% block content %}
 {% if show_attendance_navigation %}
-<p><a href="{% url 'groups:attendance_hub' %}" class="back-link">&larr; {% trans "Back to Attendance" %}</a></p>
+<p><a href="{% url 'groups:attendance_hub' %}" class="back-link"><span aria-hidden="true">&larr;</span> {% trans "Back to Attendance" %}</a></p>
 {% else %}
-<p><a href="{% url 'groups:group_detail' group_id=group.pk %}" class="back-link">&larr; {% blocktrans with name=group.name %}Back to {{ name }}{% endblocktrans %}</a></p>
+<p><a href="{% url 'groups:group_detail' group_id=group.pk %}" class="back-link"><span aria-hidden="true">&larr;</span> {% blocktrans with name=group.name %}Back to {{ name }}{% endblocktrans %}</a></p>
 {% endif %}
 
 <hgroup>
