@@ -426,6 +426,35 @@ document.body.addEventListener("htmx:configRequest", function (event) {
         var message = form.getAttribute("data-confirm");
         if (message && !window.confirm(message)) {
             event.preventDefault();
+            return;
+        }
+
+        // Add loading state to standard forms (non-HTMX) to prevent double submission
+        // and provide visual feedback to users (UXP2 / WCAG 4.1.2)
+        if (!event.defaultPrevented &&
+            !form.hasAttribute("hx-post") && !form.hasAttribute("hx-put") &&
+            !form.hasAttribute("hx-patch") && !form.hasAttribute("hx-delete") &&
+            !form.hasAttribute("hx-get")) {
+            var submitBtn = form.querySelector("button[type='submit'], input[type='submit']");
+            // If the event was triggered by a specific button (e.g., using form.requestSubmit(btn))
+            if (event.submitter) {
+                submitBtn = event.submitter;
+            }
+            if (submitBtn && !submitBtn.hasAttribute("aria-busy")) {
+                submitBtn.setAttribute("aria-busy", "true");
+                // Pico CSS already disables pointer events when aria-busy="true" is set,
+                // but setting disabled=true explicitly prevents further clicks.
+                // However, setting disabled=true on submit can prevent the button's name/value
+                // from being sent in the form data, so pointer-events is preferred.
+                var originalPointerEvents = submitBtn.style.pointerEvents;
+                submitBtn.style.pointerEvents = "none";
+
+                // Remove aria-busy if user navigates back (BFCache)
+                window.addEventListener("pageshow", function() {
+                    submitBtn.removeAttribute("aria-busy");
+                    submitBtn.style.pointerEvents = originalPointerEvents;
+                }, { once: true });
+            }
         }
     });
 })();
