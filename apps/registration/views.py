@@ -8,6 +8,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from django_ratelimit.decorators import ratelimit
 
 from apps.clients.models import CustomFieldDefinition
 
@@ -104,6 +105,7 @@ def _get_grouped_custom_fields(registration_link):
 
 
 @require_http_methods(["GET", "POST"])
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def public_registration_form(request, slug):
     """Display the public registration form for a registration link.
 
