@@ -54,6 +54,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False, help_text="Full instance access.")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False, help_text="Django admin access (rarely used).")
+
+    # Per-user permission grants (explicit grants beyond role defaults)
+    evaluation_export_granted = models.BooleanField(
+        default=False,
+        help_text="Explicitly granted permission to generate de-identified evaluation exports.",
+    )
     is_demo = models.BooleanField(
         default=False,
         help_text="Demo users see demo data only. Set at creation, never changed.",
