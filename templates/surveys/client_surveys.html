@@ -51,18 +51,18 @@
                 {% if a.status == "awaiting_approval" %}
                 <form method="post" action="{% url 'surveys:approve_assignment' assignment_id=a.pk %}" style="display:inline">
                     {% csrf_token %}
-                    <button type="submit" class="outline" style="padding:0.25rem 0.5rem">{% trans "Approve" %}</button>
+                    <button type="submit" class="outline" style="padding:0.25rem 0.5rem" aria-label="{% blocktrans with name=a.survey.name %}Approve {{ name }}{% endblocktrans %}">{% trans "Approve" %}</button>
                 </form>
                 <form method="post" action="{% url 'surveys:dismiss_assignment' assignment_id=a.pk %}" style="display:inline">
                     {% csrf_token %}
-                    <button type="submit" class="outline secondary" style="padding:0.25rem 0.5rem">{% trans "Dismiss" %}</button>
+                    <button type="submit" class="outline secondary" style="padding:0.25rem 0.5rem" aria-label="{% blocktrans with name=a.survey.name %}Dismiss {{ name }}{% endblocktrans %}">{% trans "Dismiss" %}</button>
                 </form>
                 {% elif a.status == "pending" or a.status == "in_progress" %}
                 <a href="{% url 'surveys:staff_data_entry' client_id=client.pk survey_id=a.survey.pk %}">{% trans "Enter on behalf" %}</a>
                 ·
                 <form method="post" action="{% url 'surveys:dismiss_assignment' assignment_id=a.pk %}" style="display:inline">
                     {% csrf_token %}
-                    <button type="submit" class="outline secondary" style="padding:0.25rem 0.5rem">{% trans "Dismiss" %}</button>
+                    <button type="submit" class="outline secondary" style="padding:0.25rem 0.5rem" aria-label="{% blocktrans with name=a.survey.name %}Dismiss {{ name }}{% endblocktrans %}">{% trans "Dismiss" %}</button>
                 </form>
                 {% endif %}
             </td>
