@@ -159,6 +159,10 @@
                         {% if can_see_eval_export %}
                         <li role="none"><a role="menuitem" href="{% url 'reports:evaluation_export' %}">{% trans "Evaluator Export (Confidential)" %}</a></li>
                         {% endif %}
+                        {% has_permission "report.evaluation_export_small_population" as can_see_lte %}
+                        {% if can_see_lte %}
+                        <li role="none"><a role="menuitem" href="{% url 'reports:lte_list' %}">{% trans "Evaluation Export (Small Population)" %}</a></li>
+                        {% endif %}
                         {% if can_see_compliance %}
                         <li role="none"><a role="menuitem" href="{% url 'audit:compliance_summary' %}">{% trans "Privacy & Access Audit" %}</a></li>
                         {% endif %}

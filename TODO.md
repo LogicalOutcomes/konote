@@ -118,18 +118,19 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 DRR approved by GK after two expert panel rounds — `tasks/design-rationale/evaluation-microdata-export.md`. LTE is a second, structurally separate export tier for small-population evaluation (10 ≤ n < 15, or n ≥ 15 for OCAP/EGAP-governed programs). It drops demographics entirely and substitutes fuzzed longitudinal trajectories. New permission, separate form, reused pipeline base, distinct audit category, review-and-cancel window, distributed admin oversight, post-hoc privacy officer review. GK reviews on completion before merge.
 
-- [ ] LTE permission + "no designated privacy officer = no LTE" enforcement — new `report.evaluation_export_small_population` permission, settings check, form unavailable if unassigned (LTE-PERM1)
-- [ ] LTE form with structured preconditions — REB number/name/date, DSA expiry, structured evaluator credentials (degree/years/prior programs), destruction window, community governance flags (OCAP/EGAP/other), purpose statement, acknowledgement checkbox (LTE-FORM1)
-- [ ] LTE pipeline — reuse EME pipeline base, strip all demographic fields, round metric values to scale unit, band session count to 5 and hours to 0.5, generate pseudonymous study_id, trivial k check (LTE-PIPE1)
-- [ ] Review-and-cancel window — 5 business days, countdown visible on submitter history and privacy officer dashboard, withdrawal-during-window invalidation, population snapshot at submission, auto-cancel if population drops below floor (LTE-WINDOW1)
-- [ ] Distributed oversight — admin notification email at submission time with "flag concerns" link; any admin may cancel during the window; cancellation discards (LTE-OVERSIGHT1)
-- [ ] Post-hoc privacy officer review task + agency-wide rate limit — auto-created at submission, blocks next LTE agency-wide until resolved (LTE-REVIEW1)
-- [ ] Distinct audit category + enhanced metadata — `longitudinal_trajectory_export`, structured credential fields, community governance flags, window timestamps, destruction attestation (LTE-AUDIT1)
-- [ ] LTE CSV output — metadata header with "for program evaluation, not research" warning, rounded values, no demographics (LTE-OUT1)
-- [ ] Test suite — pipeline correctness, preconditions validation, window lifecycle, withdrawal re-run, floor enforcement, rate limit, community governance flag gating (LTE-TEST1)
-- [ ] Register new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` and add scenario for LTE happy path + small-population block (LTE-QA1)
-- [ ] LTE user documentation — ED guide + privacy officer guide, separate from EME docs (LTE-DOC1)
+- [x] LTE permission + "no designated privacy officer = no LTE" enforcement — `report.evaluation_export_small_population`, LTEExportGrant model + signal, `lte_available_in_agency()` gate in views (LTE-PERM1)
+- [x] LTE form with structured preconditions — REB number/name/date, DSA expiry, structured evaluator credentials, destruction window, community governance flags, purpose statement, acknowledgement checkbox (LTE-FORM1)
+- [x] LTE pipeline — `LTESmallPopulationPipeline` subclasses `DeidentificationPipeline`; strips all demographics, fuzzes metrics / sessions / hours, UUID study_id, trivial k check, snapshot restriction for withdrawal handling (LTE-PIPE1)
+- [x] Review-and-cancel window — 5 business days via `add_business_days()`, countdown on list/detail, flag-freeze with resume from hold point, `refresh_pending_requests()` called at view time + daily `check_lte_window_lifecycle` management command (LTE-WINDOW1)
+- [x] Distributed oversight — admin notification email with signed "Flag concerns" token, `lte_flag_concerns` view works without the LTE permission; any admin can cancel during the window (LTE-OVERSIGHT1)
+- [x] Post-hoc privacy officer review + agency-wide rate limit — `post_hoc_review_pending` flag blocks new submissions agency-wide; resolved via `lte_resolve_review` view (LTE-REVIEW1)
+- [x] Distinct audit category — every LTE lifecycle write tags `export_category=longitudinal_trajectory_export`; never bundled with evaluation_microdata (LTE-AUDIT1)
+- [x] LTE CSV output — metadata header with PROGRAM EVALUATION warning, rounded values, no demographics, LTE-XXXXXXXX study ids (LTE-OUT1)
+- [x] Test suite — tests/test_lte.py covers permissions, form validation, business-day arithmetic, fuzzing, study id generator, lifecycle transitions, rate limit, CSV shape, audit category, view access (LTE-TEST1)
+- [ ] Register new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` and add scenarios (happy path, floor block, OCAP without signoff) — follow-up session in the konote-qa-scenarios repo (LTE-QA1)
+- [x] LTE user documentation — `docs/lte-privacy-officer-guide.md` + LTE section in `docs/admin/reporting.md` (LTE-DOC1)
 - [ ] GK reviews completed LTE implementation before merge — verifies demographic suppression, fuzzing correctness, community governance gating (LTE-GKREVIEW1)
+- [ ] Translate new LTE strings into French — run `translate_strings` on VPS, fill in msgstrs, commit updated .po/.mo (LTE-I18N1)
 
 ### Phase: Documentation & Website Updates
 

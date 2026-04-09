@@ -132,4 +132,72 @@ This gives more accurate reporting — paused goals aren't counted as failures o
 
 ---
 
+## Longitudinal Trajectory Export (small-population evaluation)
+
+LTE is a second, structurally separate export tier for programs with
+10–14 participants (or 15+ for OCAP/EGAP-governed programs). The
+standard Evaluator Export blocks programs below n = 15 because
+demographic k-anonymity cannot be guaranteed. LTE is the answer for
+smaller programs: it drops demographics entirely, substitutes fuzzed
+longitudinal metric trajectories, and gates access behind REB
+approval, community governance review, distributed admin oversight,
+and a 5-business-day review-and-cancel window.
+
+### When to use LTE
+
+- Small program with fewer than 15 participants
+- External evaluator (not internal staff) needs participant-level
+  data for outcome or dose-response analysis
+- REB approval is in place
+- The evaluation has a data sharing agreement
+- You have a designated privacy officer with the LTE permission
+
+If demographic breakdowns are required, LTE is **not** the right
+tool — use aggregate reports or, for larger programs, the standard
+Evaluator Export. Research-grade data access (unfuzzed values,
+complete microdata) is out of scope for both EME and LTE and has its
+own high-friction workflow.
+
+### Setup
+
+1. A KoNote admin grants `report.evaluation_export_small_population`
+   to the designated privacy officer through **Admin → Evaluator
+   Export Access**. The grant is strictly separate from the standard
+   Evaluator Export permission.
+2. For programs that need community governance, set the
+   **Community governance framework** field on the program
+   (OCAP / EGAP / other). This triggers the conditional community
+   reviewer signoff requirement in the LTE form and raises the
+   population floor to 15 for OCAP and EGAP.
+3. Distribute the [LTE Privacy Officer Guide](../lte-privacy-officer-guide.md)
+   to the designated officer.
+
+### How LTE differs from the standard Evaluator Export
+
+| | Standard Evaluator Export | LTE |
+|---|---|---|
+| Population floor | n ≥ 15 (hard) | n ≥ 10 (15 for OCAP/EGAP) |
+| Demographic columns | Age / gender / ethnicity / geography, generalised and k-anonymised | **None** — dropped at the schema layer |
+| Metric values | Unrounded | Rounded to nearest scale unit |
+| Session count | Exact | Banded to nearest 5 |
+| Total hours | Exact | Banded to nearest half-hour |
+| Delivery | Immediate download link | 5-business-day review-and-cancel window, then 24h download |
+| Permission | `report.evaluation_export` | `report.evaluation_export_small_population` (separate) |
+| Preconditions | DSA + evaluator contact details | REB approval, structured evaluator credentials, community signoff (where applicable), destruction attestation window |
+| Audit category | `evaluation_microdata` | `longitudinal_trajectory_export` |
+
+### Rate limit
+
+After an LTE request is submitted, KoNote automatically creates a
+post-hoc privacy officer review task. **Until the officer resolves
+that task, no new LTE requests can be submitted anywhere in the
+agency.** The rate limit is agency-wide, not per-program — this is
+deliberate, as the review burden sits with a single designee.
+
+See [`tasks/design-rationale/evaluation-microdata-export.md`](../../tasks/design-rationale/evaluation-microdata-export.md)
+for the full design rationale, including what LTE explicitly does
+not do and why.
+
+---
+
 [Back to Admin Guide](index.md)

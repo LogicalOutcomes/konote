@@ -1333,3 +1333,266 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             "purpose": self.cleaned_data.get("evaluation_purpose", ""),
             "agreement_expiry": self.cleaned_data.get("agreement_expiry"),
         }
+
+
+class LTEExportRequestForm(ProgramSelectionMixin, forms.Form):
+    """Longitudinal Trajectory Export request form.
+
+    Strict validation — every precondition is required. The form
+    rejects any submission where REB, evaluator credentials, or
+    (where applicable) community governance signoff are missing or
+    invalid. See tasks/design-rationale/evaluation-microdata-export.md,
+    "Preconditions Enforced by the Form" for the full list and
+    rationale.
+
+    Access is restricted to users with the
+    report.evaluation_export_small_population permission AND the
+    agency must have at least one designated privacy officer
+    (checked in the view, not the form).
+    """
+
+    ACKNOWLEDGEMENT_TEXT = _(
+        "I have read the re-identification risk notice and confirm "
+        "this export is for program evaluation, not research. "
+        "Research-grade data access (complete microdata, unfuzzed "
+        "values, demographic detail) is handled through a separate "
+        "workflow and is not available through this form."
+    )
+
+    program = forms.ChoiceField(
+        required=True,
+        label=_("Program"),
+    )
+
+    # Period
+    period_start = forms.DateField(
+        required=True,
+        label=_("Period start"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    period_end = forms.DateField(
+        required=True,
+        label=_("Period end"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    # REB
+    reb_name = forms.CharField(
+        max_length=200,
+        label=_("REB name"),
+        help_text=_("Name of the Research Ethics Board that approved this evaluation."),
+    )
+    reb_approval_number = forms.CharField(
+        min_length=5,
+        max_length=100,
+        label=_("REB approval number"),
+    )
+    reb_approval_date = forms.DateField(
+        label=_("REB approval date"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    # DSA — captured for audit, not an unlock
+    data_sharing_agreement_expiry = forms.DateField(
+        label=_("Data sharing agreement expiry"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+        help_text=_(
+            "When does the data sharing agreement with this evaluator expire? "
+            "A signed DSA is required but does not on its own unlock LTE access."
+        ),
+    )
+
+    # Evaluator credentials — structured, not free text
+    evaluator_name = forms.CharField(max_length=200, label=_("Evaluator name"))
+    evaluator_email = forms.EmailField(label=_("Evaluator email"))
+    evaluator_organisation = forms.CharField(
+        max_length=200, label=_("Evaluator organisation"),
+    )
+    evaluator_degree = forms.CharField(
+        max_length=300,
+        label=_("Evaluator degree or certification"),
+    )
+    evaluator_years_experience = forms.IntegerField(
+        min_value=0, max_value=60,
+        label=_("Evaluator years of experience"),
+    )
+    evaluator_prior_programs = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 4}),
+        min_length=50,
+        label=_("Prior programs evaluated"),
+        help_text=_(
+            "Describe at least two prior program evaluations this evaluator "
+            "has conducted. Minimum 50 characters. This becomes part of the "
+            "immutable audit record."
+        ),
+    )
+
+    # Destruction window
+    destruction_window_days = forms.TypedChoiceField(
+        coerce=int,
+        choices=[(30, _("30 days")), (60, _("60 days")), (90, _("90 days"))],
+        label=_("Destruction attestation window"),
+        help_text=_(
+            "How long after download the evaluator has to destroy the file. "
+            "KoNote sends a reminder at the end of the window."
+        ),
+    )
+
+    # Purpose statement
+    purpose_statement = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        min_length=30,
+        label=_("Purpose statement"),
+        help_text=_(
+            "Plain-language description of the evaluation question. "
+            "Printed in the CSV metadata header and in the audit record."
+        ),
+    )
+
+    # Community governance (conditionally required — see clean())
+    community_reviewer_name = forms.CharField(
+        max_length=200, required=False,
+        label=_("Community reviewer name"),
+    )
+    community_reviewer_affiliation = forms.CharField(
+        max_length=300, required=False,
+        label=_("Community reviewer affiliation"),
+    )
+    community_framework_description = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2}),
+        required=False,
+        label=_("Community review framework description"),
+        help_text=_("Required when the program's community governance flag is 'Other'."),
+    )
+    community_signoff_date = forms.DateField(
+        required=False,
+        label=_("Community signoff date"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    # Acknowledgement — must be True to submit
+    acknowledgement_confirmed = forms.BooleanField(
+        required=True,
+        label=ACKNOWLEDGEMENT_TEXT,
+        error_messages={
+            "required": _(
+                "You must confirm the re-identification risk acknowledgement "
+                "to submit an LTE request."
+            ),
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self._user = user
+        if user:
+            from .utils import get_manageable_programs
+            programs = get_manageable_programs(user)
+        else:
+            programs = Program.objects.filter(status="active")
+        program_choices = [("", _("\u2014 Select a program \u2014"))]
+        for p in programs.order_by("name"):
+            program_choices.append((str(p.pk), str(p)))
+        self.fields["program"].choices = program_choices
+
+    def clean_program(self):
+        """LTE requires a single program — no All Programs option."""
+        value = self.cleaned_data.get("program", "")
+        if not value or value == self.ALL_PROGRAMS_VALUE:
+            raise forms.ValidationError(_("Please select a program."))
+        try:
+            program = Program.objects.get(pk=int(value), status="active")
+        except (Program.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid program selection."))
+        if self._user:
+            from .utils import get_manageable_programs
+            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
+                raise forms.ValidationError(_("You do not have access to this program."))
+        return program
+
+    def clean(self):
+        cleaned = super().clean()
+        period_start = cleaned.get("period_start")
+        period_end = cleaned.get("period_end")
+        if period_start and period_end and period_start > period_end:
+            self.add_error(
+                "period_end",
+                _("Period end must be on or after period start."),
+            )
+
+        # REB date sanity
+        reb_date = cleaned.get("reb_approval_date")
+        from datetime import date as _date
+        if reb_date and reb_date > _date.today():
+            self.add_error(
+                "reb_approval_date",
+                _("REB approval date cannot be in the future."),
+            )
+
+        # DSA expiry must be in the future — no point running an LTE
+        # against a DSA that has already expired.
+        dsa_expiry = cleaned.get("data_sharing_agreement_expiry")
+        if dsa_expiry and dsa_expiry < _date.today():
+            self.add_error(
+                "data_sharing_agreement_expiry",
+                _("Data sharing agreement has already expired."),
+            )
+
+        # Community governance conditional validation — the program's
+        # community_governance_framework flag controls which fields
+        # become required.
+        program = cleaned.get("program")
+        if program and getattr(program, "community_governance_framework", ""):
+            framework = program.community_governance_framework
+            required = [
+                "community_reviewer_name",
+                "community_reviewer_affiliation",
+                "community_signoff_date",
+            ]
+            if framework == "other":
+                required.append("community_framework_description")
+            for field_name in required:
+                if not cleaned.get(field_name):
+                    self.add_error(
+                        field_name,
+                        _(
+                            "Required for programs with a "
+                            "community governance framework."
+                        ),
+                    )
+
+            # Signoff date must not be in the future
+            signoff = cleaned.get("community_signoff_date")
+            if signoff and signoff > _date.today():
+                self.add_error(
+                    "community_signoff_date",
+                    _("Community signoff date cannot be in the future."),
+                )
+
+        return cleaned
+
+    def get_evaluator_info(self):
+        """Return evaluator + preconditions dict for the LTE pipeline."""
+        return {
+            "name": self.cleaned_data.get("evaluator_name", ""),
+            "email": self.cleaned_data.get("evaluator_email", ""),
+            "organisation": self.cleaned_data.get("evaluator_organisation", ""),
+            "degree": self.cleaned_data.get("evaluator_degree", ""),
+            "years_experience": self.cleaned_data.get("evaluator_years_experience", 0),
+            "prior_programs": self.cleaned_data.get("evaluator_prior_programs", ""),
+            "purpose": self.cleaned_data.get("purpose_statement", ""),
+            "reb_name": self.cleaned_data.get("reb_name", ""),
+            "reb_approval_number": self.cleaned_data.get("reb_approval_number", ""),
+            "reb_approval_date": self.cleaned_data.get("reb_approval_date"),
+            "agreement_expiry": self.cleaned_data.get("data_sharing_agreement_expiry"),
+            "destruction_window_days": self.cleaned_data.get("destruction_window_days"),
+            "community_reviewer_name": self.cleaned_data.get("community_reviewer_name", ""),
+            "community_reviewer_affiliation": self.cleaned_data.get(
+                "community_reviewer_affiliation", "",
+            ),
+            "community_framework_description": self.cleaned_data.get(
+                "community_framework_description", "",
+            ),
+            "community_signoff_date": self.cleaned_data.get("community_signoff_date"),
+        }

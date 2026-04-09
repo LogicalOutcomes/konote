@@ -2461,3 +2461,533 @@ def evaluation_export_form(request):
         % {"count": result.preview.exportable_count},
     )
     return redirect("reports:download_export", link_id=link.pk)
+
+
+# ---------------------------------------------------------------------------
+# Longitudinal Trajectory Export (LTE) — DRR: evaluation-microdata-export.md
+# ---------------------------------------------------------------------------
+#
+# LTE is structurally separate from EME: its own permission, its own
+# form, its own URL prefix, its own audit category, and its own
+# review-and-cancel lifecycle. See the DRR's "Separate path, separate
+# door, separate key" principle before modifying any of this.
+
+
+def _lte_access_check(request):
+    """Return None if the user may use LTE, or an HttpResponse blocking
+    access with a clear reason. Enforces both per-user grant AND
+    "no designated privacy officer = no LTE".
+    """
+    from .utils import can_create_lte_export, lte_available_in_agency
+
+    if not can_create_lte_export(request.user):
+        return HttpResponseForbidden(
+            _(
+                "Access denied. You do not have permission to create "
+                "Longitudinal Trajectory Exports. This permission is "
+                "granted to the designated privacy officer only."
+            )
+        )
+    if not lte_available_in_agency():
+        return HttpResponseForbidden(
+            _(
+                "Longitudinal Trajectory Export is unavailable — no privacy "
+                "officer has been designated for this agency. Ask an admin "
+                "to grant the permission to a designated privacy officer "
+                "first."
+            )
+        )
+    return None
+
+
+def _lte_rate_limit_check():
+    """Return (ok, message). Enforces the DRR's agency-wide rate limit:
+    while a prior LTE has an unresolved post-hoc review, no new LTE may
+    be submitted anywhere in the agency.
+    """
+    from .models import LTEExportRequest
+
+    pending = LTEExportRequest.objects.filter(
+        status__in=[
+            LTEExportRequest.STATUS_SUBMITTED,
+            LTEExportRequest.STATUS_FLAGGED,
+            LTEExportRequest.STATUS_ACTIVE,
+            LTEExportRequest.STATUS_DOWNLOADED,
+        ],
+        post_hoc_review_resolved_at__isnull=True,
+    ).first()
+    if pending:
+        return False, _(
+            "A prior LTE export (#%(pk)s, %(program)s, submitted "
+            "%(submitted)s) is pending privacy officer review. Resolve "
+            "it before submitting a new request."
+        ) % {
+            "pk": pending.pk,
+            "program": pending.program.name,
+            "submitted": pending.submitted_at.date(),
+        }
+    return True, None
+
+
+def _notify_admins_lte_submitted(lte_request, request):
+    """Send the at-submission notification to all agency admins.
+
+    Includes a "Flag concerns" link carrying a signed token so any
+    admin — not just the privacy officer — can freeze the countdown
+    without requiring them to hold the LTE permission themselves.
+    """
+    from django.core.signing import TimestampSigner
+
+    signer = TimestampSigner()
+    flag_token = signer.sign(str(lte_request.pk))
+
+    flag_url = request.build_absolute_uri(
+        reverse(
+            "reports:lte_flag_concerns",
+            kwargs={"request_id": lte_request.pk},
+        )
+        + f"?token={flag_token}"
+    )
+    detail_url = request.build_absolute_uri(
+        reverse("reports:lte_detail", kwargs={"request_id": lte_request.pk})
+    )
+
+    admin_emails = list(getattr(settings, "EXPORT_NOTIFICATION_EMAILS", []))
+    if not admin_emails:
+        admins = User.objects.filter(is_admin=True, is_active=True)
+        admin_emails = [u.email for u in admins if u.email]
+    if not admin_emails:
+        logger.warning(
+            "LTE #%s: no admin email addresses configured — "
+            "submission notification not sent",
+            lte_request.pk,
+        )
+        return
+
+    context = {
+        "lte_request": lte_request,
+        "submitter": lte_request.submitted_by,
+        "program": lte_request.program,
+        "activates_at": lte_request.effective_window_activates_at,
+        "flag_url": flag_url,
+        "detail_url": detail_url,
+        "business_days": 5,
+    }
+
+    subject = (
+        f"LTE submitted — {lte_request.program.name} "
+        f"(review-and-cancel window running)"
+    )
+    text_body = render_to_string("reports/email/lte_submitted.txt", context)
+    html_body = render_to_string("reports/email/lte_submitted.html", context)
+
+    try:
+        send_mail(
+            subject=subject,
+            message=text_body,
+            html_message=html_body,
+            from_email=None,
+            recipient_list=admin_emails,
+        )
+    except Exception:
+        logger.warning(
+            "LTE #%s: failed to send admin notification",
+            lte_request.pk,
+            exc_info=True,
+        )
+
+
+@login_required
+def lte_list(request):
+    """Show all LTE requests in the agency with status + actions."""
+    from .lte_lifecycle import refresh_pending_requests
+    from .models import LTEExportRequest
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    # Refresh pending requests so the list reflects any elapsed windows
+    # since the last view. Errors here must not break the list view.
+    try:
+        refresh_pending_requests()
+    except Exception:
+        logger.exception("LTE: refresh_pending_requests failed at list-view time")
+
+    requests_qs = LTEExportRequest.objects.select_related(
+        "program", "submitted_by",
+    ).order_by("-submitted_at")
+
+    ok, rate_limit_message = _lte_rate_limit_check()
+
+    return render(request, "reports/lte_list.html", {
+        "lte_requests": requests_qs,
+        "rate_limited": not ok,
+        "rate_limit_message": rate_limit_message,
+        "nav_active": "reports",
+    })
+
+
+@login_required
+def lte_submit(request):
+    """GET renders the form; POST runs preview then creates the request."""
+    from .forms import LTEExportRequestForm
+    from .lte_lifecycle import calculate_window_end, _write_audit_entry
+    from .lte_pipeline import LTESmallPopulationPipeline
+    from .models import LTEExportRequest, LTELifecycleEvent
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    ok, rate_limit_message = _lte_rate_limit_check()
+    if not ok:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, rate_limit_message)
+        return redirect("reports:lte_list")
+
+    if request.method == "GET":
+        form = LTEExportRequestForm(user=request.user)
+        return render(request, "reports/lte_submit.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    action = request.POST.get("action", "preview")
+    form = LTEExportRequestForm(request.POST, user=request.user)
+
+    if not form.is_valid():
+        return render(request, "reports/lte_submit.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    program = form.cleaned_data["program"]
+    period_start = form.cleaned_data["period_start"]
+    period_end = form.cleaned_data["period_end"]
+    evaluator_info = form.get_evaluator_info()
+
+    pipeline = LTESmallPopulationPipeline(
+        program=program,
+        period_start=period_start,
+        period_end=period_end,
+        evaluator_info=evaluator_info,
+        user=request.user,
+        request=request,
+    )
+
+    preview = pipeline.run_preview()
+
+    if action == "preview":
+        return render(request, "reports/lte_submit_preview.html", {
+            "form": form,
+            "preview": preview,
+            "program": program,
+            "period_start": period_start,
+            "period_end": period_end,
+            "evaluator_info": evaluator_info,
+            "nav_active": "reports",
+        })
+
+    # action == "submit" — create the LTEExportRequest row and start
+    # the review-and-cancel window
+    if preview.blocked:
+        from django.contrib import messages as django_messages
+        django_messages.error(
+            request,
+            _("LTE export blocked: %(reason)s") % {"reason": preview.block_reason},
+        )
+        return render(request, "reports/lte_submit.html", {
+            "form": form,
+            "nav_active": "reports",
+        })
+
+    from django.db import transaction as db_transaction
+
+    with db_transaction.atomic():
+        now = timezone.now()
+        lte_request = LTEExportRequest.objects.create(
+            submitted_by=request.user,
+            program=program,
+            period_start=period_start,
+            period_end=period_end,
+            reb_name=form.cleaned_data["reb_name"],
+            reb_approval_number=form.cleaned_data["reb_approval_number"],
+            reb_approval_date=form.cleaned_data["reb_approval_date"],
+            data_sharing_agreement_expiry=(
+                form.cleaned_data["data_sharing_agreement_expiry"]
+            ),
+            evaluator_name=evaluator_info["name"],
+            evaluator_email=evaluator_info["email"],
+            evaluator_organisation=evaluator_info["organisation"],
+            evaluator_degree=evaluator_info["degree"],
+            evaluator_years_experience=evaluator_info["years_experience"],
+            evaluator_prior_programs=evaluator_info["prior_programs"],
+            destruction_window_days=evaluator_info["destruction_window_days"],
+            purpose_statement=evaluator_info["purpose"],
+            community_reviewer_name=evaluator_info["community_reviewer_name"],
+            community_reviewer_affiliation=(
+                evaluator_info["community_reviewer_affiliation"]
+            ),
+            community_framework_description=(
+                evaluator_info["community_framework_description"]
+            ),
+            community_signoff_date=evaluator_info["community_signoff_date"],
+            acknowledgement_confirmed=True,
+            status=LTEExportRequest.STATUS_SUBMITTED,
+            window_activates_at=calculate_window_end(now),
+            population_snapshot=preview.exportable_count,
+            population_client_ids=preview.snapshot_client_ids,
+        )
+        LTELifecycleEvent.objects.create(
+            request=lte_request,
+            actor=request.user,
+            event_type="submitted",
+            notes=(
+                f"Submitted by {request.user.get_display_name()}. "
+                f"Population snapshot: {preview.exportable_count}."
+            ),
+        )
+
+    # Audit log
+    audit_meta = pipeline._build_lte_audit_metadata(preview)
+    audit_meta.update({
+        "lte_request_id": lte_request.pk,
+        "window_activates_at": lte_request.window_activates_at.isoformat(),
+        "review_and_cancel_window_business_days": 5,
+    })
+    _write_audit_entry(
+        lte_request,
+        action="create",
+        event_type="submitted",
+        metadata=audit_meta,
+    )
+
+    # Admin notification — do not let email failures block submission
+    try:
+        _notify_admins_lte_submitted(lte_request, request)
+    except Exception:
+        logger.exception(
+            "LTE #%s: admin notification raised after submission",
+            lte_request.pk,
+        )
+
+    from django.contrib import messages as django_messages
+    django_messages.success(
+        request,
+        _(
+            "LTE request submitted. Review-and-cancel window activates "
+            "%(activates)s."
+        ) % {"activates": lte_request.window_activates_at.strftime("%Y-%m-%d %H:%M")},
+    )
+    return redirect("reports:lte_detail", request_id=lte_request.pk)
+
+
+@login_required
+def lte_detail(request, request_id):
+    """Show request metadata, lifecycle events, and available actions."""
+    from .lte_lifecycle import refresh_pending_requests
+    from .models import LTEExportRequest
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    lte_request = get_object_or_404(LTEExportRequest, pk=request_id)
+
+    # Refresh this single request's lifecycle so the detail view
+    # reflects any elapsed window or withdrawal since the last visit.
+    try:
+        refresh_pending_requests(requests=[lte_request])
+        lte_request.refresh_from_db()
+    except Exception:
+        logger.exception("LTE #%s: detail-view refresh failed", lte_request.pk)
+
+    events = lte_request.lifecycle_events.select_related("actor").order_by("timestamp")
+
+    return render(request, "reports/lte_detail.html", {
+        "lte_request": lte_request,
+        "events": events,
+        "can_cancel": lte_request.is_window_running or lte_request.status == LTEExportRequest.STATUS_ACTIVE,
+        "nav_active": "reports",
+    })
+
+
+@login_required
+def lte_cancel(request, request_id):
+    """POST only — cancel an in-window or active LTE request."""
+    from .lte_lifecycle import cancel_request
+    from .models import LTEExportRequest
+
+    if request.method != "POST":
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    lte_request = get_object_or_404(LTEExportRequest, pk=request_id)
+
+    if lte_request.is_terminal:
+        from django.contrib import messages as django_messages
+        django_messages.warning(
+            request,
+            _("This LTE request is already in a terminal state and cannot be cancelled."),
+        )
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    reason = (request.POST.get("reason") or "").strip()[:500]
+    if not reason:
+        from django.contrib import messages as django_messages
+        django_messages.error(request, _("A cancellation reason is required."))
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    cancel_request(lte_request, actor=request.user, reason=reason)
+
+    from django.contrib import messages as django_messages
+    django_messages.success(request, _("LTE request cancelled."))
+    return redirect("reports:lte_detail", request_id=request_id)
+
+
+def lte_flag_concerns(request, request_id):
+    """Accept a signed-token GET or POST from the admin notification email.
+
+    This view intentionally does NOT require the LTE permission — the
+    flag-concerns mechanism is designed to let any agency admin freeze
+    the countdown even if they are not the designated privacy officer.
+    The signed token from the notification email scopes the flag to
+    the specific request.
+    """
+    from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+    from .lte_lifecycle import start_flag_hold
+    from .models import LTEExportRequest
+
+    lte_request = get_object_or_404(LTEExportRequest, pk=request_id)
+
+    signer = TimestampSigner()
+    token = request.GET.get("token") or request.POST.get("token") or ""
+    signed_pk: str | None = None
+    try:
+        # Tokens expire once the window has closed — the window cannot
+        # be longer than 5 business days + any flag holds, so cap the
+        # token lifetime at 30 days as a safety margin.
+        signed_pk = signer.unsign(token, max_age=60 * 60 * 24 * 30)
+    except (BadSignature, SignatureExpired):
+        return HttpResponseForbidden(
+            _("Invalid or expired flag link. Ask an admin to re-flag from KoNote.")
+        )
+
+    if signed_pk != str(lte_request.pk):
+        return HttpResponseForbidden(_("Flag link does not match this request."))
+
+    if lte_request.status != LTEExportRequest.STATUS_SUBMITTED:
+        return render(request, "reports/lte_flag_result.html", {
+            "lte_request": lte_request,
+            "already_handled": True,
+        })
+
+    if request.method == "POST":
+        actor = request.user if request.user.is_authenticated else None
+        reason = (request.POST.get("reason") or "Flagged from admin notification email.").strip()[:500]
+        start_flag_hold(lte_request, actor=actor, reason=reason)
+        return render(request, "reports/lte_flag_result.html", {
+            "lte_request": lte_request,
+            "flagged": True,
+        })
+
+    return render(request, "reports/lte_flag_confirm.html", {
+        "lte_request": lte_request,
+        "token": token,
+    })
+
+
+@login_required
+def lte_download(request, request_id):
+    """Proxy to the SecureExportLink while the status is 'active'.
+
+    Only the submitter or a user with the LTE permission may download.
+    Downloading transitions status to 'downloaded' and marks the
+    post-hoc review task still pending.
+    """
+    from .lte_lifecycle import mark_downloaded
+    from .models import LTEExportRequest
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    lte_request = get_object_or_404(LTEExportRequest, pk=request_id)
+
+    if lte_request.status != LTEExportRequest.STATUS_ACTIVE:
+        from django.contrib import messages as django_messages
+        django_messages.error(
+            request,
+            _("LTE file is not available for download (status: %(status)s)."),
+            {"status": lte_request.get_status_display()},
+        )
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    if not lte_request.secure_export_link:
+        return HttpResponseForbidden(_("No file is associated with this LTE request."))
+
+    mark_downloaded(lte_request, actor=request.user)
+    return redirect(
+        "reports:download_export", link_id=lte_request.secure_export_link.pk,
+    )
+
+
+@login_required
+def lte_resolve_review(request, request_id):
+    """Mark the post-hoc privacy officer review as resolved.
+
+    Allowed only for users who hold the LTE permission. Resolving
+    the review unblocks future LTE submissions agency-wide.
+    """
+    from .lte_lifecycle import _write_audit_entry
+    from .models import LTEExportRequest, LTELifecycleEvent
+
+    if request.method != "POST":
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    blocked = _lte_access_check(request)
+    if blocked is not None:
+        return blocked
+
+    lte_request = get_object_or_404(LTEExportRequest, pk=request_id)
+
+    if lte_request.post_hoc_review_resolved_at is not None:
+        return redirect("reports:lte_detail", request_id=request_id)
+
+    notes = (request.POST.get("notes") or "").strip()[:2000]
+    lte_request.post_hoc_review_resolved_at = timezone.now()
+    lte_request.post_hoc_review_resolved_by = request.user
+    lte_request.post_hoc_review_notes = notes
+    lte_request.save(update_fields=[
+        "post_hoc_review_resolved_at",
+        "post_hoc_review_resolved_by",
+        "post_hoc_review_notes",
+    ])
+
+    LTELifecycleEvent.objects.create(
+        request=lte_request,
+        actor=request.user,
+        event_type="post_hoc_review_resolved",
+        notes=notes or "Post-hoc privacy officer review resolved.",
+    )
+    _write_audit_entry(
+        lte_request,
+        action="update",
+        event_type="post_hoc_review_resolved",
+        metadata={
+            "lte_request_id": lte_request.pk,
+            "resolved_by_id": request.user.pk,
+            "notes": notes,
+        },
+    )
+
+    from django.contrib import messages as django_messages
+    django_messages.success(
+        request,
+        _("Post-hoc review resolved. Agency may now submit new LTE requests."),
+    )
+    return redirect("reports:lte_detail", request_id=request_id)

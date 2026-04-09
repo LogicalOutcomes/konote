@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Flag LTE request" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Flag concerns on LTE request" %} #{{ lte_request.pk }}</h1>
+    <p>{{ lte_request.program.name }} &mdash; {% trans "submitted" %} {{ lte_request.submitted_at|date:"Y-m-d" }}</p>
+</hgroup>
+
+<article aria-label="{% trans 'About flagging' %}">
+    <p>{% trans "Flagging freezes the review-and-cancel countdown. The privacy officer will be notified and must resolve the flag before the countdown resumes. Dismissal restarts the remaining time — it does not fast-forward." %}</p>
+</article>
+
+<form method="post" action="{% url 'reports:lte_flag_concerns' request_id=lte_request.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="token" value="{{ token }}">
+    <label>
+        {% trans "Reason for flagging" %}
+        <textarea name="reason" rows="3" required></textarea>
+    </label>
+    <button type="submit">{% trans "Flag this request" %}</button>
+</form>
+{% endblock %}
