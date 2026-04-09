@@ -23936,5 +23936,239 @@ msgid ""
 "Participant reflections were recorded in %(with_voice)s of %(total)s "
 "sessions."
 msgstr ""
-"Les réflexions des participants ont été enregistrées dans %(with_voice)s "
-"des %(total)s sessions."
+"Les réflexions des participants ont été enregistrées dans %(with_voice)s des"
+" %(total)s sessions."
+
+msgid "5-year age bands (e.g., 25-29, 30-34)"
+msgstr ""
+
+msgid "About this export"
+msgstr ""
+
+msgid ""
+"Access denied. You do not have permission to create evaluation exports."
+msgstr ""
+
+msgid "Age group"
+msgstr ""
+
+msgid "Agreement expiry"
+msgstr ""
+
+msgid "All details are recorded in the audit log"
+msgstr ""
+
+msgid "Audit notice"
+msgstr ""
+
+msgid "Available in evaluation exports"
+msgstr ""
+
+msgid "Back to candidates list"
+msgstr ""
+
+msgid "Data sharing agreement expiry"
+msgstr ""
+
+msgid "Demographic Columns (Quasi-Identifiers)"
+msgstr ""
+
+msgid "Describe the evaluation and how the data will be used."
+msgstr ""
+
+msgid ""
+"Each row represents one participant with pseudonymous IDs, generalised "
+"demographics, and outcome metric values. All direct identifiers (names, "
+"contact information, exact dates) are removed."
+msgstr ""
+
+msgid "Effective k-anonymity"
+msgstr ""
+
+msgid "Eligible participants"
+msgstr ""
+
+msgid "Ethnicity"
+msgstr ""
+
+msgid "Evaluation Microdata"
+msgstr ""
+
+msgid "Evaluation export generated. %(count)d de-identified records."
+msgstr ""
+
+msgid "Evaluation purpose"
+msgstr ""
+
+msgid "Evaluator Details"
+msgstr ""
+
+msgid "Evaluator Export (Confidential)"
+msgstr ""
+
+msgid "Evaluator Export Preview"
+msgstr ""
+
+msgid "Evaluator Information"
+msgstr ""
+
+msgid "Evaluator confirmation"
+msgstr ""
+
+msgid "Evaluator email"
+msgstr ""
+
+msgid "Evaluator name"
+msgstr ""
+
+msgid "Evaluator organisation"
+msgstr ""
+
+msgid "Export Blocked"
+msgstr ""
+
+msgid "Export Status"
+msgstr ""
+
+msgid "Export tier"
+msgstr ""
+
+msgid "Exportable (after de-identification)"
+msgstr ""
+
+msgid "Gender"
+msgstr ""
+
+msgid "Generalisations Applied"
+msgstr ""
+
+msgid "Generalisations applied"
+msgstr ""
+
+msgid "Generalised demographics (age bands, urban/rural)"
+msgstr ""
+
+msgid "Generate Export"
+msgstr ""
+
+msgid ""
+"Generate a de-identified, participant-level CSV for an external program "
+"evaluator."
+msgstr ""
+
+msgid "Geography"
+msgstr ""
+
+msgid ""
+"K-anonymity (k=5) is enforced: every combination of demographic values must "
+"appear in at least 5 records. Exports with fewer than 15 participants are "
+"blocked."
+msgstr ""
+
+msgid "Minimum 5 (report suppression threshold). Recommended: 10–20."
+msgstr ""
+
+msgid "Outcome metric values (intake and latest)"
+msgstr ""
+
+msgid "Period end"
+msgstr ""
+
+msgid "Period start must be before period end."
+msgstr ""
+
+msgid "Pipeline summary"
+msgstr ""
+
+msgid "Population Summary"
+msgstr ""
+
+msgid "Preview Export"
+msgstr ""
+
+msgid "Print report"
+msgstr ""
+
+msgid "Program and Period"
+msgstr ""
+
+msgid "Pseudonymous study IDs (random, not linked to real record IDs)"
+msgstr ""
+
+msgid "Purpose"
+msgstr ""
+
+msgid ""
+"Required for audit trail. KoNote does not email or create accounts for "
+"evaluators."
+msgstr ""
+
+msgid "Review the de-identification results before generating the export."
+msgstr ""
+
+msgid ""
+"Select which demographic columns to include. More columns provide richer "
+"analysis but increase re-identification risk. The system will block the "
+"export if the population is too small for the selected columns."
+msgstr ""
+
+msgid "Service intensity (session count, total hours)"
+msgstr ""
+
+msgid "Suppressed (k-anonymity)"
+msgstr ""
+
+msgid "Suppression Details"
+msgstr ""
+
+msgid "Suppression details"
+msgstr ""
+
+msgid ""
+"This export is always elevated — administrators will be notified and a delay"
+" will be applied before download. Evaluator information, export parameters, "
+"and de-identification details are recorded in the immutable audit trail."
+msgstr ""
+
+msgid ""
+"This group contains sensitive fields and cannot be marked as evaluation-"
+"exportable."
+msgstr ""
+
+msgid "Urban / Rural (derived from postal code)"
+msgstr ""
+
+msgid "When does the data sharing agreement with this evaluator expire?"
+msgstr ""
+
+msgid ""
+"When enabled, fields in this group can be selected as demographic columns in"
+" evaluation exports. Only non-sensitive groups should be marked exportable."
+msgstr ""
+
+msgid "With consent"
+msgstr ""
+
+msgid "%(joint_pct)d%% jointly developed with participants"
+msgstr ""
+
+msgid "%(joint_pct)d%% jointly developed with participants. "
+msgstr ""
+
+msgid "Concrete next steps, action plan, or approach."
+msgstr ""
+
+msgid "Financial Snapshot"
+msgstr ""
+
+msgid "How will you get there?"
+msgstr ""
+
+msgid "Next steps:"
+msgstr ""
+
+msgid "What steps will you take?"
+msgstr ""
+
+msgid "questions answered"
+msgstr ""

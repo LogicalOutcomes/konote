@@ -309,6 +309,7 @@ def target_create(request, section_id):
             target.name = form.cleaned_data["name"]
             target.description = form.cleaned_data.get("description", "")
             target.client_goal = form.cleaned_data.get("client_goal", "")
+            target.action_steps = form.cleaned_data.get("action_steps", "")
             target.save()
             # Create initial revision
             PlanTargetRevision.objects.create(
@@ -363,6 +364,7 @@ def target_edit(request, target_id):
             target.name = form.cleaned_data["name"]
             target.description = form.cleaned_data.get("description", "")
             target.client_goal = form.cleaned_data.get("client_goal", "")
+            target.action_steps = form.cleaned_data.get("action_steps", "")
             target.save()
             messages.success(request, _("Target updated."))
             return redirect("plans:plan_view", client_id=target.client_file.pk)
@@ -371,6 +373,7 @@ def target_edit(request, target_id):
             "name": target.name,
             "description": target.description,
             "client_goal": target.client_goal,
+            "action_steps": target.action_steps,
         })
 
     return render(request, "plans/target_form.html", {

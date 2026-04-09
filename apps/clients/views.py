@@ -1220,12 +1220,30 @@ def client_detail(request, client_id):
     else:  # "default"
         sharing_effective = _agency_shares
 
+    # Financial coaching summary — gated behind feature toggle
+    financial_snapshot = []
+    _all_flags = FeatureToggle.get_all_flags()
+    if _all_flags.get("financial_coaching_summary") and not is_receptionist:
+        _financial_field_names = {
+            "Tax Filing Status", "Has Bank Account", "Benefits Received",
+            "Housing Status", "Employment Status at Intake",
+            "Household Income Bracket", "Credit Score Monitoring",
+        }
+        for group in custom_data:
+            for item in group["fields"]:
+                if item["field_def"].name in _financial_field_names and item.get("value"):
+                    financial_snapshot.append({
+                        "label": item["field_def"].name,
+                        "value": item.get("display_value") or item["value"],
+                    })
+
     context.update({
         "custom_data": custom_data,
         "has_editable_fields": has_editable_fields,
         "visible_fields": visible_fields,
         "sharing_effective": sharing_effective,
         "client_circles": client_circles,
+        "financial_snapshot": financial_snapshot,
     })
 
     # Active alerts — shown on Info tab for immediate visibility
