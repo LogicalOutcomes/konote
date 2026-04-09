@@ -191,6 +191,7 @@
                         <li role="none"><a role="menuitem" href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "User Invites" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:eval_export_grant_list' %}">{% trans "Evaluator Export Access" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'erasure_pending_list' %}">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
@@ -224,6 +225,7 @@
                         {% endif %}
                         {% if can_manage_users %}
                         <li role="none"><a role="menuitem" href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:eval_export_grant_list' %}">{% trans "Evaluator Export Access" %}</a></li>
                         {% endif %}
                         {% if can_manage_plan_templates %}
                         <li role="none"><a role="menuitem" href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>

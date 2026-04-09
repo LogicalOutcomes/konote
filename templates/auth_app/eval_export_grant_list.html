@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluator Export Access" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluator Export Access" %}</h1>
+    <p>
+        {% trans "Users listed here can generate de-identified evaluation exports. Grants should match a written authorisation from the Executive Director and a signed data-sharing agreement with the evaluator." %}
+    </p>
+</hgroup>
+
+<p>
+    <a href="{% url 'admin_users:eval_export_grant_create' %}" role="button">
+        {% trans "Grant access to a user" %}
+    </a>
+</p>
+
+{% if grant_rows %}
+<figure>
+<table role="grid" aria-label="{% trans 'Active evaluator export grants' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "User" %}</th>
+            <th scope="col">{% trans "Granted by" %}</th>
+            <th scope="col">{% trans "Granted on" %}</th>
+            <th scope="col">{% trans "Reason" %}</th>
+            <th scope="col">{% trans "Last export" %}</th>
+            <th scope="col"><span class="visually-hidden">{% trans "Actions" %}</span></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in grant_rows %}
+        <tr>
+            <td>{{ row.grant.user.display_name }}</td>
+            <td>
+                {% if row.grant.granted_by %}
+                    {{ row.grant.granted_by.display_name }}
+                {% else %}
+                    <em>{% trans "Unknown (legacy grant)" %}</em>
+                {% endif %}
+            </td>
+            <td>{{ row.grant.granted_at|date:"Y-m-d" }}</td>
+            <td style="max-width: 24rem;">{{ row.grant.reason }}</td>
+            <td>
+                {% if row.last_export_at %}
+                    {{ row.last_export_at|date:"Y-m-d" }}
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Never used" %}</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post"
+                      action="{% url 'admin_users:eval_export_grant_revoke' grant_id=row.grant.pk %}"
+                      style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="outline secondary"
+                            style="padding: 0.25rem 0.5rem; margin: 0;"
+                            data-confirm="{% blocktrans with name=row.grant.user.display_name %}Revoke evaluator export access for {{ name }}?{% endblocktrans %}">
+                        {% trans "Revoke" %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No active grants. Evaluation exports are disabled until a user is granted access." %}</p>
+</div>
+{% endif %}
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">
+    {% trans "Back to Settings" %}
+</a>
+{% endblock %}
