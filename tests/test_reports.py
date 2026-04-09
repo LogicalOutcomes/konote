@@ -1607,7 +1607,7 @@ class GenerateFunderReportDataTests(TestCase):
             client_file=client,
             note_type="quick",
             author=self.user,
-            created_at=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
+            backdate=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
         )
 
         report_data = generate_funder_report_data(
@@ -1636,16 +1636,19 @@ class GenerateFunderReportDataTests(TestCase):
             client_file=client, note_type="quick",
             interaction_type="phone", outcome="reached",
             author=self.user, notes_text="Reached them.",
+            backdate=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
         )
         ProgressNote.objects.create(
             client_file=client, note_type="quick",
             interaction_type="phone", outcome="no_answer",
             author=self.user, notes_text="No answer.",
+            backdate=timezone.make_aware(datetime(2025, 7, 10, 10, 0)),
         )
         ProgressNote.objects.create(
             client_file=client, note_type="quick",
             interaction_type="sms", outcome="left_message",
             author=self.user, notes_text="Left message.",
+            backdate=timezone.make_aware(datetime(2025, 8, 5, 10, 0)),
         )
 
         report_data = generate_funder_report_data(
@@ -3071,7 +3074,7 @@ class ExportWarningDialogTests(TestCase):
             client_file=self.client_file,
             note_type="full",
             author=self.admin,
-            created_at=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
+            backdate=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
         )
         pnt = ProgressNoteTarget.objects.create(
             progress_note=note,

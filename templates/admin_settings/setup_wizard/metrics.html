@@ -42,9 +42,9 @@
     </figure>
 
     <div class="wizard-nav">
-        <a href="{% url 'admin_settings:setup_wizard_step' step='programs' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <a href="{% url 'admin_settings:setup_wizard_step' step='programs' %}" role="button" class="outline"><span aria-hidden="true">&larr;</span> {% trans "Back" %}</a>
         <span class="spacer"></span>
-        <button type="submit">{% trans "Next: Plan Templates" %} &rarr;</button>
+        <button type="submit">{% trans "Next: Plan Templates" %} <span aria-hidden="true">&rarr;</span></button>
     </div>
 </form>
 {% endblock %}

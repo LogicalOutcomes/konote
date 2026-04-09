@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluator Export (Confidential)" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluator Export (Confidential)" %}</h1>
+    <p>{% trans "Generate a de-identified, participant-level CSV for an external program evaluator." %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'About this export' %}" style="margin-bottom: 1.5rem;">
+    <strong>{% trans "What this export contains" %}</strong>
+    <p>{% trans "Each row represents one participant with pseudonymous IDs, generalised demographics, and outcome metric values. All direct identifiers (names, contact information, exact dates) are removed." %}</p>
+    <ul style="margin-bottom: 0.5rem;">
+        <li>{% trans "Pseudonymous study IDs (random, not linked to real record IDs)" %}</li>
+        <li>{% trans "Generalised demographics (age bands, urban/rural)" %}</li>
+        <li>{% trans "Outcome metric values (intake and latest)" %}</li>
+        <li>{% trans "Service intensity (session count, total hours)" %}</li>
+    </ul>
+    <p style="margin-bottom: 0;">
+        {% trans "K-anonymity (k=5) is enforced: every combination of demographic values must appear in at least 5 records. Exports with fewer than 15 participants are blocked." %}
+    </p>
+</article>
+
+<article aria-label="{% trans 'Audit notice' %}" role="alert" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "All details are recorded in the audit log" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "This export is always elevated — administrators will be notified and a delay will be applied before download. Evaluator information, export parameters, and de-identification details are recorded in the immutable audit trail." %}
+    </p>
+</article>
+
+<form method="post" action="{% url 'reports:evaluation_export' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="preview">
+
+    {% if form.non_field_errors %}
+    <article role="alert" style="background: var(--kn-error-bg, #fef2f2); border-left: 4px solid var(--kn-error-fg, #dc2626); padding: 1rem; margin-bottom: 1.5rem;">
+        {% for error in form.non_field_errors %}
+        <p style="margin-bottom: 0;">{{ error }}</p>
+        {% endfor %}
+    </article>
+    {% endif %}
+
+    <fieldset>
+        <legend>{% trans "Program and Period" %}</legend>
+        {% include "includes/_form_field.html" with field=form.program %}
+        {% include "includes/_form_field.html" with field=form.period_start %}
+        {% include "includes/_form_field.html" with field=form.period_end %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Evaluator Information" %}</legend>
+        <small style="display: block; margin-bottom: 1rem;">{% trans "Required for audit trail. KoNote does not email or create accounts for evaluators." %}</small>
+        {% include "includes/_form_field.html" with field=form.evaluator_name %}
+        {% include "includes/_form_field.html" with field=form.evaluator_email %}
+        {% include "includes/_form_field.html" with field=form.evaluator_organisation %}
+        {% include "includes/_form_field.html" with field=form.evaluation_purpose %}
+        {% include "includes/_form_field.html" with field=form.agreement_expiry %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Demographic Columns (Quasi-Identifiers)" %}</legend>
+        <small style="display: block; margin-bottom: 1rem;">{% trans "Select which demographic columns to include. More columns provide richer analysis but increase re-identification risk. The system will block the export if the population is too small for the selected columns." %}</small>
+        {% include "includes/_form_field.html" with field=form.include_age_group %}
+        {% include "includes/_form_field.html" with field=form.include_gender %}
+        {% include "includes/_form_field.html" with field=form.include_ethnicity %}
+        {% include "includes/_form_field.html" with field=form.include_geography %}
+    </fieldset>
+
+    <button type="submit">{% trans "Preview Export" %}</button>
+</form>
+{% endblock %}

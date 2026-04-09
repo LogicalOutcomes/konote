@@ -618,9 +618,9 @@
 {# Back link #}
 <p class="preview-back-link no-print" style="margin-top: 1rem;">
     {% if preview_type == "template" %}
-    <a href="{% url 'reports:generate_report' %}">&larr; {% trans "Back to Standard Report" %}</a>
+    <a href="{% url 'reports:generate_report' %}"><span aria-hidden="true">&larr;</span> {% trans "Back to Standard Report" %}</a>
     {% else %}
-    <a href="{% url 'reports:export_form' %}">&larr; {% trans "Back to Build a Report" %}</a>
+    <a href="{% url 'reports:export_form' %}"><span aria-hidden="true">&larr;</span> {% trans "Back to Build a Report" %}</a>
     {% endif %}
 </p>
 {% endblock %}

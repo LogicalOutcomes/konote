@@ -14,7 +14,7 @@ class UserAdmin(BaseUserAdmin):
     # Override fieldsets — encrypted email can't be edited via raw field
     fieldsets = (
         (None, {"fields": ("username", "password")}),
-        ("Permissions", {"fields": ("is_admin", "is_active", "is_staff", "is_superuser")}),
+        ("Permissions", {"fields": ("is_admin", "is_active", "is_staff", "is_superuser", "evaluation_export_granted")}),
         ("Demo", {"fields": ("is_demo",)}),  # Read-only display
     )
     # Note: is_demo intentionally excluded from add_fieldsets — new users default to is_demo=False

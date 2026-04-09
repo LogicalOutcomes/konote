@@ -41,7 +41,7 @@ _FR_MARKERS = frozenset({
     "ai", "suis", "était", "avait", "fait", "dit",
 })
 
-_WORD_SPLIT_RE = re.compile(r"[a-zàâçéèêëîïôùûüÿœæ]+", re.IGNORECASE)
+_WORD_SPLIT_RE = re.compile(r"[a-zàâçéèêëîïôùûüÿœæ]+")
 
 _FR_THRESHOLD = 0.20  # 20% of sampled words must be French markers
 _SAMPLE_SIZE = 30     # Check first 30 words (enough for reliable detection)

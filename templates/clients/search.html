@@ -33,5 +33,5 @@
     {% include "clients/_search_results.html" %}
 </div>
 
-<p><a href="{% url 'clients:client_list' %}">{% blocktrans with clients=term.client_plural|default:"Participants" %}&larr; Back to {{ clients }} list{% endblocktrans %}</a></p>
+<p><a href="{% url 'clients:client_list' %}"><span aria-hidden="true">&larr;</span> {% blocktrans with clients=term.client_plural|default:"Participants" %}Back to {{ clients }} list{% endblocktrans %}</a></p>
 {% endblock %}

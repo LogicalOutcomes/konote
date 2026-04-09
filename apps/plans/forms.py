@@ -72,8 +72,14 @@ class PlanTargetForm(forms.Form):
         required=False,
         widget=forms.Textarea(attrs={"rows": 4, "placeholder": _("Describe this target")}),
     )
+    action_steps = forms.CharField(
+        required=False,
+        label=_("How will you get there?"),
+        help_text=_("Concrete next steps, action plan, or approach."),
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("What steps will you take?")}),
+    )
 
-    field_order = ["client_goal", "name", "description"]
+    field_order = ["client_goal", "name", "description", "action_steps"]
 
 
 class PlanTargetStatusForm(forms.Form):

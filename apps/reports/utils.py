@@ -58,6 +58,17 @@ def can_download_pii_export(user):
     ).exists()
 
 
+def can_create_evaluation_export(user):
+    """Return True if this user holds the per-user evaluation_export grant.
+
+    Per-user only — not tied to any role, not auto-granted to admins. See
+    tasks/eval-export-governance.md. The nav-level check in
+    apps/auth_app/templatetags/permissions_tags.py mirrors this rule; keep
+    them in sync.
+    """
+    return getattr(user, "evaluation_export_granted", False)
+
+
 def can_create_export(user, export_type, program=None):
     """
     Check if a user can create an export of the given type.

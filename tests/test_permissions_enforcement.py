@@ -116,6 +116,7 @@ PERMISSION_URL_MAP = {
     "report.program_report": {"url": "/reports/export/"},
     "report.funder_report": {"url": "/reports/export/"},
     "report.data_extract": {"url": "/reports/participant/{client_id}/export/"},
+    "report.evaluation_export": {"url": "/reports/evaluation-export/"},
 
     # Insights
     "insights.view": {"url": "/reports/insights/"},

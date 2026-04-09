@@ -1223,3 +1223,71 @@ class ExportTypeValidationTest(TestCase):
         from django.core.exceptions import ValidationError
         with self.assertRaises(ValidationError):
             _create_link(self.user, self.export_dir, export_type="nonexistent_type")
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 8. Evaluator Export (Confidential) — per-user grant only
+# ═════════════════════════════════════════════════════════════════════
+# Regression guard for the governance model in
+# tasks/eval-export-governance.md: report.evaluation_export is DENY for
+# all roles by default and must be granted per-user. Admins are the
+# *granters*, not the *operators*, so an admin without the explicit
+# grant must NOT reach the evaluation export view. This test exists
+# because PR #617 / #622 removed an `is_admin` bypass in
+# apps/reports/utils.can_create_evaluation_export — do not add one back
+# without also updating these tests and the governance doc.
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluatorExportPermissionTest(TestCase):
+    """Verify the evaluation_export view and helper honour per-user grant."""
+
+    url = "/reports/evaluation-export/"
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    # Helper-level tests (pure function — no view/template rendering)
+    def test_helper_denies_admin_without_grant(self):
+        from apps.reports.utils import can_create_evaluation_export
+        admin = User.objects.create_user(
+            username="admin_no_grant", password="x",
+            is_admin=True, display_name="Admin NoGrant",
+            evaluation_export_granted=False,
+        )
+        self.assertFalse(can_create_evaluation_export(admin))
+
+    def test_helper_allows_granted_non_admin(self):
+        from apps.reports.utils import can_create_evaluation_export
+        user = User.objects.create_user(
+            username="granted_staff", password="x",
+            is_admin=False, display_name="Granted Staff",
+            evaluation_export_granted=True,
+        )
+        self.assertTrue(can_create_evaluation_export(user))
+
+    def test_helper_denies_granted_user_without_flag(self):
+        from apps.reports.utils import can_create_evaluation_export
+        user = User.objects.create_user(
+            username="plain_pm", password="x",
+            is_admin=False, display_name="Plain PM",
+        )
+        self.assertFalse(can_create_evaluation_export(user))
+
+    # View-level tests
+    def test_view_returns_403_for_admin_without_grant(self):
+        """The actual regression guard: the view must not rely on is_admin."""
+        admin = User.objects.create_user(
+            username="admin_view_403", password="x",
+            is_admin=True, display_name="Admin 403",
+            evaluation_export_granted=False,
+        )
+        c = Client()
+        c.force_login(admin)
+        resp = c.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_view_redirects_anonymous_to_login(self):
+        """@login_required runs before the permission check."""
+        resp = Client().get(self.url)
+        self.assertEqual(resp.status_code, 302)

@@ -333,6 +333,7 @@ def emergency_logout(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def accept_invite(request, token):
     """Accept a portal invite — register a new ParticipantUser.
 
@@ -1020,6 +1021,7 @@ def password_reset_confirm(request):
 
 
 @portal_feature_required
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def staff_assisted_login(request, token):
     """Log a participant in via a staff-generated one-time token."""
     from apps.portal.models import StaffAssistedLoginToken
@@ -1707,6 +1709,17 @@ def portal_surveys_list(request):
         status__in=("pending", "in_progress"),
         survey__portal_visible=True,
     ).select_related("survey").order_by("-created_at")
+
+    # Annotate with completion progress for each assignment
+    from apps.surveys.models import PartialAnswer, SurveyQuestion
+    for a in assignments:
+        total_questions = SurveyQuestion.objects.filter(
+            page__survey=a.survey, status="active",
+        ).count()
+        answered = PartialAnswer.objects.filter(assignment=a).count()
+        a.total_questions = total_questions
+        a.answered_questions = answered
+        a.progress_pct = int(answered / total_questions * 100) if total_questions else 0
 
     # Completed responses
     responses = SurveyResponse.objects.filter(

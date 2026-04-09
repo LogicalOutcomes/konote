@@ -102,6 +102,23 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
+### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
+
+**Code & UI:**
+- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted. Detailed implementation prompt in [tasks/phase-eval-gov1-prompt.md](tasks/phase-eval-gov1-prompt.md) — a new session can pick this up cold (EVAL-GOV1)
+- [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
+- [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
+- [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
+- [ ] Agreement expiry warning — banner on export history when evaluator agreement has passed (EVAL-GOV5)
+- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns (EVAL-GOV6)
+- [ ] Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output (EVAL-GOV7)
+
+**Documentation:**
+- [ ] Update admin reporting guide with evaluation export section — `docs/admin/reporting.md` (EVAL-DOC1)
+- [ ] Update deployment protocol — add evaluation export to permissions interview — `tasks/agency-permissions-interview.md` Section 7 (EVAL-DOC2)
+- [ ] Add evaluation export section to user guide — `docs/help.md` (EVAL-DOC3)
+- [ ] ED-facing one-page evaluation export reference — `docs/evaluation-export-guide.md` (EVAL-DOC4)
+
 ### Phase: Documentation & Website Updates
 
 _All documentation tasks completed — see Recently Done._
@@ -129,6 +146,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Close Evaluator Export admin bypass — removed `is_admin` bypass in `can_create_evaluation_export` + nav check, added missing Team Members link to admin menu, wired `seed_eval_export_demo` into container-startup orchestrator with Casey/Morgan/Eva granted, added fast-path short-circuit, hoisted `EVAL_EXPORT_GRANTEES` constant, added regression tests (`EvaluatorExportPermissionTest` in `tests/test_export_permissions.py`), wrote EVAL-GOV1 implementation prompt — PRs #617, #622, #623, #624 — 2026-04-09 (EVAL-GOV-BYPASS1)
+- [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
+- [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
 - [x] Dashboard & Insights enrichment — FHIR metadata features: program summary sentences, practice indicators, goal source distribution on Insights; stale episodes attention signal on Dashboard; batch query optimization; simplified both pages (removed funder stats, cohort comparison, cross-tab, dashboard bloat — 8 sections → 5 on Insights, ~20 rows → ~8 per program card) — PRs #529-#533 — 2026-03-16 (ENRICH1)
 - [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)
 - [x] AI provider configuration guide for operators — docs/ai-provider-guide.md covering cloud vs self-hosted, data residency, configuration, costs — 2026-03-12 (REV26-AI4)

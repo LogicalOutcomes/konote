@@ -223,17 +223,31 @@ def _apply_metrics(enabled_names, disabled_names, stdout):
 
     enabled_count = 0
     disabled_count = 0
+    configured_count = 0
 
-    for name in enabled_names:
-        updated = MetricDefinition.objects.filter(name=name).update(is_enabled=True)
+    for entry in enabled_names:
+        # Support both plain names and dicts with properties
+        if isinstance(entry, dict):
+            name = entry["name"]
+            updates = {"is_enabled": True}
+            if "cadence_sessions" in entry:
+                updates["cadence_sessions"] = entry["cadence_sessions"]
+            updated = MetricDefinition.objects.filter(name=name).update(**updates)
+            if updated:
+                configured_count += 1
+        else:
+            updated = MetricDefinition.objects.filter(name=entry).update(is_enabled=True)
         enabled_count += updated
 
     for name in disabled_names:
         updated = MetricDefinition.objects.filter(name=name).update(is_enabled=False)
         disabled_count += updated
 
-    _log(stdout, f"  Metrics: {enabled_count} enabled, {disabled_count} disabled.")
-    return {"Metrics": f"{enabled_count} enabled, {disabled_count} disabled"}
+    msg = f"  Metrics: {enabled_count} enabled, {disabled_count} disabled"
+    if configured_count:
+        msg += f", {configured_count} configured"
+    _log(stdout, msg + ".")
+    return {"Metrics": f"{enabled_count} enabled, {disabled_count} disabled, {configured_count} configured"}
 
 
 
@@ -284,32 +298,77 @@ def _apply_custom_fields(groups_data, stdout):
 
     group_count = 0
     field_count = 0
+    updated_count = 0
 
     for i, grp in enumerate(groups_data):
+        grp_defaults = {
+            "sort_order": grp.get("sort_order", i),
+            "admin_only": grp.get("admin_only", False),
+            "collapsed_by_default": grp.get("collapsed_by_default", False),
+        }
+        if "status" in grp:
+            grp_defaults["status"] = grp["status"]
+
         group, grp_created = CustomFieldGroup.objects.get_or_create(
             title=grp["title"],
-            defaults={
-                "sort_order": i,
-                "admin_only": grp.get("admin_only", False),
-            },
+            defaults=grp_defaults,
         )
         if grp_created:
             group_count += 1
+        else:
+            # Update group properties that are explicitly set in the config
+            changed = False
+            for attr in ("admin_only", "collapsed_by_default", "sort_order", "status"):
+                if attr in grp and getattr(group, attr) != grp[attr]:
+                    setattr(group, attr, grp[attr])
+                    changed = True
+            if changed:
+                group.save()
+                updated_count += 1
 
         for j, fld in enumerate(grp.get("fields", [])):
-            _, fld_created = CustomFieldDefinition.objects.get_or_create(
+            fld_defaults = {
+                "input_type": fld.get("input_type", "text"),
+                "is_required": fld.get("is_required", False),
+                "is_sensitive": fld.get("is_sensitive", False),
+                "options_json": fld.get("options", []),
+                "sort_order": fld.get("sort_order", j),
+                "front_desk_access": fld.get("front_desk_access", "none"),
+                "show_on_create": fld.get("show_on_create", False),
+                "is_dv_sensitive": fld.get("is_dv_sensitive", False),
+            }
+            if fld.get("placeholder"):
+                fld_defaults["placeholder"] = fld["placeholder"]
+            if "status" in fld:
+                fld_defaults["status"] = fld["status"]
+
+            field, fld_created = CustomFieldDefinition.objects.get_or_create(
                 group=group,
                 name=fld["name"],
-                defaults={
-                    "input_type": fld.get("input_type", "text"),
-                    "is_required": fld.get("is_required", False),
-                    "is_sensitive": fld.get("is_sensitive", False),
-                    "options_json": fld.get("options", []),
-                    "sort_order": j,
-                },
+                defaults=fld_defaults,
             )
             if fld_created:
                 field_count += 1
+            else:
+                # Update field properties that are explicitly set in the config
+                changed = False
+                for attr, config_key in (
+                    ("front_desk_access", "front_desk_access"),
+                    ("show_on_create", "show_on_create"),
+                    ("is_dv_sensitive", "is_dv_sensitive"),
+                    ("status", "status"),
+                    ("sort_order", "sort_order"),
+                    ("is_required", "is_required"),
+                    ("options_json", "options"),
+                ):
+                    if config_key in fld:
+                        val = fld[config_key]
+                        if getattr(field, attr) != val:
+                            setattr(field, attr, val)
+                            changed = True
+                if changed:
+                    field.save()
+                    updated_count += 1
 
-    _log(stdout, f"  Custom fields: {group_count} groups, {field_count} fields.")
-    return {"Custom fields": f"{group_count} group(s), {field_count} field(s)"}
+    _log(stdout, f"  Custom fields: {group_count} groups, {field_count} fields created, {updated_count} updated.")
+    return {"Custom fields": f"{group_count} group(s), {field_count} field(s) created, {updated_count} updated"}

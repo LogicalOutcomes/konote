@@ -59,6 +59,7 @@ These are detailed decisions with expert panel findings and anti-patterns. Group
 | Document | Status | Scope | See also |
 |---|---|---|---|
 | [reporting-architecture.md](reporting-architecture.md) | Decided | Template-driven vs. ad-hoc reporting | Sovereignty |
+| [evaluation-microdata-export.md](evaluation-microdata-export.md) | Decided | De-identified microdata export for external evaluators, k-anonymity pipeline | Sovereignty, Security |
 | [funder-reporting-profiles.md](funder-reporting-profiles.md) | Parking Lot | Template-based funder reporting configuration | |
 | [executive-dashboard-redesign.md](executive-dashboard-redesign.md) | Approved | Dashboard UX with accessibility focus | Collab |
 | [cids-batch-classification-workflow.md](cids-batch-classification-workflow.md) | Draft | Batch AI classification for reporting taxonomies | |

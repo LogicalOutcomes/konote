@@ -35,6 +35,7 @@ class Command(BaseCommand):
             self._update_demo_client_fields()
             # Step 2: Top up each program to 20-30 clients with engine
             self._top_up_demo_data()
+            self._seed_eval_export_demo()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _generate_config_aware_demo_data(self, profile_path):
@@ -899,3 +900,22 @@ class Command(BaseCommand):
         from django.core.management import call_command
 
         call_command("update_demo_client_fields", stdout=self.stdout)
+
+    def _seed_eval_export_demo(self):
+        """Set up the Evaluator Export demo on Supported Employment.
+
+        Runs only when DEMO_MODE is on (the sub-command guards itself too).
+        Non-fatal if it fails — the app still starts, but the Evaluator
+        Export walkthrough won't have its extra participants or permission
+        grants.
+        """
+        from django.core.management import call_command
+
+        try:
+            call_command("seed_eval_export_demo", stdout=self.stdout)
+        except Exception as e:
+            self.stderr.write(f"  WARNING: seed_eval_export_demo failed: {e}")
+            self.stderr.write(
+                "  App will start but the Evaluator Export demo may be "
+                "incomplete."
+            )

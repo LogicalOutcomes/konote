@@ -184,7 +184,7 @@ def check_demo_data_health(app_configs, **kwargs):
     if not ClientFile.objects.filter(is_demo=True).exists():
         return warnings
 
-    programs = Program.objects.filter(is_active=True)
+    programs = Program.objects.filter(status="active")
     low_programs = []
 
     for prog in programs:
