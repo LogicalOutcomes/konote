@@ -32,7 +32,6 @@ from apps.clients.models import (
 )
 from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
 from apps.plans.models import (
-    MetricDefinition,
     PlanSection,
     PlanTarget,
     PlanTargetRevision,
@@ -555,10 +554,12 @@ class Command(BaseCommand):
             client_file_id__in=clients_with_plans,
         ).select_related("client_file")
 
-        # Get metrics for this program
-        metrics = list(MetricDefinition.objects.filter(
-            programs=program, is_active=True,
-        ))
+        # Get metrics for this program via the demo engine helper.
+        # MetricDefinition isn't directly linked to programs — it's linked
+        # through note templates, so we use discover_metrics_for_program.
+        from apps.admin_settings.demo_engine import DemoDataEngine
+        engine = DemoDataEngine()
+        metrics = engine.discover_metrics_for_program(program)
 
         if not metrics:
             self.stdout.write(self.style.WARNING(
