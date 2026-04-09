@@ -8,11 +8,6 @@
 
 ## Active Work
 
-### Phase: Infrastructure
-
-- [x] Migrate KoNote from Swiss VPS to Canadian VPS — completed 2026-03-06 (OPS-MIGRATE1)
-- [ ] Decommission old VPS (141.227.151.7) — verify new VPS stable for 1–2 weeks, then cancel old instance in OVH control panel — GK (OPS-DECOM1)
-
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
@@ -117,21 +112,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Longitudinal Trajectory Export (LTE) — see tasks/phase-lte-prompt.md
 
-DRR approved by GK after two expert panel rounds — `tasks/design-rationale/evaluation-microdata-export.md`. LTE is a second, structurally separate export tier for small-population evaluation (10 ≤ n < 15, or n ≥ 15 for OCAP/EGAP-governed programs). It drops demographics entirely and substitutes fuzzed longitudinal trajectories. New permission, separate form, reused pipeline base, distinct audit category, review-and-cancel window, distributed admin oversight, post-hoc privacy officer review. GK reviews on completion before merge.
+Implementation complete (11 of 13 tasks done, see Recently Done). Remaining work is QA scenarios in the sister repo and GK's pre-merge review. DRR: `tasks/design-rationale/evaluation-microdata-export.md`.
 
-- [x] LTE permission + "no designated privacy officer = no LTE" enforcement — `report.evaluation_export_small_population`, LTEExportGrant model + signal, `lte_available_in_agency()` gate in views (LTE-PERM1)
-- [x] LTE form with structured preconditions — REB number/name/date, DSA expiry, structured evaluator credentials, destruction window, community governance flags, purpose statement, acknowledgement checkbox (LTE-FORM1)
-- [x] LTE pipeline — `LTESmallPopulationPipeline` subclasses `DeidentificationPipeline`; strips all demographics, fuzzes metrics / sessions / hours, UUID study_id, trivial k check, snapshot restriction for withdrawal handling (LTE-PIPE1)
-- [x] Review-and-cancel window — 5 business days via `add_business_days()`, countdown on list/detail, flag-freeze with resume from hold point, `refresh_pending_requests()` called at view time + daily `check_lte_window_lifecycle` management command (LTE-WINDOW1)
-- [x] Distributed oversight — admin notification email with signed "Flag concerns" token, `lte_flag_concerns` view works without the LTE permission; any admin can cancel during the window (LTE-OVERSIGHT1)
-- [x] Post-hoc privacy officer review + agency-wide rate limit — `post_hoc_review_pending` flag blocks new submissions agency-wide; resolved via `lte_resolve_review` view (LTE-REVIEW1)
-- [x] Distinct audit category — every LTE lifecycle write tags `export_category=longitudinal_trajectory_export`; never bundled with evaluation_microdata (LTE-AUDIT1)
-- [x] LTE CSV output — metadata header with PROGRAM EVALUATION warning, rounded values, no demographics, LTE-XXXXXXXX study ids (LTE-OUT1)
-- [x] Test suite — tests/test_lte.py covers permissions, form validation, business-day arithmetic, fuzzing, study id generator, lifecycle transitions, rate limit, CSV shape, audit category, view access (LTE-TEST1)
 - [ ] Register new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` and add scenarios (happy path, floor block, OCAP without signoff) — follow-up session in the konote-qa-scenarios repo (LTE-QA1)
-- [x] LTE user documentation — `docs/lte-privacy-officer-guide.md` + LTE section in `docs/admin/reporting.md` (LTE-DOC1)
-- [ ] GK reviews completed LTE implementation before merge — verifies demographic suppression, fuzzing correctness, community governance gating (LTE-GKREVIEW1)
-- [x] Translate new LTE strings into French — 146 new msgids extracted via `translate_strings` on dev VPS, all 146 filled with Canadian French translations, .po committed (LTE-I18N1)
+- [ ] GK reviews completed LTE implementation before merge — verifies demographic suppression, fuzzing correctness, community governance gating — GK (LTE-GKREVIEW1)
 
 ### Phase: Documentation & Website Updates
 
@@ -157,7 +141,10 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Decommission old VPS (141.227.151.7) — new Canadian VPS stable after 5+ weeks, old Swiss instance cancelled in OVH control panel — 2026-04-09 (OPS-DECOM1)
+- [x] Longitudinal Trajectory Export (LTE) implementation — small-population evaluation tier with new `report.evaluation_export_small_population` permission, `LTEExportGrant` model + signal, "no privacy officer = no LTE" gate, `LTEExportRequestForm` with structured preconditions (REB, DSA, evaluator credentials, community governance, acknowledgement), `LTESmallPopulationPipeline` subclassing `DeidentificationPipeline` with demographic suppression and metric/session/hours fuzzing, 5-business-day review-and-cancel window with flag-freeze/resume, distributed admin oversight via signed "Flag concerns" email tokens, post-hoc privacy officer review with agency-wide rate limit, distinct `longitudinal_trajectory_export` audit category, LTE CSV output with PROGRAM EVALUATION warning header, `tests/test_lte.py` end-to-end coverage, `docs/lte-privacy-officer-guide.md` + admin reporting guide section, 146 French translations — 2026-04-09 (LTE-PERM1, LTE-FORM1, LTE-PIPE1, LTE-WINDOW1, LTE-OVERSIGHT1, LTE-REVIEW1, LTE-AUDIT1, LTE-OUT1, LTE-TEST1, LTE-DOC1, LTE-I18N1)
 - [x] Evaluator Export grant audit UI — new `EvaluationExportGrant` model + `post_save` signal keeping the `User.evaluation_export_granted` cache in sync, `EvaluationExportGrantForm` enforcing a substantive reason (≥15 chars, blocklist), three admin views (list / create / revoke) at `/manage/users/evaluation-export/` with immutable audit logging, nav entry in both admin and PM dropdowns, Django admin `readonly_fields` block on direct flag edits, demo seed routed through the grant model, 24 French translations, and ~25 new tests — 2026-04-09 (EVAL-GOV1)
+- [x] Migrate KoNote from Swiss VPS to Canadian VPS — new OVH VPS at 148.113.191.63, Canadian data residency confirmed — 2026-03-06 (OPS-MIGRATE1)
 - [x] Close Evaluator Export admin bypass — removed `is_admin` bypass in `can_create_evaluation_export` + nav check, added missing Team Members link to admin menu, wired `seed_eval_export_demo` into container-startup orchestrator with Casey/Morgan/Eva granted, added fast-path short-circuit, hoisted `EVAL_EXPORT_GRANTEES` constant, added regression tests (`EvaluatorExportPermissionTest` in `tests/test_export_permissions.py`), wrote EVAL-GOV1 implementation prompt — PRs #617, #622, #623, #624 — 2026-04-09 (EVAL-GOV-BYPASS1)
 - [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
 - [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
