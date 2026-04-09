@@ -1473,6 +1473,16 @@ class EvaluationExportGrantFormTest(TestCase):
         )
         self.assertTrue(self._form(reason).is_valid())
 
+    def test_reason_at_max_length_accepted(self):
+        from apps.auth_app.forms import EvaluationExportGrantForm
+        reason = "x" * EvaluationExportGrantForm.REASON_MAX_LENGTH
+        self.assertTrue(self._form(reason).is_valid())
+
+    def test_reason_over_max_length_rejected(self):
+        from apps.auth_app.forms import EvaluationExportGrantForm
+        reason = "x" * (EvaluationExportGrantForm.REASON_MAX_LENGTH + 1)
+        self.assertFalse(self._form(reason).is_valid())
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class EvaluationExportGrantViewTest(TestCase):

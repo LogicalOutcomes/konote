@@ -331,10 +331,14 @@ class EvaluationExportGrant(models.Model):
         help_text="Admin who issued the grant. Null only for backfilled legacy rows.",
     )
     granted_at = models.DateTimeField(auto_now_add=True)
+    REASON_MAX_LENGTH = 2000
     reason = models.TextField(
+        max_length=REASON_MAX_LENGTH,
         help_text=(
             "Why this grant was issued — typically references the ED's "
-            "authorisation and the evaluation engagement."
+            "authorisation and the evaluation engagement. Max 2000 chars "
+            "so privacy officers can review the audit log without wading "
+            "through page-length narratives."
         ),
     )
     active = models.BooleanField(default=True)

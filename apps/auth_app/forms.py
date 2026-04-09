@@ -308,10 +308,12 @@ class EvaluationExportGrantForm(forms.Form):
     """
 
     REASON_MIN_LENGTH = 15
+    REASON_MAX_LENGTH = 2000
     REASON_BLOCKLIST = {"ok", "test", "testing", "todo", "placeholder", "n/a", "na"}
 
     reason = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3}),
+        widget=forms.Textarea(attrs={"rows": 3, "maxlength": REASON_MAX_LENGTH}),
+        max_length=REASON_MAX_LENGTH,
         label=_("Reason for granting"),
         help_text=_(
             "Required. Record the Executive Director's authorisation, the "
