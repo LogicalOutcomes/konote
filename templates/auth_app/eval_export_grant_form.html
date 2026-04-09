@@ -12,9 +12,14 @@
 </hgroup>
 
 <article style="border-left: 4px solid var(--pico-color-amber-500, #d97706); padding: 1rem;">
-    <strong>{% trans "What this permission does" %}</strong>
+    <h2 style="font-size: 1rem; margin: 0 0 0.5rem 0;">{% trans "What this permission does" %}</h2>
     <p>
         {% trans "A user with evaluator export access can generate de-identified participant-level CSV files for external program evaluators. The pipeline removes names, birthdates, and contact details, generalises demographics, and enforces k-anonymity — but the resulting file still describes real participants and must be handled with care." %}
+    </p>
+    <p style="margin-bottom: 0;">
+        <small>
+            {% blocktrans %}See the <a href="/docs/evaluation-export-guide/">Executive Director guide to evaluator exports</a> for the full walkthrough (when and why to grant, how to deliver the file, how to revoke).{% endblocktrans %}
+        </small>
     </p>
 </article>
 

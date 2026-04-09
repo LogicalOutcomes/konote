@@ -225,7 +225,11 @@
                         {% endif %}
                         {% if can_manage_users %}
                         <li role="none"><a role="menuitem" href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
-                        <li role="none"><a role="menuitem" href="{% url 'admin_users:eval_export_grant_list' %}">{% trans "Evaluator Export Access" %}</a></li>
+                        {# EVAL-GOV1 Evaluator Export Access is admin-only and
+                           intentionally NOT shown in the PM dropdown. Only
+                           system administrators can grant/revoke the
+                           report.evaluation_export permission — see
+                           tasks/eval-export-governance.md. #}
                         {% endif %}
                         {% if can_manage_plan_templates %}
                         <li role="none"><a role="menuitem" href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>

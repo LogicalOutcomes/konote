@@ -1473,10 +1473,22 @@ class EvaluationExportGrantFormTest(TestCase):
         )
         self.assertTrue(self._form(reason).is_valid())
 
+    def test_reason_at_max_length_accepted(self):
+        from apps.auth_app.forms import EvaluationExportGrantForm
+        reason = "x" * EvaluationExportGrantForm.REASON_MAX_LENGTH
+        self.assertTrue(self._form(reason).is_valid())
+
+    def test_reason_over_max_length_rejected(self):
+        from apps.auth_app.forms import EvaluationExportGrantForm
+        reason = "x" * (EvaluationExportGrantForm.REASON_MAX_LENGTH + 1)
+        self.assertFalse(self._form(reason).is_valid())
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class EvaluationExportGrantViewTest(TestCase):
     """Admin grant/revoke flow end-to-end."""
+
+    databases = {"default", "audit"}
 
     list_url = "/manage/users/evaluation-export/"
     create_url = "/manage/users/evaluation-export/new/"
@@ -1590,7 +1602,22 @@ class EvaluationExportGrantViewTest(TestCase):
 
     # Revoke view -----------------------------------------------------
 
-    def test_revoke_view_marks_grant_inactive(self):
+    def test_revoke_view_get_renders_confirmation(self):
+        """GET renders the confirmation page; nothing is revoked yet."""
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant whose revoke path we are exercising for confirm UX.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.get(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "View Target")
+        grant.refresh_from_db()
+        self.assertTrue(grant.active, "Grant should still be active after GET")
+
+    def test_revoke_view_post_marks_grant_inactive(self):
         from apps.auth_app.models import EvaluationExportGrant
         grant = EvaluationExportGrant.objects.create(
             user=self.target, granted_by=self.admin,
@@ -1643,6 +1670,220 @@ class EvaluationExportGrantViewTest(TestCase):
         grant = EvaluationExportGrant.objects.get(user=self.admin, active=True)
         self.assertEqual(grant.granted_by, self.admin)
 
+    # Audit trail -------------------------------------------------------
+    #
+    # Every grant create, revoke, and rejected attempt must leave an
+    # audit trail so a privacy officer can answer "who has held this
+    # permission, and who has tried to obtain it?" The audit DB is the
+    # only place where rejected attempts are recorded.
+
+    def test_grant_success_writes_audit_row(self):
+        from apps.audit.models import AuditLog
+        c = Client()
+        c.force_login(self.admin)
+        c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "ED approved Youth Employment evaluation engagement 2026-Q2.",
+        })
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="create",
+        ).latest("event_timestamp")
+        self.assertEqual(log.user_id, self.admin.pk)
+        self.assertEqual(log.metadata["target_user_id"], self.target.pk)
+        self.assertIn("Youth Employment", log.metadata["reason"])
+        self.assertTrue(log.metadata["active"])
+
+    def test_revoke_writes_audit_row(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        from apps.audit.models import AuditLog
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant that will be revoked and audit-checked.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="update",
+        ).latest("event_timestamp")
+        self.assertEqual(log.user_id, self.admin.pk)
+        self.assertEqual(log.metadata["grant_id"], grant.pk)
+        self.assertFalse(log.metadata["active"])
+        self.assertEqual(log.metadata["revoked_by_id"], self.admin.pk)
+
+    def test_rejected_invalid_user_writes_audit_row(self):
+        from apps.audit.models import AuditLog
+        c = Client()
+        c.force_login(self.admin)
+        c.post(self.create_url, {
+            "user_id": "999999",  # nonexistent
+            "reason": "Attempt to grant to a nonexistent user for the audit test.",
+        })
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="access_denied",
+        ).latest("event_timestamp")
+        self.assertEqual(log.metadata["outcome"], "rejected")
+        self.assertEqual(log.metadata["failure_reason"], "invalid_user")
+        self.assertEqual(log.metadata["attempted_user_id"], "999999")
+
+    def test_rejected_duplicate_writes_audit_row(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        from apps.audit.models import AuditLog
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Existing active grant that a second attempt should hit.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "Second attempt should fail due to duplicate active grant.",
+        })
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="access_denied",
+        ).latest("event_timestamp")
+        self.assertEqual(log.metadata["failure_reason"], "duplicate_active_grant")
+        self.assertEqual(log.metadata["attempted_user_id"], str(self.target.pk))
+
+    def test_rejected_short_reason_writes_audit_row(self):
+        from apps.audit.models import AuditLog
+        c = Client()
+        c.force_login(self.admin)
+        c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "ok",  # too short, in blocklist
+        })
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="access_denied",
+        ).latest("event_timestamp")
+        self.assertEqual(log.metadata["failure_reason"], "reason_validation_failed")
+        self.assertEqual(log.metadata["attempted_user_id"], str(self.target.pk))
+        self.assertEqual(log.metadata["raw_reason"], "ok")
+        self.assertIn("reason", log.metadata["form_errors"])
+
+    # Concurrent-grant race ---------------------------------------------
+
+    def test_concurrent_grant_race_caught_by_db_constraint(self):
+        """IntegrityError from a racing concurrent grant renders cleanly.
+
+        The partial unique constraint is the real guarantee (see
+        test_unique_active_grant_per_user). This test exercises the
+        VIEW's except branch by patching create() to raise
+        IntegrityError, and confirms the view re-renders with the
+        duplicate error instead of a 500.
+        """
+        from unittest.mock import patch
+        from django.db import IntegrityError
+        from apps.auth_app.models import EvaluationExportGrant
+        from apps.audit.models import AuditLog
+
+        c = Client()
+        c.force_login(self.admin)
+
+        with patch(
+            "apps.auth_app.admin_views.EvaluationExportGrant.objects.create",
+            side_effect=IntegrityError("simulated race"),
+        ):
+            resp = c.post(self.create_url, {
+                "user_id": self.target.pk,
+                "reason": "Valid reason that would normally create a grant successfully.",
+            })
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(
+            EvaluationExportGrant.objects.filter(user=self.target).exists()
+        )
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="evaluation_export_grant",
+            action="access_denied",
+        ).latest("event_timestamp")
+        self.assertEqual(
+            log.metadata["failure_reason"], "race_duplicate_active_grant",
+        )
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantAdminOnlyTest(TestCase):
+    """Regression guard: the grant views are admin-only.
+
+    The DRR and governance doc both specify that only system admins
+    grant `report.evaluation_export`. A Program Manager with
+    `user.manage: PROGRAM` in their own programs would otherwise reach
+    `@requires_permission("user.manage", allow_admin=True)` and could
+    grant or revoke system-wide. This test locks in `@admin_required`.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="PM Program")
+        self.pm = User.objects.create_user(
+            username="pm_grant_denied", password="x",
+            display_name="PM Grant Denied",
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
+        )
+        self.admin = User.objects.create_user(
+            username="admin_grant_ok", password="x",
+            is_admin=True, display_name="Admin Grant OK",
+        )
+
+    def _as(self, user):
+        c = Client()
+        c.force_login(user)
+        return c
+
+    def test_pm_with_user_manage_cannot_reach_list(self):
+        resp = self._as(self.pm).get("/manage/users/evaluation-export/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_with_user_manage_cannot_reach_create(self):
+        resp = self._as(self.pm).get("/manage/users/evaluation-export/new/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_with_user_manage_cannot_post_grant(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        target = User.objects.create_user(
+            username="pm_grant_target", password="x",
+            display_name="Target",
+        )
+        resp = self._as(self.pm).post("/manage/users/evaluation-export/new/", {
+            "user_id": target.pk,
+            "reason": "PM attempting to grant the permission to another user.",
+        })
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(
+            EvaluationExportGrant.objects.filter(user=target).exists()
+        )
+
+    def test_pm_with_user_manage_cannot_revoke(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        target = User.objects.create_user(
+            username="pm_revoke_target", password="x",
+            display_name="Target",
+        )
+        grant = EvaluationExportGrant.objects.create(
+            user=target, granted_by=self.admin,
+            reason="Grant created by admin — PM should not be able to revoke.",
+        )
+        resp = self._as(self.pm).post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/"
+        )
+        self.assertEqual(resp.status_code, 403)
+        grant.refresh_from_db()
+        self.assertTrue(grant.active)
+
+    def test_admin_still_reaches_list(self):
+        resp = self._as(self.admin).get("/manage/users/evaluation-export/")
+        self.assertEqual(resp.status_code, 200)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class EvaluationExportGrantDjangoAdminReadonlyTest(TestCase):
@@ -1668,6 +1909,8 @@ class EvaluationExportGrantDjangoAdminReadonlyTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class EvaluationExportGrantIntegrationTest(TestCase):
     """End-to-end: grant via admin UI → user hits report → revoke → 403."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -1701,7 +1944,8 @@ class EvaluationExportGrantIntegrationTest(TestCase):
         resp = c.get("/reports/evaluation-export/")
         self.assertEqual(resp.status_code, 200)
 
-        # Admin revokes
+        # Admin revokes (POST to same URL — GET renders the confirm
+        # page, POST does the action; matches access_grant_revoke).
         grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
         admin_c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
 
