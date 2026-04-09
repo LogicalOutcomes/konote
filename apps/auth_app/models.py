@@ -55,12 +55,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False, help_text="Django admin access (rarely used).")
 
-    # Per-user permission grants (explicit grants beyond role defaults)
-    # TODO: EVAL-GOV1 will replace this boolean with a grant model that
-    # captures who granted, when, and why. See tasks/eval-export-governance.md.
+    # Per-user permission grants (explicit grants beyond role defaults).
+    # This boolean is a denormalised hot-path cache of "does this user
+    # hold an active EvaluationExportGrant". It is maintained by the
+    # post_save signal on EvaluationExportGrant (see signals.py). Do NOT
+    # write to this field directly — go through the grant model so the
+    # audit trail and reason requirement are enforced.
     evaluation_export_granted = models.BooleanField(
         default=False,
-        help_text="Explicitly granted permission to generate de-identified evaluation exports.",
+        help_text=(
+            "Cached flag — set by EvaluationExportGrant signal. "
+            "Do not edit directly; use the Evaluator Export Access admin UI."
+        ),
     )
     is_demo = models.BooleanField(
         default=False,
@@ -292,3 +298,66 @@ class AccessGrant(models.Model):
     @property
     def is_valid(self):
         return self.is_active and not self.is_expired
+
+
+class EvaluationExportGrant(models.Model):
+    """Per-user grant record for `report.evaluation_export`.
+
+    One row per grant event — not one per user. Revoking a grant sets
+    `active=False` and records `revoked_at` / `revoked_by`, leaving the
+    original granting row intact for the audit trail. A new grant can
+    then be issued to the same user.
+
+    A partial unique constraint enforces that at most one active grant
+    exists per user at a time. The User.evaluation_export_granted
+    boolean is a denormalised hot-path cache of "does this user have an
+    active grant right now" and is maintained by a post_save signal.
+
+    See tasks/eval-export-governance.md for the governance model and
+    tasks/design-rationale/evaluation-microdata-export.md for the
+    access-control rationale.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="evaluation_export_grants",
+    )
+    granted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="evaluation_export_grants_issued",
+        null=True, blank=True,
+        help_text="Admin who issued the grant. Null only for backfilled legacy rows.",
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(
+        help_text=(
+            "Why this grant was issued — typically references the ED's "
+            "authorisation and the evaluation engagement."
+        ),
+    )
+    active = models.BooleanField(default=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    revoked_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="evaluation_export_grants_revoked",
+    )
+
+    class Meta:
+        app_label = "auth_app"
+        db_table = "evaluation_export_grants"
+        ordering = ["-granted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(active=True),
+                name="one_active_eval_export_grant_per_user",
+            ),
+        ]
+
+    def __str__(self):
+        status = "active" if self.active else "revoked"
+        return f"EvaluationExportGrant({self.user_id}, {status})"

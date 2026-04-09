@@ -104,20 +104,15 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
 
+**Simplified scope (2026-04-09):** The original plan had 11 tasks. The governance list + permission-audit list + dashboard card were merged into a single GOV1 deliverable; GOV4 + GOV5 were combined into one history+banner task; and DOC1–4 were collapsed into a single doc task that leads with the ED one-pager. Pipeline tests (GOV7) stay standalone because the de-identification code is safety-critical.
+
 **Code & UI:**
-- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted. Detailed implementation prompt in [tasks/phase-eval-gov1-prompt.md](tasks/phase-eval-gov1-prompt.md) — a new session can pick this up cold (EVAL-GOV1)
-- [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
-- [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
-- [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
-- [ ] Agreement expiry warning — banner on export history when evaluator agreement has passed (EVAL-GOV5)
-- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns (EVAL-GOV6)
-- [ ] Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output (EVAL-GOV7)
+- [ ] 🔨 Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output. **Safety-critical**: `apps/reports/deidentify.py` has zero test coverage. (EVAL-GOV7)
+- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns. Migration 0043 already added the field; form currently ignores it. (EVAL-GOV6)
+- [ ] Export history view with agreement-expiry banner — single page listing past `evaluation_microdata` exports with program, evaluator, counts, status. Shows a warning banner for evaluators whose data-sharing agreement has expired. (EVAL-GOV-HISTORY)
 
 **Documentation:**
-- [ ] Update admin reporting guide with evaluation export section — `docs/admin/reporting.md` (EVAL-DOC1)
-- [ ] Update deployment protocol — add evaluation export to permissions interview — `tasks/agency-permissions-interview.md` Section 7 (EVAL-DOC2)
-- [ ] Add evaluation export section to user guide — `docs/help.md` (EVAL-DOC3)
-- [ ] ED-facing one-page evaluation export reference — `docs/evaluation-export-guide.md` (EVAL-DOC4)
+- [ ] Evaluation export documentation bundle — ED-facing one-pager (`docs/evaluation-export-guide.md`) as the primary deliverable, plus short cross-reference sections in `docs/admin/reporting.md`, `docs/help.md`, and `tasks/agency-permissions-interview.md` Section 7 pointing to the one-pager. (EVAL-DOCS)
 
 ### Phase: Documentation & Website Updates
 
@@ -143,6 +138,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Evaluator Export grant audit UI — new `EvaluationExportGrant` model + `post_save` signal keeping the `User.evaluation_export_granted` cache in sync, `EvaluationExportGrantForm` enforcing a substantive reason (≥15 chars, blocklist), three admin views (list / create / revoke) at `/manage/users/evaluation-export/` with immutable audit logging, nav entry in both admin and PM dropdowns, Django admin `readonly_fields` block on direct flag edits, demo seed routed through the grant model, 24 French translations, and ~25 new tests — 2026-04-09 (EVAL-GOV1)
 - [x] Close Evaluator Export admin bypass — removed `is_admin` bypass in `can_create_evaluation_export` + nav check, added missing Team Members link to admin menu, wired `seed_eval_export_demo` into container-startup orchestrator with Casey/Morgan/Eva granted, added fast-path short-circuit, hoisted `EVAL_EXPORT_GRANTEES` constant, added regression tests (`EvaluatorExportPermissionTest` in `tests/test_export_permissions.py`), wrote EVAL-GOV1 implementation prompt — PRs #617, #622, #623, #624 — 2026-04-09 (EVAL-GOV-BYPASS1)
 - [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
 - [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)

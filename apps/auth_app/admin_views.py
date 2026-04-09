@@ -22,8 +22,13 @@ from apps.programs.models import Program, UserProgramRole
 from apps.auth_app.constants import MANAGEMENT_ROLES, ROLE_PROGRAM_MANAGER, ROLE_RECEPTIONIST, ROLE_STAFF
 from konote.utils import get_client_ip
 from .decorators import admin_required, requires_permission
-from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
-from .models import User
+from .forms import (
+    EvaluationExportGrantForm,
+    UserCreateForm,
+    UserEditForm,
+    UserProgramRoleForm,
+)
+from .models import EvaluationExportGrant, User
 
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
 # PMs with user.manage: PROGRAM can manage staff in their own program
@@ -357,6 +362,194 @@ def user_role_remove(request, user_id, role_id):
             request, edit_user, role_obj.program, role_obj.role, "remove",
         )
     return redirect("admin_users:user_roles", user_id=edit_user.pk)
+
+
+# ---------------------------------------------------------------------------
+# EVAL-GOV1 — Evaluator Export Access grant management
+# ---------------------------------------------------------------------------
+#
+# The governance model in tasks/eval-export-governance.md requires a
+# two-person control: ED authorises an evaluation engagement and then
+# the Admin records the grant in KoNote with a reason. These views are
+# the only supported way to set `evaluation_export_granted` — the flag
+# on User is now read-only in the Django admin and removed from the
+# general user edit form.
+
+
+@login_required
+@requires_permission("user.manage", allow_admin=True)
+def eval_export_grant_list(request):
+    """Show active evaluator-export grants and the revoke control.
+
+    The table is the agency's audit view: who holds the permission,
+    who granted it, when, and the reason. Revoked grants are not shown
+    here — they live in the audit log.
+    """
+    grants = (
+        EvaluationExportGrant.objects
+        .filter(active=True)
+        .select_related("user", "granted_by")
+        .order_by("user__display_name")
+    )
+
+    # Join the most recent evaluation-microdata export per grantee so
+    # the admin can see whether the permission is actually being used.
+    from apps.reports.models import SecureExportLink
+
+    last_exports = {}
+    for link in SecureExportLink.objects.filter(
+        export_type="evaluation_microdata",
+    ).order_by("-created_at").values("created_by_id", "created_at"):
+        last_exports.setdefault(link["created_by_id"], link["created_at"])
+
+    grant_rows = []
+    for g in grants:
+        grant_rows.append({
+            "grant": g,
+            "last_export_at": last_exports.get(g.user_id),
+        })
+
+    return render(request, "auth_app/eval_export_grant_list.html", {
+        "grant_rows": grant_rows,
+    })
+
+
+@login_required
+@requires_permission("user.manage", allow_admin=True)
+def eval_export_grant_create(request):
+    """Grant evaluator-export access to a user.
+
+    The reason field is mandatory and logged to the audit DB so the
+    grant is tied back to the ED's authorising decision. Attempting to
+    grant a user who already has an active grant re-renders the form
+    with a clear error — revoke the existing grant first.
+    """
+    users_with_active_grants = set(
+        EvaluationExportGrant.objects
+        .filter(active=True)
+        .values_list("user_id", flat=True)
+    )
+
+    # Candidate users: active, not already holding an active grant.
+    # Admins and non-admins alike can hold the permission (the panel
+    # decided PMs are legitimate operators), but inactive accounts
+    # should not be grantable.
+    candidate_users = (
+        User.objects
+        .filter(is_active=True)
+        .exclude(pk__in=users_with_active_grants)
+        .order_by("display_name", "username")
+    )
+
+    initial_user_id = None
+    form = EvaluationExportGrantForm()
+    error = None
+
+    if request.method == "POST":
+        try:
+            user_id = int(request.POST.get("user_id") or 0)
+        except (TypeError, ValueError):
+            user_id = 0
+        initial_user_id = user_id
+        form = EvaluationExportGrantForm(request.POST)
+
+        target = User.objects.filter(pk=user_id, is_active=True).first()
+        if not target:
+            error = _("Please choose a user to grant this permission to.")
+        elif user_id in users_with_active_grants:
+            error = _(
+                "This user already has an active grant. Revoke the "
+                "existing grant before issuing a new one."
+            )
+        elif form.is_valid():
+            reason = form.cleaned_data["reason"]
+            grant = EvaluationExportGrant.objects.create(
+                user=target,
+                granted_by=request.user,
+                reason=reason,
+            )
+            _audit_eval_export_grant(
+                request, grant, action="create", reason=reason,
+            )
+            messages.success(
+                request,
+                _("Evaluator export access granted to %(name)s.")
+                % {"name": target.display_name},
+            )
+            return redirect("admin_users:eval_export_grant_list")
+
+    else:
+        try:
+            initial_user_id = int(request.GET.get("user_id") or 0) or None
+        except (TypeError, ValueError):
+            initial_user_id = None
+
+    return render(request, "auth_app/eval_export_grant_form.html", {
+        "form": form,
+        "candidate_users": candidate_users,
+        "initial_user_id": initial_user_id,
+        "error": error,
+    })
+
+
+@login_required
+@requires_permission("user.manage", allow_admin=True)
+def eval_export_grant_revoke(request, grant_id):
+    """Revoke an active grant. POST only."""
+    if request.method != "POST":
+        return redirect("admin_users:eval_export_grant_list")
+
+    grant = get_object_or_404(EvaluationExportGrant, pk=grant_id, active=True)
+    grant.active = False
+    grant.revoked_at = timezone.now()
+    grant.revoked_by = request.user
+    grant.save()
+
+    _audit_eval_export_grant(
+        request, grant, action="update", reason=grant.reason,
+    )
+    messages.success(
+        request,
+        _("Evaluator export access revoked for %(name)s.")
+        % {"name": grant.user.display_name},
+    )
+    return redirect("admin_users:eval_export_grant_list")
+
+
+def _audit_eval_export_grant(request, grant, action, reason):
+    """Record an evaluator-export grant create/revoke in the audit DB."""
+    try:
+        from apps.audit.models import AuditLog
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.id,
+            user_display=request.user.get_display_name(),
+            ip_address=get_client_ip(request),
+            action=action,
+            resource_type="evaluation_export_grant",
+            resource_id=grant.pk,
+            metadata={
+                "grant_id": grant.pk,
+                "target_user_id": grant.user_id,
+                "target_user": grant.user.display_name,
+                "granted_by_id": grant.granted_by_id,
+                "granted_by_display": (
+                    grant.granted_by.display_name if grant.granted_by else None
+                ),
+                "active": grant.active,
+                "reason": reason,
+                "revoked_at": (
+                    grant.revoked_at.isoformat() if grant.revoked_at else None
+                ),
+                "revoked_by_id": grant.revoked_by_id,
+            },
+        )
+    except Exception:
+        logger.exception(
+            "Failed to audit evaluation_export_grant %s for user %s",
+            grant.pk, grant.user_id,
+        )
 
 
 def _audit_user_change(request, target_user, action_type, old_values, new_values):

@@ -186,12 +186,14 @@ class Command(BaseCommand):
         # also finished". If that atomic wrapper is ever removed or
         # narrowed, this short-circuit could skip a partially-seeded
         # state — re-audit the check before relaxing atomicity.
+        from apps.auth_app.models import EvaluationExportGrant
+
         enrolment_count = ClientProgramEnrolment.objects.filter(
             program=program, client_file__is_demo=True,
         ).count()
-        granted_count = User.objects.filter(
-            username__in=[u for u, _ in EVAL_EXPORT_GRANTEES],
-            evaluation_export_granted=True,
+        granted_count = EvaluationExportGrant.objects.filter(
+            user__username__in=[u for u, _ in EVAL_EXPORT_GRANTEES],
+            active=True,
         ).count()
         if (
             enrolment_count >= TARGET_PARTICIPANTS
@@ -734,7 +736,28 @@ class Command(BaseCommand):
             ))
 
     def _grant_permission(self):
-        """Grant report.evaluation_export to each user in EVAL_EXPORT_GRANTEES."""
+        """Grant report.evaluation_export to each user in EVAL_EXPORT_GRANTEES.
+
+        Creates `EvaluationExportGrant` rows (not direct flag writes)
+        so the demo mirrors the real governance flow: every grant has a
+        reason and a granting admin in the audit trail. The post_save
+        signal on the grant model updates `User.evaluation_export_granted`.
+        """
+        from apps.auth_app.models import EvaluationExportGrant
+
+        demo_reason = (
+            "Demo seed: pre-authorised for DEMO_MODE evaluation export "
+            "walkthrough. Replace with a real ED authorisation before "
+            "using this flow with live data."
+        )
+
+        # Pick a seeded admin to attribute the grants to. Fall back to
+        # the first admin if the expected demo admin is missing.
+        demo_admin = (
+            User.objects.filter(username="demo-admin").first()
+            or User.objects.filter(is_admin=True).order_by("pk").first()
+        )
+
         for username, display_name in EVAL_EXPORT_GRANTEES:
             user = User.objects.filter(username=username).first()
             if not user:
@@ -742,14 +765,22 @@ class Command(BaseCommand):
                     f"  {username} user not found."
                 ))
                 continue
-            if user.evaluation_export_granted:
+
+            existing = EvaluationExportGrant.objects.filter(
+                user=user, active=True,
+            ).first()
+            if existing:
                 self.stdout.write(
-                    f"  {display_name} ({username}) already has "
-                    f"evaluation export permission."
+                    f"  {display_name} ({username}) already has an "
+                    f"active evaluation export grant."
                 )
                 continue
-            user.evaluation_export_granted = True
-            user.save(update_fields=["evaluation_export_granted"])
+
+            EvaluationExportGrant.objects.create(
+                user=user,
+                granted_by=demo_admin,
+                reason=demo_reason,
+            )
             self.stdout.write(
                 f"  Granted evaluation export permission to "
                 f"{display_name} ({username})."
