@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Revoke Evaluator Export Access" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Revoke Evaluator Export Access?" %}</h1>
+    <p>
+        {% blocktrans with name=grant.user.display_name %}You are about to revoke evaluator export access for <strong>{{ name }}</strong>.{% endblocktrans %}
+    </p>
+</hgroup>
+
+<article>
+    <h2 style="font-size: 1rem; margin: 0 0 0.5rem 0;">{% trans "Grant details" %}</h2>
+    <dl>
+        <dt>{% trans "User" %}</dt>
+        <dd>{{ grant.user.display_name }}</dd>
+        <dt>{% trans "Granted by" %}</dt>
+        <dd>
+            {% if grant.granted_by %}{{ grant.granted_by.display_name }}{% else %}<em>{% trans "Unknown (legacy grant)" %}</em>{% endif %}
+        </dd>
+        <dt>{% trans "Granted on" %}</dt>
+        <dd>{{ grant.granted_at|date:"Y-m-d" }}</dd>
+        <dt>{% trans "Reason" %}</dt>
+        <dd>{{ grant.reason }}</dd>
+    </dl>
+</article>
+
+<p>
+    {% trans "Revoking removes the user's ability to generate new evaluation exports. Any files they have already downloaded remain with them — this action does not reach data already in the evaluator's hands. If the evaluation is complete, confirm that the evaluator has deleted their copy per the data sharing agreement." %}
+</p>
+
+<form method="post" action="{% url 'admin_users:eval_export_grant_revoke' grant_id=grant.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <button type="submit" class="secondary">{% trans "Yes, revoke access" %}</button>
+    <a href="{% url 'admin_users:eval_export_grant_list' %}" role="button" class="outline">
+        {% trans "Cancel" %}
+    </a>
+</form>
+{% endblock %}

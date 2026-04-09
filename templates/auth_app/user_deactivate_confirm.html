@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Deactivate User" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Deactivate user?" %}</h1>
+    <p>
+        {% blocktrans with name=deactivate_user.display_name %}You are about to deactivate <strong>{{ name }}</strong>.{% endblocktrans %}
+    </p>
+</hgroup>
+
+<article>
+    <p>
+        {% trans "Deactivation prevents the user from signing in. Their past work (notes, plans, reports) stays in the system and remains attributed to them." %}
+    </p>
+    <p>
+        {% trans "If they return later, you can reactivate the account without losing any history." %}
+    </p>
+</article>
+
+<form method="post" action="{% url 'admin_users:user_deactivate' user_id=deactivate_user.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <button type="submit" class="secondary">{% trans "Yes, deactivate" %}</button>
+    <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">
+        {% trans "Cancel" %}
+    </a>
+</form>
+{% endblock %}

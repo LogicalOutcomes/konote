@@ -140,6 +140,15 @@ def user_edit(request, user_id):
 @login_required
 @requires_permission("user.manage", allow_admin=True)
 def user_deactivate(request, user_id):
+    """Deactivate a user account — two-step POST flow.
+
+    Accessibility: destructive action uses a server-side confirmation
+    page rather than relying on `window.confirm()` JavaScript. The
+    "Deactivate" button on the user list POSTs here without
+    `confirm=1`, which renders a confirmation page. Submitting that
+    page POSTs back with `confirm=1` and the deactivation runs.
+    Same pattern as eval_export_grant_revoke.
+    """
     user = get_object_or_404(User, pk=user_id)
 
     # PMs can only deactivate users in their programs
@@ -147,20 +156,36 @@ def user_deactivate(request, user_id):
         if not _user_in_pm_programs(request.user, user):
             return HttpResponseForbidden(_("Access denied. You can only manage users in your programs."))
 
-    if request.method == "POST":
-        if user == request.user:
-            messages.error(request, _("You cannot deactivate your own account."))
-        elif user.is_admin and not request.user.is_admin:
-            messages.error(request, _("Only administrators can deactivate admin accounts."))
-        else:
-            user.is_active = False
-            user.save()
-            _audit_user_change(
-                request, user, "update",
-                old_values={"is_active": True},
-                new_values={"is_active": False},
-            )
-            messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
+    if request.method != "POST":
+        return redirect("admin_users:user_list")
+
+    # Pre-flight guards that apply to both the confirm render and the
+    # final action — no point showing a confirmation page for an
+    # action we'd reject anyway.
+    if user == request.user:
+        messages.error(request, _("You cannot deactivate your own account."))
+        return redirect("admin_users:user_list")
+    if user.is_admin and not request.user.is_admin:
+        messages.error(request, _("Only administrators can deactivate admin accounts."))
+        return redirect("admin_users:user_list")
+
+    # Step 1: no confirm flag yet — render the confirmation page.
+    if request.POST.get("confirm") != "1":
+        return render(
+            request,
+            "auth_app/user_deactivate_confirm.html",
+            {"deactivate_user": user},
+        )
+
+    # Step 2: confirmed — do the deactivation.
+    user.is_active = False
+    user.save()
+    _audit_user_change(
+        request, user, "update",
+        old_values={"is_active": True},
+        new_values={"is_active": False},
+    )
+    messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
     return redirect("admin_users:user_list")
 
 
@@ -564,14 +589,31 @@ def eval_export_grant_create(request):
 @login_required
 @admin_required
 def eval_export_grant_revoke(request, grant_id):
-    """Revoke an active grant. POST only.
+    """Revoke an active grant — two-step POST flow.
 
     Admin-only (see eval_export_grant_list docstring for rationale).
+
+    Accessibility: destructive actions should not rely on JavaScript
+    confirmation. The list page's "Revoke" button POSTs here without
+    `confirm=1`, which renders a server-side confirmation page.
+    Submitting the confirmation form POSTs back with `confirm=1` and
+    the actual revoke runs. Screen-reader and no-JS users get the
+    same safety net as JS users.
     """
     if request.method != "POST":
         return redirect("admin_users:eval_export_grant_list")
 
     grant = get_object_or_404(EvaluationExportGrant, pk=grant_id, active=True)
+
+    # Step 1: no confirm flag yet — render the confirmation page.
+    if request.POST.get("confirm") != "1":
+        return render(
+            request,
+            "auth_app/eval_export_grant_revoke_confirm.html",
+            {"grant": grant},
+        )
+
+    # Step 2: confirmed — do the revoke.
     grant.active = False
     grant.revoked_at = timezone.now()
     grant.revoked_by = request.user

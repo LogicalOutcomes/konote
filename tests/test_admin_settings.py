@@ -665,7 +665,18 @@ class UserManagementTest(TestCase):
         user = User.objects.create_user(
             username="deactivateme", password="testpass123", display_name="Deactivate Me",
         )
-        resp = self.client.post(f"/manage/users/{user.pk}/deactivate/")
+        # Two-step POST flow for accessibility: first POST renders the
+        # confirmation page (200), second POST with confirm=1 performs
+        # the action and redirects (302).
+        confirm_resp = self.client.post(f"/manage/users/{user.pk}/deactivate/")
+        self.assertEqual(confirm_resp.status_code, 200)
+        self.assertContains(confirm_resp, "Deactivate Me")
+        user.refresh_from_db()
+        self.assertTrue(user.is_active, "User should still be active before confirmation")
+
+        resp = self.client.post(
+            f"/manage/users/{user.pk}/deactivate/", {"confirm": "1"},
+        )
         self.assertEqual(resp.status_code, 302)
         user.refresh_from_db()
         self.assertFalse(user.is_active)

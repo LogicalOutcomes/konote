@@ -1602,7 +1602,22 @@ class EvaluationExportGrantViewTest(TestCase):
 
     # Revoke view -----------------------------------------------------
 
-    def test_revoke_view_marks_grant_inactive(self):
+    def test_revoke_view_renders_confirmation_without_confirm_flag(self):
+        """First POST (no confirm=1) renders the confirmation page."""
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant whose revoke path we are exercising for confirm UX.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "View Target")
+        grant.refresh_from_db()
+        self.assertTrue(grant.active, "Grant should still be active before confirm")
+
+    def test_revoke_view_marks_grant_inactive_with_confirm(self):
         from apps.auth_app.models import EvaluationExportGrant
         grant = EvaluationExportGrant.objects.create(
             user=self.target, granted_by=self.admin,
@@ -1613,7 +1628,10 @@ class EvaluationExportGrantViewTest(TestCase):
 
         c = Client()
         c.force_login(self.admin)
-        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        resp = c.post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
+            {"confirm": "1"},
+        )
         self.assertEqual(resp.status_code, 302)
 
         grant.refresh_from_db()
@@ -1632,7 +1650,10 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.outsider)
-        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        resp = c.post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
+            {"confirm": "1"},
+        )
         self.assertIn(resp.status_code, (302, 403))
         grant.refresh_from_db()
         self.assertTrue(grant.active)
@@ -1688,7 +1709,10 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.admin)
-        c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        c.post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
+            {"confirm": "1"},
+        )
         log = AuditLog.objects.using("audit").filter(
             resource_type="evaluation_export_grant",
             action="update",
@@ -1962,9 +1986,13 @@ class EvaluationExportGrantIntegrationTest(TestCase):
         resp = c.get("/reports/evaluation-export/")
         self.assertEqual(resp.status_code, 200)
 
-        # Admin revokes
+        # Admin revokes (two-step: first POST renders confirm, second
+        # POST with confirm=1 performs the revoke)
         grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
-        admin_c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        admin_c.post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
+            {"confirm": "1"},
+        )
 
         # Access denied again
         resp = c.get("/reports/evaluation-export/")
