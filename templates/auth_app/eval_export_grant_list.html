@@ -49,6 +49,9 @@
                 {% else %}
                     <span class="badge badge-neutral">{% trans "Never used" %}</span>
                 {% endif %}
+                {% if row.is_stale %}
+                    <br><span class="badge badge-warning" title="{% blocktrans with n=stale_days %}Not used for {{ n }}+ days — consider revoking if the evaluation engagement is complete.{% endblocktrans %}">{% trans "Stale" %}</span>
+                {% endif %}
             </td>
             <td>
                 <form method="post"

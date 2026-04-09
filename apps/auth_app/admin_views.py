@@ -5,6 +5,7 @@ PMs with user.manage: PROGRAM: manage staff/receptionist in their own programs.
 Invites and impersonation remain admin-only (separate views).
 """
 import logging
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -391,32 +392,50 @@ def eval_export_grant_list(request):
     grant `report.evaluation_export`. A Program Manager with
     user.manage: PROGRAM should not see agency-wide grants.
     """
+    # Join the most recent evaluation-microdata export per grantee so
+    # the admin can see whether the permission is actually being used.
+    # Use a correlated subquery annotation rather than loading every
+    # SecureExportLink into memory — keeps the list view O(1) memory
+    # even at large agencies with long export histories.
+    from django.db.models import OuterRef, Subquery
+    from apps.reports.models import SecureExportLink
+
+    last_export_subquery = (
+        SecureExportLink.objects
+        .filter(
+            export_type="evaluation_microdata",
+            created_by_id=OuterRef("user_id"),
+        )
+        .order_by("-created_at")
+        .values("created_at")[:1]
+    )
+
     grants = (
         EvaluationExportGrant.objects
         .filter(active=True)
         .select_related("user", "granted_by")
+        .annotate(last_export_at=Subquery(last_export_subquery))
         .order_by("user__display_name")
     )
 
-    # Join the most recent evaluation-microdata export per grantee so
-    # the admin can see whether the permission is actually being used.
-    from apps.reports.models import SecureExportLink
-
-    last_exports = {}
-    for link in SecureExportLink.objects.filter(
-        export_type="evaluation_microdata",
-    ).order_by("-created_at").values("created_by_id", "created_at"):
-        last_exports.setdefault(link["created_by_id"], link["created_at"])
-
+    # Flag grants that haven't been used for 6+ months (or were never
+    # used at all and are older than 6 months). The DRR rejected
+    # automatic expiry — visibility is the agreed safeguard — so this
+    # is the visibility.
+    stale_cutoff = timezone.now() - timedelta(days=180)
     grant_rows = []
     for g in grants:
+        reference_date = g.last_export_at or g.granted_at
+        is_stale = reference_date < stale_cutoff
         grant_rows.append({
             "grant": g,
-            "last_export_at": last_exports.get(g.user_id),
+            "last_export_at": g.last_export_at,
+            "is_stale": is_stale,
         })
 
     return render(request, "auth_app/eval_export_grant_list.html", {
         "grant_rows": grant_rows,
+        "stale_days": 180,
     })
 
 
