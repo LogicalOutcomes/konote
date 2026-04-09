@@ -193,7 +193,6 @@
         {% blocktrans with with_voice=practice_health.participant_voice.with_voice total=practice_health.participant_voice.total_full %}Participant reflections were recorded in {{ with_voice }} of {{ total }} sessions.{% endblocktrans %}
     </p>
     {% endif %}
-
     {# ── Participant Feedback section ── #}
     {% if structured.suggestion_total or active_themes %}
     <section class="feedback-section" aria-labelledby="feedback-heading">
