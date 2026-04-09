@@ -9,6 +9,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -453,8 +454,10 @@ def eval_export_grant_create(request):
     error = None
 
     if request.method == "POST":
+        raw_user_id = request.POST.get("user_id") or ""
+        raw_reason = request.POST.get("reason") or ""
         try:
-            user_id = int(request.POST.get("user_id") or 0)
+            user_id = int(raw_user_id) if raw_user_id else 0
         except (TypeError, ValueError):
             user_id = 0
         initial_user_id = user_id
@@ -463,27 +466,67 @@ def eval_export_grant_create(request):
         target = User.objects.filter(pk=user_id, is_active=True).first()
         if not target:
             error = _("Please choose a user to grant this permission to.")
+            _audit_eval_export_attempt_rejected(
+                request,
+                failure_reason="invalid_user",
+                attempted_user_id=raw_user_id,
+                raw_reason=raw_reason,
+            )
         elif user_id in users_with_active_grants:
             error = _(
                 "This user already has an active grant. Revoke the "
                 "existing grant before issuing a new one."
             )
-        elif form.is_valid():
-            reason = form.cleaned_data["reason"]
-            grant = EvaluationExportGrant.objects.create(
-                user=target,
-                granted_by=request.user,
-                reason=reason,
-            )
-            _audit_eval_export_grant(
-                request, grant, action="create", reason=reason,
-            )
-            messages.success(
+            _audit_eval_export_attempt_rejected(
                 request,
-                _("Evaluator export access granted to %(name)s.")
-                % {"name": target.display_name},
+                failure_reason="duplicate_active_grant",
+                attempted_user_id=raw_user_id,
+                raw_reason=raw_reason,
             )
-            return redirect("admin_users:eval_export_grant_list")
+        elif not form.is_valid():
+            _audit_eval_export_attempt_rejected(
+                request,
+                failure_reason="reason_validation_failed",
+                attempted_user_id=raw_user_id,
+                raw_reason=raw_reason,
+                form_errors=dict(form.errors),
+            )
+        else:
+            reason = form.cleaned_data["reason"]
+            # Wrap the create in a savepoint so an IntegrityError from
+            # the partial unique constraint (concurrent grant for the
+            # same user) doesn't poison the outer transaction. The view
+            # check above catches the common case, but two admins
+            # racing can slip past it — the DB constraint is the final
+            # guarantee and we need to handle it gracefully.
+            try:
+                with transaction.atomic():
+                    grant = EvaluationExportGrant.objects.create(
+                        user=target,
+                        granted_by=request.user,
+                        reason=reason,
+                    )
+            except IntegrityError:
+                error = _(
+                    "This user already has an active grant. Revoke the "
+                    "existing grant before issuing a new one."
+                )
+                _audit_eval_export_attempt_rejected(
+                    request,
+                    failure_reason="race_duplicate_active_grant",
+                    attempted_user_id=raw_user_id,
+                    raw_reason=raw_reason,
+                )
+            else:
+                _audit_eval_export_grant(
+                    request, grant, action="create", reason=reason,
+                )
+                messages.success(
+                    request,
+                    _("Evaluator export access granted to %(name)s.")
+                    % {"name": target.display_name},
+                )
+                return redirect("admin_users:eval_export_grant_list")
 
     else:
         try:
@@ -524,6 +567,52 @@ def eval_export_grant_revoke(request, grant_id):
         % {"name": grant.user.display_name},
     )
     return redirect("admin_users:eval_export_grant_list")
+
+
+def _audit_eval_export_attempt_rejected(
+    request, failure_reason, attempted_user_id, raw_reason, form_errors=None,
+):
+    """Record a rejected grant-creation attempt in the audit DB.
+
+    We log rejections as well as successes so a privacy officer can
+    see whether anyone is probing the grant endpoint (e.g., repeated
+    attempts with invalid users, or racing past the duplicate check).
+    The rule of thumb: anything that hit the view and was turned away
+    should leave a trace.
+
+    ``failure_reason`` is a short code:
+      - ``invalid_user``: target not found or inactive
+      - ``duplicate_active_grant``: view-level check caught a duplicate
+      - ``race_duplicate_active_grant``: DB IntegrityError caught a
+        concurrent duplicate that slipped past the view check
+      - ``reason_validation_failed``: the form rejected the reason
+        (too short, placeholder, etc.)
+    """
+    try:
+        from apps.audit.models import AuditLog
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.id,
+            user_display=request.user.get_display_name(),
+            ip_address=get_client_ip(request),
+            action="access_denied",
+            resource_type="evaluation_export_grant",
+            resource_id=None,
+            metadata={
+                "outcome": "rejected",
+                "failure_reason": failure_reason,
+                "attempted_user_id": str(attempted_user_id)[:100],
+                "raw_reason": (raw_reason or "")[:2000],
+                "form_errors": form_errors or {},
+            },
+        )
+    except Exception:
+        logger.exception(
+            "Failed to audit rejected evaluation_export_grant attempt "
+            "by user %s (failure_reason=%s)",
+            request.user.id, failure_reason,
+        )
 
 
 def _audit_eval_export_grant(request, grant, action, reason):
