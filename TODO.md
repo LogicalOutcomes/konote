@@ -4,6 +4,7 @@
 
 - [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
+- [ ] Add LTE QA scenarios to sister repo — register the 7 new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` (lte_list, lte_submit, lte_detail, lte_cancel, lte_flag_concerns, lte_download, lte_resolve_review) and write 3 scenarios: happy path, small-population block, OCAP program without community signoff. Must be done in a separate session in the `konote-qa-scenarios` repo. — (LTE-QA1)
 
 ## Active Work
 
@@ -130,7 +131,7 @@ DRR approved by GK after two expert panel rounds — `tasks/design-rationale/eva
 - [ ] Register new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` and add scenarios (happy path, floor block, OCAP without signoff) — follow-up session in the konote-qa-scenarios repo (LTE-QA1)
 - [x] LTE user documentation — `docs/lte-privacy-officer-guide.md` + LTE section in `docs/admin/reporting.md` (LTE-DOC1)
 - [ ] GK reviews completed LTE implementation before merge — verifies demographic suppression, fuzzing correctness, community governance gating (LTE-GKREVIEW1)
-- [ ] Translate new LTE strings into French — run `translate_strings` on VPS, fill in msgstrs, commit updated .po/.mo (LTE-I18N1)
+- [x] Translate new LTE strings into French — 146 new msgids extracted via `translate_strings` on dev VPS, all 146 filled with Canadian French translations, .po committed (LTE-I18N1)
 
 ### Phase: Documentation & Website Updates
 

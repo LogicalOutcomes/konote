@@ -24321,10 +24321,10 @@ msgid ""
 "agreement."
 msgstr ""
 "La révocation retire la capacité de l'utilisateur de générer de nouveaux "
-"exports d'évaluation. Les fichiers déjà téléchargés restent en sa "
-"possession — cette action n'atteint pas les données déjà remises à "
-"l'évaluateur. Si l'évaluation est terminée, confirmez que l'évaluateur a "
-"supprimé sa copie conformément à l'entente de partage de données."
+"exports d'évaluation. Les fichiers déjà téléchargés restent en sa possession"
+" — cette action n'atteint pas les données déjà remises à l'évaluateur. Si "
+"l'évaluation est terminée, confirmez que l'évaluateur a supprimé sa copie "
+"conformément à l'entente de partage de données."
 
 msgid "Stale"
 msgstr "Inactif"
@@ -24336,14 +24336,15 @@ msgid "Yes, revoke access"
 msgstr "Oui, révoquer l'accès"
 
 msgid ""
-"Not used for %(n)s+ days — consider revoking if the evaluation engagement "
-"is complete."
+"Not used for %(n)s+ days — consider revoking if the evaluation engagement is"
+" complete."
 msgstr ""
-"Inutilisé depuis %(n)s jours ou plus — envisagez de révoquer si "
-"l'évaluation est terminée."
+"Inutilisé depuis %(n)s jours ou plus — envisagez de révoquer si l'évaluation"
+" est terminée."
 
 msgid ""
-"You are about to revoke evaluator export access for <strong>%(name)s</strong>."
+"You are about to revoke evaluator export access for "
+"<strong>%(name)s</strong>."
 msgstr ""
 "Vous êtes sur le point de révoquer l'accès à l'export pour évaluation de "
 "<strong>%(name)s</strong>."
@@ -24360,3 +24361,584 @@ msgstr ""
 "direction générale sur les exports pour évaluation</a> pour un parcours "
 "complet (quand et pourquoi accorder l'accès, comment remettre le fichier, "
 "comment révoquer)."
+
+msgid ""
+"(freezes the countdown — the privacy officer must resolve the flag before "
+"the countdown resumes)"
+msgstr ""
+"(fige le compte à rebours — le responsable de la vie privée doit résoudre le"
+" signalement avant que le compte à rebours ne reprenne)"
+
+msgid "60 days"
+msgstr "60 jours"
+
+msgid "90 days"
+msgstr "90 jours"
+
+msgid "A cancellation reason is required."
+msgstr "Un motif d'annulation est obligatoire."
+
+msgid ""
+"A post-hoc review task is assigned to the privacy officer — until it is "
+"resolved, the agency cannot submit another LTE request."
+msgstr ""
+"Une tâche de révision a posteriori est assignée au responsable de la vie "
+"privée — tant qu'elle n'est pas résolue, l'agence ne peut pas soumettre "
+"d'autre demande d'EPL."
+
+msgid "About LTE"
+msgstr "À propos de l'EPL"
+
+msgid "About flagging"
+msgstr "À propos du signalement"
+
+msgid "Acknowledgement"
+msgstr "Reconnaissance"
+
+msgid ""
+"An LTE request has been submitted. The download link will not activate until"
+" the review-and-cancel window elapses. During the window any agency admin "
+"may:"
+msgstr ""
+"Une demande d'EPL a été soumise. Le lien de téléchargement ne s'activera pas"
+" avant la fin de la fenêtre de révision et d'annulation. Pendant cette "
+"fenêtre, tout administrateur de l'agence peut :"
+
+msgid ""
+"Any admin can cancel or flag concerns during the 5-business-day review-and-"
+"cancel window."
+msgstr ""
+"Tout administrateur peut annuler ou signaler des préoccupations pendant la "
+"fenêtre de révision et d'annulation de 5 jours ouvrables."
+
+msgid "Approval date"
+msgstr "Date d'approbation"
+
+msgid "Approval number"
+msgstr "Numéro d'approbation"
+
+msgid "Auditable narrative of prior evaluation work. Minimum 50 characters."
+msgstr ""
+"Description auditable des travaux d'évaluation antérieurs. Minimum 50 "
+"caractères."
+
+msgid "Auto-cancelled (population floor)"
+msgstr "Annulation automatique (seuil de population)"
+
+msgid "Auto-cancelled — population dropped below floor"
+msgstr "Annulation automatique — la population est passée sous le seuil"
+
+msgid "Auto-cancelled — population dropped below the LTE floor."
+msgstr ""
+"Annulation automatique — la population est passée sous le seuil de l'EPL."
+
+msgid "Back to form"
+msgstr "Retour au formulaire"
+
+msgid "Back to list"
+msgstr "Retour à la liste"
+
+msgid "By"
+msgstr "Par"
+
+msgid "Cancel request"
+msgstr "Annuler la demande"
+
+msgid "Cancelled."
+msgstr "Annulée."
+
+msgid "Community governance framework"
+msgstr "Cadre de gouvernance communautaire"
+
+msgid "Community governance signoff"
+msgstr "Approbation de la gouvernance communautaire"
+
+msgid "Community review framework description"
+msgstr "Description du cadre de révision communautaire"
+
+msgid "Community reviewer affiliation"
+msgstr "Affiliation du réviseur communautaire"
+
+msgid "Community reviewer name"
+msgstr "Nom du réviseur communautaire"
+
+msgid "Community signoff date"
+msgstr "Date d'approbation communautaire"
+
+msgid "Community signoff date cannot be in the future."
+msgstr "La date d'approbation communautaire ne peut pas être dans le futur."
+
+msgid "Confirm and start review window"
+msgstr "Confirmer et démarrer la fenêtre de révision"
+
+msgid "Confirm cancel"
+msgstr "Confirmer l'annulation"
+
+msgid "DSA expiry"
+msgstr "Expiration de l'entente de partage"
+
+msgid "Data sharing agreement"
+msgstr "Entente de partage de données"
+
+msgid "Data sharing agreement has already expired."
+msgstr "L'entente de partage de données est déjà expirée."
+
+msgid "Degree / certification"
+msgstr "Diplôme / certification"
+
+msgid "Description of community review framework — required for 'other' flag."
+msgstr ""
+"Description du cadre de révision communautaire — obligatoire pour l'option «"
+" autre »."
+
+msgid "Destruction and purpose"
+msgstr "Destruction et finalité"
+
+msgid "Destruction attestation window"
+msgstr "Fenêtre d'attestation de destruction"
+
+msgid "Destruction confirmed"
+msgstr "Destruction confirmée"
+
+msgid "Destruction window"
+msgstr "Fenêtre de destruction"
+
+msgid "Download file"
+msgstr "Télécharger le fichier"
+
+msgid "Download link activated"
+msgstr "Lien de téléchargement activé"
+
+msgid "Download link active"
+msgstr "Lien de téléchargement actif"
+
+msgid "Download link is active for 24 hours from activation."
+msgstr ""
+"Le lien de téléchargement est actif pendant 24 heures à partir de son "
+"activation."
+
+msgid "EGAP (Black communities)"
+msgstr "EGAP (communautés noires)"
+
+msgid "Evaluation Export (Small Population)"
+msgstr "Exportation d'évaluation (petite population)"
+
+msgid "Evaluator credentials"
+msgstr "Qualifications de l'évaluateur"
+
+msgid "Evaluator degree or certification"
+msgstr "Diplôme ou certification de l'évaluateur"
+
+msgid "Evaluator years of experience"
+msgstr "Années d'expérience de l'évaluateur"
+
+msgid "Expired without download"
+msgstr "Expirée sans téléchargement"
+
+msgid "Expired without download."
+msgstr "Expirée sans téléchargement."
+
+msgid ""
+"File has been downloaded. Destruction attestation due at the end of the "
+"configured window."
+msgstr ""
+"Le fichier a été téléchargé. L'attestation de destruction est due à la fin "
+"de la fenêtre configurée."
+
+msgid ""
+"Fill in every field. Each precondition is captured in the immutable audit "
+"log and reviewed during the 5-business-day review-and-cancel window."
+msgstr ""
+"Remplissez tous les champs. Chaque condition préalable est consignée dans le"
+" journal d'audit immuable et examinée pendant la fenêtre de révision et "
+"d'annulation de 5 jours ouvrables."
+
+msgid "Flag LTE request"
+msgstr "Signaler la demande d'EPL"
+
+msgid "Flag concerns"
+msgstr "Signaler des préoccupations"
+
+msgid "Flag concerns on LTE request"
+msgstr "Signaler des préoccupations sur la demande d'EPL"
+
+msgid "Flag link does not match this request."
+msgstr "Le lien de signalement ne correspond pas à cette demande."
+
+msgid "Flag resolved"
+msgstr "Signalement résolu"
+
+msgid "Flag this request"
+msgstr "Signaler cette demande"
+
+msgid "Flagged"
+msgstr "Signalée"
+
+msgid "Flagged — privacy officer action required"
+msgstr "Signalée — action du responsable de la vie privée requise"
+
+msgid "Flagged — privacy officer action required. Countdown is frozen."
+msgstr ""
+"Signalée — action du responsable de la vie privée requise. Le compte à "
+"rebours est figé."
+
+msgid ""
+"Flagging freezes the review-and-cancel countdown. The privacy officer will "
+"be notified and must resolve the flag before the countdown resumes. "
+"Dismissal restarts the remaining time — it does not fast-forward."
+msgstr ""
+"Le signalement fige le compte à rebours de révision et d'annulation. Le "
+"responsable de la vie privée sera notifié et devra résoudre le signalement "
+"avant que le compte à rebours ne reprenne. Le rejet fait redémarrer le temps"
+" restant — il n'avance pas le compteur."
+
+msgid "For larger programs, use the standard Evaluator Export"
+msgstr ""
+"Pour les programmes plus grands, utilisez l'Exportation d'évaluation "
+"standard"
+
+msgid "Framework"
+msgstr "Cadre"
+
+msgid "Fuzzing and privacy"
+msgstr "Approximation et confidentialité"
+
+msgid "Fuzzing applied to the output"
+msgstr "Approximation appliquée à la sortie"
+
+msgid ""
+"If a participant withdraws consent during the window, the request is "
+"invalidated and must be re-submitted."
+msgstr ""
+"Si un participant retire son consentement pendant la fenêtre, la demande est"
+" invalidée et doit être soumise à nouveau."
+
+msgid ""
+"If you believe this request does not meet the preconditions (REB approval, "
+"community review, evaluator credentials, DSA), flag it."
+msgstr ""
+"Si vous croyez que cette demande ne respecte pas les conditions préalables "
+"(approbation du CÉR, révision communautaire, qualifications de l'évaluateur,"
+" entente de partage), signalez-la."
+
+msgid "Invalid or expired flag link. Ask an admin to re-flag from KoNote."
+msgstr ""
+"Lien de signalement invalide ou expiré. Demandez à un administrateur de "
+"signaler à nouveau depuis KoNote."
+
+msgid "Invalidated by withdrawal"
+msgstr "Invalidée par retrait de consentement"
+
+msgid ""
+"Invalidated — a participant withdrew consent during the window. Re-submit if"
+" still needed."
+msgstr ""
+"Invalidée — un participant a retiré son consentement pendant la fenêtre. "
+"Soumettez à nouveau si toujours nécessaire."
+
+msgid "Invalidated — participant withdrew consent"
+msgstr "Invalidée — le participant a retiré son consentement"
+
+msgid "LTE Preview"
+msgstr "Aperçu de l'EPL"
+
+msgid ""
+"LTE drops demographics to protect identity at small n, and fuzzes metric "
+"trajectories to reduce the uniqueness of each participant's shape of change."
+" It is for program evaluation — not research. If your evaluator needs "
+"unrounded values or demographic detail, use the research-grade workflow "
+"instead."
+msgstr ""
+"L'EPL retire les données démographiques pour protéger l'identité quand n est"
+" petit, et approxime les trajectoires de mesures pour réduire l'unicité du "
+"parcours de changement de chaque participant. Elle est conçue pour "
+"l'évaluation de programmes — pas pour la recherche. Si votre évaluateur a "
+"besoin de valeurs non arrondies ou de détails démographiques, utilisez "
+"plutôt le processus de recherche."
+
+msgid "LTE export blocked: %(reason)s"
+msgstr "Exportation EPL bloquée : %(reason)s"
+
+msgid "LTE file is not available for download (status: %(status)s)."
+msgstr ""
+"Le fichier EPL n'est pas disponible au téléchargement (statut : %(status)s)."
+
+msgid "LTE flag recorded"
+msgstr "Signalement EPL enregistré"
+
+msgid "LTE is for program evaluation, not research."
+msgstr "L'EPL est destinée à l'évaluation de programmes, pas à la recherche."
+
+msgid "LTE request cancelled."
+msgstr "Demande EPL annulée."
+
+msgid "LTE submitted"
+msgstr "EPL soumise"
+
+msgid "Lifecycle"
+msgstr "Cycle de vie"
+
+msgid "Longitudinal Trajectory Export (Small Population)"
+msgstr "Exportation de trajectoires longitudinales (petite population)"
+
+msgid ""
+"Longitudinal Trajectory Export — small-population evaluation tier. Drops "
+"demographics, fuzzes metric trajectories, and gates submission behind REB "
+"approval, community governance review, and a 5-business-day review-and-"
+"cancel window."
+msgstr ""
+"Exportation de trajectoires longitudinales — niveau d'évaluation pour "
+"petites populations. Retire les données démographiques, approxime les "
+"trajectoires de mesures et conditionne la soumission à l'approbation d'un "
+"CÉR, à la révision de gouvernance communautaire et à une fenêtre de révision"
+" et d'annulation de 5 jours ouvrables."
+
+msgid "Mark resolved"
+msgstr "Marquer comme résolue"
+
+msgid "Metric values rounded to nearest scale unit."
+msgstr "Valeurs de mesures arrondies à l'unité d'échelle la plus proche."
+
+msgid "Name of the Research Ethics Board that approved this evaluation."
+msgstr ""
+"Nom du Comité d'éthique de la recherche (CÉR) qui a approuvé cette "
+"évaluation."
+
+msgid "New LTE request"
+msgstr "Nouvelle demande d'EPL"
+
+msgid "New LTE submissions paused"
+msgstr "Nouvelles soumissions EPL en pause"
+
+msgid "New Longitudinal Trajectory Export request"
+msgstr "Nouvelle demande d'Exportation de trajectoires longitudinales"
+
+msgid "New request"
+msgstr "Nouvelle demande"
+
+msgid "No LTE requests in this agency yet."
+msgstr "Aucune demande d'EPL dans cette agence pour l'instant."
+
+msgid ""
+"No demographic fields in the file (age, gender, ethnicity, geography all "
+"dropped)."
+msgstr ""
+"Aucun champ démographique dans le fichier (âge, genre, origine ethnique, "
+"géographie tous retirés)."
+
+msgid "No file is associated with this LTE request."
+msgstr "Aucun fichier n'est associé à cette demande EPL."
+
+msgid "No lifecycle events recorded yet."
+msgstr "Aucun événement de cycle de vie enregistré pour l'instant."
+
+msgid "No specific framework"
+msgstr "Aucun cadre spécifique"
+
+msgid "OCAP (First Nations, Inuit, Métis)"
+msgstr "PCAP (Premières Nations, Inuits, Métis)"
+
+msgid "Other small-population community review"
+msgstr "Autre révision communautaire pour petite population"
+
+msgid "Period end must be on or after period start."
+msgstr ""
+"La date de fin de la période doit être postérieure ou égale à la date de "
+"début."
+
+msgid "Pipeline Summary"
+msgstr "Résumé du pipeline"
+
+msgid "Population floor applied"
+msgstr "Seuil de population appliqué"
+
+msgid "Post-hoc review resolved"
+msgstr "Révision a posteriori résolue"
+
+msgid "Post-hoc review resolved. Agency may now submit new LTE requests."
+msgstr ""
+"Révision a posteriori résolue. L'agence peut maintenant soumettre de "
+"nouvelles demandes EPL."
+
+msgid "Prior programs"
+msgstr "Programmes antérieurs"
+
+msgid "Prior programs evaluated"
+msgstr "Programmes antérieurs évalués"
+
+msgid ""
+"Programs below the LTE floor cannot generate a Longitudinal Trajectory "
+"Export. Use aggregate reports instead, or direct research-grade requests "
+"through the separate research workflow."
+msgstr ""
+"Les programmes sous le seuil de l'EPL ne peuvent pas générer d'Exportation "
+"de trajectoires longitudinales. Utilisez plutôt les rapports agrégés, ou "
+"orientez les demandes de niveau recherche vers le processus de recherche "
+"distinct."
+
+msgid "Purpose statement"
+msgstr "Énoncé de finalité"
+
+msgid "REB"
+msgstr "CÉR"
+
+msgid "REB and DSA"
+msgstr "CÉR et entente de partage"
+
+msgid "REB approval"
+msgstr "Approbation du CÉR"
+
+msgid "REB approval date"
+msgstr "Date d'approbation du CÉR"
+
+msgid "REB approval date cannot be in the future."
+msgstr "La date d'approbation du CÉR ne peut pas être dans le futur."
+
+msgid "REB approval number"
+msgstr "Numéro d'approbation du CÉR"
+
+msgid "REB name"
+msgstr "Nom du CÉR"
+
+msgid "Reason (required)"
+msgstr "Motif (obligatoire)"
+
+msgid "Reason for flagging"
+msgstr "Motif du signalement"
+
+msgid "Required when the program's community governance flag is 'Other'."
+msgstr ""
+"Obligatoire lorsque l'indicateur de gouvernance communautaire du programme "
+"est « Autre »."
+
+msgid ""
+"Required when the selected program carries an OCAP, EGAP, or other-community"
+" governance flag. Leave blank otherwise — the form will enforce the right "
+"rule based on the program's configuration."
+msgstr ""
+"Obligatoire lorsque le programme sélectionné porte un indicateur de "
+"gouvernance PCAP, EGAP ou autre-communautaire. Laissez vide sinon — le "
+"formulaire appliquera la règle appropriée en fonction de la configuration du"
+" programme."
+
+msgid "Resolve post-hoc review"
+msgstr "Résoudre la révision a posteriori"
+
+msgid ""
+"Review the pipeline result before submitting the request. Submission starts "
+"the review-and-cancel window — the file is not generated until the window "
+"elapses."
+msgstr ""
+"Examinez le résultat du pipeline avant de soumettre la demande. La "
+"soumission démarre la fenêtre de révision et d'annulation — le fichier n'est"
+" généré qu'une fois la fenêtre écoulée."
+
+msgid "Review window"
+msgstr "Fenêtre de révision"
+
+msgid "Review-and-cancel window activates"
+msgstr "La fenêtre de révision et d'annulation s'active"
+
+msgid "Reviewer"
+msgstr "Réviseur"
+
+msgid "Risk notice"
+msgstr "Avis de risque"
+
+msgid ""
+"Session counts banded to nearest 5, total hours banded to nearest half-hour."
+msgstr ""
+"Nombres de séances arrondis au 5 le plus proche, heures totales arrondies à "
+"la demi-heure la plus proche."
+
+msgid "Signoff date"
+msgstr "Date d'approbation"
+
+msgid "Submitted by"
+msgstr "Soumise par"
+
+msgid "Submitted — review and cancel window"
+msgstr "Soumise — fenêtre de révision et d'annulation"
+
+msgid ""
+"The LTE request has been flagged. The review-and-cancel countdown is now "
+"frozen."
+msgstr ""
+"La demande EPL a été signalée. Le compte à rebours de révision et "
+"d'annulation est maintenant figé."
+
+msgid "The privacy officer has been notified and will resolve the flag."
+msgstr ""
+"Le responsable de la vie privée a été notifié et résoudra le signalement."
+
+msgid "The request is recorded and all agency admins are emailed."
+msgstr ""
+"La demande est enregistrée et tous les administrateurs de l'agence sont "
+"notifiés par courriel."
+
+msgid ""
+"This LTE request is already in a terminal state and cannot be cancelled."
+msgstr ""
+"Cette demande EPL est déjà dans un état final et ne peut plus être annulée."
+
+msgid ""
+"This LTE request is no longer in the review-and-cancel window — it has "
+"already been resolved, cancelled, or activated."
+msgstr ""
+"Cette demande EPL n'est plus dans la fenêtre de révision et d'annulation — "
+"elle a déjà été résolue, annulée ou activée."
+
+msgid "This is a privacy-sensitive export."
+msgstr "Ceci est une exportation sensible pour la vie privée."
+
+msgid ""
+"Use LTE for programs with fewer than 15 participants where the standard "
+"Evaluator Export is blocked. LTE is for PROGRAM EVALUATION, not research — "
+"it does not include demographic detail or unrounded metric values."
+msgstr ""
+"Utilisez l'EPL pour les programmes de moins de 15 participants où "
+"l'Exportation d'évaluation standard est bloquée. L'EPL sert à l'ÉVALUATION "
+"DE PROGRAMMES, pas à la recherche — elle n'inclut ni détails démographiques "
+"ni valeurs de mesures non arrondies."
+
+msgid "View details and cancel the request"
+msgstr "Voir les détails et annuler la demande"
+
+msgid "View request details"
+msgstr "Voir les détails de la demande"
+
+msgid "What happens next"
+msgstr "Ce qui se passe ensuite"
+
+msgid ""
+"When the window elapses without intervention, the download link activates "
+"for 24 hours."
+msgstr ""
+"Lorsque la fenêtre s'écoule sans intervention, le lien de téléchargement "
+"s'active pour 24 heures."
+
+msgid "When to use this tier"
+msgstr "Quand utiliser ce niveau"
+
+msgid "Will be exported"
+msgstr "Sera exportée"
+
+msgid "Window activates"
+msgstr "La fenêtre s'active"
+
+msgid "Years experience"
+msgstr "Années d'expérience"
+
+msgid "days"
+msgstr "jours"
+
+msgid "from submission"
+msgstr "à partir de la soumission"
+
+msgid "study_id is a random UUID with no relationship to real record IDs."
+msgstr ""
+"study_id est un UUID aléatoire sans relation avec les vrais identifiants de "
+"dossier."
+
+msgid "submitted"
+msgstr "soumise"
