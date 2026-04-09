@@ -51,6 +51,17 @@ NON_CONSENTING_COUNT = 3
 # How many participants should be discharged
 DISCHARGED_COUNT = 6
 
+# Demo users who receive the report.evaluation_export grant. Governance
+# model (tasks/eval-export-governance.md): per-user grant only, admins
+# are NOT auto-granted. Casey Worker is PM in Supported Employment (the
+# program the demo export is wired to), Morgan is PM elsewhere, and Eva
+# is the ED who authorises evaluations.
+EVAL_EXPORT_GRANTEES = [
+    ("demo-worker-1", "Casey Worker"),
+    ("demo-manager", "Morgan Manager"),
+    ("demo-executive", "Eva Executive"),
+]
+
 # Demographic distributions (counts, not percentages, for 35 people)
 GENDER_DISTRIBUTION = [
     ("Woman", 16),
@@ -162,6 +173,35 @@ class Command(BaseCommand):
             return
 
         self.stdout.write(f"Target program: {program.name} (id={program.pk})")
+
+        # Fast path: if the demo is already set up (target participants
+        # reached AND the permission grantees already hold the flag) skip
+        # the full idempotent sweep. This matters because `seed` runs on
+        # every container startup and the sweep otherwise does ~1-5 s of
+        # read + unconditional-write DB work.
+        #
+        # Correctness depends on handle() wrapping _run() in
+        # transaction.atomic() (see line ~160): because the whole run
+        # either commits or rolls back, "enrolments at target AND all
+        # grantees granted" is a reliable proxy for "every earlier step
+        # also finished". If that atomic wrapper is ever removed or
+        # narrowed, this short-circuit could skip a partially-seeded
+        # state — re-audit the check before relaxing atomicity.
+        enrolment_count = ClientProgramEnrolment.objects.filter(
+            program=program, client_file__is_demo=True,
+        ).count()
+        granted_count = User.objects.filter(
+            username__in=[u for u, _ in EVAL_EXPORT_GRANTEES],
+            evaluation_export_granted=True,
+        ).count()
+        if (
+            enrolment_count >= TARGET_PARTICIPANTS
+            and granted_count == len(EVAL_EXPORT_GRANTEES)
+        ):
+            self.stdout.write(
+                "  Evaluator Export demo already seeded — skipping."
+            )
+            return
 
         # 2. Find the PM worker for this program
         pm_role = UserProgramRole.objects.filter(
@@ -694,23 +734,8 @@ class Command(BaseCommand):
             ))
 
     def _grant_permission(self):
-        """Grant evaluation export permission to demo users who should hold it.
-
-        Governance model (see tasks/eval-export-governance.md): the permission
-        is DENY for all roles by default and must be explicitly granted per
-        user. Admins do NOT auto-hold it — they grant it to operators. For
-        the demo we grant to:
-          - demo-executive (Eva, ED who authorises evaluations)
-          - demo-manager (Morgan, PM who executes exports)
-          - demo-worker-1 (Casey, PM in Supported Employment, the program
-            the demo export is wired up against)
-        """
-        grantees = [
-            ("demo-worker-1", "Casey Worker"),
-            ("demo-manager", "Morgan Manager"),
-            ("demo-executive", "Eva Executive"),
-        ]
-        for username, display_name in grantees:
+        """Grant report.evaluation_export to each user in EVAL_EXPORT_GRANTEES."""
+        for username, display_name in EVAL_EXPORT_GRANTEES:
             user = User.objects.filter(username=username).first()
             if not user:
                 self.stdout.write(self.style.WARNING(

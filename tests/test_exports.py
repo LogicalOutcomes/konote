@@ -12,7 +12,7 @@ Covers CHART-TIME1: client_analysis timeframe filter.
 Covers IMPROVE-4: get_quarter_range() and get_quarter_choices() utility functions.
 """
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
@@ -532,6 +532,7 @@ class FunderReportTemplateMetricFilterTest(TestCase):
         # Create a note with values for both metrics
         note = ProgressNote.objects.create(
             client_file=self.client_file, author=self.user,
+            backdate=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
         )
         pnt = ProgressNoteTarget.objects.create(
             progress_note=note, plan_target=target,
