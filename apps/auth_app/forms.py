@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program, UserProgramRole
 
-from .models import AccessGrant, AccessGrantReason, Invite, User
+from .models import AccessGrant, AccessGrantReason, EvaluationExportGrant, Invite, User
 
 
 class LoginForm(forms.Form):
@@ -308,7 +308,7 @@ class EvaluationExportGrantForm(forms.Form):
     """
 
     REASON_MIN_LENGTH = 15
-    REASON_MAX_LENGTH = 2000
+    REASON_MAX_LENGTH = EvaluationExportGrant.REASON_MAX_LENGTH
     REASON_BLOCKLIST = {"ok", "test", "testing", "todo", "placeholder", "n/a", "na"}
 
     reason = forms.CharField(

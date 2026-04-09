@@ -53,17 +53,11 @@
                 <a href="{% url 'admin_users:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
                 <a href="{% url 'admin_users:user_roles' user_id=item.user.pk %}">{% trans "Roles" %}</a>
                 {% if item.user.is_active and item.user != request.user %}
-                {# Accessibility: two-step POST flow (see user_deactivate
-                   view). First POST renders a confirmation page; the
-                   confirmation form POSTs back with confirm=1 and the
-                   deactivation runs. Works without JavaScript. #}
-                <form method="post" action="{% url 'admin_users:user_deactivate' user_id=item.user.pk %}" style="display:inline">
-                    {% csrf_token %}
-                        <button type="submit" class="outline secondary"
-                            style="padding: 0.25rem 0.5rem; margin: 0;">
-                        {% trans "Deactivate…" %}
-                    </button>
-                </form>
+                <a href="{% url 'admin_users:user_deactivate' user_id=item.user.pk %}"
+                   role="button" class="outline secondary"
+                   style="padding: 0.25rem 0.5rem; margin: 0;">
+                    {% trans "Deactivate…" %}
+                </a>
                 {% endif %}
             </td>
         </tr>

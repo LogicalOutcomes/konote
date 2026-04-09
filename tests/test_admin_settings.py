@@ -665,18 +665,16 @@ class UserManagementTest(TestCase):
         user = User.objects.create_user(
             username="deactivateme", password="testpass123", display_name="Deactivate Me",
         )
-        # Two-step POST flow for accessibility: first POST renders the
-        # confirmation page (200), second POST with confirm=1 performs
-        # the action and redirects (302).
-        confirm_resp = self.client.post(f"/manage/users/{user.pk}/deactivate/")
+        # GET renders the confirmation page, POST does the deactivation
+        # — matches KoNote's standard destructive-action pattern
+        # (access_grant_revoke, template_section_delete, etc.).
+        confirm_resp = self.client.get(f"/manage/users/{user.pk}/deactivate/")
         self.assertEqual(confirm_resp.status_code, 200)
         self.assertContains(confirm_resp, "Deactivate Me")
         user.refresh_from_db()
-        self.assertTrue(user.is_active, "User should still be active before confirmation")
+        self.assertTrue(user.is_active, "User should still be active after GET")
 
-        resp = self.client.post(
-            f"/manage/users/{user.pk}/deactivate/", {"confirm": "1"},
-        )
+        resp = self.client.post(f"/manage/users/{user.pk}/deactivate/")
         self.assertEqual(resp.status_code, 302)
         user.refresh_from_db()
         self.assertFalse(user.is_active)

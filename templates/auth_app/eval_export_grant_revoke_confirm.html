@@ -31,9 +31,8 @@
     {% trans "Revoking removes the user's ability to generate new evaluation exports. Any files they have already downloaded remain with them — this action does not reach data already in the evaluator's hands. If the evaluation is complete, confirm that the evaluator has deleted their copy per the data sharing agreement." %}
 </p>
 
-<form method="post" action="{% url 'admin_users:eval_export_grant_revoke' grant_id=grant.pk %}">
+<form method="post">
     {% csrf_token %}
-    <input type="hidden" name="confirm" value="1">
     <button type="submit" class="secondary">{% trans "Yes, revoke access" %}</button>
     <a href="{% url 'admin_users:eval_export_grant_list' %}" role="button" class="outline">
         {% trans "Cancel" %}

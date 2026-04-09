@@ -1602,8 +1602,8 @@ class EvaluationExportGrantViewTest(TestCase):
 
     # Revoke view -----------------------------------------------------
 
-    def test_revoke_view_renders_confirmation_without_confirm_flag(self):
-        """First POST (no confirm=1) renders the confirmation page."""
+    def test_revoke_view_get_renders_confirmation(self):
+        """GET renders the confirmation page; nothing is revoked yet."""
         from apps.auth_app.models import EvaluationExportGrant
         grant = EvaluationExportGrant.objects.create(
             user=self.target, granted_by=self.admin,
@@ -1611,13 +1611,13 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.admin)
-        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
+        resp = c.get(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "View Target")
         grant.refresh_from_db()
-        self.assertTrue(grant.active, "Grant should still be active before confirm")
+        self.assertTrue(grant.active, "Grant should still be active after GET")
 
-    def test_revoke_view_marks_grant_inactive_with_confirm(self):
+    def test_revoke_view_post_marks_grant_inactive(self):
         from apps.auth_app.models import EvaluationExportGrant
         grant = EvaluationExportGrant.objects.create(
             user=self.target, granted_by=self.admin,
@@ -1628,10 +1628,7 @@ class EvaluationExportGrantViewTest(TestCase):
 
         c = Client()
         c.force_login(self.admin)
-        resp = c.post(
-            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
-            {"confirm": "1"},
-        )
+        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         self.assertEqual(resp.status_code, 302)
 
         grant.refresh_from_db()
@@ -1650,10 +1647,7 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.outsider)
-        resp = c.post(
-            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
-            {"confirm": "1"},
-        )
+        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         self.assertIn(resp.status_code, (302, 403))
         grant.refresh_from_db()
         self.assertTrue(grant.active)
@@ -1709,10 +1703,7 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.admin)
-        c.post(
-            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
-            {"confirm": "1"},
-        )
+        c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         log = AuditLog.objects.using("audit").filter(
             resource_type="evaluation_export_grant",
             action="update",
@@ -1778,53 +1769,22 @@ class EvaluationExportGrantViewTest(TestCase):
     # Concurrent-grant race ---------------------------------------------
 
     def test_concurrent_grant_race_caught_by_db_constraint(self):
-        """Simulate two admins racing past the view-level duplicate check.
+        """IntegrityError from a racing concurrent grant renders cleanly.
 
-        We monkey-patch the view's pre-check by creating a grant between
-        the candidate-set read and the create() call via a post_save
-        signal that would only fire in a real race. Easier: create the
-        first grant *directly*, then POST a second — the view's set is
-        stale (read before the direct create), so the check passes, but
-        the DB constraint fires.
-
-        In this test we use a simpler approach: directly exercise the
-        IntegrityError path by calling the view twice in quick succession
-        with the candidate-set cached in the first request's state. The
-        partial unique constraint at the DB layer is the real guarantee;
-        we just want to confirm the view handles it gracefully.
+        The partial unique constraint is the real guarantee (see
+        test_unique_active_grant_per_user). This test exercises the
+        VIEW's except branch by patching create() to raise
+        IntegrityError, and confirms the view re-renders with the
+        duplicate error instead of a 500.
         """
-        from apps.auth_app.models import EvaluationExportGrant
-        from apps.audit.models import AuditLog
-
-        # Create a grant directly so the next POST's view-level check
-        # still thinks the user is available (because it reads
-        # users_with_active_grants at the TOP of the view, but here we
-        # insert the competing grant AFTER that would-be read). We
-        # simulate by using the ORM directly from a second test user,
-        # then POST.
-        #
-        # Easier path: craft a scenario where the view's
-        # users_with_active_grants set doesn't include the target, then
-        # insert the competing grant before the .create() would run.
-        # We can't literally interleave requests in a single-process
-        # test, so instead we directly test the except branch by
-        # pre-inserting a grant and bypassing the view-level check via
-        # a form POST with a handcrafted state.
-        #
-        # Practical approach: the partial unique constraint is tested
-        # at the model level (test_unique_active_grant_per_user). What
-        # matters for the VIEW is that any IntegrityError from create()
-        # becomes a re-render, not a 500. We force that by mocking
-        # EvaluationExportGrant.objects.create to raise IntegrityError.
         from unittest.mock import patch
         from django.db import IntegrityError
+        from apps.auth_app.models import EvaluationExportGrant
+        from apps.audit.models import AuditLog
 
         c = Client()
         c.force_login(self.admin)
 
-        # Exclude the target from active grants (so the view-level
-        # duplicate check passes), then patch .create() on the model
-        # manager to raise IntegrityError as the DB would in a race.
         with patch(
             "apps.auth_app.admin_views.EvaluationExportGrant.objects.create",
             side_effect=IntegrityError("simulated race"),
@@ -1834,12 +1794,10 @@ class EvaluationExportGrantViewTest(TestCase):
                 "reason": "Valid reason that would normally create a grant successfully.",
             })
 
-        # View re-renders with the duplicate error, not a 500
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(
             EvaluationExportGrant.objects.filter(user=self.target).exists()
         )
-        # Audit row records the race
         log = AuditLog.objects.using("audit").filter(
             resource_type="evaluation_export_grant",
             action="access_denied",
@@ -1986,13 +1944,10 @@ class EvaluationExportGrantIntegrationTest(TestCase):
         resp = c.get("/reports/evaluation-export/")
         self.assertEqual(resp.status_code, 200)
 
-        # Admin revokes (two-step: first POST renders confirm, second
-        # POST with confirm=1 performs the revoke)
+        # Admin revokes (POST to same URL — GET renders the confirm
+        # page, POST does the action; matches access_grant_revoke).
         grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
-        admin_c.post(
-            f"/manage/users/evaluation-export/{grant.pk}/revoke/",
-            {"confirm": "1"},
-        )
+        admin_c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
 
         # Access denied again
         resp = c.get("/reports/evaluation-export/")

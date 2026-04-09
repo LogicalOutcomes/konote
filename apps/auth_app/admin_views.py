@@ -5,7 +5,6 @@ PMs with user.manage: PROGRAM: manage staff/receptionist in their own programs.
 Invites and impersonation remain admin-only (separate views).
 """
 import logging
-from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -140,14 +139,11 @@ def user_edit(request, user_id):
 @login_required
 @requires_permission("user.manage", allow_admin=True)
 def user_deactivate(request, user_id):
-    """Deactivate a user account — two-step POST flow.
+    """Deactivate a user account — GET renders confirmation, POST acts.
 
     Accessibility: destructive action uses a server-side confirmation
-    page rather than relying on `window.confirm()` JavaScript. The
-    "Deactivate" button on the user list POSTs here without
-    `confirm=1`, which renders a confirmation page. Submitting that
-    page POSTs back with `confirm=1` and the deactivation runs.
-    Same pattern as eval_export_grant_revoke.
+    page (GET) rather than relying on `window.confirm()` JavaScript.
+    Mirrors the existing pattern in `access_grant_revoke`.
     """
     user = get_object_or_404(User, pk=user_id)
 
@@ -156,12 +152,9 @@ def user_deactivate(request, user_id):
         if not _user_in_pm_programs(request.user, user):
             return HttpResponseForbidden(_("Access denied. You can only manage users in your programs."))
 
-    if request.method != "POST":
-        return redirect("admin_users:user_list")
-
-    # Pre-flight guards that apply to both the confirm render and the
-    # final action — no point showing a confirmation page for an
-    # action we'd reject anyway.
+    # Pre-flight guards apply to both the confirm render and the
+    # action. No point showing a confirmation page for an action
+    # we'd reject anyway.
     if user == request.user:
         messages.error(request, _("You cannot deactivate your own account."))
         return redirect("admin_users:user_list")
@@ -169,24 +162,22 @@ def user_deactivate(request, user_id):
         messages.error(request, _("Only administrators can deactivate admin accounts."))
         return redirect("admin_users:user_list")
 
-    # Step 1: no confirm flag yet — render the confirmation page.
-    if request.POST.get("confirm") != "1":
-        return render(
-            request,
-            "auth_app/user_deactivate_confirm.html",
-            {"deactivate_user": user},
+    if request.method == "POST":
+        user.is_active = False
+        user.save()
+        _audit_user_change(
+            request, user, "update",
+            old_values={"is_active": True},
+            new_values={"is_active": False},
         )
+        messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
+        return redirect("admin_users:user_list")
 
-    # Step 2: confirmed — do the deactivation.
-    user.is_active = False
-    user.save()
-    _audit_user_change(
-        request, user, "update",
-        old_values={"is_active": True},
-        new_values={"is_active": False},
+    return render(
+        request,
+        "auth_app/user_deactivate_confirm.html",
+        {"deactivate_user": user},
     )
-    messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
-    return redirect("admin_users:user_list")
 
 
 @login_required
@@ -403,6 +394,18 @@ def user_role_remove(request, user_id, role_id):
 # general user edit form.
 
 
+class GrantRejectReason:
+    """Failure-reason codes written to the audit log for rejected attempts.
+
+    A class of string constants rather than raw literals so tests and
+    views share one source of truth and typos surface at import time.
+    """
+    INVALID_USER = "invalid_user"
+    DUPLICATE_ACTIVE_GRANT = "duplicate_active_grant"
+    RACE_DUPLICATE_ACTIVE_GRANT = "race_duplicate_active_grant"
+    REASON_VALIDATION_FAILED = "reason_validation_failed"
+
+
 @login_required
 @admin_required
 def eval_export_grant_list(request):
@@ -443,24 +446,20 @@ def eval_export_grant_list(request):
         .order_by("user__display_name")
     )
 
-    # Flag grants that haven't been used for 6+ months (or were never
-    # used at all and are older than 6 months). The DRR rejected
-    # automatic expiry — visibility is the agreed safeguard — so this
-    # is the visibility.
-    stale_cutoff = timezone.now() - timedelta(days=180)
-    grant_rows = []
-    for g in grants:
-        reference_date = g.last_export_at or g.granted_at
-        is_stale = reference_date < stale_cutoff
-        grant_rows.append({
+    # The DRR rejected automatic expiry; visibility is the agreed
+    # safeguard, which is what the "Stale" indicator provides.
+    grant_rows = [
+        {
             "grant": g,
             "last_export_at": g.last_export_at,
-            "is_stale": is_stale,
-        })
+            "is_stale": g.is_stale(g.last_export_at),
+        }
+        for g in grants
+    ]
 
     return render(request, "auth_app/eval_export_grant_list.html", {
         "grant_rows": grant_rows,
-        "stale_days": 180,
+        "stale_days": EvaluationExportGrant.STALE_DAYS,
     })
 
 
@@ -512,7 +511,7 @@ def eval_export_grant_create(request):
             error = _("Please choose a user to grant this permission to.")
             _audit_eval_export_attempt_rejected(
                 request,
-                failure_reason="invalid_user",
+                failure_reason=GrantRejectReason.INVALID_USER,
                 attempted_user_id=raw_user_id,
                 raw_reason=raw_reason,
             )
@@ -523,17 +522,17 @@ def eval_export_grant_create(request):
             )
             _audit_eval_export_attempt_rejected(
                 request,
-                failure_reason="duplicate_active_grant",
+                failure_reason=GrantRejectReason.DUPLICATE_ACTIVE_GRANT,
                 attempted_user_id=raw_user_id,
                 raw_reason=raw_reason,
             )
         elif not form.is_valid():
             _audit_eval_export_attempt_rejected(
                 request,
-                failure_reason="reason_validation_failed",
+                failure_reason=GrantRejectReason.REASON_VALIDATION_FAILED,
                 attempted_user_id=raw_user_id,
                 raw_reason=raw_reason,
-                form_errors=dict(form.errors),
+                form_errors=form.errors.get_json_data(),
             )
         else:
             reason = form.cleaned_data["reason"]
@@ -557,7 +556,7 @@ def eval_export_grant_create(request):
                 )
                 _audit_eval_export_attempt_rejected(
                     request,
-                    failure_reason="race_duplicate_active_grant",
+                    failure_reason=GrantRejectReason.RACE_DUPLICATE_ACTIVE_GRANT,
                     attempted_user_id=raw_user_id,
                     raw_reason=raw_reason,
                 )
@@ -589,45 +588,37 @@ def eval_export_grant_create(request):
 @login_required
 @admin_required
 def eval_export_grant_revoke(request, grant_id):
-    """Revoke an active grant — two-step POST flow.
+    """Revoke an active grant — GET renders confirmation, POST acts.
 
     Admin-only (see eval_export_grant_list docstring for rationale).
 
-    Accessibility: destructive actions should not rely on JavaScript
-    confirmation. The list page's "Revoke" button POSTs here without
-    `confirm=1`, which renders a server-side confirmation page.
-    Submitting the confirmation form POSTs back with `confirm=1` and
-    the actual revoke runs. Screen-reader and no-JS users get the
-    same safety net as JS users.
+    Accessibility: destructive action uses a server-side confirmation
+    page (GET) rather than relying on `window.confirm()` JavaScript.
+    Mirrors the existing pattern in `access_grant_revoke`.
     """
-    if request.method != "POST":
-        return redirect("admin_users:eval_export_grant_list")
-
     grant = get_object_or_404(EvaluationExportGrant, pk=grant_id, active=True)
 
-    # Step 1: no confirm flag yet — render the confirmation page.
-    if request.POST.get("confirm") != "1":
-        return render(
-            request,
-            "auth_app/eval_export_grant_revoke_confirm.html",
-            {"grant": grant},
+    if request.method == "POST":
+        grant.active = False
+        grant.revoked_at = timezone.now()
+        grant.revoked_by = request.user
+        grant.save()
+
+        _audit_eval_export_grant(
+            request, grant, action="update", reason=grant.reason,
         )
+        messages.success(
+            request,
+            _("Evaluator export access revoked for %(name)s.")
+            % {"name": grant.user.display_name},
+        )
+        return redirect("admin_users:eval_export_grant_list")
 
-    # Step 2: confirmed — do the revoke.
-    grant.active = False
-    grant.revoked_at = timezone.now()
-    grant.revoked_by = request.user
-    grant.save()
-
-    _audit_eval_export_grant(
-        request, grant, action="update", reason=grant.reason,
-    )
-    messages.success(
+    return render(
         request,
-        _("Evaluator export access revoked for %(name)s.")
-        % {"name": grant.user.display_name},
+        "auth_app/eval_export_grant_revoke_confirm.html",
+        {"grant": grant},
     )
-    return redirect("admin_users:eval_export_grant_list")
 
 
 def _audit_eval_export_attempt_rejected(
@@ -664,7 +655,7 @@ def _audit_eval_export_attempt_rejected(
                 "outcome": "rejected",
                 "failure_reason": failure_reason,
                 "attempted_user_id": str(attempted_user_id)[:100],
-                "raw_reason": (raw_reason or "")[:2000],
+                "raw_reason": (raw_reason or "")[:EvaluationExportGrant.REASON_MAX_LENGTH],
                 "form_errors": form_errors or {},
             },
         )

@@ -20,9 +20,8 @@
     </p>
 </article>
 
-<form method="post" action="{% url 'admin_users:user_deactivate' user_id=deactivate_user.pk %}">
+<form method="post">
     {% csrf_token %}
-    <input type="hidden" name="confirm" value="1">
     <button type="submit" class="secondary">{% trans "Yes, deactivate" %}</button>
     <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">
         {% trans "Cancel" %}

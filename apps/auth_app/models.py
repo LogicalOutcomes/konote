@@ -318,6 +318,9 @@ class EvaluationExportGrant(models.Model):
     access-control rationale.
     """
 
+    REASON_MAX_LENGTH = 2000
+    STALE_DAYS = 180
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -331,7 +334,6 @@ class EvaluationExportGrant(models.Model):
         help_text="Admin who issued the grant. Null only for backfilled legacy rows.",
     )
     granted_at = models.DateTimeField(auto_now_add=True)
-    REASON_MAX_LENGTH = 2000
     reason = models.TextField(
         max_length=REASON_MAX_LENGTH,
         help_text=(
@@ -365,3 +367,17 @@ class EvaluationExportGrant(models.Model):
     def __str__(self):
         status = "active" if self.active else "revoked"
         return f"EvaluationExportGrant({self.user_id}, {status})"
+
+    def is_stale(self, last_export_at=None):
+        """Return True if this grant hasn't been used for STALE_DAYS.
+
+        `last_export_at` can be passed in if the caller already has it
+        (e.g., as a queryset annotation). When None, the grant is
+        considered stale relative to its creation date — a grant that
+        was never used and is older than STALE_DAYS is stale.
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+
+        reference = last_export_at or self.granted_at
+        return reference < timezone.now() - timedelta(days=self.STALE_DAYS)
