@@ -1645,6 +1645,82 @@ class EvaluationExportGrantViewTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantAdminOnlyTest(TestCase):
+    """Regression guard: the grant views are admin-only.
+
+    The DRR and governance doc both specify that only system admins
+    grant `report.evaluation_export`. A Program Manager with
+    `user.manage: PROGRAM` in their own programs would otherwise reach
+    `@requires_permission("user.manage", allow_admin=True)` and could
+    grant or revoke system-wide. This test locks in `@admin_required`.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="PM Program")
+        self.pm = User.objects.create_user(
+            username="pm_grant_denied", password="x",
+            display_name="PM Grant Denied",
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.program, role=ROLE_PROGRAM_MANAGER,
+        )
+        self.admin = User.objects.create_user(
+            username="admin_grant_ok", password="x",
+            is_admin=True, display_name="Admin Grant OK",
+        )
+
+    def _as(self, user):
+        c = Client()
+        c.force_login(user)
+        return c
+
+    def test_pm_with_user_manage_cannot_reach_list(self):
+        resp = self._as(self.pm).get("/manage/users/evaluation-export/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_with_user_manage_cannot_reach_create(self):
+        resp = self._as(self.pm).get("/manage/users/evaluation-export/new/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_with_user_manage_cannot_post_grant(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        target = User.objects.create_user(
+            username="pm_grant_target", password="x",
+            display_name="Target",
+        )
+        resp = self._as(self.pm).post("/manage/users/evaluation-export/new/", {
+            "user_id": target.pk,
+            "reason": "PM attempting to grant the permission to another user.",
+        })
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(
+            EvaluationExportGrant.objects.filter(user=target).exists()
+        )
+
+    def test_pm_with_user_manage_cannot_revoke(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        target = User.objects.create_user(
+            username="pm_revoke_target", password="x",
+            display_name="Target",
+        )
+        grant = EvaluationExportGrant.objects.create(
+            user=target, granted_by=self.admin,
+            reason="Grant created by admin — PM should not be able to revoke.",
+        )
+        resp = self._as(self.pm).post(
+            f"/manage/users/evaluation-export/{grant.pk}/revoke/"
+        )
+        self.assertEqual(resp.status_code, 403)
+        grant.refresh_from_db()
+        self.assertTrue(grant.active)
+
+    def test_admin_still_reaches_list(self):
+        resp = self._as(self.admin).get("/manage/users/evaluation-export/")
+        self.assertEqual(resp.status_code, 200)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class EvaluationExportGrantDjangoAdminReadonlyTest(TestCase):
     """The Django admin must not allow direct editing of the cached flag.
 

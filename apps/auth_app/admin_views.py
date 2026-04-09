@@ -377,13 +377,18 @@ def user_role_remove(request, user_id, role_id):
 
 
 @login_required
-@requires_permission("user.manage", allow_admin=True)
+@admin_required
 def eval_export_grant_list(request):
     """Show active evaluator-export grants and the revoke control.
 
     The table is the agency's audit view: who holds the permission,
     who granted it, when, and the reason. Revoked grants are not shown
     here — they live in the audit log.
+
+    Admin-only: the DRR (evaluation-microdata-export.md) and governance
+    doc (eval-export-governance.md) both specify that only system admins
+    grant `report.evaluation_export`. A Program Manager with
+    user.manage: PROGRAM should not see agency-wide grants.
     """
     grants = (
         EvaluationExportGrant.objects
@@ -415,7 +420,7 @@ def eval_export_grant_list(request):
 
 
 @login_required
-@requires_permission("user.manage", allow_admin=True)
+@admin_required
 def eval_export_grant_create(request):
     """Grant evaluator-export access to a user.
 
@@ -423,6 +428,8 @@ def eval_export_grant_create(request):
     grant is tied back to the ED's authorising decision. Attempting to
     grant a user who already has an active grant re-renders the form
     with a clear error — revoke the existing grant first.
+
+    Admin-only (see eval_export_grant_list docstring for rationale).
     """
     users_with_active_grants = set(
         EvaluationExportGrant.objects
@@ -493,9 +500,12 @@ def eval_export_grant_create(request):
 
 
 @login_required
-@requires_permission("user.manage", allow_admin=True)
+@admin_required
 def eval_export_grant_revoke(request, grant_id):
-    """Revoke an active grant. POST only."""
+    """Revoke an active grant. POST only.
+
+    Admin-only (see eval_export_grant_list docstring for rationale).
+    """
     if request.method != "POST":
         return redirect("admin_users:eval_export_grant_list")
 
