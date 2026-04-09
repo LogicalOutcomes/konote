@@ -1,0 +1,18 @@
+{% load i18n %}{% blocktrans with program=program.name %}Longitudinal Trajectory Export submitted — {{ program }}{% endblocktrans %}
+
+{% blocktrans with name=submitter.display_name %}Submitted by: {{ name }}{% endblocktrans %}
+{% blocktrans with activates=activates_at|date:"Y-m-d H:i" %}Review-and-cancel window activates: {{ activates }} ({{ business_days }} business days from submission){% endblocktrans %}
+
+{% trans "What this is" %}:
+{% trans "An LTE request has been submitted. The download link will not activate until the review-and-cancel window elapses. During the window you may:" %}
+
+  * {% trans "Flag concerns (freezes the countdown; link below)" %}
+  * {% trans "View details and cancel the request (link below)" %}
+
+{% trans "Flag concerns" %}:
+{{ flag_url }}
+
+{% trans "View details" %}:
+{{ detail_url }}
+
+{% trans "LTE is for program evaluation, not research. If you believe this request does not meet the LTE preconditions, flag it." %}
