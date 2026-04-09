@@ -47,6 +47,44 @@ urlpatterns = [
     path("sessions/", views.session_report_form, name="session_report"),
     # Evaluation microdata export (DRR: evaluation-microdata-export.md)
     path("evaluation-export/", views.evaluation_export_form, name="evaluation_export"),
+    # Longitudinal Trajectory Export — small-population tier, structurally
+    # separate from the EME route (separate URL prefix is part of the
+    # DRR's "separate path, separate door, separate key" principle).
+    path(
+        "longitudinal-trajectory-export/",
+        views.lte_list,
+        name="lte_list",
+    ),
+    path(
+        "longitudinal-trajectory-export/new/",
+        views.lte_submit,
+        name="lte_submit",
+    ),
+    path(
+        "longitudinal-trajectory-export/<int:request_id>/",
+        views.lte_detail,
+        name="lte_detail",
+    ),
+    path(
+        "longitudinal-trajectory-export/<int:request_id>/cancel/",
+        views.lte_cancel,
+        name="lte_cancel",
+    ),
+    path(
+        "longitudinal-trajectory-export/<int:request_id>/flag/",
+        views.lte_flag_concerns,
+        name="lte_flag_concerns",
+    ),
+    path(
+        "longitudinal-trajectory-export/<int:request_id>/download/",
+        views.lte_download,
+        name="lte_download",
+    ),
+    path(
+        "longitudinal-trajectory-export/<int:request_id>/resolve-review/",
+        views.lte_resolve_review,
+        name="lte_resolve_review",
+    ),
     # Report Schedules
     path("schedules/", oversight_views.report_schedule_list, name="schedule_list"),
     path("schedules/create/", oversight_views.report_schedule_create, name="schedule_create"),
