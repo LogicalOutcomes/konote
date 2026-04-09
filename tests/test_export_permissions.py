@@ -1223,3 +1223,55 @@ class ExportTypeValidationTest(TestCase):
         from django.core.exceptions import ValidationError
         with self.assertRaises(ValidationError):
             _create_link(self.user, self.export_dir, export_type="nonexistent_type")
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 8. Evaluator Export (Confidential) — per-user grant only
+# ═════════════════════════════════════════════════════════════════════
+# Regression guard for the governance model in
+# tasks/eval-export-governance.md: report.evaluation_export is DENY for
+# all roles by default and must be granted per-user. Admins are the
+# *granters*, not the *operators*, so an admin without the explicit
+# grant must NOT be able to reach the evaluation export view.
+# This test exists because PR #617 / #622 removed an `is_admin` bypass
+# in apps/reports/utils.can_create_evaluation_export — do not add one
+# back without also updating this test and the governance doc.
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluatorExportPermissionTest(TestCase):
+    """Verify the evaluation_export view honours the per-user grant."""
+
+    url = "/reports/evaluation-export/"
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_admin_without_grant_gets_403(self):
+        """An admin with evaluation_export_granted=False must be denied."""
+        admin = User.objects.create_user(
+            username="admin_no_grant", password="testpass123",
+            is_admin=True, display_name="Admin NoGrant",
+            evaluation_export_granted=False,
+        )
+        c = Client()
+        c.force_login(admin)
+        resp = c.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_granted_non_admin_gets_200(self):
+        """A non-admin holding the explicit grant must reach the form."""
+        user = User.objects.create_user(
+            username="evaluator", password="testpass123",
+            is_admin=False, display_name="Evaluator",
+            evaluation_export_granted=True,
+        )
+        c = Client()
+        c.force_login(user)
+        resp = c.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_unauthenticated_redirected_to_login(self):
+        """Anonymous users hit @login_required before the permission check."""
+        resp = Client().get(self.url)
+        self.assertEqual(resp.status_code, 302)

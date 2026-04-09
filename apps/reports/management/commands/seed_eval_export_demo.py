@@ -179,6 +179,14 @@ class Command(BaseCommand):
         # the full idempotent sweep. This matters because `seed` runs on
         # every container startup and the sweep otherwise does ~1-5 s of
         # read + unconditional-write DB work.
+        #
+        # Correctness depends on handle() wrapping _run() in
+        # transaction.atomic() (see line ~160): because the whole run
+        # either commits or rolls back, "enrolments at target AND all
+        # grantees granted" is a reliable proxy for "every earlier step
+        # also finished". If that atomic wrapper is ever removed or
+        # narrowed, this short-circuit could skip a partially-seeded
+        # state — re-audit the check before relaxing atomicity.
         enrolment_count = ClientProgramEnrolment.objects.filter(
             program=program, client_file__is_demo=True,
         ).count()
