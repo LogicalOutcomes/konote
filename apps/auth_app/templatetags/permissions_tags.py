@@ -57,7 +57,8 @@ def has_permission(context, permission_key):
     if level != DENY:
         return True
 
-    # Check per-user explicit grants for specific permissions
+    # Check per-user explicit grants for specific permissions.
+    # Mirrors apps.reports.utils.can_create_evaluation_export — keep in sync.
     if permission_key == "report.evaluation_export":
         return getattr(user, "evaluation_export_granted", False)
 

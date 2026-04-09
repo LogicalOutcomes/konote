@@ -59,35 +59,14 @@ def can_download_pii_export(user):
 
 
 def can_create_evaluation_export(user):
-    """Check if this user can create evaluation microdata exports.
+    """Return True if this user holds the per-user evaluation_export grant.
 
-    Evaluation exports require the explicit report.evaluation_export
-    permission, which is DENY for all roles by default and must be
-    granted per-user. Admins do NOT automatically hold this permission:
-    the governance model (see tasks/eval-export-governance.md) separates
-    the permission granter (admin) from the operator, so an admin must
-    be explicitly granted the permission to generate exports themselves.
-    This is a separate permission from report.program_report because
-    evaluation exports serve a different purpose (external sharing) with
-    different safeguards (evaluator details, enhanced audit).
-
-    Returns:
-        True if the user can create evaluation exports.
+    Per-user only — not tied to any role, not auto-granted to admins. See
+    tasks/eval-export-governance.md. The nav-level check in
+    apps/auth_app/templatetags/permissions_tags.py mirrors this rule; keep
+    them in sync.
     """
-    # Check per-user explicit grant (set by admin via admin panel or seed)
-    if getattr(user, "evaluation_export_granted", False):
-        return True
-    # Check if user has the evaluation_export permission via their role
-    from apps.auth_app.permissions import DENY, can_access
-    from apps.programs.models import UserProgramRole
-
-    roles = UserProgramRole.objects.filter(
-        user=user, status="active"
-    ).values_list("role", flat=True).distinct()
-    for role in roles:
-        if can_access(role, "report.evaluation_export") != DENY:
-            return True
-    return False
+    return getattr(user, "evaluation_export_granted", False)
 
 
 def can_create_export(user, export_type, program=None):

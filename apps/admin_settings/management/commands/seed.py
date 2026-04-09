@@ -35,11 +35,6 @@ class Command(BaseCommand):
             self._update_demo_client_fields()
             # Step 2: Top up each program to 20-30 clients with engine
             self._top_up_demo_data()
-            # Step 3: Set up the Evaluator Export demo (Supported Employment):
-            # adds extra participants, demographics, consent flags, discharges,
-            # plans, notes, marks Demographics group as exportable, and grants
-            # the evaluation_export permission to demo-worker-1, demo-manager
-            # and demo-executive so the end-to-end export flow can be tested.
             self._seed_eval_export_demo()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
