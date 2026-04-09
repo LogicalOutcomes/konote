@@ -1478,8 +1478,8 @@ class EvaluationExportGrantFormTest(TestCase):
 class EvaluationExportGrantViewTest(TestCase):
     """Admin grant/revoke flow end-to-end."""
 
-    list_url = "/admin/users/evaluation-export/"
-    create_url = "/admin/users/evaluation-export/new/"
+    list_url = "/manage/users/evaluation-export/"
+    create_url = "/manage/users/evaluation-export/new/"
 
     def setUp(self):
         enc_module._fernet = None
@@ -1601,7 +1601,7 @@ class EvaluationExportGrantViewTest(TestCase):
 
         c = Client()
         c.force_login(self.admin)
-        resp = c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         self.assertEqual(resp.status_code, 302)
 
         grant.refresh_from_db()
@@ -1620,10 +1620,49 @@ class EvaluationExportGrantViewTest(TestCase):
         )
         c = Client()
         c.force_login(self.outsider)
-        resp = c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+        resp = c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
         self.assertIn(resp.status_code, (302, 403))
         grant.refresh_from_db()
         self.assertTrue(grant.active)
+
+    # Self-grant --------------------------------------------------------
+    #
+    # Admins CAN grant themselves the permission (a single-person small
+    # agency may need it), but the grant row records target == granted_by
+    # so EVAL-GOV2 can surface it on the dashboard as something to review.
+
+    def test_admin_can_self_grant(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(self.create_url, {
+            "user_id": self.admin.pk,
+            "reason": "Sole administrator self-grant for a board-approved evaluation.",
+        })
+        self.assertEqual(resp.status_code, 302)
+        grant = EvaluationExportGrant.objects.get(user=self.admin, active=True)
+        self.assertEqual(grant.granted_by, self.admin)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantDjangoAdminReadonlyTest(TestCase):
+    """The Django admin must not allow direct editing of the cached flag.
+
+    EVAL-GOV1 removes the bypass where an admin could flip
+    evaluation_export_granted on /admin/auth_app/user/<id>/change/
+    without creating a grant row. This test guards against that
+    regression by inspecting the registered UserAdmin.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_cached_flag_is_readonly_in_django_admin(self):
+        from django.contrib import admin as django_admin
+        from apps.auth_app.models import User as UserModel
+
+        user_admin = django_admin.site._registry[UserModel]
+        self.assertIn("evaluation_export_granted", user_admin.readonly_fields)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -1653,7 +1692,7 @@ class EvaluationExportGrantIntegrationTest(TestCase):
         # Admin grants via the admin UI
         admin_c = Client()
         admin_c.force_login(self.admin)
-        admin_c.post("/admin/users/evaluation-export/new/", {
+        admin_c.post("/manage/users/evaluation-export/new/", {
             "user_id": self.target.pk,
             "reason": "ED approved evaluation engagement — integration test scenario.",
         })
@@ -1664,7 +1703,7 @@ class EvaluationExportGrantIntegrationTest(TestCase):
 
         # Admin revokes
         grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
-        admin_c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+        admin_c.post(f"/manage/users/evaluation-export/{grant.pk}/revoke/")
 
         # Access denied again
         resp = c.get("/reports/evaluation-export/")
