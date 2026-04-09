@@ -156,7 +156,7 @@
                         <li role="none"><a role="menuitem" href="{% url 'reports:export_form' %}">{% trans "Build a Report" %}</a></li>
                         {% endif %}
                         {% has_permission "report.evaluation_export" as can_see_eval_export %}
-                        {% if can_see_eval_export or user.is_admin %}
+                        {% if can_see_eval_export %}
                         <li role="none"><a role="menuitem" href="{% url 'reports:evaluation_export' %}">{% trans "Evaluator Export (Confidential)" %}</a></li>
                         {% endif %}
                         {% if can_see_compliance %}
@@ -189,6 +189,7 @@
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+                        <li role="none"><a role="menuitem" href="{% url 'admin_users:user_list' %}">{% trans "Team Members" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'admin_users:invite_list' %}">{% trans "User Invites" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         <li role="none"><a role="menuitem" href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>
