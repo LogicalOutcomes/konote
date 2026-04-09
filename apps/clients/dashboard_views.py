@@ -126,6 +126,7 @@ def _batch_fhir_enrichment(filtered_program_ids, enrolment_stats,
         .annotate(
             total=Count("id"),
             joint=Count("id", filter=Q(goal_source="joint")),
+            with_source=Count("id", filter=Q(goal_source__gt="")),
             with_achievement=Count("id", filter=Q(achievement_status__gt="")),
             positive=Count("id", filter=Q(
                 achievement_status__in=PlanTarget.POSITIVE_ACHIEVEMENT_STATUSES
@@ -178,7 +179,10 @@ def _batch_fhir_enrichment(filtered_program_ids, enrolment_stats,
         sessions = note_counts.get(pid, 0)
         goal_count = td.get("total", 0)
         joint_count = td.get("joint", 0)
-        joint_pct = round(joint_count / goal_count * 100) if goal_count else 0
+        with_source = td.get("with_source", 0)
+        # Only show joint % when at least half of goals have source data
+        has_source_data = with_source >= (goal_count * 0.5) if goal_count else False
+        joint_pct = round(joint_count / goal_count * 100) if goal_count and has_source_data else 0
         total_tracked = td.get("with_achievement", 0)
         positive = td.get("positive", 0)
 
@@ -191,33 +195,40 @@ def _batch_fhir_enrichment(filtered_program_ids, enrolment_stats,
             ) % {"program": program.name, "active": active}
         elif total_tracked >= 10:
             ach_pct = round(positive / total_tracked * 100)
+            joint_clause = (
+                _("%(joint_pct)d%% jointly developed with participants. ") % {"joint_pct": joint_pct}
+                if has_source_data else ""
+            )
             summary = _(
                 "%(program)s is serving %(active)d participants "
                 "(%(new)d new, %(returning)d returning this %(period)s). "
                 "Staff recorded %(sessions)d sessions. "
-                "%(goals)d goals are active, %(joint_pct)d%% jointly developed "
-                "with participants. %(ach_pct)d%% of tracked goals show "
+                "%(goals)d goals are active. %(joint_clause)s"
+                "%(ach_pct)d%% of tracked goals show "
                 "improvement or achievement."
             ) % {
                 "program": program.name, "active": active,
                 "new": ep.get("new_accessible", 0),
                 "returning": ep.get("returning_accessible", 0),
                 "period": _("quarter"), "sessions": sessions,
-                "goals": goal_count, "joint_pct": joint_pct,
+                "goals": goal_count, "joint_clause": joint_clause,
                 "ach_pct": ach_pct,
             }
         else:
+            joint_clause = (
+                _("%(joint_pct)d%% jointly developed with participants") % {"joint_pct": joint_pct}
+                if has_source_data else ""
+            )
             summary = _(
                 "%(program)s is serving %(active)d participants "
                 "(%(new)d new this %(period)s). "
                 "Staff recorded %(sessions)d sessions across "
-                "%(goals)d active goals, %(joint_pct)d%% jointly developed "
-                "with participants."
+                "%(goals)d active goals. %(joint_clause)s"
             ) % {
                 "program": program.name, "active": active,
                 "new": ep.get("new_accessible", 0),
                 "period": _("quarter"), "sessions": sessions,
-                "goals": goal_count, "joint_pct": joint_pct,
+                "goals": goal_count, "joint_clause": joint_clause,
             }
 
         # Stale episodes (per-program: only notes in THIS program count)

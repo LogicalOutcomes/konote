@@ -277,7 +277,47 @@ class ClientFile(models.Model):
         # Auto-set existence flags for quick checks without decryption
         self.has_phone = bool(self._phone_encrypted and self._phone_encrypted != b"")
         self.has_email = bool(self._email_encrypted and self._email_encrypted != b"")
+
+        # Auto-generate record_id on creation if not provided and opted-in.
+        # Gated behind InstanceSetting 'record_id_prefix' — only instances
+        # that configure a prefix (e.g., "PC") get auto-generated IDs.
+        if self.pk is None and not self.record_id:
+            from apps.admin_settings.models import InstanceSetting
+            if InstanceSetting.get("record_id_prefix", ""):
+                self.record_id = self._generate_record_id()
+
         super().save(*args, **kwargs)
+
+    @staticmethod
+    def _generate_record_id():
+        """Generate a sequential record ID with an optional instance prefix.
+
+        Format: {prefix}-{zero-padded number}, e.g. "PC-0001".
+        The prefix comes from InstanceSetting 'record_id_prefix' (default: empty,
+        giving IDs like "0001"). The sequence is derived from the current max.
+        """
+        from apps.admin_settings.models import InstanceSetting
+
+        prefix = InstanceSetting.get("record_id_prefix", "")
+        # Find the highest numeric suffix among existing record_ids
+        max_num = 0
+        for rid in ClientFile.objects.values_list("record_id", flat=True):
+            if not rid:
+                continue
+            # Extract trailing digits
+            digits = ""
+            for ch in reversed(rid):
+                if ch.isdigit():
+                    digits = ch + digits
+                else:
+                    break
+            if digits:
+                max_num = max(max_num, int(digits))
+
+        next_num = max_num + 1
+        if prefix:
+            return f"{prefix}-{next_num:04d}"
+        return f"{next_num:04d}"
 
     def get_visible_fields(self, role):
         """Return dict of field visibility for a given role.

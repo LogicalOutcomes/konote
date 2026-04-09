@@ -10,7 +10,7 @@
     <div class="client-header-left">
         <h1>{{ client.display_name }} {{ client.last_name }}</h1>
         <p class="client-subtitle">
-            {% if client.status == "active" %}{% trans "Active" %}{% elif client.status == "inactive" %}<span class="badge badge-warning">{% trans "Inactive" %}</span>{% else %}<span class="badge badge-neutral">{% trans "Discharged" %}</span>{% endif %}{% if client.record_id %} · {{ client.record_id }}{% endif %}{% if client.consent_given_at %} · {% trans "Consent on file" %}{% else %} · <span class="badge badge-warning">{% trans "No Consent" %}</span>{% endif %}
+            {% if client.status == "active" %}{% trans "Active" %}{% elif client.status == "inactive" %}<span class="badge badge-warning">{% trans "Inactive" %}</span>{% else %}<span class="badge badge-neutral">{% trans "Discharged" %}</span>{% endif %}{% if client.record_id %} · {{ client.record_id }}{% endif %}{% if client.consent_given_at %} · {% trans "Consent on file" %}{% else %} · <span class="badge badge-warning">{% trans "No Consent" %}</span>{% endif %}{% if active_alerts %} · <a href="#consent-section" class="badge badge-danger" style="text-decoration: none;" title="{% blocktrans count counter=active_alerts|length %}{{ counter }} active alert{% plural %}{{ counter }} active alerts{% endblocktrans %}">&#9888; {{ active_alerts|length }} {% trans "Alert" %}{{ active_alerts|length|pluralize }}</a>{% endif %}
         </p>
     </div>
     <div class="client-actions" role="toolbar" aria-label="{% trans 'Client actions' %}">

@@ -152,6 +152,23 @@
 </section>
 {% endif %}
 
+{# Financial Coaching Summary — gated behind feature toggle (UF-CONFIG1 #16) #}
+{% if financial_snapshot %}
+<section>
+    <details open>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Financial Snapshot" %}</h2></summary>
+        <dl class="info-grid-compact" style="margin-top: var(--kn-space-sm);">
+            {% for item in financial_snapshot %}
+            <div class="info-field">
+                <dt>{{ item.label }}</dt>
+                <dd>{{ item.value }}</dd>
+            </div>
+            {% endfor %}
+        </dl>
+    </details>
+</section>
+{% endif %}
+
 {# Additional details - middle name and/or custom fields #}
 {% if client.middle_name or custom_data or has_editable_fields %}
 <section>

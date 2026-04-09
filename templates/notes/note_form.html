@@ -61,7 +61,7 @@
     {% if target_forms %}
     <fieldset>
         <legend>{% blocktrans with targets=term.target_plural|default:"targets" %}Which {{ targets }} did you work on?{% endblocktrans %}</legend>
-        <small>{% blocktrans with targets=term.target_plural|default:"targets" %}Tick the {{ targets }} you want to record against. Only selected ones will appear below.{% endblocktrans %}</small>
+        <small>{% blocktrans with targets=term.target_plural|default:"targets" %}Tick the {{ targets }} you want to record against. Only selected ones will appear below. You can skip this and write a general session note.{% endblocktrans %}</small>
         {% for tf in target_forms %}
         <label class="checkbox-item">
             <input type="checkbox" class="target-selector" data-target-id="{{ tf.target.pk }}">

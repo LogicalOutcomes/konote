@@ -1710,6 +1710,17 @@ def portal_surveys_list(request):
         survey__portal_visible=True,
     ).select_related("survey").order_by("-created_at")
 
+    # Annotate with completion progress for each assignment
+    from apps.surveys.models import PartialAnswer, SurveyQuestion
+    for a in assignments:
+        total_questions = SurveyQuestion.objects.filter(
+            page__survey=a.survey, status="active",
+        ).count()
+        answered = PartialAnswer.objects.filter(assignment=a).count()
+        a.total_questions = total_questions
+        a.answered_questions = answered
+        a.progress_pct = int(answered / total_questions * 100) if total_questions else 0
+
     # Completed responses
     responses = SurveyResponse.objects.filter(
         client_file=client_file,
