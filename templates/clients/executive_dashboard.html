@@ -234,7 +234,7 @@
             <div class="stat-detail">{{ alert_oversight.pending_cancellation }} {% trans "pending review" %}</div>
             {% endif %}
             {% if alert_oversight.active > 0 %}
-            <a href="{% url 'clients:alert_overview' %}" class="stat-link">{% trans "View by program" %} &rarr;</a>
+            <a href="{% url 'clients:alert_overview' %}" class="stat-link">{% trans "View by program" %} <span aria-hidden="true">&rarr;</span></a>
             {% endif %}
         </article>
         {% endif %}
@@ -317,7 +317,7 @@
                 </ul>
                 {% if stat.theme_overflow > 0 %}
                 <div class="metric-row">
-                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_overflow }} {% trans "more" %} &rarr;</a>
+                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_overflow }} {% trans "more" %} <span aria-hidden="true">&rarr;</span></a>
                 </div>
                 {% endif %}
                 {% elif stat.suggestion_total > 0 %}
@@ -390,7 +390,7 @@
                     </div>
 
                     <div class="metric-row">
-                        <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View program learning" %} &rarr;</a>
+                        <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View program learning" %} <span aria-hidden="true">&rarr;</span></a>
                     </div>
                 </div>
                 {% endif %}

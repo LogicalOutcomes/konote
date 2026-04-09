@@ -556,11 +556,18 @@ a.portal-card article {
 
 /* ---- Mobile responsive ---- */
 @media (max-width: 768px) {
+    /* Remove excessive right padding that reserves space for Quick Exit button
+       — the button is position:fixed so the parent doesn't need to reserve space */
+    .portal-lang-nav .container {
+        padding-right: 4rem;
+    }
+
     /* Nav stacks vertically on small screens */
     .portal-nav {
         flex-direction: column;
         align-items: flex-start;
         padding: 0.5rem;
+        padding-right: 4rem;
     }
     .portal-nav ul {
         width: 100%;
@@ -583,5 +590,11 @@ a.portal-card article {
     /* New-since banner stacks */
     .portal-new-banner {
         flex-direction: column;
+    }
+
+    /* Ensure main content doesn't overflow */
+    main.container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
     }
 }

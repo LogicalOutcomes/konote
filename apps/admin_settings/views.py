@@ -449,6 +449,14 @@ DEFAULT_FEATURES = {
         "depends_on": ["participant_portal"],
         "used_by": [],
     },
+    "financial_coaching_summary": {
+        "label": _lazy("Financial Coaching Summary"),
+        "description": _lazy("Show a Financial Snapshot section on the participant profile with key financial coaching fields at a glance."),
+        "when_on": [_lazy("Coaches see a Financial Snapshot section on the Info tab with tax filing status, bank account, and benefits info"), _lazy("Financial fields are surfaced for quick reference without scrolling through all sections")],
+        "when_off": [_lazy("Financial Snapshot section is hidden — financial data is still available in custom field groups")],
+        "depends_on": ["custom_fields"],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)

@@ -21,6 +21,12 @@
     {% if a.survey.description %}
     <p>{{ a.survey.description }}</p>
     {% endif %}
+    {% if a.status == "in_progress" and a.total_questions %}
+    <div style="margin-bottom: 0.75rem;">
+        <small class="secondary">{{ a.answered_questions }} {% trans "of" %} {{ a.total_questions }} {% trans "questions answered" %}</small>
+        <progress value="{{ a.progress_pct }}" max="100" style="width: 100%; height: 0.5rem;">{{ a.progress_pct }}%</progress>
+    </div>
+    {% endif %}
     <a href="{% url 'portal:survey_fill' assignment_id=a.pk %}" class="secondary">
         {% if a.status == "in_progress" %}{% trans "Continue" %}{% else %}{% trans "Start" %}{% endif %}
     </a>

@@ -29,6 +29,7 @@ from time import perf_counter
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.admin_settings.models import FeatureToggle
@@ -513,6 +514,17 @@ PORTAL_SURVEY_DEFINITIONS = [
 # ---------------------------------------------------------------------------
 # The engine
 # ---------------------------------------------------------------------------
+
+# Minimum demo clients per program.  Must exceed the small-cell
+# suppression threshold (5) so that reports show real counts instead
+# of "< 5".  Used for floor enforcement and admin UI default.
+DEMO_MIN_CLIENTS_PER_PROGRAM = 10
+
+# Target demo clients for rich demos (presentations, funder meetings).
+# Higher than the minimum to produce convincing charts, demographics,
+# and outcome summaries.  Used by CLI and seed top-up.
+DEMO_TARGET_CLIENTS_PER_PROGRAM = 20
+
 
 class DemoDataEngine:
     """Generate configuration-aware demo data for any KoNote instance.
@@ -3355,29 +3367,43 @@ class DemoDataEngine:
         return descriptor_map.get(descriptor, "in_progress")
 
     @transaction.atomic
-    def run(self, clients_per_program=10, days_span=180, profile_path=None,
+    def run(self, clients_per_program=None, days_span=180, profile_path=None,
             force=False):
         """Generate demo data matching the instance's current configuration.
 
         Args:
-            clients_per_program: Number of demo clients to create per program
-                (default 10 — must exceed the suppression threshold of 5 so
-                reports show real counts instead of "< 5").
+            clients_per_program: Number of demo clients to create per program.
+                Defaults to DEMO_MIN_CLIENTS_PER_PROGRAM (10).  Values below
+                the suppression threshold (5) are raised automatically with
+                a warning.
             days_span: Number of days of historical data to generate.
             profile_path: Optional path to a demo data profile JSON.
             force: If True, clear existing demo data before generating.
         """
+        if clients_per_program is None:
+            clients_per_program = DEMO_MIN_CLIENTS_PER_PROGRAM
+
         random.seed(42)  # Reproducible demo data
 
         profile = self.load_profile(profile_path)
         self.apply_feature_toggles(profile)
 
-        # Apply profile defaults
+        # Apply profile defaults (only when caller used the default)
         profile_defaults = profile.get("defaults", {})
-        if "clients_per_program" in profile_defaults and clients_per_program == 10:
+        if "clients_per_program" in profile_defaults and clients_per_program == DEMO_MIN_CLIENTS_PER_PROGRAM:
             clients_per_program = profile_defaults["clients_per_program"]
         if "days_span" in profile_defaults and days_span == 180:
             days_span = profile_defaults["days_span"]
+
+        # Guard: enforce minimum so reports are never suppressed
+        from apps.reports.suppression import SMALL_CELL_THRESHOLD
+        if clients_per_program < SMALL_CELL_THRESHOLD:
+            self.log(
+                f"  WARNING: clients_per_program={clients_per_program} is below "
+                f"the suppression threshold ({SMALL_CELL_THRESHOLD}). "
+                f"Raising to {DEMO_MIN_CLIENTS_PER_PROGRAM}.",
+            )
+            clients_per_program = DEMO_MIN_CLIENTS_PER_PROGRAM
 
         note_count_range = profile_defaults.get("note_count_range", [7, 12])
 
@@ -3577,12 +3603,68 @@ class DemoDataEngine:
                 f"  Demo data generated: {total_clients} clients across "
                 f"{len(programs)} programs."
             )
+
+            # Post-generation health check: verify data is usable for reports
+            self._validate_demo_data_health(programs)
+
             return True
         finally:
             if previous_skip_recompute is None:
                 os.environ.pop("KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE", None)
             else:
                 os.environ["KONOTE_SKIP_ACHIEVEMENT_RECOMPUTE"] = previous_skip_recompute
+
+    def _validate_demo_data_health(self, programs):
+        """Check that generated demo data will produce usable reports.
+
+        Warns (does not fail) if any program has too few clients or if no
+        notes fall in the current fiscal year — these are the two conditions
+        that make reports show "no results" or "< 5".
+        """
+        from apps.reports.suppression import SMALL_CELL_THRESHOLD
+        from apps.reports.utils import get_current_fiscal_year, get_fiscal_year_range
+
+        issues = []
+
+        for prog in programs:
+            enrolled = ClientProgramEnrolment.objects.filter(
+                program=prog, client_file__is_demo=True, status="active",
+            ).count()
+            if enrolled < SMALL_CELL_THRESHOLD:
+                issues.append(
+                    f"  ⚠ {prog.name}: {enrolled} demo clients "
+                    f"(below suppression threshold of {SMALL_CELL_THRESHOLD})"
+                )
+
+        # Check that at least some notes fall in the current fiscal year
+        fy_start_year = get_current_fiscal_year()
+        date_from, date_to = get_fiscal_year_range(fy_start_year)
+
+        from datetime import datetime, time
+        date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
+        date_to_dt = timezone.make_aware(datetime.combine(date_to, time.max))
+
+        current_fy_notes = ProgressNote.objects.filter(
+            client_file__is_demo=True,
+            status="default",
+        ).filter(
+            Q(backdate__range=(date_from_dt, date_to_dt))
+            | Q(backdate__isnull=True, created_at__range=(date_from_dt, date_to_dt))
+        ).count()
+
+        if current_fy_notes == 0:
+            issues.append(
+                f"  ⚠ No demo notes in current fiscal year "
+                f"(FY {fy_start_year}-{str(fy_start_year + 1)[-2:]}). "
+                f"Reports for this period will be empty."
+            )
+
+        if issues:
+            self.log_warning("  Demo data health check — potential report issues:")
+            for issue in issues:
+                self.log_warning(issue)
+        else:
+            self.log("  Demo data health check passed — reports should work.")
 
     def _recompute_achievement_statuses(self, plan_targets):
         """Recompute achievement statuses in batches after bulk demo generation."""

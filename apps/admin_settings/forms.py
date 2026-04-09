@@ -524,10 +524,11 @@ class DemoDataForm(forms.Form):
     """Form for the demo data generation action."""
 
     clients_per_program = forms.IntegerField(
-        min_value=1,
+        min_value=5,
         max_value=50,
-        initial=3,
+        initial=10,
         label=_("Participants per program"),
+        help_text=_("Minimum 5 (report suppression threshold). Recommended: 10–20."),
     )
     days_span = forms.IntegerField(
         min_value=30,

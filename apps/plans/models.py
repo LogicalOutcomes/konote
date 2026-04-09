@@ -442,6 +442,7 @@ class PlanTarget(models.Model):
     _status_reason_encrypted = models.BinaryField(default=b"", blank=True)
     metrics = models.ManyToManyField(MetricDefinition, through="PlanTargetMetric", blank=True)
     _client_goal_encrypted = models.BinaryField(default=b"", blank=True)
+    _action_steps_encrypted = models.BinaryField(default=b"", blank=True)
     sort_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -576,6 +577,17 @@ class PlanTarget(models.Model):
     @client_goal.setter
     def client_goal(self, value):
         self._client_goal_encrypted = encrypt_field(value)
+
+    @property
+    def action_steps(self):
+        try:
+            return decrypt_field(self._action_steps_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
+
+    @action_steps.setter
+    def action_steps(self, value):
+        self._action_steps_encrypted = encrypt_field(value)
 
     class Meta:
         app_label = "plans"

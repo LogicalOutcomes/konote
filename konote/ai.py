@@ -586,7 +586,11 @@ def generate_outcome_insights(
         "- Rank themes by frequency. Only report the top 3.\n"
         "- If the most frequent theme appears in fewer than 3 quotes, "
         "say 'no dominant themes emerged.'\n"
-        "- Use Canadian English spelling (colour, centre).\n\n"
+        "- Use Canadian English spelling (colour, centre).\n"
+        "- Some quotes may be in French. Analyse French quotes in French — "
+        "do not translate them. When citing a French quote, keep it verbatim. "
+        "If a theme is supported only by French quotes, note '(FR)' after "
+        "the theme name.\n\n"
         "PARTICIPANT FEEDBACK — this is critical:\n"
         "Read the quotes carefully for actionable feedback. Categorise what "
         "participants are saying into these categories:\n"
@@ -649,9 +653,22 @@ def generate_outcome_insights(
     )
 
     theme_names = existing_theme_names or []
+
+    # Language distribution for bilingual awareness
+    lang_counts = {}
+    for q in quotes:
+        lang = q.get("lang", "en")
+        lang_counts[lang] = lang_counts.get(lang, 0) + 1
+    lang_line = ""
+    if len(lang_counts) > 1:
+        parts = [f"{count} {lang.upper()}" for lang, count in sorted(lang_counts.items())]
+        lang_line = f"Language mix: {', '.join(parts)}\n"
+
     user_msg = (
         f"Program: {program_name}\n"
-        f"Period: {date_range}\n\n"
+        f"Period: {date_range}\n"
+        f"{lang_line}"
+        f"\n"
         f"Descriptor trends (percentages by month):\n"
         f"{json.dumps(structured_data.get('descriptor_trend', []), indent=2)}\n\n"
         f"Current descriptor distribution:\n"

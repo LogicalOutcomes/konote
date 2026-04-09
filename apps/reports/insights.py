@@ -13,6 +13,7 @@ be queried in SQL. Descriptor and engagement fields are plaintext, so we
 aggregate those in the database for speed and unlimited scale.
 """
 import logging
+import re
 from collections import Counter, defaultdict
 from datetime import date
 
@@ -24,6 +25,39 @@ from apps.clients.models import ClientProgramEnrolment
 from apps.notes.models import ProgressNote, ProgressNoteTarget
 
 logger = logging.getLogger(__name__)
+
+# ── Language detection (EN/FR heuristic) ─────────────────────────────
+# Common French function words that rarely appear in English text.
+# Threshold: if >= 20% of the first 30 words match, classify as French.
+_FR_MARKERS = frozenset({
+    "je", "tu", "il", "elle", "nous", "vous", "ils", "elles",
+    "le", "la", "les", "un", "une", "des", "du", "dans", "pour",
+    "avec", "sur", "par", "est", "sont", "ont", "cette", "ces",
+    "mon", "ton", "son", "mes", "ses", "mais", "donc", "car",
+    "que", "qui", "où", "quand", "ne", "pas", "plus", "très",
+    "bien", "aussi", "tout", "tous", "comme", "être", "avoir",
+    "faire", "dire", "aller", "voir", "savoir", "pouvoir",
+    "vouloir", "falloir", "croire", "mettre", "prendre",
+    "ai", "suis", "était", "avait", "fait", "dit",
+})
+
+_WORD_SPLIT_RE = re.compile(r"[a-zàâçéèêëîïôùûüÿœæ]+")
+
+_FR_THRESHOLD = 0.20  # 20% of sampled words must be French markers
+_SAMPLE_SIZE = 30     # Check first 30 words (enough for reliable detection)
+
+
+def detect_language(text):
+    """Detect whether text is French or English using function-word heuristic.
+
+    Returns "fr" or "en". Defaults to "en" if uncertain.
+    """
+    words = _WORD_SPLIT_RE.findall(text.lower())[:_SAMPLE_SIZE]
+    if len(words) < 5:
+        return "en"
+    fr_count = sum(1 for w in words if w in _FR_MARKERS)
+    return "fr" if fr_count / len(words) >= _FR_THRESHOLD else "en"
+
 
 # Minimum number of active participants for program-level quote display.
 # Below this threshold, individual quotes risk re-identification.
@@ -295,6 +329,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
             "text": text,
             "target_name": target_name,
             "note_id": entry.progress_note_id,
+            "lang": detect_language(text),
         }
         if include_dates:
             quote["date"] = entry.progress_note.effective_date
@@ -336,6 +371,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
                         "text": text,
                         "target_name": "",
                         "note_id": note.pk,
+                        "lang": detect_language(text),
                     }
                     if include_dates:
                         quote["date"] = note.effective_date
@@ -358,6 +394,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
                         "source": "suggestion",
                         "priority": priority,
                         "note_id": note.pk,
+                        "lang": detect_language(suggestion),
                     }
                     if include_dates:
                         quote["date"] = note.effective_date

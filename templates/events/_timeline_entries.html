@@ -3,7 +3,7 @@
 {% if timeline %}
 {% if not is_append %}<div class="timeline">{% endif %}
     {% for entry in timeline %}
-    <div class="timeline-item">
+    <div class="timeline-item{% if entry.type == 'event' %} timeline-event{% endif %}">
         {% if entry.type == "event" %}
         <div>
             {% if entry.obj.is_sre %}
@@ -64,7 +64,7 @@
             <summary>{{ entry.obj.notes_text|truncatechars:200 }}</summary>
             <div class="timeline-note-full">
                 <p>{{ entry.obj.notes_text }}</p>
-                <p class="timeline-note-link"><small><a href="{% url 'notes:note_detail' note_id=entry.obj.pk %}">{% trans "View in Notes" %} &rarr;</a></small></p>
+                <p class="timeline-note-link"><small><a href="{% url 'notes:note_detail' note_id=entry.obj.pk %}">{% trans "View in Notes" %} <span aria-hidden="true">&rarr;</span></a></small></p>
             </div>
         </details>
         {% endif %}

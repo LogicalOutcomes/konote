@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="goal-card-row" aria-label="{{ target.name }}">
+<div class="goal-card-row{% if target.status == 'completed' %} goal-completed{% elif target.status != 'default' %} goal-deactivated{% endif %}" aria-label="{{ target.name }}">
     <div class="goal-card-top">
         <div class="goal-card-name">
             <h3>{{ target.name }}</h3>
@@ -55,6 +55,10 @@
 
     {% if target.description %}
     <p class="goal-card-description">{{ target.description|truncatewords:30 }}</p>
+    {% endif %}
+
+    {% if target.action_steps %}
+    <p class="goal-card-action-steps"><strong>{% trans "Next steps:" %}</strong> {{ target.action_steps|truncatewords:30 }}</p>
     {% endif %}
 
     <div class="goal-card-metrics">

@@ -9,6 +9,9 @@
 <div class="insights-summary-bar">
     <strong>{{ structured.note_count }}</strong> {% trans "notes" %} &middot;
     <strong>{{ structured.participant_count }}</strong> {% trans "participants" %}
+    {% if structured.month_count %}
+    &middot; {% blocktrans with months=structured.month_count count counter=structured.month_count %}{{ months }} month{% plural %}{{ months }} months{% endblocktrans %}
+    {% endif %}
     {% if date_from and date_to %}
     &middot; {{ date_from }} {% trans "to" %} {{ date_to }}
     {% endif %}
@@ -184,6 +187,13 @@
         {% endif %}
     </summary>
 
+    {# ── Practice signal: voice coverage (shown only when < 30%) ── #}
+    {% if practice_health.participant_voice.show and practice_health.participant_voice.level == "low" %}
+    <p class="insight-interpretation">
+        {% blocktrans with with_voice=practice_health.participant_voice.with_voice total=practice_health.participant_voice.total_full %}Participant reflections were recorded in {{ with_voice }} of {{ total }} sessions.{% endblocktrans %}
+    </p>
+    {% endif %}
+
     {# ── Participant Feedback section ── #}
     {% if structured.suggestion_total or active_themes %}
     <section class="feedback-section" aria-labelledby="feedback-heading">
@@ -232,7 +242,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
+    <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} <span aria-hidden="true">&rarr;</span></a></p>
     {% endif %}
 
     {# Ungrouped suggestions #}
@@ -243,9 +253,10 @@
         </summary>
         <p class="muted">{% trans "Not yet linked to a theme." %}</p>
         {% for s in unlinked_suggestions %}
-        <blockquote class="insight-quote">
+        <blockquote class="insight-quote" {% if s.lang == "fr" %}lang="fr"{% endif %}>
             <p>&ldquo;{{ s.text }}&rdquo;</p>
             <cite>
+                {% if has_mixed_languages and s.lang == "fr" %}<span class="pill pill--lang">FR</span> {% endif %}
                 {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
                 {% if s.date %}{{ s.date }} &middot; {% endif %}
                 {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
@@ -255,9 +266,10 @@
     </details>
     {% elif not active_themes and suggestions %}
     {% for s in suggestions %}
-    <blockquote class="insight-quote">
+    <blockquote class="insight-quote" {% if s.lang == "fr" %}lang="fr"{% endif %}>
         <p>&ldquo;{{ s.text }}&rdquo;</p>
         <cite>
+            {% if has_mixed_languages and s.lang == "fr" %}<span class="pill pill--lang">FR</span> {% endif %}
             {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
             {% if s.date %}{{ s.date }} &middot; {% endif %}
             {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
@@ -290,9 +302,10 @@
     {% if quotes %}
     <h3>{% trans "What participants are saying" %}</h3>
     {% for quote in quotes %}
-    <blockquote class="insight-quote">
+    <blockquote class="insight-quote" {% if quote.lang == "fr" %}lang="fr"{% endif %}>
         <p>&ldquo;{{ quote.text }}&rdquo;</p>
         <cite>
+            {% if has_mixed_languages and quote.lang == "fr" %}<span class="pill pill--lang">FR</span> {% endif %}
             {% if quote.target_name %}
             {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
             {% endif %}

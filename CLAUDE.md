@@ -258,6 +258,7 @@ Current DRRs (all in `tasks/design-rationale/` — see `README.md` there for the
 - `data-access-residency-policy.md` — Canadian residency by data access level
 - `document-integration.md` — SharePoint + Google Drive integration
 - `encryption-key-rotation.md` — Key rotation procedures and custody
+- `evaluation-microdata-export.md` — De-identified microdata export for external evaluators, k-anonymity pipeline
 - `executive-dashboard-redesign.md` — Dashboard UX with accessibility focus
 - `fhir-informed-modelling.md` — FHIR concepts without FHIR compliance
 - `funder-reporting-profiles.md` — Template-based funder reporting (Parking Lot)

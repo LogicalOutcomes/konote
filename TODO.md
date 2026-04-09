@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 
 ## Active Work
@@ -33,6 +34,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Deep code review (6 dimensions)** — run quarterly or before major releases. Uses structured checklists covering security, privacy, accessibility, deployment, AI governance, bilingual compliance. See [tasks/code-review-framework.md](tasks/code-review-framework.md) for prompts, or run all 6 with [tasks/deep-review-prompt.md](tasks/deep-review-prompt.md). Results go in private `konote-ops/reviews/` repo. Latest: 2026-03-06 (REV-DEEP1)
 - [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
+- [ ] **Review demo presentation materials** — before any Common Approach presentation, review `demo.html` and linked HTML reports (funder portfolio dashboard, multi-program report, program outcome dashboard, evaluation framework editor, CIDS working document) for accuracy and current data. Check links aren't broken. (DEMO-PRES1)
 - [ ] **Redeploy to OVHcloud VPS** — after merging to main. SSH in and run `docker compose pull && docker compose up -d` (OPS-DEPLOY1)
 
 ## Coming Up
@@ -100,6 +102,23 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
+### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
+
+**Code & UI:**
+- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted (EVAL-GOV1)
+- [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
+- [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
+- [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
+- [ ] Agreement expiry warning — banner on export history when evaluator agreement has passed (EVAL-GOV5)
+- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns (EVAL-GOV6)
+- [ ] Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output (EVAL-GOV7)
+
+**Documentation:**
+- [ ] Update admin reporting guide with evaluation export section — `docs/admin/reporting.md` (EVAL-DOC1)
+- [ ] Update deployment protocol — add evaluation export to permissions interview — `tasks/agency-permissions-interview.md` Section 7 (EVAL-DOC2)
+- [ ] Add evaluation export section to user guide — `docs/help.md` (EVAL-DOC3)
+- [ ] ED-facing one-page evaluation export reference — `docs/evaluation-export-guide.md` (EVAL-DOC4)
+
 ### Phase: Documentation & Website Updates
 
 _All documentation tasks completed — see Recently Done._
@@ -124,6 +143,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
+- [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
 - [x] Dashboard & Insights enrichment — FHIR metadata features: program summary sentences, practice indicators, goal source distribution on Insights; stale episodes attention signal on Dashboard; batch query optimization; simplified both pages (removed funder stats, cohort comparison, cross-tab, dashboard bloat — 8 sections → 5 on Insights, ~20 rows → ~8 per program card) — PRs #529-#533 — 2026-03-16 (ENRICH1)
 - [x] Expand accessibility tests to cover portal flow (dashboard, journal, goals) and report/chart flow (outcome insights) — axe-core tests in test_a11y_ci.py — 2026-03-12 (REV26-A11Y1)
 - [x] AI provider configuration guide for operators — docs/ai-provider-guide.md covering cloud vs self-hosted, data residency, configuration, costs — 2026-03-12 (REV26-AI4)

@@ -131,7 +131,7 @@ def try_auto_link_suggestion(note):
         theme_words = _extract_content_words(theme_text)
 
         overlap = suggestion_words & theme_words
-        if len(overlap) >= 2:
+        if len(overlap) >= 3:
             _, created = SuggestionLink.objects.get_or_create(
                 theme=theme,
                 progress_note=note,
