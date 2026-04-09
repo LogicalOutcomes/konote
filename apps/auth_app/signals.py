@@ -2,7 +2,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import EvaluationExportGrant, User
+from .models import EvaluationExportGrant, LTEExportGrant, User
 
 
 @receiver(post_save, sender=EvaluationExportGrant)
@@ -25,4 +25,21 @@ def sync_user_eval_export_flag(sender, instance, **kwargs):
     if instance.user.evaluation_export_granted != has_active:
         User.objects.filter(pk=instance.user_id).update(
             evaluation_export_granted=has_active,
+        )
+
+
+@receiver(post_save, sender=LTEExportGrant)
+def sync_user_lte_export_flag(sender, instance, **kwargs):
+    """Keep User.lte_export_granted in sync with active LTE grants.
+
+    Same pattern as sync_user_eval_export_flag. LTE has its own grant
+    model because the governance model treats it as a structurally
+    separate permission (see tasks/design-rationale/evaluation-microdata-export.md).
+    """
+    has_active = LTEExportGrant.objects.filter(
+        user=instance.user, active=True,
+    ).exists()
+    if instance.user.lte_export_granted != has_active:
+        User.objects.filter(pk=instance.user_id).update(
+            lte_export_granted=has_active,
         )
