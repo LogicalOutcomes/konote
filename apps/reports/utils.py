@@ -61,17 +61,19 @@ def can_download_pii_export(user):
 def can_create_evaluation_export(user):
     """Check if this user can create evaluation microdata exports.
 
-    Evaluation exports are restricted to users with the explicit
-    report.evaluation_export permission or admin users. This is a
-    separate permission from report.program_report because evaluation
-    exports serve a different purpose (external sharing) with different
-    safeguards (evaluator details, enhanced audit).
+    Evaluation exports require the explicit report.evaluation_export
+    permission, which is DENY for all roles by default and must be
+    granted per-user. Admins do NOT automatically hold this permission:
+    the governance model (see tasks/eval-export-governance.md) separates
+    the permission granter (admin) from the operator, so an admin must
+    be explicitly granted the permission to generate exports themselves.
+    This is a separate permission from report.program_report because
+    evaluation exports serve a different purpose (external sharing) with
+    different safeguards (evaluator details, enhanced audit).
 
     Returns:
         True if the user can create evaluation exports.
     """
-    if user.is_admin:
-        return True
     # Check per-user explicit grant (set by admin via admin panel or seed)
     if getattr(user, "evaluation_export_granted", False):
         return True

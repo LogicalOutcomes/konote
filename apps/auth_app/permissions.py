@@ -70,7 +70,7 @@ PERMISSIONS = {
 
         "report.program_report": DENY,  # Managers generate, not front desk
         "report.funder_report": DENY,  # Managers/executives generate funder reports
-        "report.evaluation_export": DENY,  # Explicit grant only — admin or per-user
+        "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
         "report.data_extract": DENY,
 
         "insights.view": DENY,  # Outcome insights — staff+ only
@@ -176,7 +176,7 @@ PERMISSIONS = {
 
         "report.program_report": DENY,
         "report.funder_report": DENY,  # Managers/executives generate funder reports
-        "report.evaluation_export": DENY,  # Explicit grant only — admin or per-user
+        "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
         "report.data_extract": DENY,
 
         "insights.view": PROGRAM,  # Program-level outcome insights. Enforced by @requires_permission
@@ -289,7 +289,7 @@ PERMISSIONS = {
                                         # + _save_export_and_create_link()
         "report.funder_report": ALLOW,  # Managers generate funder reports for their programs.
                                         # Enforced by @requires_permission
-        "report.evaluation_export": DENY,  # Explicit grant only — admin or per-user
+        "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
         "report.data_extract": ALLOW,  # PM handles PIPEDA data portability requests
 
         "insights.view": ALLOW,  # Program-level outcome insights. Enforced by @requires_permission
@@ -401,7 +401,7 @@ PERMISSIONS = {
         "report.program_report": ALLOW,  # View only (managers generate). Enforced by @requires_permission
         "report.funder_report": ALLOW,  # Executives can generate aggregate funder reports.
                                         # Enforced by @requires_permission
-        "report.evaluation_export": DENY,  # Explicit grant only — admin or per-user
+        "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
         "report.data_extract": DENY,
 
         "insights.view": ALLOW,  # Aggregate outcome insights only (quotes suppressed).

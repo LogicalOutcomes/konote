@@ -694,30 +694,38 @@ class Command(BaseCommand):
             ))
 
     def _grant_permission(self):
-        """Grant evaluation export permission to demo-manager."""
-        manager = User.objects.filter(username="demo-manager").first()
-        if manager:
-            if not manager.evaluation_export_granted:
-                manager.evaluation_export_granted = True
-                manager.save(update_fields=["evaluation_export_granted"])
-                self.stdout.write(
-                    "  Granted evaluation export permission to demo-manager."
-                )
-            else:
-                self.stdout.write(
-                    "  demo-manager already has evaluation export permission."
-                )
-        else:
-            self.stdout.write(self.style.WARNING(
-                "  demo-manager user not found."
-            ))
+        """Grant evaluation export permission to demo users who should hold it.
 
-        # Also grant to demo-executive (ED can also export)
-        executive = User.objects.filter(username="demo-executive").first()
-        if executive:
-            if not executive.evaluation_export_granted:
-                executive.evaluation_export_granted = True
-                executive.save(update_fields=["evaluation_export_granted"])
+        Governance model (see tasks/eval-export-governance.md): the permission
+        is DENY for all roles by default and must be explicitly granted per
+        user. Admins do NOT auto-hold it — they grant it to operators. For
+        the demo we grant to:
+          - demo-executive (Eva, ED who authorises evaluations)
+          - demo-manager (Morgan, PM who executes exports)
+          - demo-worker-1 (Casey, PM in Supported Employment, the program
+            the demo export is wired up against)
+        """
+        grantees = [
+            ("demo-worker-1", "Casey Worker"),
+            ("demo-manager", "Morgan Manager"),
+            ("demo-executive", "Eva Executive"),
+        ]
+        for username, display_name in grantees:
+            user = User.objects.filter(username=username).first()
+            if not user:
+                self.stdout.write(self.style.WARNING(
+                    f"  {username} user not found."
+                ))
+                continue
+            if user.evaluation_export_granted:
                 self.stdout.write(
-                    "  Granted evaluation export permission to demo-executive."
+                    f"  {display_name} ({username}) already has "
+                    f"evaluation export permission."
                 )
+                continue
+            user.evaluation_export_granted = True
+            user.save(update_fields=["evaluation_export_granted"])
+            self.stdout.write(
+                f"  Granted evaluation export permission to "
+                f"{display_name} ({username})."
+            )
