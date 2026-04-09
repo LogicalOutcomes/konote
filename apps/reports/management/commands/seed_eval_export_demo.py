@@ -701,7 +701,7 @@ class Command(BaseCommand):
                 # Record metrics on full notes
                 if not is_quick:
                     for target, target_metrics in targets_with_metrics:
-                        ProgressNoteTarget.objects.create(
+                        pnt = ProgressNoteTarget.objects.create(
                             progress_note=note,
                             plan_target=target,
                         )
@@ -710,10 +710,9 @@ class Command(BaseCommand):
                             sequence = metric_sequences.get(key, [])
                             if note_idx < len(sequence):
                                 MetricValue.objects.create(
-                                    progress_note=note,
-                                    plan_target=target,
+                                    progress_note_target=pnt,
                                     metric_def=md,
-                                    value=sequence[note_idx],
+                                    value=str(sequence[note_idx]),
                                 )
 
         self.stdout.write(
