@@ -105,7 +105,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
 
 **Code & UI:**
-- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted. Detailed implementation prompt in [tasks/phase-eval-gov1-prompt.md](tasks/phase-eval-gov1-prompt.md) — a new session can pick this up cold (EVAL-GOV1)
+- [ ] 🔨 Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted. Detailed implementation prompt in [tasks/phase-eval-gov1-prompt.md](tasks/phase-eval-gov1-prompt.md) — a new session can pick this up cold (EVAL-GOV1)
 - [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
 - [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
 - [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
