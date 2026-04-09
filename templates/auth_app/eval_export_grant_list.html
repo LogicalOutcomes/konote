@@ -42,7 +42,7 @@
                 {% endif %}
             </td>
             <td>{{ row.grant.granted_at|date:"Y-m-d" }}</td>
-            <td style="max-width: 24rem;">{{ row.grant.reason }}</td>
+            <td style="max-width: 24rem; overflow-wrap: break-word; white-space: normal;">{{ row.grant.reason }}</td>
             <td>
                 {% if row.last_export_at %}
                     {{ row.last_export_at|date:"Y-m-d" }}
