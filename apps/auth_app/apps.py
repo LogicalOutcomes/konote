@@ -9,3 +9,4 @@ class AuthAppConfig(AppConfig):
 
     def ready(self):
         import apps.auth_app.checks  # noqa: F401
+        import apps.auth_app.signals  # noqa: F401

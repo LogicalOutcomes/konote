@@ -1291,3 +1291,381 @@ class EvaluatorExportPermissionTest(TestCase):
         """@login_required runs before the permission check."""
         resp = Client().get(self.url)
         self.assertEqual(resp.status_code, 302)
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 9. EVAL-GOV1 — EvaluationExportGrant model, signal, form, views
+# ═════════════════════════════════════════════════════════════════════
+# The grant model + admin UI that enforces the two-person governance
+# control: ED authorises an evaluation engagement → Admin records the
+# grant in KoNote with a reason. See tasks/eval-export-governance.md
+# and tasks/phase-eval-gov1-prompt.md for the full spec.
+#
+# The cached `User.evaluation_export_granted` boolean is kept as a
+# denormalised hot-path flag and must stay in sync with active grants
+# via post_save signal. Both the helper and the view read the cached
+# flag, so signal correctness is load-bearing.
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantModelTest(TestCase):
+    """EvaluationExportGrant model basics: creation, ordering, unique constraint."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="grant_admin", password="x",
+            is_admin=True, display_name="Grant Admin",
+        )
+        self.target = User.objects.create_user(
+            username="grant_target", password="x",
+            display_name="Grant Target",
+        )
+
+    def test_create_grant_persists_fields(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target,
+            granted_by=self.admin,
+            reason="Board approved evaluation with Llewelyn Consulting, MOU 2026-04-15.",
+        )
+        grant.refresh_from_db()
+        self.assertEqual(grant.user, self.target)
+        self.assertEqual(grant.granted_by, self.admin)
+        self.assertTrue(grant.active)
+        self.assertIsNotNone(grant.granted_at)
+        self.assertIsNone(grant.revoked_at)
+
+    def test_grants_order_newest_first(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        first = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="First grant for Youth Employment evaluation Q1-2026.",
+        )
+        first.active = False
+        first.save()
+        second = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Second grant for follow-up evaluation Q3-2026.",
+        )
+        grants = list(EvaluationExportGrant.objects.filter(user=self.target))
+        self.assertEqual(grants[0], second)
+        self.assertEqual(grants[1], first)
+
+    def test_unique_active_grant_per_user(self):
+        """The partial unique constraint prevents two active grants for one user."""
+        from django.db import IntegrityError, transaction
+        from apps.auth_app.models import EvaluationExportGrant
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="First grant — evaluation engagement with University X.",
+        )
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                EvaluationExportGrant.objects.create(
+                    user=self.target, granted_by=self.admin,
+                    reason="Duplicate grant attempt — should be blocked by constraint.",
+                )
+
+    def test_can_regrant_after_revoke(self):
+        """Once the first grant is marked inactive, a new grant can be created."""
+        from apps.auth_app.models import EvaluationExportGrant
+        first = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Initial grant for evaluation 2026-Q1 with Llewelyn.",
+        )
+        first.active = False
+        first.revoked_at = timezone.now()
+        first.revoked_by = self.admin
+        first.save()
+
+        second = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Re-grant for a new evaluation engagement 2026-Q3.",
+        )
+        self.assertTrue(second.active)
+        self.assertEqual(
+            EvaluationExportGrant.objects.filter(user=self.target, active=True).count(),
+            1,
+        )
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantSignalTest(TestCase):
+    """The post_save signal must keep User.evaluation_export_granted in sync."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="signal_admin", password="x",
+            is_admin=True, display_name="Signal Admin",
+        )
+        self.target = User.objects.create_user(
+            username="signal_target", password="x",
+            display_name="Signal Target",
+        )
+
+    def test_creating_grant_sets_cached_flag(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        self.assertFalse(self.target.evaluation_export_granted)
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Granted for program evaluation with external consultants.",
+        )
+        self.target.refresh_from_db()
+        self.assertTrue(self.target.evaluation_export_granted)
+
+    def test_marking_grant_inactive_clears_cached_flag(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant to be revoked for signal-sync test case.",
+        )
+        self.target.refresh_from_db()
+        self.assertTrue(self.target.evaluation_export_granted)
+
+        grant.active = False
+        grant.revoked_at = timezone.now()
+        grant.revoked_by = self.admin
+        grant.save()
+        self.target.refresh_from_db()
+        self.assertFalse(self.target.evaluation_export_granted)
+
+    def test_signal_scoped_to_target_user_only(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        other = User.objects.create_user(
+            username="signal_other", password="x",
+            display_name="Signal Other",
+        )
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant for target user only — should not affect other user.",
+        )
+        self.target.refresh_from_db()
+        other.refresh_from_db()
+        self.assertTrue(self.target.evaluation_export_granted)
+        self.assertFalse(other.evaluation_export_granted)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantFormTest(TestCase):
+    """EvaluationExportGrantForm enforces a meaningful reason."""
+
+    def _form(self, reason):
+        from apps.auth_app.forms import EvaluationExportGrantForm
+        return EvaluationExportGrantForm(data={"reason": reason})
+
+    def test_blank_reason_rejected(self):
+        self.assertFalse(self._form("").is_valid())
+
+    def test_short_reason_rejected(self):
+        self.assertFalse(self._form("ok").is_valid())
+        self.assertFalse(self._form("test grant").is_valid())  # 10 chars, still too short
+
+    def test_reason_at_minimum_length_accepted(self):
+        # 15 chars, meaningful
+        self.assertTrue(self._form("Board approved.").is_valid())
+
+    def test_long_reason_accepted(self):
+        reason = (
+            "ED approved evaluation with Llewelyn Consulting; "
+            "MOU signed 2026-04-15, expires 2026-12-31."
+        )
+        self.assertTrue(self._form(reason).is_valid())
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantViewTest(TestCase):
+    """Admin grant/revoke flow end-to-end."""
+
+    list_url = "/admin/users/evaluation-export/"
+    create_url = "/admin/users/evaluation-export/new/"
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="view_admin", password="x",
+            is_admin=True, display_name="View Admin",
+        )
+        self.target = User.objects.create_user(
+            username="view_target", password="x",
+            display_name="View Target",
+        )
+        self.outsider = User.objects.create_user(
+            username="view_outsider", password="x",
+            display_name="View Outsider",
+        )
+
+    # List view -------------------------------------------------------
+
+    def test_list_view_200_for_admin(self):
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.get(self.list_url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_list_view_denies_non_admin_without_user_manage(self):
+        c = Client()
+        c.force_login(self.outsider)
+        resp = c.get(self.list_url)
+        self.assertIn(resp.status_code, (302, 403))
+
+    def test_list_view_shows_granted_users(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="ED authorised evaluation with Prosper Canada cohort 2026.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.get(self.list_url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "View Target")
+        self.assertContains(resp, "Prosper Canada cohort")
+
+    # Create view -----------------------------------------------------
+
+    def test_create_view_get_200_for_admin(self):
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.get(f"{self.create_url}?user_id={self.target.pk}")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_create_view_post_creates_grant(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "ED authorised Youth Employment evaluation with Llewelyn Consulting 2026.",
+        })
+        self.assertEqual(resp.status_code, 302)
+        grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
+        self.assertEqual(grant.granted_by, self.admin)
+        self.target.refresh_from_db()
+        self.assertTrue(self.target.evaluation_export_granted)
+
+    def test_create_view_rejects_blank_reason(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "",
+        })
+        self.assertEqual(resp.status_code, 200)  # re-render form with errors
+        self.assertFalse(
+            EvaluationExportGrant.objects.filter(user=self.target).exists()
+        )
+
+    def test_create_view_rejects_duplicate_active_grant(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="First grant is already active for this user.",
+        )
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "Attempt to create a second active grant — should fail.",
+        })
+        # Form re-renders with a clear error, no second grant written
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            EvaluationExportGrant.objects.filter(
+                user=self.target, active=True,
+            ).count(),
+            1,
+        )
+
+    def test_create_view_denies_non_admin(self):
+        c = Client()
+        c.force_login(self.outsider)
+        resp = c.post(self.create_url, {
+            "user_id": self.target.pk,
+            "reason": "Outsider should not be able to grant this permission.",
+        })
+        self.assertIn(resp.status_code, (302, 403))
+
+    # Revoke view -----------------------------------------------------
+
+    def test_revoke_view_marks_grant_inactive(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant that will be revoked in this test scenario.",
+        )
+        self.target.refresh_from_db()
+        self.assertTrue(self.target.evaluation_export_granted)
+
+        c = Client()
+        c.force_login(self.admin)
+        resp = c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+        self.assertEqual(resp.status_code, 302)
+
+        grant.refresh_from_db()
+        self.assertFalse(grant.active)
+        self.assertIsNotNone(grant.revoked_at)
+        self.assertEqual(grant.revoked_by, self.admin)
+
+        self.target.refresh_from_db()
+        self.assertFalse(self.target.evaluation_export_granted)
+
+    def test_revoke_view_denies_non_admin(self):
+        from apps.auth_app.models import EvaluationExportGrant
+        grant = EvaluationExportGrant.objects.create(
+            user=self.target, granted_by=self.admin,
+            reason="Grant that outsider should not be able to revoke.",
+        )
+        c = Client()
+        c.force_login(self.outsider)
+        resp = c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+        self.assertIn(resp.status_code, (302, 403))
+        grant.refresh_from_db()
+        self.assertTrue(grant.active)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EvaluationExportGrantIntegrationTest(TestCase):
+    """End-to-end: grant via admin UI → user hits report → revoke → 403."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="int_admin", password="x",
+            is_admin=True, display_name="Int Admin",
+        )
+        self.target = User.objects.create_user(
+            username="int_target", password="x",
+            display_name="Int Target",
+        )
+
+    def test_grant_then_revoke_cycle_controls_access(self):
+        from apps.auth_app.models import EvaluationExportGrant
+
+        # Before grant: 403
+        c = Client()
+        c.force_login(self.target)
+        resp = c.get("/reports/evaluation-export/")
+        self.assertEqual(resp.status_code, 403)
+
+        # Admin grants via the admin UI
+        admin_c = Client()
+        admin_c.force_login(self.admin)
+        admin_c.post("/admin/users/evaluation-export/new/", {
+            "user_id": self.target.pk,
+            "reason": "ED approved evaluation engagement — integration test scenario.",
+        })
+
+        # Now accessible
+        resp = c.get("/reports/evaluation-export/")
+        self.assertEqual(resp.status_code, 200)
+
+        # Admin revokes
+        grant = EvaluationExportGrant.objects.get(user=self.target, active=True)
+        admin_c.post(f"/admin/users/evaluation-export/{grant.pk}/revoke/")
+
+        # Access denied again
+        resp = c.get("/reports/evaluation-export/")
+        self.assertEqual(resp.status_code, 403)
