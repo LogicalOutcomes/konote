@@ -25,7 +25,7 @@ For any proposal, **always check the relevant foundation first**, then drill int
 | **Consent, PHIPA, cross-program notes, clinical note visibility** | `phipa-consent-enforcement.md`, `access-tiers.md` |
 | **AI, LLM, machine learning, suggestions, scoring, prompts** | `ai-feature-toggles.md`, `self-hosted-llm-infrastructure.md` |
 | **Encryption, key rotation, PII, decryption, Fernet** | `encryption-key-rotation.md`, `no-live-api-individual-data.md` |
-| **Reports, dashboards, funder reporting, executive view, exports** | `reporting-architecture.md`, `insights-metric-distributions.md`, `funder-reporting-profiles.md`, `executive-dashboard-redesign.md` |
+| **Reports, dashboards, funder reporting, executive view, exports** | `reporting-architecture.md`, `insights-metric-distributions.md`, `funder-reporting-profiles.md`, `executive-dashboard-redesign.md`, `evaluation-microdata-export.md` |
 | **CIDS, Common Approach, indicators, taxonomy, classification** | `cids-privacy-architecture.md`, `cids-batch-classification-workflow.md`, `cids-metadata-assignment.md`, `funder-reporting-profiles.md` |
 | **Surveys, questionnaires, instruments, PHQ-9, standardised tools** | `survey-metric-unification.md`, `insights-metric-distributions.md` |
 | **Offline, field work, mobile, ODK, data collection** | `offline-field-collection.md` |
@@ -34,7 +34,8 @@ For any proposal, **always check the relevant foundation first**, then drill int
 | **Accessibility, WCAG, a11y, screen reader, keyboard navigation** | `foundation-collaborative-practice.md` |
 | **EGAP, Black data governance, Black communities, anti-Black racism** | `foundation-data-sovereignty.md`, `multi-tenancy.md` |
 | **Documents, SharePoint, Google Drive, file storage, attachments** | `document-integration.md` |
-| **Data export, data portability, migration, offboarding** | `no-live-api-individual-data.md`, `cids-privacy-architecture.md` |
+| **Data export, data portability, migration, offboarding** | `no-live-api-individual-data.md`, `cids-privacy-architecture.md`, `evaluation-microdata-export.md` |
+| **Program evaluation, evaluator access, de-identified microdata, k-anonymity, REB, longitudinal trajectories** | `evaluation-microdata-export.md`, `reporting-architecture.md`, `foundation-data-sovereignty.md` |
 | **Data residency, Canadian hosting, foreign access, subpoena risk** | `data-access-residency-policy.md`, `ovhcloud-deployment.md` |
 | **Metrics, outcomes, progress notes, scoring, measurement** | `survey-metric-unification.md`, `insights-metric-distributions.md`, `cids-metadata-assignment.md` |
 | **Data sovereignty, OCAP, Indigenous data, community ownership** | `foundation-data-sovereignty.md`, `multi-tenancy.md`, `no-live-api-individual-data.md` |
@@ -52,7 +53,7 @@ For any proposal, **always check the relevant foundation first**, then drill int
 | **Draft** | Under development. Decisions may change — still read before building. |
 | **Parking Lot** | Not yet clear we should build. Do not implement without explicit approval. |
 
-## Full DRR Inventory (26 files)
+## Full DRR Inventory (27 files)
 
 ### Foundation Principles (4)
 
@@ -63,7 +64,7 @@ For any proposal, **always check the relevant foundation first**, then drill int
 | `foundation-security-by-default.md` | High security for non-technical operators — encryption, RBAC, immutable audit, fail-closed |
 | `foundation-nonprofit-sustainability.md` | Affordable tech stack, self-healing ops, evaluation-driven configuration |
 
-### Implementation Decisions (22)
+### Implementation Decisions (23)
 
 | File | Status | Scope |
 |---|---|---|
@@ -77,6 +78,7 @@ For any proposal, **always check the relevant foundation first**, then drill int
 | `data-access-residency-policy.md` | Decided | Canadian residency by data access level |
 | `document-integration.md` | Decided | SharePoint + Google Drive integration |
 | `encryption-key-rotation.md` | Decided | Master/tenant key rotation procedures |
+| `evaluation-microdata-export.md` | Decided | Two-tier de-identified evaluation export — EME (demographic microdata, n ≥ 15, k ≥ 5) + LTE (longitudinal trajectories, no demographics, n ≥ 10, REB + community governance) |
 | `executive-dashboard-redesign.md` | Approved | Dashboard UX with accessibility focus |
 | `fhir-informed-modelling.md` | Decided | FHIR concepts without FHIR compliance |
 | `funder-reporting-profiles.md` | Parking Lot | Template-based funder reporting |
