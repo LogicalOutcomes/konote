@@ -24172,3 +24172,107 @@ msgstr ""
 
 msgid "questions answered"
 msgstr ""
+
+msgid "A reason is required."
+msgstr "Un motif est obligatoire."
+
+msgid ""
+"A user with evaluator export access can generate de-identified participant-"
+"level CSV files for external program evaluators. The pipeline removes names,"
+" birthdates, and contact details, generalises demographics, and enforces "
+"k-anonymity — but the resulting file still describes real participants and "
+"must be handled with care."
+msgstr ""
+"Une personne qui détient l'accès à l'export pour évaluation peut générer "
+"des fichiers CSV désidentifiés au niveau individuel, destinés à des "
+"évaluateurs externes de programme. Le pipeline retire les noms, les dates "
+"de naissance et les coordonnées, généralise les données démographiques et "
+"applique le k-anonymat — mais le fichier produit décrit tout de même des "
+"participants réels et doit être manipulé avec soin."
+
+msgid "Active evaluator export grants"
+msgstr "Accès actifs à l'export pour évaluation"
+
+msgid "Evaluator Export Access"
+msgstr "Accès à l'export pour évaluation"
+
+msgid "Evaluator export access granted to %(name)s."
+msgstr "Accès à l'export pour évaluation accordé à %(name)s."
+
+msgid "Evaluator export access revoked for %(name)s."
+msgstr "Accès à l'export pour évaluation révoqué pour %(name)s."
+
+msgid "Grant Evaluator Export Access"
+msgstr "Accorder l'accès à l'export pour évaluation"
+
+msgid "Grant access"
+msgstr "Accorder l'accès"
+
+msgid "Grant access to a user"
+msgstr "Accorder l'accès à un utilisateur"
+
+msgid "Granted by"
+msgstr "Accordé par"
+
+msgid "Granted on"
+msgstr "Accordé le"
+
+msgid "Last export"
+msgstr "Dernier export"
+
+msgid "Never used"
+msgstr "Jamais utilisé"
+
+msgid ""
+"No active grants. Evaluation exports are disabled until a user is granted "
+"access."
+msgstr ""
+"Aucun accès actif. Les exports pour évaluation sont désactivés tant "
+"qu'aucun utilisateur n'a reçu l'accès."
+
+msgid ""
+"Only grant this permission after the Executive Director has authorised a "
+"specific evaluation engagement with a signed data-sharing agreement. The "
+"reason you record here is written to the immutable audit log."
+msgstr ""
+"N'accordez cette autorisation qu'après que la direction générale a "
+"autorisé une évaluation précise et signé une entente de partage de "
+"données. Le motif inscrit ici est consigné au journal d'audit immuable."
+
+msgid "Please choose a user to grant this permission to."
+msgstr "Veuillez choisir un utilisateur à qui accorder cette autorisation."
+
+msgid "Please enter a specific reason, not a placeholder."
+msgstr "Veuillez saisir un motif précis, et non une valeur générique."
+
+msgid "Reason for granting"
+msgstr "Motif de l'attribution"
+
+msgid "Unknown (legacy grant)"
+msgstr "Inconnu (accès hérité)"
+
+msgid "User to grant"
+msgstr "Utilisateur à autoriser"
+
+msgid ""
+"Users listed here can generate de-identified evaluation exports. Grants "
+"should match a written authorisation from the Executive Director and a "
+"signed data-sharing agreement with the evaluator."
+msgstr ""
+"Les personnes listées ici peuvent générer des exports d'évaluation "
+"désidentifiés. Chaque accès doit correspondre à une autorisation écrite "
+"de la direction générale et à une entente signée de partage de données "
+"avec l'évaluateur."
+
+msgid ""
+"Users who already hold an active grant do not appear in this list — revoke "
+"the existing grant first."
+msgstr ""
+"Les utilisateurs qui ont déjà un accès actif n'apparaissent pas dans "
+"cette liste — révoquez l'accès existant avant d'en créer un nouveau."
+
+msgid "What this permission does"
+msgstr "Ce que permet cette autorisation"
+
+msgid "— Choose a user —"
+msgstr "— Choisir un utilisateur —"
