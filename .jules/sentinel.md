@@ -12,3 +12,8 @@
 **Vulnerability:** The `invite_accept` endpoint in `apps/auth_app/invite_views.py` allowed unauthenticated users to accept invites and register without rate limits.
 **Learning:** This made it vulnerable to brute force and DoS attacks by making it easy to test combinations of `code` or flood the endpoint with POST requests.
 **Prevention:** As with all public/authentication-related endpoints, ensure the `@ratelimit(key="ip", rate="...", method=["GET", "POST"], block=True)` decorator is applied. When using `key="ip"`, note that it assumes correct proxy settings are present (e.g. `X-Forwarded-For`) so it doesn't just block the proxy IP.
+
+## 2024-10-24 - [Avoid `innerHTML` for Dynamic DOM Modifications]
+**Vulnerability:** XSS risk due to modifying the DOM using `.innerHTML` with potentially dynamic or unescaped translated values in `static/js/app.js`.
+**Learning:** `innerHTML` exposes a risk of executing unescaped input or malformed HTML translations. Instead of clearing nodes with `.innerHTML = ""` or creating nested HTML structures via strings, safer programmatic node manipulation should be utilized.
+**Prevention:** Use `.textContent` for assigning simple text to elements. Use programmatic DOM creation methods like `document.createElement` and `node.appendChild` instead of injecting raw HTML strings into `.innerHTML`. To clear an element, loop through and use `removeChild` on its children (e.g. `while (el.firstChild) el.removeChild(el.firstChild);`).
