@@ -47,6 +47,7 @@ urlpatterns = [
     path("sessions/", views.session_report_form, name="session_report"),
     # Evaluation microdata export (DRR: evaluation-microdata-export.md)
     path("evaluation-export/", views.evaluation_export_form, name="evaluation_export"),
+    path("evaluation-export/history/", views.evaluation_export_history, name="evaluation_export_history"),
     # Longitudinal Trajectory Export — small-population tier, structurally
     # separate from the EME route (separate URL prefix is part of the
     # DRR's "separate path, separate door, separate key" principle).

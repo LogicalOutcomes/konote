@@ -102,10 +102,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Simplified scope (2026-04-09):** The original plan had 11 tasks. The governance list + permission-audit list + dashboard card were merged into a single GOV1 deliverable; GOV4 + GOV5 were combined into one history+banner task; and DOC1–4 were collapsed into a single doc task that leads with the ED one-pager. Pipeline tests (GOV7) stay standalone because the de-identification code is safety-critical.
 
-**Code & UI:**
-- [ ] 🔨 Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output. **Safety-critical**: `apps/reports/deidentify.py` has zero test coverage. (EVAL-GOV7)
-- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns. Migration 0043 already added the field; form currently ignores it. (EVAL-GOV6)
-- [ ] Export history view with agreement-expiry banner — single page listing past `evaluation_microdata` exports with program, evaluator, counts, status. Shows a warning banner for evaluators whose data-sharing agreement has expired. (EVAL-GOV-HISTORY)
+**Code & UI:** ✅ All done — see Recently Done.
 
 **Documentation:**
 - [ ] Evaluation export documentation bundle — ED-facing one-pager (`docs/evaluation-export-guide.md`) as the primary deliverable, plus short cross-reference sections in `docs/admin/reporting.md`, `docs/help.md`, and `tasks/agency-permissions-interview.md` Section 7 pointing to the one-pager. (EVAL-DOCS)
@@ -141,6 +138,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Pipeline test suite for `deidentify.py` — 75 safety-critical tests covering consent filtering, PII stripping, study IDs, age bands, geography, k-anonymity, population thresholds, suppression ceiling, CSV format, full integration — 2026-04-10 (EVAL-GOV7)
+- [x] Wire up `is_evaluation_exportable` custom field groups — form dynamically queries `CustomFieldGroup.is_evaluation_exportable` and adds QI column checkboxes; 2 tests — 2026-04-10 (EVAL-GOV6)
+- [x] Export history view with agreement-expiry banner — lists past evaluation exports with evaluator info, status (active/expired/revoked), expired agreement warning banner; nav entry; 8 tests — 2026-04-10 (EVAL-GOV-HISTORY)
 - [x] Decommission old VPS (141.227.151.7) — new Canadian VPS stable after 5+ weeks, old Swiss instance cancelled in OVH control panel — 2026-04-09 (OPS-DECOM1)
 - [x] Longitudinal Trajectory Export (LTE) implementation — small-population evaluation tier with new `report.evaluation_export_small_population` permission, `LTEExportGrant` model + signal, "no privacy officer = no LTE" gate, `LTEExportRequestForm` with structured preconditions (REB, DSA, evaluator credentials, community governance, acknowledgement), `LTESmallPopulationPipeline` subclassing `DeidentificationPipeline` with demographic suppression and metric/session/hours fuzzing, 5-business-day review-and-cancel window with flag-freeze/resume, distributed admin oversight via signed "Flag concerns" email tokens, post-hoc privacy officer review with agency-wide rate limit, distinct `longitudinal_trajectory_export` audit category, LTE CSV output with PROGRAM EVALUATION warning header, `tests/test_lte.py` end-to-end coverage, `docs/lte-privacy-officer-guide.md` + admin reporting guide section, 146 French translations — 2026-04-09 (LTE-PERM1, LTE-FORM1, LTE-PIPE1, LTE-WINDOW1, LTE-OVERSIGHT1, LTE-REVIEW1, LTE-AUDIT1, LTE-OUT1, LTE-TEST1, LTE-DOC1, LTE-I18N1)
 - [x] Evaluator Export grant audit UI — new `EvaluationExportGrant` model + `post_save` signal keeping the `User.evaluation_export_granted` cache in sync, `EvaluationExportGrantForm` enforcing a substantive reason (≥15 chars, blocklist), three admin views (list / create / revoke) at `/manage/users/evaluation-export/` with immutable audit logging, nav entry in both admin and PM dropdowns, Django admin `readonly_fields` block on direct flag edits, demo seed routed through the grant model, 24 French translations, and ~25 new tests — 2026-04-09 (EVAL-GOV1)
