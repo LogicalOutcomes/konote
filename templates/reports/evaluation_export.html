@@ -66,6 +66,11 @@
         {% include "includes/_form_field.html" with field=form.include_gender %}
         {% include "includes/_form_field.html" with field=form.include_ethnicity %}
         {% include "includes/_form_field.html" with field=form.include_geography %}
+        {% for field in form %}
+            {% if field.name|slice:":12" == "include_cfg_" %}
+                {% include "includes/_form_field.html" with field=field %}
+            {% endif %}
+        {% endfor %}
     </fieldset>
 
     <button type="submit">{% trans "Preview Export" %}</button>

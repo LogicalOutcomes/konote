@@ -1288,6 +1288,22 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             program_choices.append((str(p.pk), str(p)))
         self.fields["program"].choices = program_choices
 
+        # Dynamic custom field group checkboxes (EVAL-GOV6)
+        from apps.clients.models import CustomFieldGroup
+        self._custom_qi_groups = list(
+            CustomFieldGroup.objects.filter(
+                is_evaluation_exportable=True,
+                status="active",
+            ).order_by("sort_order")
+        )
+        for group in self._custom_qi_groups:
+            field_name = f"include_cfg_{group.pk}"
+            self.fields[field_name] = forms.BooleanField(
+                required=False,
+                label=group.title,
+                help_text=_("Custom field group"),
+            )
+
     def clean_program(self):
         """Override mixin: evaluation exports require a single program."""
         value = self.cleaned_data.get("program", "")
@@ -1312,7 +1328,11 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
         return cleaned
 
     def get_qi_columns(self):
-        """Return the list of selected quasi-identifier column names."""
+        """Return the list of selected quasi-identifier column names.
+
+        Includes both built-in QI columns (age, gender, ethnicity, geography)
+        and custom field groups marked is_evaluation_exportable (EVAL-GOV6).
+        """
         qi = []
         if self.cleaned_data.get("include_age_group"):
             qi.append("age_group")
@@ -1322,6 +1342,13 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             qi.append("ethnicity")
         if self.cleaned_data.get("include_geography"):
             qi.append("geography")
+        # Custom field groups
+        for group in self._custom_qi_groups:
+            field_name = f"include_cfg_{group.pk}"
+            if self.cleaned_data.get(field_name):
+                # Use slugified group title as column name
+                slug = group.title.lower().replace(" ", "_")
+                qi.append(slug)
         return qi
 
     def get_evaluator_info(self):

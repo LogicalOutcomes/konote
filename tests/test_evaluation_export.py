@@ -1127,6 +1127,51 @@ class EvaluationExportFormTest(TestCase):
         self.assertEqual(info["email"], "test@example.com")
         self.assertEqual(info["organisation"], "U of T")
 
+    def test_custom_field_group_qi_columns(self):
+        """Custom field groups marked is_evaluation_exportable appear as QI columns."""
+        from apps.clients.models import CustomFieldGroup
+        from apps.reports.forms import EvaluationExportForm
+
+        group = CustomFieldGroup.objects.create(
+            title="Employment Status",
+            is_evaluation_exportable=True,
+            status="active",
+        )
+        form = EvaluationExportForm(
+            data={
+                "program": str(self.program.pk),
+                "period_start": "2025-01-01",
+                "period_end": "2025-12-31",
+                "evaluator_name": "Dr. Test",
+                "evaluator_email": "test@example.com",
+                "evaluator_organisation": "U of T",
+                "evaluation_purpose": "Testing",
+                "agreement_expiry": "2026-12-31",
+                "include_age_group": True,
+                f"include_cfg_{group.pk}": True,
+            },
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        qi = form.get_qi_columns()
+        self.assertIn("age_group", qi)
+        self.assertIn("employment_status", qi)
+
+    def test_non_exportable_group_not_shown(self):
+        """Groups without is_evaluation_exportable=True don't appear."""
+        from apps.clients.models import CustomFieldGroup
+        from apps.reports.forms import EvaluationExportForm
+
+        CustomFieldGroup.objects.create(
+            title="Contact Info",
+            is_evaluation_exportable=False,
+            status="active",
+        )
+        form = EvaluationExportForm(user=self.user)
+        # No include_cfg_ fields should exist for non-exportable groups
+        cfg_fields = [k for k in form.fields if k.startswith("include_cfg_")]
+        self.assertEqual(len(cfg_fields), 0)
+
 
 # ═════════════════════════════════════════════════════════════════════
 # 13. View permission gating
