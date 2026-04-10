@@ -2463,6 +2463,76 @@ def evaluation_export_form(request):
     return redirect("reports:download_export", link_id=link.pk)
 
 
+@login_required
+def evaluation_export_history(request):
+    """List past evaluation microdata exports with agreement-expiry warning.
+
+    Shows exports created by the current user (or all if admin).
+    Includes evaluator info parsed from filters_json and a warning
+    banner for expired data-sharing agreements (EVAL-GOV-HISTORY).
+    """
+    from .utils import can_create_evaluation_export
+
+    if not can_create_evaluation_export(request.user):
+        return HttpResponseForbidden(
+            _("Access denied. You do not have permission to view evaluation export history.")
+        )
+
+    links = SecureExportLink.objects.filter(
+        export_type="evaluation_microdata",
+    ).order_by("-created_at")
+
+    # Build enriched rows with parsed evaluator info
+    today = dt.date.today()
+    exports = []
+    has_expired_agreement = False
+    for link in links:
+        try:
+            filters = json.loads(link.filters_json) if link.filters_json else {}
+        except (json.JSONDecodeError, TypeError):
+            filters = {}
+
+        evaluator = filters.get("evaluator", {})
+        agreement_expiry_str = evaluator.get("agreement_expiry", "")
+        agreement_expired = False
+        if agreement_expiry_str:
+            try:
+                expiry_date = dt.date.fromisoformat(str(agreement_expiry_str))
+                agreement_expired = expiry_date < today
+                if agreement_expired:
+                    has_expired_agreement = True
+            except (ValueError, TypeError):
+                pass
+
+        # Determine status
+        if link.revoked:
+            status = "revoked"
+        elif link.expires_at and link.expires_at < timezone.now():
+            status = "expired"
+        else:
+            status = "active"
+
+        exports.append({
+            "link": link,
+            "program_name": filters.get("program_name", ""),
+            "period_start": filters.get("period_start", ""),
+            "period_end": filters.get("period_end", ""),
+            "evaluator_name": evaluator.get("name", ""),
+            "evaluator_organisation": evaluator.get("organisation", ""),
+            "evaluator_email": evaluator.get("email", ""),
+            "agreement_expiry": agreement_expiry_str,
+            "agreement_expired": agreement_expired,
+            "qi_columns": filters.get("qi_columns", []),
+            "status": status,
+        })
+
+    return render(request, "reports/evaluation_export_history.html", {
+        "exports": exports,
+        "has_expired_agreement": has_expired_agreement,
+        "nav_active": "reports",
+    })
+
+
 # ---------------------------------------------------------------------------
 # Longitudinal Trajectory Export (LTE) — DRR: evaluation-microdata-export.md
 # ---------------------------------------------------------------------------

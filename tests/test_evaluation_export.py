@@ -1225,3 +1225,118 @@ class EvaluationExportViewPermissionTest(TestCase):
         client.force_login(user)
         response = client.get("/reports/evaluation-export/")
         self.assertEqual(response.status_code, 403)
+
+
+# ---------------------------------------------------------------------------
+# Export History View Tests (EVAL-GOV-HISTORY)
+# ---------------------------------------------------------------------------
+class EvaluationExportHistoryViewTest(TestCase):
+    """Tests for the evaluation export history view."""
+
+    databases = {"default", "audit"}
+
+    HISTORY_URL = "/reports/evaluation-export/history/"
+
+    def setUp(self):
+        self.granted_user = User.objects.create_user(
+            username="eval_user",
+            password="test1234",
+            email="eval@test.com",
+            evaluation_export_granted=True,
+        )
+        self.denied_user = User.objects.create_user(
+            username="noperm_user",
+            password="test1234",
+            email="noperm@test.com",
+            evaluation_export_granted=False,
+        )
+        self.client_http = Client()
+
+    def _create_export_link(self, user, filters=None, revoked=False, expired=False):
+        """Helper to create a SecureExportLink for evaluation_microdata."""
+        from apps.reports.models import SecureExportLink
+
+        now = timezone.now()
+        expires = now - timedelta(hours=1) if expired else now + timedelta(hours=24)
+        link = SecureExportLink.objects.create(
+            created_by=user,
+            export_type="evaluation_microdata",
+            filters_json=json.dumps(filters or {}),
+            client_count=10,
+            recipient="evaluator@example.com",
+            file_path="/tmp/fake_export.csv",
+            revoked=revoked,
+            expires_at=expires,
+        )
+        return link
+
+    def test_denied_without_grant(self):
+        """User without evaluation_export_granted gets 403."""
+        self.client_http.force_login(self.denied_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 403)
+
+    def test_login_required(self):
+        """Anonymous user is redirected to login."""
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login", response.url)
+
+    def test_empty_history_renders(self):
+        """Page renders when there are no exports."""
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No evaluation exports have been generated yet.")
+
+    def test_export_appears_in_history(self):
+        """An evaluation export link appears in the history table."""
+        self._create_export_link(self.granted_user, filters={
+            "program_name": "Youth Program",
+            "evaluator": {"name": "Dr. Smith", "organisation": "Eval Co"},
+        })
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Youth Program")
+        self.assertContains(response, "Dr. Smith")
+        self.assertContains(response, "Eval Co")
+
+    def test_expired_agreement_banner_shown(self):
+        """Warning banner appears when an export has an expired agreement."""
+        yesterday = (date.today() - timedelta(days=1)).isoformat()
+        self._create_export_link(self.granted_user, filters={
+            "evaluator": {"name": "Old Eval", "agreement_expiry": yesterday},
+        })
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Expired data-sharing agreement")
+        self.assertContains(response, "EXPIRED")
+
+    def test_no_banner_for_future_agreement(self):
+        """No warning banner when agreement expiry is in the future."""
+        future = (date.today() + timedelta(days=30)).isoformat()
+        self._create_export_link(self.granted_user, filters={
+            "evaluator": {"name": "Current Eval", "agreement_expiry": future},
+        })
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Expired data-sharing agreement")
+
+    def test_revoked_link_shows_revoked_status(self):
+        """A revoked link shows revoked status."""
+        self._create_export_link(self.granted_user, revoked=True)
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Revoked")
+
+    def test_expired_link_shows_expired_status(self):
+        """An expired (past expires_at) link shows expired status."""
+        self._create_export_link(self.granted_user, expired=True)
+        self.client_http.force_login(self.granted_user)
+        response = self.client_http.get(self.HISTORY_URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Expired")
