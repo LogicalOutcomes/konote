@@ -101,3 +101,6 @@ Share these points when you deliver the file:
 | Export history | Reports → Export History |
 | Agreement expiry tracking | Entered at export time; banner warns when expired |
 | Related admin guide | [Reporting admin guide](admin/reporting.md) |
+| Evaluation protocol | [CIDS Evaluation Protocol](../tasks/cids-evaluation-protocol.md) (for evaluators) |
+| LLM planning prompt | [Evaluation Planning Prompt](../tasks/cids-evaluation-planning-prompt.md) (for evaluators using AI) |
+| Literature review template | [Literature Review Brief Template](literature-review-brief-template.md) |
