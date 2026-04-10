@@ -132,6 +132,21 @@ This gives more accurate reporting — paused goals aren't counted as failures o
 
 ---
 
+## Evaluation Microdata Export
+
+The Evaluation Microdata Export (EME) lets designated staff generate a de-identified CSV file for an external evaluator. The system automatically removes identifying information and enforces k-anonymity (k ≥ 5) so that no participant can be singled out from their demographic profile.
+
+**Key points for administrators:**
+
+- Permission is granted per-user through **Admin → Evaluator Export Access**. There is no admin bypass — even administrators need an explicit grant.
+- Programs must have at least 15 participants with outcome data in the selected period. Smaller programs should use [LTE](../lte-privacy-officer-guide.md) instead.
+- Each export records the evaluator's name, organisation, and data-sharing agreement expiry date in the audit log.
+- The **Export History** page (Reports → Export History) lists all past evaluation exports and shows a warning banner when an agreement has expired.
+
+For the full step-by-step guide (intended for EDs and program managers), see [Evaluation Export Guide](../evaluation-export-guide.md).
+
+---
+
 ## Longitudinal Trajectory Export (small-population evaluation)
 
 LTE is a second, structurally separate export tier for programs with
