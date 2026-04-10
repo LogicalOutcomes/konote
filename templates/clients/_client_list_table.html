@@ -14,7 +14,7 @@
 {% include "clients/_client_pagination.html" %}
 
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     {% if search_query %}
     <p>{% blocktrans with clients=term.client_plural|default:"participants" query=search_query %}No {{ clients }} found matching "{{ query }}". Try a different name or check the spelling.{% endblocktrans %}</p>
     <a href="{% url 'clients:client_list' %}" role="button">{% trans "Clear search" %}</a>

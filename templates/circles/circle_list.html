@@ -51,7 +51,7 @@
 </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     {% if search_query %}
         <p>{% blocktrans with circles=term.circle_plural|default:"circles" %}No {{ circles }} match your search.{% endblocktrans %}</p>
     {% else %}
