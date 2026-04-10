@@ -1288,7 +1288,6 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             program_choices.append((str(p.pk), str(p)))
         self.fields["program"].choices = program_choices
 
-        # Dynamic custom field group checkboxes (EVAL-GOV6)
         from apps.clients.models import CustomFieldGroup
         self._custom_qi_groups = list(
             CustomFieldGroup.objects.filter(
@@ -1303,6 +1302,13 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
                 label=group.title,
                 help_text=_("Custom field group"),
             )
+
+    @property
+    def custom_qi_fields(self):
+        """Yield the dynamically-added custom field group BoundFields."""
+        for group in self._custom_qi_groups:
+            field_name = f"include_cfg_{group.pk}"
+            yield self[field_name]
 
     def clean_program(self):
         """Override mixin: evaluation exports require a single program."""
@@ -1331,7 +1337,7 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
         """Return the list of selected quasi-identifier column names.
 
         Includes both built-in QI columns (age, gender, ethnicity, geography)
-        and custom field groups marked is_evaluation_exportable (EVAL-GOV6).
+        and custom field groups marked is_evaluation_exportable.
         """
         qi = []
         if self.cleaned_data.get("include_age_group"):
@@ -1342,13 +1348,13 @@ class EvaluationExportForm(ProgramSelectionMixin, forms.Form):
             qi.append("ethnicity")
         if self.cleaned_data.get("include_geography"):
             qi.append("geography")
-        # Custom field groups
+        # Custom field groups — use the same sanitiser as the pipeline
+        # so column names match between form and CSV output.
+        from apps.reports.deidentify import DeidentificationPipeline
         for group in self._custom_qi_groups:
             field_name = f"include_cfg_{group.pk}"
             if self.cleaned_data.get(field_name):
-                # Use slugified group title as column name
-                slug = group.title.lower().replace(" ", "_")
-                qi.append(slug)
+                qi.append(DeidentificationPipeline._sanitise_metric_name(group.title))
         return qi
 
     def get_evaluator_info(self):

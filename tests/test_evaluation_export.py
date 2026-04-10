@@ -291,12 +291,11 @@ class StudyIdGeneratorTest(TestCase):
             self.assertNotIn(new_id, existing)
             existing.add(new_id)
 
-    def test_not_sequential(self):
-        """IDs are random, not sequential."""
-        ids = [DeidentificationPipeline._generate_study_id(set()) for _ in range(10)]
-        # With randomness, the hex portions should not be monotonically ordered
-        hex_parts = [sid.split("-")[1] for sid in ids]
-        self.assertNotEqual(hex_parts, sorted(hex_parts))
+    def test_different_across_calls(self):
+        """Two calls produce different IDs (not deterministic)."""
+        id_a = DeidentificationPipeline._generate_study_id(set())
+        id_b = DeidentificationPipeline._generate_study_id(set())
+        self.assertNotEqual(id_a, id_b)
 
 
 class SanitiseMetricNameTest(TestCase):

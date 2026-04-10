@@ -66,10 +66,8 @@
         {% include "includes/_form_field.html" with field=form.include_gender %}
         {% include "includes/_form_field.html" with field=form.include_ethnicity %}
         {% include "includes/_form_field.html" with field=form.include_geography %}
-        {% for field in form %}
-            {% if field.name|slice:":12" == "include_cfg_" %}
-                {% include "includes/_form_field.html" with field=field %}
-            {% endif %}
+        {% for field in form.custom_qi_fields %}
+            {% include "includes/_form_field.html" with field=field %}
         {% endfor %}
     </fieldset>
 

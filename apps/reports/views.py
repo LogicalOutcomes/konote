@@ -2467,9 +2467,9 @@ def evaluation_export_form(request):
 def evaluation_export_history(request):
     """List past evaluation microdata exports with agreement-expiry warning.
 
-    Shows exports created by the current user (or all if admin).
+    Shows all evaluation exports visible to the current user.
     Includes evaluator info parsed from filters_json and a warning
-    banner for expired data-sharing agreements (EVAL-GOV-HISTORY).
+    banner for expired data-sharing agreements.
     """
     from .utils import can_create_evaluation_export
 
