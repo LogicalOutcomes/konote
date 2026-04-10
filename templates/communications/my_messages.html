@@ -13,11 +13,11 @@
         {% include "communications/_my_message_card.html" %}
     {% endfor %}
 {% elif has_any_messages %}
-    <div class="empty-state">
+    <div class="empty-state" role="status">
         <p>{% trans "You're all caught up — no unread messages." %}</p>
     </div>
 {% else %}
-    <div class="empty-state">
+    <div class="empty-state" role="status">
         <p>{% trans "No messages yet." %}</p>
         <p class="secondary">{% blocktrans with worker_term=term.worker_plural|default:"workers" %}Messages from colleagues will appear here when someone leaves a note about a participant you're working with.{% endblocktrans %}</p>
     </div>

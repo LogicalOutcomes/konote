@@ -83,7 +83,7 @@
 </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% trans "No registration links yet." %}</p>
     <p><a href="{% url 'registration:registration_link_create' %}">{% trans "Create your first registration link" %}</a></p>
 </div>

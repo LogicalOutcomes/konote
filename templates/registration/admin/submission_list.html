@@ -97,7 +97,7 @@
 </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     {% if status_filter %}
     <p>{% blocktrans with status=status_filter %}No {{ status }} submissions.{% endblocktrans %}</p>
     {% else %}
