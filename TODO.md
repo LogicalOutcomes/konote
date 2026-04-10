@@ -104,8 +104,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Code & UI:** ✅ All done — see Recently Done.
 
-**Documentation:**
-- [ ] Evaluation export documentation bundle — ED-facing one-pager (`docs/evaluation-export-guide.md`) as the primary deliverable, plus short cross-reference sections in `docs/admin/reporting.md`, `docs/help.md`, and `tasks/agency-permissions-interview.md` Section 7 pointing to the one-pager. (EVAL-DOCS)
+**Documentation:** ✅ Done — see Recently Done.
 
 ### Phase: Longitudinal Trajectory Export (LTE) — see tasks/phase-lte-prompt.md
 
@@ -138,6 +137,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Evaluation export documentation bundle — ED-facing one-pager (`docs/evaluation-export-guide.md`) + cross-references in admin reporting guide, help page, and agency permissions interview (Section 7.4) — 2026-04-10 (EVAL-DOCS)
 - [x] Pipeline test suite for `deidentify.py` — 75 safety-critical tests covering consent filtering, PII stripping, study IDs, age bands, geography, k-anonymity, population thresholds, suppression ceiling, CSV format, full integration — 2026-04-10 (EVAL-GOV7)
 - [x] Wire up `is_evaluation_exportable` custom field groups — form dynamically queries `CustomFieldGroup.is_evaluation_exportable` and adds QI column checkboxes; 2 tests — 2026-04-10 (EVAL-GOV6)
 - [x] Export history view with agreement-expiry banner — lists past evaluation exports with evaluator info, status (active/expired/revoked), expired agreement warning banner; nav entry; 8 tests — 2026-04-10 (EVAL-GOV-HISTORY)
