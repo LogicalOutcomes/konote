@@ -21,6 +21,14 @@
 
 _All deep review fix tasks completed — see Recently Done._
 
+### Phase: DRR Restructure Follow-up (2026-04-12)
+
+- [ ] GK reviews DRR/principle restructure (7 new prescriptive DRRs extracted from 4 foundation docs, plus accessibility-requirements and customisable-terminology) before `develop` → `staging` → `main` promotion. Touches evaluation principles per Consultation Gates in CLAUDE.md — GK (DRR-REST1)
+- [ ] Retrofit `access-tiers.md` with enforcement-block frontmatter covering the three-layer RBAC check (view decorator + middleware + template tag), `ClientAccessBlock`-checked-before-role, and no-time-based-expiry on `ClientAccessBlock`. These invariants moved from `foundation-security-by-default.md` and must be owned by access-tiers now. — (DRR-REST2)
+- [ ] Amend `no-live-api-individual-data.md` with enforcement-block frontmatter covering: 10-minute export delay + admin notification for 100+ record exports, exports served through Django (not nginx/Caddy static file), time-limited UUID download links. Currently only the 24h expiry is named explicitly. — (DRR-REST3)
+- [ ] Write `note-shape-invariants.md` DRR (or extend an existing DRR) to cover the two-lens (Their Perspective / Your Observations) form-validation rule referenced from `principles/collaborative-practice.md`. — (DRR-REST4)
+- [ ] Build the enforcement tests, Semgrep rules, Django system checks, and pre-commit hooks named by the new security, accessibility, and terminology DRRs before promoting them from Draft to Decided. Scope and per-file prompt at [tasks/drr-enforcement-tests-prompt.md](tasks/drr-enforcement-tests-prompt.md). Blocks moving the 9 new DRRs off Draft status. — (DRR-REST5)
+
 ## Do Occasionally
 
 Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recurring-tasks.md).
