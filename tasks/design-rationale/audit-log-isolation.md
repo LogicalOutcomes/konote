@@ -11,8 +11,11 @@ enforcement:
   - type: pytest
     file: tests/drr/test_audit_log_immutability.py
     description: "Assert ORM raises PermissionError on AuditLog.save() for existing records and on .delete()"
+  - type: pytest
+    file: tests/drr/test_audit_transaction_isolation.py
+    description: "Audit writes persist even when the surrounding application transaction rolls back (separate connection)"
   - type: codeowner
-    paths: [apps/audit/, konote/settings.py]
+    paths: [apps/audit/, konote/settings/, konote/middleware/audit.py]
 ---
 
 # DRR: Audit Log Isolation
@@ -43,9 +46,14 @@ A compromised application cannot alter its own evidence trail. A compromised aud
 
 ## CI enforcement (detail)
 
-1. **Django system check** `audit_db_role_insert_only` runs on app boot. It connects as the audit role and attempts a dry-run `UPDATE`; if it succeeds, the check raises a critical error and the app refuses to start.
+1. **Django system check** `audit_db_role_insert_only` runs on app boot. It connects as the audit role (configured in the `konote/settings/` package — see `AUDIT_DATABASE` / the `audit` entry in `DATABASES`) and attempts a dry-run `UPDATE`; if it succeeds, the check raises a critical error and the app refuses to start.
 2. **Pytest** `tests/drr/test_audit_log_immutability.py` creates an `AuditLog` record, reloads it, mutates a field, and asserts `save()` raises `PermissionError`. Same for `delete()`.
-3. **CODEOWNERS** — changes to `apps/audit/` or to the audit DB settings require review by a DRR steward.
+3. **Pytest** `tests/drr/test_audit_transaction_isolation.py` opens an application transaction, writes an `AuditLog` record via `using("audit")`, raises to force rollback of the application transaction, and asserts the audit record is still present. This enforces the anti-pattern "writing audit from the same DB connection as application queries."
+4. **CODEOWNERS** — changes to `apps/audit/`, the settings package, or the audit middleware require review by a DRR steward.
+
+## Migrations
+
+Schema migrations against the audit database are a narrow exception to the INSERT-only rule: the application role cannot issue DDL, so migrations run under a separately-credentialed one-off session (e.g., an ops-only role configured at deploy time in `entrypoint.sh` / the deploy script, not in application settings). That role has `CREATE` / `ALTER` privileges for DDL but still has no `UPDATE` or `DELETE` on existing audit rows. The migration role is never available to the running application process.
 
 ## When to revisit
 
