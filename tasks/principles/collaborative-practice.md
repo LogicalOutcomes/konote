@@ -48,6 +48,20 @@ These are the judgement areas where this principle applies. They cannot be grep-
 - **Goal capture.** Goals defined purely in clinical or funder language contradict the principle. The participant's own words must be captured and surfaced.
 - **Feedback cadence.** Annual surveys are not enough. Feedback collection must be embedded in ongoing service delivery.
 
+### Where each concrete mechanism lives
+
+The original foundation doc named nine concrete mechanisms that together carry this principle. In the current structure they are distributed across the Implementation DRRs listed below. For readers diffing the old foundation against the new split:
+
+- **Alliance rating / feedback-informed practice.** Held in the *Note structure* judgement call above and enforced on ProgressNote shape (two-lens) via form validation; see the upcoming `note-shape-invariants` DRR (open task).
+- **Participant portal as structural access right.** See [individual-data-rights](../design-rationale/individual-data-rights.md).
+- **Goal builder capturing participant words.** Judgement call above + [survey-metric-unification](../design-rationale/survey-metric-unification.md).
+- **Two-lens note structure (Their Perspective / Your Observations).** Judgement call above; form-validation DRR pending.
+- **Feedback themes / AI suggestion pipeline.** [insights-metric-distributions](../design-rationale/insights-metric-distributions.md).
+- **Strengths-based language on dashboards and labels.** [insights-metric-distributions](../design-rationale/insights-metric-distributions.md); reinforced by the language judgement call.
+- **Customisable terminology (`{{ term.client }}` never hardcoded).** [customisable-terminology](../design-rationale/customisable-terminology.md).
+- **Bilingual EN/FR.** [bilingual-requirements](../design-rationale/bilingual-requirements.md).
+- **Accessibility (WCAG 2.2 AA / AODA).** [accessibility-requirements](../design-rationale/accessibility-requirements.md).
+
 ## When to Revisit
 
 This principle should be revisited if:
@@ -64,11 +78,13 @@ The principle is load-bearing — changing it would require redesigning most of 
 
 Specific, enforceable decisions that implement this principle:
 
+- [accessibility-requirements](../design-rationale/accessibility-requirements.md) — WCAG 2.2 AA / AODA as an always-on constraint
+- [customisable-terminology](../design-rationale/customisable-terminology.md) — templates must use `{{ term.client }}`, never hardcoded role words
 - [bilingual-requirements](../design-rationale/bilingual-requirements.md) — EN/FR translation pipeline; bilingual as design constraint
 - [survey-metric-unification](../design-rationale/survey-metric-unification.md) — participant self-report and staff observation through one measurement infrastructure
 - [circles-family-entity](../design-rationale/circles-family-entity.md) — relational context beyond the individual
 - [insights-metric-distributions](../design-rationale/insights-metric-distributions.md) — service-framing language on dashboards; distribution not average
-- [executive-dashboard-redesign](../design-rationale/executive-dashboard-redesign.md) — accessibility as structural requirement
+- [executive-dashboard-redesign](../design-rationale/executive-dashboard-redesign.md) — accessibility applied to dashboards specifically
 - [access-tiers](../design-rationale/access-tiers.md) — demographic visibility controls that support participant dignity
 
 ## Related Principles

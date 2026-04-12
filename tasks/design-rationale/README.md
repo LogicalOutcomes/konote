@@ -80,6 +80,14 @@ Use `/design-rationale` in Claude Code to check a proposal against all DRRs.
 | [executive-dashboard-redesign](executive-dashboard-redesign.md) | Approved | Dashboard UX with accessibility focus |
 | [cids-batch-classification-workflow](cids-batch-classification-workflow.md) | Draft | Batch AI classification for taxonomies |
 
+### Collaborative Practice (UX and Inclusion)
+
+| Document | Status | Scope |
+|---|---|---|
+| [accessibility-requirements](accessibility-requirements.md) | Draft | WCAG 2.2 AA / AODA on every surface |
+| [customisable-terminology](customisable-terminology.md) | Draft | Templates use `{{ term.client }}`; no hardcoded role words |
+| [bilingual-requirements](bilingual-requirements.md) | Decided | EN/FR translation; legal obligation |
+
 ### Infrastructure and Integration
 
 | Document | Status | Scope |
@@ -88,7 +96,6 @@ Use `/design-rationale` in Claude Code to check a proposal against all DRRs.
 | [ovhcloud-deployment](ovhcloud-deployment.md) | Decided | OVHcloud VPS, self-healing, backup |
 | [self-hosted-llm-infrastructure](self-hosted-llm-infrastructure.md) | Decided | Shared Ollama VPS; tenant isolation |
 | [tech-stack-constraints](tech-stack-constraints.md) | Draft | No JS framework; dep ceiling; Alpine |
-| [bilingual-requirements](bilingual-requirements.md) | Decided | EN/FR translation; legal obligation |
 | [document-integration](document-integration.md) | Decided | SharePoint + Google Drive |
 | [offline-field-collection](offline-field-collection.md) | Decided | ODK Central |
 

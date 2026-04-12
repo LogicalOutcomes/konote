@@ -23,6 +23,8 @@ Three commitments follow from this:
 2. **Fails closed.** If a control cannot determine whether an action is safe, it denies the action. Over-restriction is recoverable; over-exposure is not.
 3. **Loud on misconfiguration.** When a security-critical setting is wrong (missing key, missing migration, malformed matrix), the application refuses to start — rather than running in an insecure state silently.
 
+For example: the encryption key is validated on every boot by decrypting a sample record. If the key is missing, corrupt, or misconfigured, the application refuses to start. Misconfiguration becomes a loud, immediate failure — not a silent data exposure. That pattern (fail-closed, fail-loud, architectural) is the template every security DRR in the table below follows.
+
 ## The Guiding Test
 
 Ask of any proposed feature or configuration:
