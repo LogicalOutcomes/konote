@@ -8,11 +8,14 @@ enforcement:
   - type: pytest
     file: tests/drr/test_two_person_workflows.py
     description: "Assert alert cancellation, DV flag removal, and data erasure each require two distinct user IDs to complete"
+  - type: pytest
+    file: tests/drr/test_two_person_token_expiry.py
+    description: "Approval requests for alert cancel, DV flag removal, and erasure are rejected when the approval token is older than TWO_PERSON_APPROVAL_TTL_MINUTES (15 minutes) — see Core Decision"
   - type: semgrep
     rule: two-person-action-requires-approver
     description: "Any view or management command that completes one of the protected actions must accept and validate a distinct approver_id"
   - type: codeowner
-    paths: [apps/alerts/views.py, apps/dv_safety/, apps/clients/erasure.py]
+    paths: [apps/events/views.py, apps/clients/dv_views.py, apps/clients/erasure.py, apps/clients/erasure_views.py]
 ---
 
 # DRR: Two-Person Safety Actions
@@ -33,6 +36,12 @@ No single person — regardless of role — can complete any of these actions al
 
 This protects against both **human error** (a single slip doesn't cause irreversible harm) and **coercion** (a staff member under pressure from a client's abuser cannot unilaterally remove a safety flag).
 
+**Approval tokens are time-limited.** Each approval request carries a token (or equivalent server-side expiry stamp) that is valid for **`TWO_PERSON_APPROVAL_TTL_MINUTES = 15`** from the moment the requester files it. After 15 minutes the approval must be re-requested. This matches the session-inactivity and account-lockout cadence and narrows the window for leisure-coercion against an approver who is later confronted with a stale request.
+
+**Implementation anchor.** Alert cancellation uses the existing `recommend_cancel` / `review_cancel_recommendation` pair in `apps/events/views.py` (see `alert_cancel` and `alert_recommend_cancel`). DV-flag removal lives in `apps/clients/dv_views.py`. Participant erasure lives in `apps/clients/erasure.py` + `apps/clients/erasure_views.py`. A shared helper — `require_two_person_approval(action, requester, approver)` — is to be created in `apps/auth_app/decorators.py` (or a new `apps/auth_app/two_person.py`) and adopted by all three workflows; the Semgrep rule below enforces adoption.
+
+**Governance note.** If the only Program Manager is the requester, the action waits until a second PM (or higher) is available. Agencies with a single PM accept this as a governance trade-off; the rule is architectural, not configurable.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it is rejected |
@@ -45,9 +54,10 @@ This protects against both **human error** (a single slip doesn't cause irrevers
 
 ## CI enforcement (detail)
 
-1. **Pytest** for each of the three workflows: (a) attempt to complete as a single user → expect failure, (b) complete with requester == approver → expect failure, (c) complete with distinct requester and approver of appropriate roles → expect success AND audit record with both IDs.
-2. **Semgrep rule** scans the views and commands that complete each action and flags any that do not call the shared `require_two_person_approval(action, requester, approver)` helper.
-3. **CODEOWNERS** on the implementing files.
+1. **Pytest** `tests/drr/test_two_person_workflows.py` — for each of the three workflows: (a) attempt to complete as a single user → expect failure, (b) complete with requester == approver → expect failure, (c) complete with distinct requester and approver of appropriate roles → expect success AND audit record with both IDs.
+2. **Pytest** `tests/drr/test_two_person_token_expiry.py` — file an approval request, fast-forward time past `TWO_PERSON_APPROVAL_TTL_MINUTES`, attempt to complete the approval → expect rejection. Covers all three workflows.
+3. **Semgrep rule** scans `apps/events/views.py`, `apps/clients/dv_views.py`, and `apps/clients/erasure*.py` (plus any future view that performs one of the protected actions) and flags any completion path that does not call `require_two_person_approval(action, requester, approver)`.
+4. **CODEOWNERS** on the implementing files.
 
 ## When to revisit
 
