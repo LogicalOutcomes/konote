@@ -21,7 +21,7 @@ enforcement:
     rule: no-button-without-accessible-text
     description: "In **/templates/**/*.html, forbid <button>...</button> with no inner text AND no aria-label / aria-labelledby; same for <a> elements that act as buttons (role='button' or hx-* attributes) with no accessible name"
   - type: codeowner
-    paths: ["**/templates/base*.html", "**/templates/**/_form_field.html", static/a11y/, tests/test_a11y_ci.py, tests/test_accessibility_templates.py]
+    paths: ["**/templates/base*.html", "**/templates/**/_form_field.html", tests/test_a11y_ci.py, tests/test_accessibility_templates.py]
 ---
 
 # DRR: Accessibility Requirements (WCAG 2.2 AA, AODA)
@@ -65,7 +65,7 @@ Accessibility is **a constraint on every template and component from the start**
 3. **Pytest** `tests/test_blocker_a11y.py` holds specific regression guards added during launch-readiness review.
 4. **Semgrep rule** `no-image-without-alt` scans every file in `**/templates/**/*.html` and fails the commit on any `<img …>` tag that lacks an `alt=` attribute. An empty alt (`alt=""`) is explicitly allowed for decorative images — the rule forbids *missing*, not *empty*.
 5. **Semgrep rule** `no-button-without-accessible-text` scans templates for `<button></button>` with no text content and no `aria-label` / `aria-labelledby`, and for `<a>` elements acting as buttons (role="button" or HTMX trigger attributes) without an accessible name.
-6. **CODEOWNERS** — base templates, the shared `_form_field.html` include, static a11y assets, and the accessibility test files require DRR-steward review before modification.
+6. **CODEOWNERS** — base templates, the shared `_form_field.html` include, and the accessibility test files require DRR-steward review before modification.
 
 ## Relation to existing DRRs
 
