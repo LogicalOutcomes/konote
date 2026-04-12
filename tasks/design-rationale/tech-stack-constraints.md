@@ -13,7 +13,7 @@ enforcement:
     description: "Fail if requirements.txt exceeds 60 non-blank, non-comment lines without an accompanying CHANGELOG note"
   - type: pytest
     file: tests/drr/test_stack_constraints.py
-    description: "Assert Dockerfiles start FROM alpine or python:*-alpine; no JS frameworks in INSTALLED_APPS; no webpack/vite/rollup configs"
+    description: "Assert every Dockerfile starts FROM alpine or python:*-alpine; no webpack/vite/rollup/parcel config files exist; no package.json anywhere; requirements.txt is <=60 direct deps"
   - type: codeowner
     paths: [requirements.txt, Dockerfile*, docker-compose*.yml]
 ---
@@ -47,7 +47,9 @@ Specific constraints:
 
 1. **Pre-commit `forbid-npm-package-json`** — scans the repo for any file named `package.json`, `package-lock.json`, `yarn.lock`, or any `node_modules/` directory. Fails the commit if found. (Exception: if KoNote ever needs a tiny JS build step for a specific feature, the exception is defined here, not discovered in the diff.)
 2. **Pre-commit `dependency-ceiling`** — counts non-blank, non-comment lines in `requirements.txt`. Fails at >60 unless the commit message contains `[deps-approved]` and `CHANGELOG.md` has an entry explaining the new dependency.
-3. **Pytest** — asserts `Dockerfile*` files include `FROM alpine` or `FROM python:*-alpine`; no webpack/vite/rollup config files exist; no JS framework packages in `INSTALLED_APPS`.
+3. **Pytest** — asserts every `Dockerfile*` file at the repo root includes a base image matching `FROM alpine` or `FROM python:*-alpine`; asserts no `webpack.config.*`, `vite.config.*`, `rollup.config.*`, or `parcel.config.*` file exists anywhere; asserts no `package.json` anywhere; re-checks that `requirements.txt` has ≤60 direct pins (belt-and-braces with the pre-commit hook). Vendored static assets (e.g., `chart.js`, `htmx.min.js` placed directly under `static/`) are permitted — the ban is on build tooling, not on bundled JS files.
+
+   **Scope note.** The `dependency-ceiling` hook counts non-blank, non-comment lines in `requirements.txt` only. Constraint files, `-r requirements/base.txt` includes, `pyproject.toml` / `setup.py` dependency declarations, and editable / transitive deps are explicitly out of scope; they are not measured and not forbidden, but adding them is still governed by the principle of "every dep must justify its presence."
 4. **CODEOWNERS** — changes to `requirements.txt`, `Dockerfile*`, or `docker-compose*.yml` require DRR steward review.
 
 ## When to revisit
