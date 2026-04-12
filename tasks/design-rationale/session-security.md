@@ -13,9 +13,9 @@ enforcement:
     description: "Assert inactivity timeout, cookie flags, CSP nonce headers on rendered responses"
   - type: semgrep
     rule: no-inline-scripts-without-nonce
-    description: "Block <script>...</script> without a nonce attribute in templates"
+    description: "Block <script>...</script> without a nonce, and inline event-handler attributes (onclick, onload, onsubmit, onchange, etc.) in templates"
   - type: codeowner
-    paths: [konote/settings.py, apps/core/middleware.py, "**/templates/**/base*.html"]
+    paths: [konote/settings/, konote/middleware/session_timeout.py, "**/templates/**/base*.html"]
 ---
 
 # DRR: Session Security
@@ -47,8 +47,8 @@ Specific requirements:
 
 1. **Django system check** `session_security_defaults` runs on boot and refuses to start if: `SESSION_COOKIE_AGE > 1800`, `SESSION_COOKIE_HTTPONLY` is False, `SESSION_COOKIE_SECURE` is False in production, `SESSION_COOKIE_SAMESITE` is `"None"`, or `SESSION_ENGINE` uses `signed_cookies`.
 2. **Pytest** renders a protected page and asserts the response sets the session cookie with the correct flags and includes a CSP header with a nonce.
-3. **Semgrep rule** scans all templates and flags any `<script>` tag that does not carry `nonce="{{ request.csp_nonce }}"` or equivalent.
-4. **CODEOWNERS** — settings, middleware, and base templates require review.
+3. **Semgrep rule** scans all templates and flags (a) any `<script>` tag that does not carry `nonce="{{ request.csp_nonce }}"` or equivalent, AND (b) any inline event-handler attribute (`onclick`, `onload`, `onsubmit`, `onchange`, `onerror`, `onmouseover`, etc.) on any element. Both patterns undermine CSP and must be rewritten as external or nonce-bearing scripts.
+4. **CODEOWNERS** — the `konote/settings/` package, `konote/middleware/session_timeout.py`, and base templates require review.
 
 ## When to revisit
 
