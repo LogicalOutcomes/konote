@@ -115,7 +115,12 @@ Use `/design-rationale` in Claude Code to check a proposal against all DRRs.
 
 The following four documents previously lived here as "foundation principles." They have been superseded by the split described above. The originals remain in place until GK approves the restructure; once approved, they will be removed from this folder.
 
-- `foundation-collaborative-practice.md` → replaced by [`../principles/collaborative-practice.md`](../principles/collaborative-practice.md)
+- `foundation-collaborative-practice.md` → replaced by [`../principles/collaborative-practice.md`](../principles/collaborative-practice.md) + new [`accessibility-requirements.md`](accessibility-requirements.md) + new [`customisable-terminology.md`](customisable-terminology.md) DRRs
 - `foundation-data-sovereignty.md` → replaced by [`../principles/data-sovereignty.md`](../principles/data-sovereignty.md) + new [`individual-data-rights.md`](individual-data-rights.md) DRR
 - `foundation-security-by-default.md` → replaced by [`../principles/security-by-default.md`](../principles/security-by-default.md) + 5 new DRRs (audit-log-isolation, session-security, rate-limiting-and-authentication, two-person-safety-actions, demo-mode-isolation)
 - `foundation-nonprofit-sustainability.md` → replaced by [`../principles/nonprofit-sustainability.md`](../principles/nonprofit-sustainability.md) + new [`tech-stack-constraints.md`](tech-stack-constraints.md) DRR
+
+## Change history
+
+- **2026-04-12 — Restructure revisions (PR #644).** Second-round review at [`../drr-restructure-review.md`](../drr-restructure-review.md) identified defects in the 2026-03-14 draft (invented file paths, contradictory demo-mode description, `no-silent-record-overwrite` that would flag every create, missing accessibility/terminology DRRs, no meta-check). Revision prompt at [`../drr-restructure-revision-prompt.md`](../drr-restructure-revision-prompt.md) enumerates the must-fix / should-fix / nice-to-have items that became this PR. Test-implementation prompt at [`../drr-enforcement-tests-prompt.md`](../drr-enforcement-tests-prompt.md) describes the enforcement mechanisms (pytests, Semgrep rules, Django system checks, pre-commit hooks) the new DRRs still need built.
+- **2026-03-14 — Initial restructure (commit `181cbd4e`).** Four foundation docs split into principles (`tasks/principles/`) and seven new prescriptive DRRs in this directory.

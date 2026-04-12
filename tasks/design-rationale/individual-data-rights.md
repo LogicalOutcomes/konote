@@ -12,9 +12,9 @@ enforcement:
     id: consent_event_append_only
     description: "Verify ConsentEvent model overrides save() to reject updates after creation; verify the application DB role has no DELETE grant on consent_event"
   - type: llm-review
-    description: "Review changes to ProgressNote update paths for silent overwrites of body/content: a correction must route through CorrectionRequest and be applied as an amendment (new record linked to the original), not as an in-place edit that loses prior text. Pattern-based rules cannot distinguish create-vs-update on .save(), so a reviewer must confirm semantically. Focus points: any view or command that calls ProgressNote.save() on a previously-existing instance; any migration that rewrites note body fields."
+    description: "Silent ProgressNote overwrite. Flag any diff in apps/notes/ (especially views.py, signals.py) where a `.save()` call is made on a `ProgressNote` instance that was fetched earlier in the same function by primary key (not instantiated by `ProgressNote(...)` in the same function). Confirm that: (a) the body/notes_text/their_perspective/observations fields are NOT modified, OR (b) the modification routes through a CorrectionRequest and produces an amendment record (new row linked to the original via a parent/amendment FK) rather than an in-place edit. Also flag any Django migration under apps/notes/migrations/ that rewrites a text field on existing rows — migrations are not a correction workflow."
   - type: llm-review
-    description: "Review for power-asymmetric access workflows: the participant portal must self-serve access to own records (no formal request with 30-day response window for self-viewing). Also review soft-delete implementations for recoverable PII — an 'erased' record must have no field that can reconstruct identity. Both are absence-of-bad-pattern checks that static rules cannot catch."
+    description: "Power-asymmetric access and recoverable-PII soft-delete. Flag any diff that (a) adds a 'request-then-wait' workflow gating a participant's access to their OWN records (e.g., a new portal form that submits an access request and returns a 'staff will respond in N days' message -- self-viewing must remain immediate), or (b) introduces an `is_deleted` / `deleted_at` / `hidden` flag on any model that carries PII, without also stripping the PII fields to anonymised values. Soft-delete on a PII-carrying model is the recoverable-PII anti-pattern; use the erasure workflow in apps/clients/erasure.py instead. Both are absence-of-bad-pattern checks that static rules cannot catch."
   - type: codeowner
     paths: [apps/clients/models.py, apps/portal/models.py, apps/portal/views.py, apps/portal/forms.py, apps/clients/erasure.py, apps/clients/erasure_views.py]
 ---
@@ -23,13 +23,19 @@ enforcement:
 
 **Parent Principle:** [Data Sovereignty & Rights](../principles/data-sovereignty.md)
 
+## Where this lives in the codebase
+
+- **CorrectionRequest** — model in `apps/portal/models.py`; form in `apps/portal/forms.py`; view in `apps/portal/views.py`; admin in `apps/portal/admin.py`.
+- **ConsentEvent** — model in `apps/clients/models.py`; migration `apps/clients/migrations/0034_consentevent.py` (+ `0035_consentevent_request_received_via.py`).
+- **Erasure** — logic in `apps/clients/erasure.py`; views in `apps/clients/erasure_views.py`; URLs in `apps/clients/erasure_urls.py`.
+
 ## Core Decision
 
 Participants have four legally-recognised rights over their own records. KoNote implements each as a structural feature, not a process that depends on staff goodwill:
 
 ### 1. Correction
 
-Participants can request corrections through the portal. The `CorrectionRequest` model (`apps/portal/models.py`; form in `apps/portal/forms.py`; view in `apps/portal/views.py`) supports both informal (discuss next session) and formal (written request) paths. Corrections are **appended as amendments** — the original record is preserved with an amendment notation, not silently overwritten. This protects both the participant's right to accuracy and the clinical record's integrity.
+Participants can request corrections through the portal. The `CorrectionRequest` model supports both informal (discuss next session) and formal (written request) paths. Corrections are **appended as amendments** — the original record is preserved with an amendment notation, not silently overwritten. This protects both the participant's right to accuracy and the clinical record's integrity.
 
 ### 2. Access
 
@@ -41,7 +47,7 @@ A two-person workflow: Program Manager requests, Admin approves. (See [two-perso
 
 ### 4. Ongoing Consent
 
-The `ConsentEvent` model (`apps/clients/models.py`; see migration `0034_consentevent.py`) is **append-only**: grant and withdraw events with reasons and timestamps. Consent is never a single checkbox at intake that covers everything forever. Cross-program sharing is per-client configurable. Consent to aggregate reporting is explicit opt-in, not opt-out.
+The `ConsentEvent` model is **append-only**: grant and withdraw events with reasons and timestamps. Consent is never a single checkbox at intake that covers everything forever. Cross-program sharing is per-client configurable. Consent to aggregate reporting is explicit opt-in, not opt-out.
 
 ## Anti-patterns
 

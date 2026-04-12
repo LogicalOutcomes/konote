@@ -7,12 +7,15 @@ source: foundation-collaborative-practice.md §9 (2026-03-14)
 enforcement:
   - type: pytest
     file: tests/test_a11y_ci.py
+    status: implemented
     description: "axe-core smoke tests over the login page, dashboard, participant list, admin feature settings, outcome insights, and portal dashboard/journal/goals; fail on any critical or serious violation"
   - type: pytest
     file: tests/test_accessibility_templates.py
+    status: implemented
     description: "Assert key templates (500, offline, base) emit lang attribute matching the active language and include skip-to-main-content link; confirm offline fallback page has language detection and skip link"
   - type: pytest
     file: tests/test_blocker_a11y.py
+    status: implemented
     description: "Assert no a11y regressions on pages flagged during launch readiness review"
   - type: semgrep
     rule: no-image-without-alt
