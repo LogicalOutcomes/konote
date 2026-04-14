@@ -9,6 +9,6 @@
 ## 2025-03-10 - Add Contextual ARIA Labels to Action Buttons in Lists
 **Learning:** Action buttons like "Approve" and "Dismiss" in dynamically generated lists (like survey assignments) lack context for screen readers when they don't explicitly reference the target item. A user tabbing through the page would hear "Approve, button", "Dismiss, button", etc., multiple times without knowing *what* is being approved.
 **Action:** Always add descriptive `aria-label` attributes to generic action buttons inside iterative loops, using `{% blocktrans %}` to include the item's name dynamically (e.g., `aria-label="{% blocktrans with name=a.survey.name %}Approve {{ name }}{% endblocktrans %}"`).
-## 2024-03-10 - Add role="status" to dynamic empty states
-**Learning:** Empty states (e.g., `div` elements with class `empty-state`) convey important context that data is missing, but screen readers might not announce them when they appear dynamically unless they have the `role="status"` attribute.
-**Action:** Always add `role="status"` to elements displaying empty states, especially for dynamically generated content, so screen readers can announce them.
+## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
+**Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
+**Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
