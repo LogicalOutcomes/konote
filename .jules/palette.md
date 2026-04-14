@@ -9,3 +9,6 @@
 ## 2025-03-10 - Add Contextual ARIA Labels to Action Buttons in Lists
 **Learning:** Action buttons like "Approve" and "Dismiss" in dynamically generated lists (like survey assignments) lack context for screen readers when they don't explicitly reference the target item. A user tabbing through the page would hear "Approve, button", "Dismiss, button", etc., multiple times without knowing *what* is being approved.
 **Action:** Always add descriptive `aria-label` attributes to generic action buttons inside iterative loops, using `{% blocktrans %}` to include the item's name dynamically (e.g., `aria-label="{% blocktrans with name=a.survey.name %}Approve {{ name }}{% endblocktrans %}"`).
+## 2024-03-10 - Add role="status" to dynamic empty states
+**Learning:** Empty states (e.g., `div` elements with class `empty-state`) convey important context that data is missing, but screen readers might not announce them when they appear dynamically unless they have the `role="status"` attribute.
+**Action:** Always add `role="status"` to elements displaying empty states, especially for dynamically generated content, so screen readers can announce them.
