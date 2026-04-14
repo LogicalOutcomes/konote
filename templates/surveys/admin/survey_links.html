@@ -60,6 +60,7 @@
                                readonly
                                value="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
                                aria-label="{% trans 'Survey link URL' %}"
+                               data-select-on-click="true"
                                style="margin-bottom:0">
                         <button type="button" class="outline secondary copy-btn"
                                 data-clipboard-text="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
