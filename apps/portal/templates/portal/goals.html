@@ -42,7 +42,7 @@
 {% endfor %}
 
 {% else %}
-<article class="portal-empty-state">
+<article class="portal-empty-state" role="status">
     <p>{% blocktrans with worker_term=term.worker %}No goals have been added yet. Your {{ worker_term }} will add goals as you work on them together.{% endblocktrans %}</p>
 </article>
 {% endif %}
