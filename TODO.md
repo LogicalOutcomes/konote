@@ -2,6 +2,16 @@
 
 ## Flagged
 
+- [ ] **P1:** KoNote should not default to OpenRouter. It should default to Tensorix, hosted in EU. — PB (AI-DEFAULT1)
+
+  Notes:
+  - [konote/ai.py:488](konote/ai.py#L488) has a function `_call_insights_api` that checks for an `INSIGHTS_API_BASE` env var. If that's set (pointing at Ollama or any OpenAI-compatible endpoint), insights calls go there. If it isn't set, everything falls back to OpenRouter.
+  - `INSIGHTS_API_BASE` isn't in `.env.example` — only `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are. So unless a deployment has explicitly added the Ollama env var, that deployment is on OpenRouter.
+  - The self-hosted VPS design ([self-hosted-llm-infrastructure.md](tasks/design-rationale/self-hosted-llm-infrastructure.md)) is marked "Approved — design complete, deployment is ops work" as of 2026-03-03. So the VPS-build step is separate from the code.
+  - Even for the insights path, only some AI calls route through `_call_insights_api`. Other AI features in `ai.py` still hit OpenRouter directly. Full cutover is still the long-term goal, not current state.
+  - Can't tell from here whether the production KoNote deployment has `INSIGHTS_API_BASE` set — that's a VPS env-var question. But the shipped default is: OpenRouter for everything, Ollama only if explicitly pointed at it.
+  - Framing note: the Companion answered based on the design doc's aspirational framing and read it as current state. Worth fixing in the answerer prompt.
+
 - [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
 - [ ] Add LTE QA scenarios to sister repo — register the 7 new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` (lte_list, lte_submit, lte_detail, lte_cancel, lte_flag_concerns, lte_download, lte_resolve_review) and write 3 scenarios: happy path, small-population block, OCAP program without community signoff. Must be done in a separate session in the `konote-qa-scenarios` repo. — (LTE-QA1)
