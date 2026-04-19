@@ -40,6 +40,7 @@
                         hx-swap="innerHTML"
                         hx-confirm="{% blocktrans with name=role.user.display_name %}Remove {{ name }} from this program?{% endblocktrans %}"
                         class="outline secondary"
+                        aria-label="{% blocktrans with name=role.user.display_name %}Remove {{ name }}{% endblocktrans %}"
                         style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
                     {% trans "Remove" %}
                 </button>
