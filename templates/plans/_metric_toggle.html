@@ -3,6 +3,7 @@
         hx-target="#metric-toggle-{{ metric.pk }}"
         hx-swap="innerHTML"
         class="outline small {% if metric.is_enabled %}contrast{% else %}secondary{% endif %}"
+        aria-pressed="{{ metric.is_enabled|yesno:'true,false' }}"
         aria-label="{% if metric.is_enabled %}{% blocktrans with name=metric.name %}Disable {{ name }}{% endblocktrans %}{% else %}{% blocktrans with name=metric.name %}Enable {{ name }}{% endblocktrans %}{% endif %}">
     {% if metric.is_enabled %}{% trans "Enabled" %}{% else %}{% trans "Disabled" %}{% endif %}
 </button>
