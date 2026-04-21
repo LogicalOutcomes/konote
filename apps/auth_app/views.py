@@ -340,7 +340,7 @@ def azure_callback(request):
     return _set_language_cookie(response, lang_code)
 
 
-@csrf_exempt
+
 @require_POST
 @ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def demo_login(request, role):
@@ -383,7 +383,7 @@ def demo_login(request, role):
     return _set_language_cookie(response, lang_code)
 
 
-@csrf_exempt
+
 @require_POST
 @ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def demo_portal_login(request, record_id):
