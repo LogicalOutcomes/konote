@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2024-04-16 - Add ARIA pressed state for metric toggle buttons
+**Learning:** HTMX toggle buttons (like the plan metric toggle) need explicit `aria-pressed="true|false"` to communicate their active state correctly to screen readers. Relying solely on changing the `aria-label` or visible text does not provide native toggle semantics.
+**Action:** When creating or fixing toggle-style buttons, always use `aria-pressed="{{ boolean_value|yesno:'true,false' }}"` to represent the binary state.
