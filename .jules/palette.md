@@ -12,3 +12,6 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+## 2024-05-18 - Skip Link Main Content Target Accessibility
+**Learning:** Skip links require the target container (typically `<main>`) to have a `tabindex="-1"` attribute in order to reliably programmatically receive focus, especially for keyboard and screen reader users across different browsers. Some templates had skip links but the targets were not focusable, or were missing skip links entirely.
+**Action:** Ensure that all `<main id="main-content">` tags paired with a 'Skip to main content' link have `tabindex="-1"`.
