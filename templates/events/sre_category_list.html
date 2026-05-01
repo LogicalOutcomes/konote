@@ -52,9 +52,9 @@
                     <form method="post" action="{% url 'sre_categories:sre_category_toggle_active' category_id=cat.pk %}" style="display: inline;">
                         {% csrf_token %}
                         {% if cat.is_active %}
-                        <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">{% trans "Archive" %}</button>
+                        <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;" aria-label="{% blocktrans with name=cat.name %}Archive {{ name }}{% endblocktrans %}">{% trans "Archive" %}</button>
                         {% else %}
-                        <button type="submit" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">{% trans "Activate" %}</button>
+                        <button type="submit" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;" aria-label="{% blocktrans with name=cat.name %}Activate {{ name }}{% endblocktrans %}">{% trans "Activate" %}</button>
                         {% endif %}
                     </form>
                 </div>
