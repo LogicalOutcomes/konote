@@ -653,7 +653,7 @@
         if (e.target.closest('#btn-remove-custom-metric')) {
             e.preventDefault();
             var preview = e.target.closest('.custom-metric-preview');
-            if (preview) preview.innerHTML = '<small class="secondary">✕ ' + "{% trans 'Custom scale removed.' %}" + '</small>';
+            if (preview) preview.innerHTML = '<small class="secondary"><span aria-hidden="true">✕</span> ' + "{% trans 'Custom scale removed.' %}" + '</small>';
             // Add hidden field to skip custom metric on save
             var actions = document.querySelector('.suggestion-actions');
             if (actions) {
