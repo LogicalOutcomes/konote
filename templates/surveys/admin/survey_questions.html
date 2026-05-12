@@ -64,7 +64,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete_question">
                     <input type="hidden" name="question_id" value="{{ q.pk }}">
-                    <button type="submit" class="outline secondary" aria-label="{% trans 'Remove question' %}">✕</button>
+                    <button type="submit" class="outline secondary" aria-label="{% blocktrans with text=q.question_text %}Remove question: {{ text }}{% endblocktrans %}"><span aria-hidden="true">&times;</span></button>
                 </form>
             </div>
         </li>
