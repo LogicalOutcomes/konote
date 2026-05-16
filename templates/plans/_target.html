@@ -30,7 +30,7 @@
         {% if can_edit %}
         <div class="goal-card-actions">
             <div class="actions-dropdown">
-                <button class="outline small actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% blocktrans with name=target.name %}Actions for {{ name }}{% endblocktrans %}">{% trans "Actions" %} &#9662;</button>
+                <button type="button" class="outline small actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% blocktrans with name=target.name %}Actions for {{ name }}{% endblocktrans %}">{% trans "Actions" %} &#9662;</button>
                 <ul class="actions-dropdown-menu" role="menu" hidden>
                     <li role="none"><a role="menuitem" href="{% url 'plans:target_edit' target_id=target.pk %}">{% trans "Edit" %}<small>{% blocktrans with target=term.target|default:"goal" %}Edit this {{ target }}{% endblocktrans %}</small></a></li>
                     <li role="none"><a role="menuitem" href="#"
