@@ -46,10 +46,10 @@
 {% if is_consortium_lead %}
 <div class="view-toggle">
     <fieldset role="group">
-        <button id="btn-network" class="outline" aria-pressed="true" data-call-function="toggleView" data-call-args='["network"]'>
+        <button type="button" id="btn-network" class="outline" aria-pressed="true" data-call-function="toggleView" data-call-args='["network"]'>
             {% trans "Network View" %}
         </button>
-        <button id="btn-agency" class="outline secondary" aria-pressed="false" data-call-function="toggleView" data-call-args='["agency"]'>
+        <button type="button" id="btn-agency" class="outline secondary" aria-pressed="false" data-call-function="toggleView" data-call-args='["agency"]'>
             {% trans "Agency View" %}
         </button>
     </fieldset>

@@ -98,11 +98,11 @@
 
 {# ── Tabs: Linked / Link More ── #}
 <div class="theme-tabs" role="tablist" aria-label="{% trans 'Theme suggestions' %}">
-    <button role="tab" aria-selected="true" aria-controls="linked-tab" id="linked-tab-btn" class="tab-btn active">
+    <button type="button" role="tab" aria-selected="true" aria-controls="linked-tab" id="linked-tab-btn" class="tab-btn active">
         {% trans "Linked" %} ({{ linked_notes|length }})
     </button>
     {% if can_manage %}
-    <button role="tab" aria-selected="false" aria-controls="unlinked-tab" id="unlinked-tab-btn" class="tab-btn">
+    <button type="button" role="tab" aria-selected="false" aria-controls="unlinked-tab" id="unlinked-tab-btn" class="tab-btn">
         {% trans "Link More" %}
     </button>
     {% endif %}
