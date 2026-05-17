@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2024-03-10 - Add Contextual ARIA Labels to Action Buttons in Evaluation Frameworks
+**Learning:** Action buttons like "Edit" and "Remove" in dynamically generated lists (like evaluation components and evidence links) lack context for screen readers when they don't explicitly reference the target item. A user tabbing through the page would hear "Edit, link", "Remove, button", etc., multiple times without knowing *what* is being edited or removed.
+**Action:** Always add descriptive `aria-label` attributes to generic action buttons inside iterative loops, using `{% blocktrans %}` to include the item's name dynamically (e.g., `aria-label="{% blocktrans with name=comp.name %}Edit {{ name }}{% endblocktrans %}"`).
