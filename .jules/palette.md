@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2024-03-11 - Pair plain-text codes and URLs with one-click copy buttons
+**Learning:** When users are presented with plain-text secret keys or URLs to copy (like MFA secrets or report share links), relying on manual highlighting is error-prone. Converting these to use `copy-btn` and `data-select-on-click` inputs greatly improves UX and accessibility.
+**Action:** Always provide explicit copy buttons for critical codes/URLs and use accessible read-only inputs for shareable links to eliminate manual text selection friction.
