@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2025-05-25 - Standardized Empty States in Portal
+**Learning:** Plain text empty states (like `<p>No items</p>`) lack visual hierarchy and are often missed by screen readers. The portal has dedicated `.portal-empty-state` and `.empty-state` classes which include visual formatting (dashed borders, center alignment, icons) and require a `role="status"` attribute. However, several list views were still using unstyled `<p>` tags.
+**Action:** Always use the dedicated empty state classes (`.portal-empty-state` for participant-facing portal views, `.empty-state` for staff-facing views) along with `role="status"` when rendering "no data" messages to ensure both visual consistency and screen reader accessibility.

@@ -33,7 +33,9 @@
 </article>
 {% endfor %}
 {% else %}
-<p>{% trans "You have no surveys to complete right now." %}</p>
+<article class="portal-empty-state" role="status">
+    <p>{% trans "You have no surveys to complete right now." %}</p>
+</article>
 {% endif %}
 
 {% if responses %}
