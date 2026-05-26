@@ -67,7 +67,7 @@
                 {% if rule.is_active %}
                 <form method="post" action="{% url 'survey_manage:survey_rule_deactivate' survey_id=survey.pk rule_id=rule.pk %}" style="display:inline">
                     {% csrf_token %}
-                    <button type="submit" class="outline secondary" style="margin-bottom:0">{% trans "Deactivate" %}</button>
+                    <button type="submit" class="outline secondary" style="margin-bottom:0" aria-label="{% blocktrans with type=rule.get_trigger_type_display %}Deactivate rule for {{ type }}{% endblocktrans %}">{% trans "Deactivate" %}</button>
                 </form>
                 {% endif %}
             </td>
