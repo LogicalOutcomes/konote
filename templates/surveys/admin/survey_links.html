@@ -77,7 +77,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="action" value="deactivate">
                     <input type="hidden" name="link_id" value="{{ link.pk }}">
-                    <button type="submit" class="outline secondary" style="margin-bottom:0">{% trans "Deactivate" %}</button>
+                    <button type="submit" class="outline secondary" style="margin-bottom:0" aria-label="{% blocktrans with token=link.token|truncatechars:12 %}Deactivate link {{ token }}{% endblocktrans %}">{% trans "Deactivate" %}</button>
                 </form>
                 {% endif %}
             </td>
