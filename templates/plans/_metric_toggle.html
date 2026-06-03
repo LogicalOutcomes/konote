@@ -1,8 +1,10 @@
 {% load i18n %}
-<button hx-post="{% url 'metrics:metric_toggle' metric_id=metric.pk %}"
+<button type="button"
+        hx-post="{% url 'metrics:metric_toggle' metric_id=metric.pk %}"
         hx-target="#metric-toggle-{{ metric.pk }}"
         hx-swap="innerHTML"
         class="outline small {% if metric.is_enabled %}contrast{% else %}secondary{% endif %}"
-        aria-label="{% if metric.is_enabled %}{% blocktrans with name=metric.name %}Disable {{ name }}{% endblocktrans %}{% else %}{% blocktrans with name=metric.name %}Enable {{ name }}{% endblocktrans %}{% endif %}">
+        aria-label="{% blocktrans with name=metric.name %}Toggle {{ name }}{% endblocktrans %}"
+        aria-pressed="{{ metric.is_enabled|yesno:'true,false' }}">
     {% if metric.is_enabled %}{% trans "Enabled" %}{% else %}{% trans "Disabled" %}{% endif %}
 </button>

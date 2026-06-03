@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2024-06-03 - Contextual ARIA labels and explicit button types
+**Learning:** Generic action buttons in lists (like "Remove", "Archive", "Activate") need row-specific context in their `aria-label` (e.g., using `{% blocktrans with name=... %}`) to be accessible, and non-submit interactive elements (like HTMX triggers) must explicitly declare `type="button"` to prevent accidental form submissions and ensure correct screen reader semantics. Stateful toggles also require `aria-pressed`.
+**Action:** Always verify `type="button"` on non-submit buttons, provide context to generic labels in lists, and use `aria-pressed` for toggles.
