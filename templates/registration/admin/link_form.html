@@ -13,11 +13,13 @@
 
 {% if editing and link %}
 <article aria-label="registration link">
-    <p>
+    <div>
         <strong>{% trans "Registration URL:" %}</strong><br>
-        <code id="registration-url">{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}</code>
-        <button type="button" class="outline secondary copy-btn" data-clipboard-target="#registration-url" aria-label="{% trans 'Copy registration link' %}" style="margin-left: 0.5rem; padding: 0.25rem 0.5rem;">{% trans "Copy" %}</button>
-    </p>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+            <input type="text" id="registration-url" value="{{ request.scheme }}://{{ request.get_host }}{{ link.get_absolute_url }}" readonly aria-label="{% trans 'Registration URL' %}" data-select-on-click="true" style="margin-bottom: 0;">
+            <button type="button" class="outline secondary copy-btn" data-clipboard-target="#registration-url" aria-label="{% trans 'Copy registration link' %}" style="padding: 0.25rem 0.5rem; margin-bottom: 0; white-space: nowrap;">{% trans "Copy" %}</button>
+        </div>
+    </div>
 </article>
 {% endif %}
 
