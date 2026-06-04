@@ -12,3 +12,6 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+## 2025-03-10 - Replace `<code>` with `<input>` for copyable URLs
+**Learning:** The `data-select-on-click` feature in `static/js/app.js` relies on the native `select()` method, which is only supported by `<input>` and `<textarea>` elements. Using it on `<code>` blocks (e.g., for registration URLs) fails silently, forcing users to manually highlight the text.
+**Action:** Always use `<input type="text" readonly data-select-on-click="true">` instead of `<code>` blocks for copyable, shareable URLs to ensure click-to-select functionality works properly.
