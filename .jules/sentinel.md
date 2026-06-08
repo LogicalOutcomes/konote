@@ -17,3 +17,8 @@
 **Vulnerability:** XSS risk due to modifying the DOM using `.innerHTML` with potentially dynamic or unescaped translated values in `static/js/app.js`.
 **Learning:** `innerHTML` exposes a risk of executing unescaped input or malformed HTML translations. Instead of clearing nodes with `.innerHTML = ""` or creating nested HTML structures via strings, safer programmatic node manipulation should be utilized.
 **Prevention:** Use `.textContent` for assigning simple text to elements. Use programmatic DOM creation methods like `document.createElement` and `node.appendChild` instead of injecting raw HTML strings into `.innerHTML`. To clear an element, loop through and use `removeChild` on its children (e.g. `while (el.firstChild) el.removeChild(el.firstChild);`).
+
+## 2026-06-08 - [Missing CSRF Protection on Demo Login Endpoints]
+**Vulnerability:** The `demo_login` and `demo_portal_login` views had `@csrf_exempt` decorators, which made them vulnerable to Login CSRF attacks.
+**Learning:** Even endpoints designed for demo purposes need CSRF protection. Authentication boundaries must be uniformly protected.
+**Prevention:** Avoid using `@csrf_exempt` on authentication boundaries (e.g., login, demo login, invite accept, password reset) unless absolutely required by an external system callback.
