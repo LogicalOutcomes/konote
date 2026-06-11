@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2025-03-10 - Use aria-pressed for Stateful Toggles
+**Learning:** HTMX-powered toggle buttons that dynamically change text (e.g., "Enable" -> "Disable") can create contradictory screen reader announcements if their `aria-label` also changes. Screen readers need a stable identity for the button.
+**Action:** When implementing stateful toggle buttons, use a static `aria-label` (like "Toggle [Name]") and rely on the `aria-pressed="true/false"` attribute to convey the current state to assistive technologies.
