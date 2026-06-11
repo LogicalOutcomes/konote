@@ -17,3 +17,8 @@
 **Vulnerability:** XSS risk due to modifying the DOM using `.innerHTML` with potentially dynamic or unescaped translated values in `static/js/app.js`.
 **Learning:** `innerHTML` exposes a risk of executing unescaped input or malformed HTML translations. Instead of clearing nodes with `.innerHTML = ""` or creating nested HTML structures via strings, safer programmatic node manipulation should be utilized.
 **Prevention:** Use `.textContent` for assigning simple text to elements. Use programmatic DOM creation methods like `document.createElement` and `node.appendChild` instead of injecting raw HTML strings into `.innerHTML`. To clear an element, loop through and use `removeChild` on its children (e.g. `while (el.firstChild) el.removeChild(el.firstChild);`).
+
+## 2026-06-11 - [Missing Rate Limiting on Access Grant Request Endpoint]
+**Vulnerability:** The access_grant_request view was missing rate limiting, making it vulnerable to brute-force or DoS attacks.
+**Learning:** Endpoints that handle authorization boundaries and access escalation (like requesting Tier 3 GATED access) need to be protected. The django-ratelimit decorator with block=True should be applied uniformly to prevent abuse.
+**Prevention:** Always ensure the @ratelimit(key="ip", rate="...", method="POST", block=True) decorator is present on any view that processes access escalation or authorization requests. Also make sure the import is present: from django_ratelimit.decorators import ratelimit.

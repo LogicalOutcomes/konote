@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from django_ratelimit.decorators import ratelimit
 
 from datetime import timedelta
 
@@ -17,6 +18,7 @@ from .models import AccessGrant
 
 
 @login_required
+@ratelimit(key="ip", rate="10/m", method=["POST"], block=True)
 def access_grant_request(request):
     """Show justification form (GET) or create an AccessGrant (POST).
 
