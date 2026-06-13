@@ -24942,3 +24942,48 @@ msgstr ""
 
 msgid "submitted"
 msgstr "soumise"
+
+msgid ""
+"Access denied. You do not have permission to view evaluation export history."
+msgstr ""
+
+msgid "Agreement Expiry"
+msgstr ""
+
+msgid "Custom field group"
+msgstr ""
+
+msgid "EXPIRED"
+msgstr ""
+
+msgid "Evaluation Export History"
+msgstr ""
+
+msgid "Evaluation export history"
+msgstr ""
+
+msgid "Evaluator"
+msgstr ""
+
+msgid "Expired agreement warning"
+msgstr ""
+
+msgid "Expired data-sharing agreement"
+msgstr ""
+
+msgid "Export History"
+msgstr ""
+
+msgid "Generate new export"
+msgstr ""
+
+msgid "No evaluation exports have been generated yet."
+msgstr ""
+
+msgid ""
+"One or more exports below have an expired data-sharing agreement. Confirm "
+"the evaluator has deleted the data, or update the agreement."
+msgstr ""
+
+msgid "Past de-identified evaluation microdata exports."
+msgstr ""
