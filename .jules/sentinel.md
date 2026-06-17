@@ -17,3 +17,8 @@
 **Vulnerability:** XSS risk due to modifying the DOM using `.innerHTML` with potentially dynamic or unescaped translated values in `static/js/app.js`.
 **Learning:** `innerHTML` exposes a risk of executing unescaped input or malformed HTML translations. Instead of clearing nodes with `.innerHTML = ""` or creating nested HTML structures via strings, safer programmatic node manipulation should be utilized.
 **Prevention:** Use `.textContent` for assigning simple text to elements. Use programmatic DOM creation methods like `document.createElement` and `node.appendChild` instead of injecting raw HTML strings into `.innerHTML`. To clear an element, loop through and use `removeChild` on its children (e.g. `while (el.firstChild) el.removeChild(el.firstChild);`).
+
+## 2024-10-24 - [Login CSRF on Authentication Endpoints]
+**Vulnerability:** The `@csrf_exempt` decorator was applied to `demo_login` and `demo_portal_login` endpoints in `apps/auth_app/views.py`.
+**Learning:** Bypassing CSRF checks on authentication boundaries (like login, invite accept, password reset) allows an attacker to perform Login CSRF attacks, potentially forcing a victim's browser to log into an attacker-controlled account and exposing their activity. Since the frontend forms already include `{% csrf_token %}`, the exemption was unnecessary and dangerous.
+**Prevention:** Avoid using `@csrf_exempt` on authentication boundaries unless strictly required by an external callback. Always ensure forms in login templates include `{% csrf_token %}` and rely on Django's built-in CSRF protection.
