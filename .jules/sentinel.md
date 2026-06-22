@@ -17,3 +17,8 @@
 **Vulnerability:** XSS risk due to modifying the DOM using `.innerHTML` with potentially dynamic or unescaped translated values in `static/js/app.js`.
 **Learning:** `innerHTML` exposes a risk of executing unescaped input or malformed HTML translations. Instead of clearing nodes with `.innerHTML = ""` or creating nested HTML structures via strings, safer programmatic node manipulation should be utilized.
 **Prevention:** Use `.textContent` for assigning simple text to elements. Use programmatic DOM creation methods like `document.createElement` and `node.appendChild` instead of injecting raw HTML strings into `.innerHTML`. To clear an element, loop through and use `removeChild` on its children (e.g. `while (el.firstChild) el.removeChild(el.firstChild);`).
+
+## 2026-03-07 - [Login CSRF via Unnecessary @csrf_exempt]
+**Vulnerability:** The demo login endpoints (`demo_login` and `demo_portal_login`) were bypassing CSRF protection using the `@csrf_exempt` decorator, creating a potential Login CSRF vulnerability where a user could be forcefully logged into a demo account.
+**Learning:** These decorators were unnecessary because the frontend templates (`templates/auth/login.html`) already included `{% csrf_token %}` within the POST forms. It appears they were added during development and forgotten. Always verify if a CSRF exception is genuinely needed.
+**Prevention:** Avoid using `@csrf_exempt` on authentication boundaries (login, invite accept, password reset) unless absolutely required by an external system callback (and even then, compensate). If `ModuleNotFoundError: No module named django` issues occur when verifying forms, check the template manually.
