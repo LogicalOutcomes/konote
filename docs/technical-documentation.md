@@ -177,12 +177,20 @@ class AuditRouter:
 ### Running Migrations
 
 ```bash
-# Main database
+# Main database public schema, including tenant-app tables
+python manage.py migrate_default
+
+# Existing non-public tenant schemas
 python manage.py migrate
 
-# Audit database
-python manage.py migrate --database=audit
+# Separate standard-PostgreSQL audit database
+python manage.py migrate_audit
+python manage.py lockdown_audit_db
 ```
+
+The audit database intentionally does not use the django-tenants backend.
+`migrate --database=audit` therefore fails when django-tenants calls
+`set_schema()` on that normal PostgreSQL connection.
 
 ### Backups
 
@@ -206,6 +214,11 @@ GRANT INSERT ON audit_auditlog TO konote_audit;
 GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 -- No UPDATE, DELETE, or TRUNCATE permissions
 ```
+
+The application connects as the configured audit writer. `audit_reader` is an
+optional `NOLOGIN` group role created by the Compose initialisation script for
+operators who later attach a separately managed read-only login. KoNote itself
+does not connect as `audit_reader`.
 
 ---
 
@@ -1413,7 +1426,7 @@ These commands are run manually during deployment, maintenance, or development.
 | `security_audit` | `audit` | Run a comprehensive security check (encryption, RBAC, audit log, configuration). See [Security Operations](security-operations.md) for details. |
 | `rotate_encryption_key` | `auth_app` | Re-encrypt all PII fields with a new Fernet key. See [Security Operations](security-operations.md#rotating-the-encryption-key). |
 | `validate_permissions` | `auth_app` | Verify the permission matrix is consistent and all views reference valid permission keys. |
-| `lockdown_audit_db` | `audit` | Generate SQL statements to configure INSERT-only permissions on the audit database. |
+| `lockdown_audit_db` | `audit` | Revoke broad rights and grant the configured audit writer only SELECT/INSERT plus sequence usage. |
 | `startup_check` | `audit` | Run at container startup to verify database connectivity and configuration. |
 | `check_translations` | `admin_settings` | Verify that all template translation strings have corresponding entries in `.po` files. |
 | `translate_strings` | `admin_settings` | Extract translatable strings from templates and compile `.po` → `.mo` files. |
