@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 
 from django.conf import settings
+from django.db import DatabaseError
 from django.core.checks import Warning, register
 
 
@@ -180,19 +181,24 @@ def check_demo_data_health(app_configs, **kwargs):
     except Exception:
         return warnings  # App not ready yet (e.g. during initial migrate)
 
-    # Only check if demo data exists at all
-    if not ClientFile.objects.filter(is_demo=True).exists():
-        return warnings
-
-    programs = Program.objects.filter(status="active")
+    # System checks run before migrations, so on a fresh database these tables
+    # do not exist yet. Treat any database error as "nothing to check".
     low_programs = []
+    try:
+        # Only check if demo data exists at all
+        if not ClientFile.objects.filter(is_demo=True).exists():
+            return warnings
 
-    for prog in programs:
-        count = ClientProgramEnrolment.objects.filter(
-            program=prog, client_file__is_demo=True, status="active",
-        ).count()
-        if 0 < count < SMALL_CELL_THRESHOLD:
-            low_programs.append(f"{prog.name} ({count})")
+        programs = Program.objects.filter(status="active")
+
+        for prog in programs:
+            count = ClientProgramEnrolment.objects.filter(
+                program=prog, client_file__is_demo=True, status="active",
+            ).count()
+            if 0 < count < SMALL_CELL_THRESHOLD:
+                low_programs.append(f"{prog.name} ({count})")
+    except DatabaseError:
+        return warnings
 
     if low_programs:
         warnings.append(

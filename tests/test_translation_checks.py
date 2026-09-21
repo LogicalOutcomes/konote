@@ -1,7 +1,8 @@
 """Tests for Django system checks and helpers in admin_settings.checks.
 
 Covers the translation gap detection (W010), .mo health check (W011),
-and the _count_po_entries helper that must handle multi-line msgids.
+the demo data health check (W012), and the _count_po_entries helper that
+must handle multi-line msgids.
 """
 
 import os
@@ -10,9 +11,14 @@ import time
 from pathlib import Path
 from django.test import SimpleTestCase, override_settings
 
+from unittest import mock
+
+from django.db import DatabaseError
+
 from apps.admin_settings.checks import (
     _count_po_entries,
     _find_po_file,
+    check_demo_data_health,
     check_mo_file_health,
     check_translation_coverage,
 )
@@ -235,3 +241,32 @@ class MoFileHealthCheckTest(SimpleTestCase):
             with override_settings(BASE_DIR=tmp, LOCALE_PATHS=[]):
                 warnings = check_mo_file_health(None)
                 self.assertEqual(warnings, [])
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# check_demo_data_health — W012
+# ─────────────────────────────────────────────────────────────────────────
+
+
+class DemoDataHealthCheckTests(SimpleTestCase):
+    """W012 must never raise, including before migrations have run."""
+
+    @override_settings(DEMO_MODE=False)
+    def test_skipped_when_demo_mode_off(self):
+        self.assertEqual(check_demo_data_health(None), [])
+
+    @override_settings(DEMO_MODE=True)
+    def test_no_crash_when_tables_do_not_exist(self):
+        """System checks run before migrations, so the tables may be missing.
+
+        Regression test: the check previously raised ProgrammingError during
+        `migrate` on a fresh database, which aborted container startup.
+        """
+        from apps.clients.models import ClientFile
+
+        with mock.patch.object(
+            ClientFile.objects.__class__,
+            "filter",
+            side_effect=DatabaseError('relation "client_files" does not exist'),
+        ):
+            self.assertEqual(check_demo_data_health(None), [])
