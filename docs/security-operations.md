@@ -593,5 +593,5 @@ If you've lost your encryption key and have no backup:
 - [Security Architecture](security-architecture.md) — Technical details for developers and security reviewers
 - [Independent Review Guide](independent-review.md) — How to verify KoNote's security claims
 - [PIA Template Answers](pia-template-answers.md) — Pre-written answers for Privacy Impact Assessments
-- [Deploying KoNote](deploying-KoNote.md) — Deployment options and setup
+- [Deploying KoNote](deploying-konote.md) — Deployment options and setup
 - [Admin Guide](admin/index.md) — Day-to-day administration
