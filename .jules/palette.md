@@ -12,3 +12,6 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+## 2025-05-30 - Added contextual ARIA labels and type to generic action buttons
+**Learning:** Generic action buttons in repeated components (like "Send Reminder" on meeting cards) lack specific context for screen reader users tabbing through the interface, and missing `type="button"` defaults them to `type="submit"` which can cause accidental form submissions.
+**Action:** Always add explicit `type="button"` to non-submit buttons, and use contextual `aria-label`s for repeated generic action buttons.
