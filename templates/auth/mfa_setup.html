@@ -17,7 +17,10 @@
     <details>
         <summary>{% trans "Can't scan the QR code?" %}</summary>
         <p>{% trans "Enter this secret key manually in your authenticator app:" %}</p>
-        <code style="word-break: break-all; font-size: 1.1rem;">{{ secret }}</code>
+        <div class="grid" style="align-items: center;">
+            <code id="mfa-secret" style="word-break: break-all; font-size: 1.1rem; margin-bottom: 0;">{{ secret }}</code>
+            <button type="button" class="outline secondary copy-btn" data-clipboard-target="#mfa-secret" aria-label="{% trans 'Copy secret key' %}" style="margin-bottom: 0;">{% trans "Copy" %}</button>
+        </div>
     </details>
 
     {% if error %}

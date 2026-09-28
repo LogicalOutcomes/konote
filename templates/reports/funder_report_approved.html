@@ -53,11 +53,25 @@
         {% endif %}
     </p>
     <a href="{{ download_path }}" role="button">{% trans "Download Report" %}</a>
-    <p style="margin-top: 1rem;">
-        <small>{% trans "This link will expire in 24 hours. You can also share this link:" %}</small>
-        <br>
-        <code style="word-break: break-all;">{{ download_url }}</code>
-    </p>
+    <div style="margin-top: 1rem;">
+        <p><small>{% trans "This link will expire in 24 hours. You can also share this link:" %}</small></p>
+        <div class="grid" style="align-items: center;">
+            <input type="text"
+                   id="download-url"
+                   value="{{ download_url }}"
+                   readonly
+                   data-select-on-click="true"
+                   aria-label="{% trans 'Shareable download URL' %}"
+                   style="margin-bottom: 0;">
+            <button type="button"
+                    class="outline secondary copy-btn"
+                    data-clipboard-target="#download-url"
+                    aria-label="{% trans 'Copy download link' %}"
+                    style="margin-bottom: 0;">
+                {% trans "Copy" %}
+            </button>
+        </div>
+    </div>
 </article>
 
 <a href="{% url 'reports:funder_report' %}">{% trans "Generate Another Report" %}</a>
