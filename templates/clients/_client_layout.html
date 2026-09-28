@@ -25,7 +25,7 @@
         {% if not client.is_anonymised and not is_receptionist %}
         <div class="actions-dropdown">
             {# aria-haspopup="menu" is more precise than "true" and reduces AT interference with tablist arrow keys (QA-R8-A11Y8) #}
-            <button class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="menu" aria-label="{% trans 'Actions menu' %}">{% trans "Actions" %} ▾</button>
+            <button type="button" class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="menu" aria-label="{% trans 'Actions menu' %}">{% trans "Actions" %} ▾</button>
             <ul class="actions-dropdown-menu" role="menu" hidden>
                 {# QA-R8-UX6: Edit is first so it is immediately visible on mobile without scrolling #}
                 {% if can_edit_client %}
