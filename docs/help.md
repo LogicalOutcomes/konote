@@ -673,12 +673,12 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 
 ### In-App Resources
 
-- **Quick Reference Card** — See [Using KoNote](using-KoNote.md#quick-reference-card)
+- **Quick Reference Card** — See [Using KoNote](using-konote.md#quick-reference-card)
 - **Keyboard shortcuts** — Press `?` anywhere in the app
 
 ### Documentation
 
-- [Staff Training Guide](using-KoNote.md) — Daily tasks in detail
+- [Staff Training Guide](using-konote.md) — Daily tasks in detail
 - [Admin Guide](admin/index.md) — Configuration and maintenance
 - [Technical Documentation](technical-documentation.md) — For developers
 
