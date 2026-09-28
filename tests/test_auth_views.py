@@ -679,6 +679,14 @@ class DemoLoginTest(TestCase):
         resp = self.http.post("/auth/demo-login/inactive-demo/")
         self.assertEqual(resp.status_code, 404)
 
+    def test_demo_login_requires_csrf(self):
+        """POST without CSRF token is rejected."""
+        from django.test import Client as DjangoClient
+
+        http_client = DjangoClient(enforce_csrf_checks=True)
+        resp = http_client.post("/auth/demo-login/frontdesk/")
+        self.assertEqual(resp.status_code, 403)
+
     def test_login_page_caps_demo_portal_participants_to_three(self):
         """The staff login page should only preview three demo participants."""
         for index in range(1, 6):
