@@ -59,6 +59,8 @@
 </table>
 {% else %}
 <hr>
-<p>{% blocktrans with resource_term=term.resource_plural|lower %}No {{ resource_term }} added yet.{% endblocktrans %}</p>
+<div class="empty-state" role="status">
+    <p>{% blocktrans with resource_term=term.resource_plural|lower %}No {{ resource_term }} added yet.{% endblocktrans %}</p>
+</div>
 {% endif %}
 {% endblock %}
