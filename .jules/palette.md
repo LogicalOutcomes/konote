@@ -12,3 +12,11 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2025-03-10 - Using Django variables in `aria-label`s inside blocktrans
+**Learning:** When using `{% blocktrans %}` inside an `aria-label`, it is easy to assume context variables like `survey.name` or `cat.name` are available just by looking at other files. However, accessing non-existent variables can cause template rendering errors.
+**Action:** Always verify the actual context variables available in the specific template (e.g. by looking at how other elements in the template render values) before interpolating them into `aria-label` attributes.
+
+## 2025-03-10 - Environment dependency installation for testing
+**Learning:** Installing generic `pytest` or `django` dependencies manually in the sandbox via `pip install pytest django` can introduce incompatible versions (like Django 6.0 beta, causing `RemovedInDjango60Warning` failures with pytest-django).
+**Action:** Always install test dependencies precisely as specified in the project using `pip install -r requirements-test.txt` to guarantee compatibility and prevent spurious test failures.

@@ -35,13 +35,13 @@
     <form method="post" action="{% url 'survey_manage:survey_status' survey_id=survey.pk %}" style="display:inline">
         {% csrf_token %}
         <input type="hidden" name="status" value="active">
-        <button type="submit" class="outline">{% trans "Activate" %}</button>
+        <button type="submit" class="outline" aria-label="{% blocktrans with name=survey.name %}Activate {{ name }}{% endblocktrans %}">{% trans "Activate" %}</button>
     </form>
     {% elif survey.status == "active" %}
     <form method="post" action="{% url 'survey_manage:survey_status' survey_id=survey.pk %}" style="display:inline">
         {% csrf_token %}
         <input type="hidden" name="status" value="closed">
-        <button type="submit" class="outline secondary">{% trans "Close" %}</button>
+        <button type="submit" class="outline secondary" aria-label="{% blocktrans with name=survey.name %}Close {{ name }}{% endblocktrans %}">{% trans "Close" %}</button>
     </form>
     {% endif %}
 </div>
