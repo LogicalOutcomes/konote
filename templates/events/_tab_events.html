@@ -63,12 +63,12 @@
 <h2>{% trans "History" %}</h2>
 <div id="timeline-section">
     <div class="filter-bar" role="toolbar" aria-label="{% trans 'Filter history' %}">
-        <button class="filter-btn{% if active_filter == 'all' or not active_filter %} filter-active{% endif %}"
+        <button type="button" class="filter-btn{% if active_filter == 'all' or not active_filter %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'all' or not active_filter %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=all"
                 hx-target="#timeline-entries"
                 hx-swap="innerHTML">{% trans "All" %}</button>
-        <button class="filter-btn{% if active_filter == 'events' %} filter-active{% endif %}"
+        <button type="button" class="filter-btn{% if active_filter == 'events' %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'events' %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=events"
                 hx-target="#timeline-entries"
