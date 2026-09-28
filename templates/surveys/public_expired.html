@@ -11,8 +11,9 @@
     {% include "_lang_toggle_styles.html" %}
 </head>
 <body>
+<a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 {% include "_lang_toggle.html" with max_width="720px" %}
-<main class="container" style="max-width:720px; padding-top:2rem; text-align:center">
+<main id="main-content" tabindex="-1" class="container" style="max-width:720px; padding-top:2rem; text-align:center" aria-label="{% trans 'Main content' %}">
 
 <h1>{% trans "Survey Unavailable" %}</h1>
 <p>{% trans "This survey is no longer available." %}</p>

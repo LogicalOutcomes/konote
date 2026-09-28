@@ -11,9 +11,9 @@ Welcome! Find what you need based on what you're trying to do.
 | **Get quick help with a task** | [Help](help.md) — in-app help and quick reference |
 | **Understand what KoNote is** | [README](../README.md) — overview, features, tech stack |
 | **Understand the design philosophy** | [Design Principles](design-principles.md) — research-based approach to participant engagement |
-| **Set up KoNote for the first time** | [Deploying KoNote](deploying-KoNote.md) — local setup, cloud hosting |
+| **Set up KoNote for the first time** | [Local Development](development-setup.md) or [Deploying KoNote](deploying-konote.md) |
 | **Configure my agency's settings** | [Admin Guide](admin/index.md) — terminology, programs, users, backups |
-| **Learn how to use KoNote daily** | [Using KoNote](using-KoNote.md) — staff training guide |
+| **Learn how to use KoNote daily** | [Using KoNote](using-konote.md) — staff training guide |
 | **Understand the technical architecture** | [Technical Reference](technical-documentation.md) — data models, security, APIs |
 
 ---
@@ -53,23 +53,23 @@ See the [Changelog](../CHANGELOG.md) for a full history of changes, including th
 
 ### For Staff
 
-- [Finding Clients](using-KoNote.md#finding-a-client)
-- [Writing Progress Notes](using-KoNote.md#writing-progress-notes)
-- [Recording Events](using-KoNote.md#recording-events)
-- [Logging Communications](using-KoNote.md#logging-communications)
-- [Staff Messaging](using-KoNote.md#staff-messaging) — leave and read messages about participants
-- [Surveys](using-KoNote.md#surveys) — assigning and entering survey responses
-- [Client Transfer](using-KoNote.md#transferring-a-client) — move participants between programs
-- [Scheduling Meetings](using-KoNote.md#scheduling-meetings)
-- [Using the Calendar Feed](using-KoNote.md#using-the-calendar-feed)
-- [Viewing Plans](using-KoNote.md#viewing-the-outcome-plan)
+- [Finding Clients](using-konote.md#finding-a-client)
+- [Writing Progress Notes](using-konote.md#writing-progress-notes)
+- [Recording Events](using-konote.md#recording-events)
+- [Logging Communications](using-konote.md#logging-communications)
+- [Staff Messaging](using-konote.md#staff-messaging) — leave and read messages about participants
+- [Surveys](using-konote.md#surveys) — assigning and entering survey responses
+- [Client Transfer](using-konote.md#transferring-a-client) — move participants between programs
+- [Scheduling Meetings](using-konote.md#scheduling-meetings)
+- [Using the Calendar Feed](using-konote.md#using-the-calendar-feed)
+- [Viewing Plans](using-konote.md#viewing-the-outcome-plan)
 
 ### For Deployment
 
-- [Local Development (Docker)](deploying-KoNote.md#local-development-docker)
+- [Local Development](development-setup.md)
 - [Deploy to OVHcloud VPS](deploy-ovhcloud.md)
-- [Deploy to Azure](deploying-KoNote.md#deploy-to-azure)
-- [PDF Reports Setup](deploying-KoNote.md#pdf-report-setup)
+- [Deploy to Azure](deploying-konote.md#deploy-to-azure)
+- [PDF Reports Setup](deploying-konote.md#pdf-report-setup)
 
 ---
 
@@ -81,16 +81,16 @@ See the [Changelog](../CHANGELOG.md) for a full history of changes, including th
 | [Surveys (Staff)](surveys.md) | Staff | Assigning surveys and entering responses |
 | [Surveys (Admin)](admin/surveys.md) | Admins / PMs | Creating surveys, trigger rules, shareable links |
 | [Design Principles](design-principles.md) | All users | Research-based approach to participant-centred practice |
-| [Deploying KoNote](deploying-KoNote.md) | IT / Technical lead | Get KoNote running (local or cloud) |
+| [Deploying KoNote](deploying-konote.md) | IT / Technical lead | Get KoNote running (local or cloud) |
 | [Privacy Policy Template](privacy-policy-template.md) | Admins / Legal | Customise for your organisation before going live |
 | [Admin Guide](admin/index.md) | Program managers / Admins | Configure and maintain your instance |
 | [Confidential Programs](confidential-programs.md) | Program managers / Admins | Sensitive program isolation and duplicate matching |
-| [Using KoNote](using-KoNote.md) | Front-line staff | Day-to-day usage guide |
+| [Using KoNote](using-konote.md) | Front-line staff | Day-to-day usage guide |
 | [Technical Reference](technical-documentation.md) | Developers | Architecture, data models, customisation |
 
 ---
 
 ## Support
 
-- **Documentation issues:** [Open an issue on GitHub](https://github.com/gilliankerr/KoNote/issues)
+- **Documentation issues:** [Open an issue on GitHub](https://github.com/LogicalOutcomes/konote/issues)
 - **Security vulnerabilities:** See [SECURITY.md](../SECURITY.md)
