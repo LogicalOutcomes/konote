@@ -35,12 +35,14 @@
             {% if is_admin %}
             <td>
                 {% if role.status == "active" %}
-                <button hx-post="{% url 'programs:program_remove_role' program_id=program.pk role_id=role.pk %}"
+                <button type="button"
+                        hx-post="{% url 'programs:program_remove_role' program_id=program.pk role_id=role.pk %}"
                         hx-target="#role-list"
                         hx-swap="innerHTML"
                         hx-confirm="{% blocktrans with name=role.user.display_name %}Remove {{ name }} from this program?{% endblocktrans %}"
                         class="outline secondary"
-                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                        aria-label="{% blocktrans with name=role.user.display_name %}Remove {{ name }}{% endblocktrans %}">
                     {% trans "Remove" %}
                 </button>
                 {% endif %}
