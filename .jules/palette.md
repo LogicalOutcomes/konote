@@ -12,3 +12,7 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+
+## 2025-03-10 - Add Contextual ARIA labels to Remove Action buttons with HTML entities
+**Learning:** Hardcoded text icons like '✕' inside generic icon-only action buttons miss important visual-to-speech cues and lack contextual information in loops.
+**Action:** Always wrap HTML entities like '&times;' in a '<span aria-hidden="true">' and ensure action buttons like "Remove" in loops include context using blocktrans.
