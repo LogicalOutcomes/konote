@@ -215,7 +215,7 @@
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% blocktrans with name=alert.client_file.display_name %}Hide alert for {{ name }} until tomorrow{% endblocktrans %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -232,7 +232,7 @@
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
-                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% blocktrans with name=note.client_file.display_name %}Hide follow-up for {{ name }} until tomorrow{% endblocktrans %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -246,7 +246,7 @@
                 <li class="priority-item dismissable-item" data-dismiss-key="attention-{{ item.client.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>
                     <span class="priority-detail secondary">{% trans "30+ days without notes" %}</span>
-                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% trans 'Hide until tomorrow' %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
+                    <button type="button" class="dismiss-btn hide-today-btn" aria-label="{% blocktrans with name=item.name %}Hide attention item for {{ name }} until tomorrow{% endblocktrans %}" title="{% trans 'Hide until tomorrow' %}">{% trans "Hide" %}</button>
                 </li>
                 {% endfor %}
             </ul>
