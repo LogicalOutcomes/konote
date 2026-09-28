@@ -12,3 +12,6 @@
 ## 2025-03-10 - Add `data-select-on-click` to Copyable Text Inputs
 **Learning:** For read-only inputs containing shareable URLs (e.g. calendar feed, direct registration link), requiring users to manually highlight the text before copying can be frustrating and error-prone. The codebase already supports an accessible `data-select-on-click="true"` pattern used in invite links.
 **Action:** Consistently apply the `data-select-on-click="true"` attribute to all read-only `input` elements designated for copying, ensuring users can instantly select the full value with a single click.
+## 2024-05-18 - Decorative Visual Characters and Translation Tags
+**Learning:** Decorative characters (like `✕` or `→`) used in templates for visual cues or dismiss buttons will be read aloud by screen readers if left alone. Placing them directly next to translation tags (e.g. `{% trans %}`) or inside strings can be problematic for a11y. They must be wrapped in `<span aria-hidden="true">`.
+**Action:** Always wrap decorative characters in `<span aria-hidden="true">` to prevent screen readers from reading them out, while ensuring this span resides *outside* of translation tags so it doesn't break localization strings. For JavaScript DOM manipulations, inject the span as part of the `innerHTML` construction.
