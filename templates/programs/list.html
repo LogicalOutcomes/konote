@@ -69,7 +69,7 @@
 </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% blocktrans with programs=term.program_plural|default:"programs" %}No {{ programs }} yet.{% endblocktrans %}</p>
 </div>
 {% endif %}

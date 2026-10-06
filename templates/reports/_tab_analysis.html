@@ -123,7 +123,7 @@
 {{ chart_data|json_script:"chart-data" }}
 {# Chart init moved to app.js — inline scripts break when loaded via HTMX due to CSP nonce mismatch #}
 {% else %}
-    <p class="empty-state">{% trans "No metric data recorded yet. Record metrics through progress notes to see charts here." %}</p>
+    <p class="empty-state" role="status">{% trans "No metric data recorded yet. Record metrics through progress notes to see charts here." %}</p>
 {% endif %}
 
 {# ── Qualitative Insights section ── #}

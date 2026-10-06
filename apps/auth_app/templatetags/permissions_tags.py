@@ -62,4 +62,10 @@ def has_permission(context, permission_key):
     if permission_key == "report.evaluation_export":
         return getattr(user, "evaluation_export_granted", False)
 
+    # LTE — strictly separate from evaluation_export. Mirrors
+    # apps.reports.utils.can_create_lte_export — keep in sync. Admin
+    # bypass does not apply; the grant is per-user.
+    if permission_key == "report.evaluation_export_small_population":
+        return getattr(user, "lte_export_granted", False)
+
     return False

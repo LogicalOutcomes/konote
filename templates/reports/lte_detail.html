@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}LTE #{{ lte_request.pk }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>LTE #{{ lte_request.pk }}</h1>
+    <p>{{ lte_request.program.name }} &mdash; {{ lte_request.period_start }} to {{ lte_request.period_end }}</p>
+</hgroup>
+
+<article>
+    <header><strong>{% trans "Status" %}: {{ lte_request.get_status_display }}</strong></header>
+    {% if lte_request.is_window_running %}
+    <p>
+        {% blocktrans with when=lte_request.effective_window_activates_at|date:"Y-m-d H:i" %}Review-and-cancel window — download link activates at {{ when }} (if not cancelled or flagged).{% endblocktrans %}
+    </p>
+    {% elif lte_request.status == "active" %}
+    <p>{% trans "Download link is active for 24 hours from activation." %}</p>
+    {% elif lte_request.status == "downloaded" %}
+    <p>{% trans "File has been downloaded. Destruction attestation due at the end of the configured window." %}</p>
+    {% elif lte_request.status == "cancelled" %}
+    <p>{% trans "Cancelled." %} {% if lte_request.cancellation_reason %}<em>{{ lte_request.cancellation_reason }}</em>{% endif %}</p>
+    {% elif lte_request.status == "auto_cancelled" %}
+    <p>{% trans "Auto-cancelled — population dropped below the LTE floor." %}</p>
+    {% elif lte_request.status == "invalidated_by_withdrawal" %}
+    <p>{% trans "Invalidated — a participant withdrew consent during the window. Re-submit if still needed." %}</p>
+    {% elif lte_request.status == "flagged" %}
+    <p>{% trans "Flagged — privacy officer action required. Countdown is frozen." %}</p>
+    {% elif lte_request.status == "expired" %}
+    <p>{% trans "Expired without download." %}</p>
+    {% endif %}
+</article>
+
+<article>
+    <header><strong>{% trans "Evaluator credentials" %}</strong></header>
+    <dl>
+        <dt>{% trans "Name" %}</dt><dd>{{ lte_request.evaluator_name }}</dd>
+        <dt>{% trans "Email" %}</dt><dd>{{ lte_request.evaluator_email }}</dd>
+        <dt>{% trans "Organisation" %}</dt><dd>{{ lte_request.evaluator_organisation }}</dd>
+        <dt>{% trans "Degree / certification" %}</dt><dd>{{ lte_request.evaluator_degree }}</dd>
+        <dt>{% trans "Years experience" %}</dt><dd>{{ lte_request.evaluator_years_experience }}</dd>
+        <dt>{% trans "Prior programs" %}</dt><dd>{{ lte_request.evaluator_prior_programs|linebreaksbr }}</dd>
+    </dl>
+</article>
+
+<article>
+    <header><strong>{% trans "REB and DSA" %}</strong></header>
+    <dl>
+        <dt>{% trans "REB" %}</dt><dd>{{ lte_request.reb_name }}</dd>
+        <dt>{% trans "Approval number" %}</dt><dd>{{ lte_request.reb_approval_number }}</dd>
+        <dt>{% trans "Approval date" %}</dt><dd>{{ lte_request.reb_approval_date }}</dd>
+        <dt>{% trans "DSA expiry" %}</dt><dd>{{ lte_request.data_sharing_agreement_expiry }}</dd>
+        <dt>{% trans "Destruction window" %}</dt><dd>{{ lte_request.destruction_window_days }} {% trans "days" %}</dd>
+        <dt>{% trans "Purpose" %}</dt><dd>{{ lte_request.purpose_statement|linebreaksbr }}</dd>
+    </dl>
+</article>
+
+{% if lte_request.community_reviewer_name %}
+<article>
+    <header><strong>{% trans "Community governance signoff" %}</strong></header>
+    <dl>
+        <dt>{% trans "Reviewer" %}</dt><dd>{{ lte_request.community_reviewer_name }} ({{ lte_request.community_reviewer_affiliation }})</dd>
+        <dt>{% trans "Signoff date" %}</dt><dd>{{ lte_request.community_signoff_date }}</dd>
+        {% if lte_request.community_framework_description %}
+        <dt>{% trans "Framework" %}</dt><dd>{{ lte_request.community_framework_description|linebreaksbr }}</dd>
+        {% endif %}
+    </dl>
+</article>
+{% endif %}
+
+<article>
+    <header><strong>{% trans "Lifecycle" %}</strong></header>
+    <ul>
+        {% for event in events %}
+        <li>
+            <small>{{ event.timestamp|date:"Y-m-d H:i" }}</small>
+            &mdash;
+            <strong>{{ event.get_event_type_display }}</strong>
+            {% if event.actor %}<small>({{ event.actor.display_name }})</small>{% endif %}
+            {% if event.notes %}<br><small>{{ event.notes }}</small>{% endif %}
+        </li>
+        {% empty %}
+        <li><em>{% trans "No lifecycle events recorded yet." %}</em></li>
+        {% endfor %}
+    </ul>
+</article>
+
+<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+    {% if lte_request.status == "active" %}
+    <form method="post" action="{% url 'reports:lte_download' request_id=lte_request.pk %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit">{% trans "Download file" %}</button>
+    </form>
+    {% endif %}
+
+    {% if can_cancel %}
+    <form method="post" action="{% url 'reports:lte_cancel' request_id=lte_request.pk %}" style="margin: 0;">
+        {% csrf_token %}
+        <details>
+            <summary role="button" class="secondary outline">{% trans "Cancel request" %}</summary>
+            <label>
+                {% trans "Reason (required)" %}
+                <input type="text" name="reason" required maxlength="500">
+            </label>
+            <button type="submit" class="contrast">{% trans "Confirm cancel" %}</button>
+        </details>
+    </form>
+    {% endif %}
+
+    {% if lte_request.post_hoc_review_pending %}
+    <form method="post" action="{% url 'reports:lte_resolve_review' request_id=lte_request.pk %}" style="margin: 0;">
+        {% csrf_token %}
+        <details>
+            <summary role="button" class="secondary">{% trans "Resolve post-hoc review" %}</summary>
+            <label>
+                {% trans "Review notes" %}
+                <textarea name="notes" rows="3"></textarea>
+            </label>
+            <button type="submit">{% trans "Mark resolved" %}</button>
+        </details>
+    </form>
+    {% endif %}
+
+    <a href="{% url 'reports:lte_list' %}" role="button" class="secondary outline">{% trans "Back to list" %}</a>
+</div>
+{% endblock %}

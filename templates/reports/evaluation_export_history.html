@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluation Export History" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluation Export History" %}</h1>
+    <p>{% trans "Past de-identified evaluation microdata exports." %}</p>
+</hgroup>
+
+{% if has_expired_agreement %}
+<article role="alert" aria-label="{% trans 'Expired agreement warning' %}" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "Expired data-sharing agreement" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "One or more exports below have an expired data-sharing agreement. Confirm the evaluator has deleted the data, or update the agreement." %}
+    </p>
+</article>
+{% endif %}
+
+{% if exports %}
+<div class="overflow-auto">
+<table role="grid" aria-label="{% trans 'Evaluation export history' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Date" %}</th>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Period" %}</th>
+            <th scope="col">{% trans "Evaluator" %}</th>
+            <th scope="col">{% trans "Participants" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Agreement Expiry" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for export in exports %}
+        <tr{% if export.agreement_expired %} style="background: var(--kn-warning-bg, #fffbeb);"{% endif %}>
+            <td>{{ export.link.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ export.program_name|default:export.link.recipient }}</td>
+            <td>{{ export.period_start }} — {{ export.period_end }}</td>
+            <td>
+                {{ export.evaluator_name }}
+                {% if export.evaluator_organisation %}
+                    <br><small>{{ export.evaluator_organisation }}</small>
+                {% endif %}
+            </td>
+            <td>{{ export.link.client_count }}</td>
+            <td>
+                {% if export.status == "active" %}
+                    <mark>{% trans "Active" %}</mark>
+                {% elif export.status == "expired" %}
+                    {% trans "Expired" %}
+                {% elif export.status == "revoked" %}
+                    <del>{% trans "Revoked" %}</del>
+                {% endif %}
+            </td>
+            <td>
+                {% if export.agreement_expired %}
+                    <strong style="color: var(--kn-error-fg, #dc2626);">
+                        {{ export.agreement_expiry }} — {% trans "EXPIRED" %}
+                    </strong>
+                {% else %}
+                    {{ export.agreement_expiry|default:"—" }}
+                {% endif %}
+            </td>
+            <td>
+                {% if export.status == "active" %}
+                    <a href="{% url 'reports:download_export' link_id=export.link.pk %}">{% trans "Download" %}</a>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p>{% trans "No evaluation exports have been generated yet." %}</p>
+{% endif %}
+
+<p style="margin-top: 1.5rem;">
+    <a href="{% url 'reports:evaluation_export' %}">{% trans "Generate new export" %}</a>
+</p>
+{% endblock %}

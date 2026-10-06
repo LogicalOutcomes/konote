@@ -71,7 +71,7 @@
     {% endfor %}
     </ol>
     {% else %}
-    <p class="empty-state">{% trans "No questions in this section yet." %}</p>
+    <p class="empty-state" role="status">{% trans "No questions in this section yet." %}</p>
     {% endif %}
 
     {# Add a question to this section #}
@@ -118,6 +118,6 @@ Strongly disagree' %}"></textarea>
     </details>
 </article>
 {% empty %}
-<p class="empty-state">{% trans "This survey has no sections." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections first" %}</a>.</p>
+<p class="empty-state" role="status">{% trans "This survey has no sections." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections first" %}</a>.</p>
 {% endfor %}
 {% endblock %}

@@ -12,7 +12,7 @@
     {# Charts are rendered by JavaScript from the data below #}
 </div>
 {% else %}
-<article class="portal-empty-state">
+<article class="portal-empty-state" role="status">
     <p>{% blocktrans with worker_term=term.worker %}No progress data to show yet. As you work with your {{ worker_term }}, your progress will appear here.{% endblocktrans %}</p>
 </article>
 {% endif %}

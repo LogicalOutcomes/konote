@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program, UserProgramRole
 
-from .models import AccessGrant, AccessGrantReason, Invite, User
+from .models import AccessGrant, AccessGrantReason, EvaluationExportGrant, Invite, User
 
 
 class LoginForm(forms.Form):
@@ -294,6 +294,51 @@ class AccessGrantForm(forms.ModelForm):
                 _("Maximum duration is %(max)s days.") % {"max": max_days}
             )
         return value
+
+
+class EvaluationExportGrantForm(forms.Form):
+    """Admin form for granting `report.evaluation_export` to a user.
+
+    The reason is mandatory and must be substantive — blank, too short,
+    or obvious placeholder values ("ok", "test") are rejected. The
+    governance model (tasks/eval-export-governance.md) requires the
+    admin to record the authorising context (typically the ED's
+    authorisation and the evaluation engagement), so a textarea that
+    accepts anything would be theatre.
+    """
+
+    REASON_MIN_LENGTH = 15
+    REASON_MAX_LENGTH = EvaluationExportGrant.REASON_MAX_LENGTH
+    REASON_BLOCKLIST = {"ok", "test", "testing", "todo", "placeholder", "n/a", "na"}
+
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3, "maxlength": REASON_MAX_LENGTH}),
+        max_length=REASON_MAX_LENGTH,
+        label=_("Reason for granting"),
+        help_text=_(
+            "Required. Record the Executive Director's authorisation, the "
+            "evaluation engagement, and any agreement reference. This is "
+            "logged to the immutable audit trail."
+        ),
+    )
+
+    def clean_reason(self):
+        reason = (self.cleaned_data.get("reason") or "").strip()
+        if not reason:
+            raise forms.ValidationError(_("A reason is required."))
+        if len(reason) < self.REASON_MIN_LENGTH:
+            raise forms.ValidationError(
+                _(
+                    "Please enter at least %(n)d characters explaining why "
+                    "this permission is being granted."
+                )
+                % {"n": self.REASON_MIN_LENGTH}
+            )
+        if reason.lower() in self.REASON_BLOCKLIST:
+            raise forms.ValidationError(
+                _("Please enter a specific reason, not a placeholder.")
+            )
+        return reason
 
 
 class AccessGrantReasonForm(forms.Form):

@@ -74,6 +74,33 @@ class Program(models.Model):
         help_text=_("Default target date offset (days) for goals created in this program."),
     )
 
+    # ── Community governance (LTE — DRR: evaluation-microdata-export.md) ──
+    # When set, Longitudinal Trajectory Export submissions on this program
+    # require community reviewer signoff in addition to the usual preconditions.
+    # OCAP (First Nations / Inuit / Métis) and EGAP (Black communities) raise
+    # the LTE population floor from n≥10 to n≥15.
+    COMMUNITY_GOVERNANCE_NONE = ""
+    COMMUNITY_GOVERNANCE_OCAP = "ocap"
+    COMMUNITY_GOVERNANCE_EGAP = "egap"
+    COMMUNITY_GOVERNANCE_OTHER = "other"
+    COMMUNITY_GOVERNANCE_CHOICES = [
+        (COMMUNITY_GOVERNANCE_NONE, _("No specific framework")),
+        (COMMUNITY_GOVERNANCE_OCAP, _("OCAP (First Nations, Inuit, Métis)")),
+        (COMMUNITY_GOVERNANCE_EGAP, _("EGAP (Black communities)")),
+        (COMMUNITY_GOVERNANCE_OTHER, _("Other small-population community review")),
+    ]
+    community_governance_framework = models.CharField(
+        max_length=10,
+        choices=COMMUNITY_GOVERNANCE_CHOICES,
+        default=COMMUNITY_GOVERNANCE_NONE,
+        blank=True,
+        help_text=_(
+            "If set, Longitudinal Trajectory Export submissions on this program "
+            "require community reviewer signoff. OCAP and EGAP raise the LTE "
+            "population floor to n≥15."
+        ),
+    )
+
     class Meta:
         app_label = "programs"
         db_table = "programs"

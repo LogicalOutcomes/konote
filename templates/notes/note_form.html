@@ -226,7 +226,7 @@
     </div>
     {% endfor %}
     {% else %}
-    <p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %} <a href="{% url 'plans:plan_view' client_id=client.pk %}">{% trans "Create a plan" %}</a> {% trans "first." %}</p>
+    <p class="empty-state" role="status">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %} <a href="{% url 'plans:plan_view' client_id=client.pk %}">{% trans "Create a plan" %}</a> {% trans "first." %}</p>
     {% endif %}
 
     <details id="session-overall-details" class="session-overall-details"{% if not target_forms %} open{% endif %}>

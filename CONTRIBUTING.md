@@ -62,18 +62,17 @@ git checkout -b chore/short-description  # cleanup, config, docs
 
 ## Development Setup
 
-See [Deploying KoNote](docs/deploying-KoNote.md) for full setup instructions. The quick version:
+Follow the canonical [Local Development Setup](docs/development-setup.md).
+Runtime dependencies live in `requirements.txt`; contributors install
+`requirements-dev.txt`, which includes the runtime file plus pytest tooling.
 
 ```bash
-git clone https://github.com/LogicalOutcomes/konote.git
-cd konote
-cp .env.example .env
-# Edit .env with your keys (see docs for key generation)
-docker-compose up -d
-docker-compose exec web python manage.py migrate
-docker-compose exec web python manage.py migrate --database=audit
-docker-compose exec web python manage.py seed
+pip install -r requirements-dev.txt
 ```
+
+The setup guide explains why KoNote uses `migrate_default`, `migrate`,
+`setup_public_tenant`, and `migrate_audit` instead of Django's usual single
+`migrate` command.
 
 ---
 
@@ -114,6 +113,11 @@ Run **only the tests related to what you changed**, not the full suite:
 | Multiple apps | Run each relevant test file |
 
 Full suite (for major changes only): `pytest -m "not browser and not scenario_eval"`
+
+CI runs the same command with isolated file-based SQLite test databases.
+Browser and scenario-evaluation tests are separate because they require
+additional services or repositories. KoNote currently has no configured
+formatter, linter, or static type-checker.
 
 ### Writing Tests
 

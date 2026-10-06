@@ -52,7 +52,7 @@
 </article>
 {% endfor %}
 {% else %}
-<p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %}</p>
+<p class="empty-state" role="status">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %}</p>
 {% endif %}
 
 <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Back to notes" %}</a>

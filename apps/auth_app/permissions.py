@@ -71,6 +71,7 @@ PERMISSIONS = {
         "report.program_report": DENY,  # Managers generate, not front desk
         "report.funder_report": DENY,  # Managers/executives generate funder reports
         "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
+        "report.evaluation_export_small_population": DENY,  # LTE — strictly separate per-user grant; never bundled with evaluation_export. DRR: evaluation-microdata-export.md
         "report.data_extract": DENY,
 
         "insights.view": DENY,  # Outcome insights — staff+ only
@@ -177,6 +178,7 @@ PERMISSIONS = {
         "report.program_report": DENY,
         "report.funder_report": DENY,  # Managers/executives generate funder reports
         "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
+        "report.evaluation_export_small_population": DENY,  # LTE — strictly separate per-user grant; never bundled with evaluation_export. DRR: evaluation-microdata-export.md
         "report.data_extract": DENY,
 
         "insights.view": PROGRAM,  # Program-level outcome insights. Enforced by @requires_permission
@@ -402,6 +404,7 @@ PERMISSIONS = {
         "report.funder_report": ALLOW,  # Executives can generate aggregate funder reports.
                                         # Enforced by @requires_permission
         "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
+        "report.evaluation_export_small_population": DENY,  # LTE — strictly separate per-user grant; never bundled with evaluation_export. DRR: evaluation-microdata-export.md
         "report.data_extract": DENY,
 
         "insights.view": ALLOW,  # Aggregate outcome insights only (quotes suppressed).
@@ -575,6 +578,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "report.program_report": "Generate program outcome reports",
         "report.funder_report": "Generate funder demographic reports",
         "report.evaluation_export": "Generate de-identified evaluation exports for external evaluators",
+        "report.evaluation_export_small_population": "Generate Longitudinal Trajectory Exports for small-population programs (LTE — privacy officer only)",
         "report.data_extract": "Export client data extracts",
 
         "event.view": "View client events and timeline",

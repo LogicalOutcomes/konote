@@ -238,6 +238,15 @@ class PortalAuthTests(TestCase):
         self.assertNotContains(response, "Demo Participant 5")
 
     @override_settings(DEMO_MODE=True)
+    def test_demo_portal_login_requires_csrf(self):
+        """POST without CSRF token is rejected."""
+        from django.test import Client as DjangoClient
+
+        http_client = DjangoClient(enforce_csrf_checks=True)
+        response = http_client.post("/auth/demo-portal-login/DEMO-001/")
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(DEMO_MODE=True)
     def test_demo_portal_login_sets_emergency_logout_token(self):
         """Demo portal login should mint the quick-exit token used by the panic button."""
         from apps.portal.views import SESSION_EMERGENCY_LOGOUT_TOKEN

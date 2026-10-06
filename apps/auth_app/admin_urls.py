@@ -16,4 +16,20 @@ urlpatterns = [
     # Invites
     path("invites/", invite_views.invite_list, name="invite_list"),
     path("invites/new/", invite_views.invite_create, name="invite_create"),
+    # EVAL-GOV1 — Evaluator Export Access grant management
+    path(
+        "evaluation-export/",
+        admin_views.eval_export_grant_list,
+        name="eval_export_grant_list",
+    ),
+    path(
+        "evaluation-export/new/",
+        admin_views.eval_export_grant_create,
+        name="eval_export_grant_create",
+    ),
+    path(
+        "evaluation-export/<int:grant_id>/revoke/",
+        admin_views.eval_export_grant_revoke,
+        name="eval_export_grant_revoke",
+    ),
 ]

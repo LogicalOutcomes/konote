@@ -69,6 +69,46 @@ def can_create_evaluation_export(user):
     return getattr(user, "evaluation_export_granted", False)
 
 
+def can_create_lte_export(user):
+    """Return True if this user holds the per-user LTE grant.
+
+    LTE has stricter preconditions than EME and a strictly separate
+    permission. Per-user only — not bundled with evaluation_export,
+    not auto-granted to admins. See
+    tasks/design-rationale/evaluation-microdata-export.md, "Access
+    Control" and "Anti-Patterns" sections. The nav-level check in
+    apps/auth_app/templatetags/permissions_tags.py mirrors this rule;
+    keep them in sync.
+
+    Note: this helper returns True when the individual user holds the
+    grant, but the view must ALSO check `lte_available_in_agency()` to
+    enforce the "no designated privacy officer = no LTE" rule.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    return getattr(user, "lte_export_granted", False)
+
+
+def lte_available_in_agency():
+    """Return True iff at least one user in the current agency (tenant)
+    holds an active LTE grant.
+
+    This enforces the hard precondition from the DRR: "Designation is a
+    hard precondition. If no user in the agency has been granted
+    report.evaluation_export_small_population, the LTE form is
+    unavailable to everyone." There is no ED override.
+
+    Called from LTE views before rendering the form or list; a False
+    return should yield a 403/404 with a message directing the admin
+    to designate a privacy officer first.
+    """
+    from apps.auth_app.models import User
+
+    return User.objects.filter(
+        lte_export_granted=True, is_active=True,
+    ).exists()
+
+
 def can_create_export(user, export_type, program=None):
     """
     Check if a user can create an export of the given type.

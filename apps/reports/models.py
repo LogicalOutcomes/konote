@@ -477,6 +477,10 @@ class SecureExportLink(models.Model):
         ("individual_client", _("Individual Client Export")),
         ("session_report", _("Session Report")),
         ("evaluation_microdata", _("Evaluation Microdata")),
+        (
+            "longitudinal_trajectory_export",
+            _("Longitudinal Trajectory Export (Small Population)"),
+        ),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -796,6 +800,275 @@ class ReportSchedule(models.Model):
 
     def __str__(self):
         return f"{self.name} (due {self.due_date})"
+
+
+# ---------------------------------------------------------------------------
+# Longitudinal Trajectory Export (LTE) — DRR: evaluation-microdata-export.md
+# ---------------------------------------------------------------------------
+#
+# LTE is a second, structurally separate export tier from the Evaluation
+# Microdata Export (EME). It serves programs with 10 ≤ n < 15 (where EME
+# is blocked) by dropping demographic fields entirely and substituting
+# fuzzed longitudinal trajectories. Separate permission, separate form,
+# separate URL prefix, separate audit category. See the DRR's "Separate
+# path, separate door, separate key" principle.
+
+
+class LTEExportRequest(models.Model):
+    """A request to generate a Longitudinal Trajectory Export.
+
+    One row per request. The lifecycle is:
+
+        submitted → (window) → active → downloaded → expired
+
+    At any point during the window or after activation, the status can
+    transition to cancelled, flagged, auto_cancelled, or
+    invalidated_by_withdrawal. The record lives forever for audit
+    purposes; the generated file lives on the SecureExportLink for the
+    24-hour download window after activation.
+    """
+
+    STATUS_SUBMITTED = "submitted"
+    STATUS_FLAGGED = "flagged"
+    STATUS_CANCELLED = "cancelled"
+    STATUS_AUTO_CANCELLED = "auto_cancelled"
+    STATUS_INVALIDATED_BY_WITHDRAWAL = "invalidated_by_withdrawal"
+    STATUS_ACTIVE = "active"
+    STATUS_DOWNLOADED = "downloaded"
+    STATUS_EXPIRED = "expired"
+
+    STATUS_CHOICES = [
+        (STATUS_SUBMITTED, _("Submitted — review and cancel window")),
+        (STATUS_FLAGGED, _("Flagged — privacy officer action required")),
+        (STATUS_CANCELLED, _("Cancelled")),
+        (STATUS_AUTO_CANCELLED, _("Auto-cancelled — population dropped below floor")),
+        (STATUS_INVALIDATED_BY_WITHDRAWAL, _("Invalidated — participant withdrew consent")),
+        (STATUS_ACTIVE, _("Download link active")),
+        (STATUS_DOWNLOADED, _("Downloaded")),
+        (STATUS_EXPIRED, _("Expired without download")),
+    ]
+
+    DESTRUCTION_WINDOW_CHOICES = [
+        (30, _("30 days")),
+        (60, _("60 days")),
+        (90, _("90 days")),
+    ]
+
+    # Submitter and scope
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="lte_requests_submitted",
+    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.PROTECT,
+        related_name="lte_requests",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+
+    # REB preconditions
+    reb_name = models.CharField(max_length=200)
+    reb_approval_number = models.CharField(max_length=100)
+    reb_approval_date = models.DateField()
+
+    # DSA — captured for audit, does not unlock anything on its own
+    data_sharing_agreement_expiry = models.DateField()
+
+    # Evaluator credentials — structured, not free text
+    evaluator_name = models.CharField(max_length=200)
+    evaluator_email = models.EmailField()
+    evaluator_organisation = models.CharField(max_length=200)
+    evaluator_degree = models.CharField(max_length=300)
+    evaluator_years_experience = models.PositiveSmallIntegerField()
+    evaluator_prior_programs = models.TextField(
+        help_text=_("Auditable narrative of prior evaluation work. Minimum 50 characters."),
+    )
+
+    # Destruction attestation window
+    destruction_window_days = models.PositiveSmallIntegerField(
+        choices=DESTRUCTION_WINDOW_CHOICES,
+    )
+
+    # Purpose statement
+    purpose_statement = models.TextField()
+
+    # Community governance signoff — required when the program is flagged
+    community_reviewer_name = models.CharField(max_length=200, blank=True, default="")
+    community_reviewer_affiliation = models.CharField(max_length=300, blank=True, default="")
+    community_framework_description = models.TextField(
+        blank=True, default="",
+        help_text=_("Description of community review framework — required for 'other' flag."),
+    )
+    community_signoff_date = models.DateField(null=True, blank=True)
+
+    # Acknowledgement — must be True to submit
+    acknowledgement_confirmed = models.BooleanField(default=False)
+
+    # Lifecycle state
+    status = models.CharField(
+        max_length=30, choices=STATUS_CHOICES, default=STATUS_SUBMITTED,
+    )
+    # When the review-and-cancel window activates (5 business days after
+    # submission by default). If the current time is before this value and
+    # status is "submitted", the window is still running.
+    window_activates_at = models.DateTimeField()
+    # Total duration (in seconds) of flag holds applied to this request.
+    # When a flag is resolved, the remaining countdown resumes from the
+    # point of dismissal — we do NOT fast-forward. Tracked as a cumulative
+    # offset to window_activates_at.
+    flag_hold_seconds = models.PositiveIntegerField(default=0)
+    flag_hold_started_at = models.DateTimeField(null=True, blank=True)
+
+    # Population snapshot at submission time — the export is a snapshot,
+    # not a live query. Compared against current consent state to detect
+    # withdrawals that should invalidate or auto-cancel the request.
+    population_snapshot = models.PositiveIntegerField()
+    # Snapshot of the exportable client ids at submission, so we can
+    # detect withdrawals precisely without re-running the whole pipeline.
+    population_client_ids = models.JSONField(default=list, blank=True)
+
+    # Download link — populated when the window elapses and the request
+    # transitions to "active". The SecureExportLink carries the actual
+    # file and enforces the 24-hour download window.
+    secure_export_link = models.OneToOneField(
+        SecureExportLink,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lte_request",
+    )
+
+    # Cancellation metadata
+    cancelled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="lte_requests_cancelled",
+    )
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.CharField(max_length=500, blank=True, default="")
+
+    # Destruction attestation — manual agency entry in v1
+    destruction_confirmed_at = models.DateTimeField(null=True, blank=True)
+    destruction_confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="lte_destruction_confirmations",
+    )
+
+    # Post-hoc privacy officer review task
+    post_hoc_review_resolved_at = models.DateTimeField(null=True, blank=True)
+    post_hoc_review_resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="lte_reviews_resolved",
+    )
+    post_hoc_review_notes = models.TextField(blank=True, default="")
+
+    # Encrypted linkage blob (study_id → real client_id). Exists solely to
+    # support participant withdrawal requests ("remove my data"). Destroyed
+    # when the request is cancelled or expires.
+    linkage_blob_encrypted = models.BinaryField(default=b"", blank=True)
+
+    class Meta:
+        db_table = "lte_export_requests"
+        ordering = ["-submitted_at"]
+        indexes = [
+            models.Index(fields=["status", "window_activates_at"]),
+            models.Index(fields=["program", "-submitted_at"]),
+        ]
+
+    def __str__(self):
+        return f"LTE #{self.pk} — {self.program} ({self.status})"
+
+    @property
+    def is_terminal(self):
+        """True if the request is in a final state and cannot transition further."""
+        return self.status in {
+            self.STATUS_CANCELLED,
+            self.STATUS_AUTO_CANCELLED,
+            self.STATUS_INVALIDATED_BY_WITHDRAWAL,
+            self.STATUS_DOWNLOADED,
+            self.STATUS_EXPIRED,
+        }
+
+    @property
+    def is_window_running(self):
+        """True if we're still inside the review-and-cancel window."""
+        return self.status in {self.STATUS_SUBMITTED, self.STATUS_FLAGGED}
+
+    @property
+    def effective_window_activates_at(self):
+        """Window activation, including any flag holds accumulated so far."""
+        if self.flag_hold_seconds:
+            return self.window_activates_at + timedelta(seconds=self.flag_hold_seconds)
+        return self.window_activates_at
+
+    @property
+    def post_hoc_review_pending(self):
+        """True if the post-hoc privacy officer review is still pending.
+
+        A cancelled or auto-cancelled request does not block future
+        submissions — only requests that actually produced (or could still
+        produce) a file need review.
+        """
+        if self.status in {
+            self.STATUS_CANCELLED,
+            self.STATUS_AUTO_CANCELLED,
+            self.STATUS_INVALIDATED_BY_WITHDRAWAL,
+        }:
+            return False
+        return self.post_hoc_review_resolved_at is None
+
+
+class LTELifecycleEvent(models.Model):
+    """Append-only log of state transitions on an LTEExportRequest.
+
+    Lives alongside the request for quick reference in the detail view.
+    The canonical immutable audit record also goes to the audit DB via
+    AuditLog entries — this is a denormalised copy for display.
+    """
+
+    EVENT_TYPES = [
+        ("submitted", _("Submitted")),
+        ("flagged", _("Flagged")),
+        ("flag_resolved", _("Flag resolved")),
+        ("cancelled", _("Cancelled")),
+        ("auto_cancelled", _("Auto-cancelled (population floor)")),
+        ("withdrawal_invalidation", _("Invalidated by withdrawal")),
+        ("window_activated", _("Download link activated")),
+        ("downloaded", _("Downloaded")),
+        ("expired", _("Expired without download")),
+        ("post_hoc_review_resolved", _("Post-hoc review resolved")),
+        ("destruction_confirmed", _("Destruction confirmed")),
+    ]
+
+    request = models.ForeignKey(
+        LTEExportRequest,
+        on_delete=models.CASCADE,
+        related_name="lifecycle_events",
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="lte_lifecycle_events",
+    )
+    event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
+    notes = models.TextField(blank=True, default="")
+
+    class Meta:
+        db_table = "lte_lifecycle_events"
+        ordering = ["timestamp"]
+
+    def __str__(self):
+        return f"LTE #{self.request_id}: {self.event_type} @ {self.timestamp}"
 
     def advance_due_date(self):
         """Move due_date to the next period after generation."""

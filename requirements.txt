@@ -43,3 +43,10 @@ icalendar>=6.0,<8.0
 
 # SMS via Twilio (Phase 4 — Outbound Messaging)
 twilio>=9.0,<10.0
+
+# Translation catalogue editing — used by the `translate_strings`
+# management command (apps/admin_settings/management/commands/translate_strings.py)
+# to extract, merge, and compile .po / .mo files. The command lives in
+# production code and is invoked on dev/staging VPSes, so polib must be
+# in the baseline container image — not dev-only.
+polib>=1.2.0,<2.0

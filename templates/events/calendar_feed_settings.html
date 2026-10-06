@@ -15,7 +15,7 @@
     <h2>{% trans "Your calendar link" %}</h2>
     <p>{% trans "Copy this link and paste it into your calendar app using the steps below." %}</p>
     <div role="group">
-        <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar link' %}">
+        <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar link' %}" data-select-on-click="true">
         <button type="button" class="outline copy-btn" data-clipboard-target="feed-url" aria-label="{% trans 'Copy calendar link' %}">{% trans "Copy" %}</button>
     </div>
 
@@ -23,7 +23,7 @@
     <h3 style="margin-top: 1.5rem;">{% trans "Outlook link" %}</h3>
     <p>{% trans "Outlook sometimes needs a different format. If the link above doesn't work in Outlook, try this one instead." %}</p>
     <div role="group">
-        <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook calendar link' %}">
+        <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook calendar link' %}" data-select-on-click="true">
         <button type="button" class="outline copy-btn" data-clipboard-target="outlook-url" aria-label="{% trans 'Copy Outlook link' %}">{% trans "Copy" %}</button>
     </div>
     {% endif %}

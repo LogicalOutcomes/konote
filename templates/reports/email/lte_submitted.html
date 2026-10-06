@@ -1,0 +1,23 @@
+{% load i18n %}<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>{% trans "LTE submitted" %}</title></head>
+<body style="font-family: sans-serif; color: #111;">
+<h2>{% blocktrans with program=program.name %}Longitudinal Trajectory Export submitted — {{ program }}{% endblocktrans %}</h2>
+
+<p><strong>{% trans "Submitted by" %}:</strong> {{ submitter.display_name }}<br>
+<strong>{% trans "Review-and-cancel window activates" %}:</strong> {{ activates_at|date:"Y-m-d H:i" }}
+({% blocktrans count days=business_days %}{{ days }} business day{% plural %}{{ days }} business days{% endblocktrans %} {% trans "from submission" %})</p>
+
+<p>{% trans "An LTE request has been submitted. The download link will not activate until the review-and-cancel window elapses. During the window any agency admin may:" %}</p>
+
+<ul>
+    <li><a href="{{ flag_url }}">{% trans "Flag concerns" %}</a> {% trans "(freezes the countdown — the privacy officer must resolve the flag before the countdown resumes)" %}</li>
+    <li><a href="{{ detail_url }}">{% trans "View details and cancel the request" %}</a></li>
+</ul>
+
+<p style="background: #fffbeb; border-left: 4px solid #d97706; padding: 0.75rem;">
+<strong>{% trans "LTE is for program evaluation, not research." %}</strong><br>
+{% trans "If you believe this request does not meet the preconditions (REB approval, community review, evaluator credentials, DSA), flag it." %}
+</p>
+</body>
+</html>
