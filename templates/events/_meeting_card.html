@@ -18,10 +18,11 @@
     {% if meeting.status == "scheduled" and not meeting.reminder_sent %}
     {% if features.messaging_sms or features.messaging_email %}
     <div id="send-reminder-{{ meeting.pk }}" style="margin-top: 0.25rem;">
-        <button class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+        <button type="button" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
                 hx-get="{% url 'communications:send_reminder_preview' client_id=meeting.event.client_file_id event_id=meeting.event_id %}"
                 hx-target="#send-reminder-{{ meeting.pk }}"
-                hx-swap="innerHTML">
+                hx-swap="innerHTML"
+                aria-label="{% blocktrans with date=meeting.event.start_timestamp|date %}Send reminder for meeting on {{ date }}{% endblocktrans %}">
             {% trans "Send Reminder" %}
         </button>
     </div>
