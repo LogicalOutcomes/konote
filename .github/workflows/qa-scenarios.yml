@@ -21,32 +21,52 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout konote-qa-scenarios
+        if: ${{ secrets.QA_REPO_TOKEN != '' }}
         uses: actions/checkout@v4
+        continue-on-error: true
         with:
           repository: gilliankerr/konote-qa-scenarios
           path: qa-scenarios
           token: ${{ secrets.QA_REPO_TOKEN }}
+
+      - name: Note missing QA repo token
+        if: ${{ secrets.QA_REPO_TOKEN == '' }}
+        run: echo "::notice::QA_REPO_TOKEN secret is not set. Skipping checkout of konote-qa-scenarios holdout repo."
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest playwright
-          playwright install chromium
-          playwright install-deps chromium
+        run: pip install -r requirements-test.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Clean up any stale test databases
+        run: rm -f ci-test.db ci-audit-test.db
 
       - name: Run QA scenario tests
         id: run-scenarios
         continue-on-error: true
-        run: pytest tests/scenario_eval/ -v --no-llm
+        run: pytest tests/scenario_eval/ -v --no-llm --override-ini="addopts=-v --tb=short"
         env:
           SCENARIO_HOLDOUT_DIR: ${{ github.workspace }}/qa-scenarios
           SCENARIO_NO_LLM: '1'
           DJANGO_SETTINGS_MODULE: konote.settings.test
+          SECRET_KEY: ci-secret-key-not-for-production
+          DATABASE_URL: "sqlite:///ci-test.db"
+          AUDIT_DATABASE_URL: "sqlite:///ci-audit-test.db"
+          FIELD_ENCRYPTION_KEY: TUVSTlZ6a09VRWlMU0FzZjhOWlNhTFZfVFIxaURFbXM=
 
       - name: Check for blocker scenarios
         run: |
