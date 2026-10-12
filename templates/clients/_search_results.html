@@ -34,7 +34,7 @@
     </tbody>
 </table>
 {% elif query %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% blocktrans with clients=term.client_plural|default:"participants" %}No {{ clients }} match "{{ query }}".{% endblocktrans %}</p>
     {% if can_create %}
     <p><a href="{% url 'clients:client_create' %}" role="button" class="outline small">+ {% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a></p>

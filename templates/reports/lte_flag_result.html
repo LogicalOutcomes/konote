@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "LTE flag recorded" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "LTE flag recorded" %}</h1>
+</hgroup>
+
+<article>
+    {% if flagged %}
+    <p>{% trans "The LTE request has been flagged. The review-and-cancel countdown is now frozen." %}</p>
+    <p>{% trans "The privacy officer has been notified and will resolve the flag." %}</p>
+    {% elif already_handled %}
+    <p>{% trans "This LTE request is no longer in the review-and-cancel window — it has already been resolved, cancelled, or activated." %}</p>
+    {% endif %}
+    <p><a href="{% url 'reports:lte_detail' request_id=lte_request.pk %}">{% trans "View request details" %} &rarr;</a></p>
+</article>
+{% endblock %}

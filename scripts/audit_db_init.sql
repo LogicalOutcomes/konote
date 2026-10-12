@@ -22,7 +22,13 @@ END
 $$;
 
 -- Grant connect and read-only access
-GRANT CONNECT ON DATABASE CURRENT_DATABASE() TO audit_reader;
+-- GRANT does not accept a function call for the database name, so the
+-- database name is resolved at runtime and executed as dynamic SQL.
+DO $$
+BEGIN
+    EXECUTE format('GRANT CONNECT ON DATABASE %I TO audit_reader', current_database());
+END
+$$;
 GRANT USAGE ON SCHEMA public TO audit_reader;
 
 -- If the audit_log table already exists, grant SELECT now.

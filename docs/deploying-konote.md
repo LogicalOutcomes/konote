@@ -35,7 +35,13 @@ KoNote is designed to run on an **OVHcloud VPS** — a single virtual server run
 
 KoNote's Docker Compose stack includes 6 containers: web app, two PostgreSQL databases, Caddy (automatic HTTPS), autoheal (container recovery), and an ops sidecar (automated backups, disk checks, health emails). Everything runs on one VPS with no external dependencies.
 
-**AI-assisted maintenance:** KoNote is designed to be maintained with AI tools like Claude Code. You don't need a sysadmin — your AI assistant can SSH into the VPS, check logs, restart containers, apply updates, and troubleshoot issues.
+**AI-assisted maintenance:** An authorised operator may use an AI coding
+assistant to interpret logs and follow the documented deployment and recovery
+runbooks. AI is optional and does not replace accountable system
+administration. Never paste participant data, credentials, raw environment
+files, or unredacted production logs into a third-party AI service. Keep human
+approval for deployments, access changes, restores, and other destructive
+actions.
 
 See the **[full OVHcloud deployment guide](deploy-ovhcloud.md)** for step-by-step instructions and an automated deploy script.
 
@@ -225,17 +231,23 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ---
 
-## Local Development (Docker)
+## Local Development and Demo
 
-Docker handles PostgreSQL, the web server, and all dependencies automatically. This is the recommended path for trying KoNote.
+For the canonical contributor workflow, including the development-only
+database stack, virtual environment, migration order, and local login, follow
+[Local Development Setup](development-setup.md).
+
+The steps below use the full `docker-compose.yml` stack, where Docker runs the
+databases and web application. The one-command synthetic demo instead uses
+`docker-compose.demo.yml`. These are alternatives; do not run them together.
 
 **Time estimate:** 30–45 minutes
 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/gilliankerr/KoNote.git
-cd KoNote
+git clone https://github.com/LogicalOutcomes/konote.git
+cd konote
 ```
 
 ### Step 2: Create Environment File
@@ -251,6 +263,7 @@ Edit `.env` and add your generated keys:
 ```ini
 SECRET_KEY=your-generated-secret-key-here
 FIELD_ENCRYPTION_KEY=your-generated-encryption-key-here
+EMAIL_HASH_KEY=your-generated-email-hash-key-here
 
 POSTGRES_USER=konote
 POSTGRES_PASSWORD=MySecurePassword123
@@ -264,24 +277,29 @@ AUDIT_POSTGRES_DB=konote_audit
 ### Step 4: Start the Containers
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
 Wait about 30 seconds for health checks to pass.
 
-### Step 5: Run Migrations
+### Step 5: Verify Automatic Bootstrap
 
 ```bash
-docker-compose exec web python manage.py migrate
-docker-compose exec web python manage.py migrate --database=audit
+docker compose logs web
 ```
+
+The web container entrypoint automatically runs `migrate_default`, tenant
+`migrate`, `setup_public_tenant`, `migrate_audit`, `lockdown_audit_db`, and
+`seed` in the required order. Do not substitute
+`migrate --database=audit`; that command is incompatible with the normal
+PostgreSQL audit connection.
 
 ### Step 6: Create Your First Admin User
 
 Every new KoNote instance needs an initial admin account. Since there are no users yet, you create one from the command line:
 
 ```bash
-docker-compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py createsuperuser
 ```
 
 You'll be prompted for:
@@ -290,7 +308,9 @@ You'll be prompted for:
 
 This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [Users & Roles](admin/users-and-roles.md) for details.
 
-> **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the `seed` command (Step 7.5) automatically creates a `demo-admin` user with password `demo1234` — so you can skip this step and log in with that instead.
+> **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the
+> `seed` command automatically creates synthetic users, including `demo-admin`
+> with password `demo1234`, so you can skip this step.
 
 ### Step 7: Access KoNote
 
@@ -299,10 +319,12 @@ Open **http://localhost:8000** and log in.
 ### Step 7.5: Load Seed Data
 
 ```bash
-docker-compose exec web python manage.py seed
+docker compose exec web python manage.py seed
 ```
 
-Creates the metrics library, default templates, event types, feature toggles, and intake fields. If `DEMO_MODE=true`, also creates 5 demo users (one per role) and 10 demo clients with sample data.
+Creates the metrics library, default templates, event types, feature toggles,
+and intake fields. If `DEMO_MODE=true`, it also creates synthetic demo users,
+programs, and participant records.
 
 Idempotent — safe to run multiple times (uses `get_or_create`). Runs automatically via `entrypoint.sh` in Docker, but must be run manually for local development without Docker.
 
@@ -312,10 +334,10 @@ If you want a blank environment instead, set `KONOTE_SKIP_SEED=true` before star
 
 | Command | Purpose |
 |---------|---------|
-| `docker-compose up -d` | Start all containers |
-| `docker-compose down` | Stop all containers |
-| `docker-compose logs web` | View application logs |
-| `docker-compose down -v` | Stop and delete all data |
+| `docker compose up -d` | Start all containers |
+| `docker compose down` | Stop all containers |
+| `docker compose logs web` | View application logs |
+| `docker compose down -v` | Stop and delete all data |
 
 ---
 
@@ -534,7 +556,7 @@ Run the deployment check:
 
 ```bash
 # Docker:
-docker-compose exec web python manage.py check --deploy
+docker compose exec web python manage.py check --deploy
 
 # Direct:
 python manage.py check --deploy
@@ -589,7 +611,7 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 1. Check PostgreSQL is running
 2. Verify credentials in `DATABASE_URL` match your database setup
-3. For Docker: ensure containers are up (`docker-compose ps`)
+3. For Docker: ensure containers are up (`docker compose ps`)
 
 ### Port 8000 already in use
 
@@ -602,7 +624,7 @@ python manage.py runserver 8080
 
 Check logs for the error:
 ```bash
-docker-compose logs web
+docker compose logs web
 ```
 
 Usually caused by missing environment variables.
@@ -628,4 +650,4 @@ Usually caused by missing environment variables.
 Once your deployment is running:
 
 1. **[Admin Guide](admin/index.md)** — Configure your agency's settings
-2. **[Using KoNote](using-KoNote.md)** — Train your staff
+2. **[Using KoNote](using-konote.md)** — Train your staff

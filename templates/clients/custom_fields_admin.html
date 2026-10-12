@@ -53,12 +53,12 @@
         </tbody>
     </table>
     {% else %}
-    <p class="empty-state">{% trans "No fields in this group yet." %}</p>
+    <p class="empty-state" role="status">{% trans "No fields in this group yet." %}</p>
     {% endif %}
 </article>
 {% endfor %}
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% trans "No custom field groups defined yet." %}</p>
 </div>
 {% endif %}

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
 from apps.auth_app.constants import (
@@ -36,6 +37,10 @@ class Command(BaseCommand):
             # Step 2: Top up each program to 20-30 clients with engine
             self._top_up_demo_data()
             self._seed_eval_export_demo()
+            # Safety net: ensure demo users have active program roles.
+            # If cleanup ran but role creation failed or was interrupted,
+            # this idempotently restores the missing roles.
+            self._ensure_demo_roles()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _generate_config_aware_demo_data(self, profile_path):
@@ -919,3 +924,99 @@ class Command(BaseCommand):
                 "  App will start but the Evaluator Export demo may be "
                 "incomplete."
             )
+
+    def _ensure_demo_roles(self):
+        """Safety net: idempotently ensure all demo users have active program roles.
+
+        If _cleanup_old_demo_data() ran but role creation in
+        _create_demo_users_and_clients() was interrupted (or the
+        DemoDataEngine cleaned up roles without recreating them), demo
+        users end up with zero UserProgramRole records. This makes every
+        has_permission check fail and the navigation bar goes blank.
+
+        This method runs last in handle() and restores any missing roles
+        without touching existing ones (get_or_create on user+program).
+        """
+        from apps.programs.models import Program, UserProgramRole
+
+        User = get_user_model()
+
+        # Map usernames to the programs/roles they should have
+        role_map = {
+            "demo-frontdesk": {
+                "role": ROLE_RECEPTIONIST,
+                "programs": [
+                    "Supported Employment", "Housing Stability",
+                    "Youth Drop-In", "Newcomer Connections",
+                    "Community Kitchen",
+                ],
+            },
+            "demo-worker-1": {
+                "assignments": [
+                    ("Supported Employment", ROLE_PROGRAM_MANAGER),
+                    ("Housing Stability", ROLE_STAFF),
+                    ("Community Kitchen", ROLE_STAFF),
+                ],
+            },
+            "demo-worker-2": {
+                "role": ROLE_STAFF,
+                "programs": [
+                    "Youth Drop-In", "Newcomer Connections",
+                    "Community Kitchen",
+                ],
+            },
+            "demo-manager": {
+                "role": ROLE_PROGRAM_MANAGER,
+                "programs": [
+                    "Supported Employment", "Housing Stability",
+                    "Community Kitchen",
+                ],
+            },
+            "demo-executive": {
+                "role": ROLE_EXECUTIVE,
+                "programs": [
+                    "Supported Employment", "Housing Stability",
+                    "Youth Drop-In", "Newcomer Connections",
+                    "Community Kitchen",
+                ],
+            },
+        }
+
+        programs_by_name = {p.name: p for p in Program.objects.all()}
+        created = 0
+
+        for username, spec in role_map.items():
+            user = User.objects.filter(username=username).first()
+            if not user:
+                continue
+
+            if "assignments" in spec:
+                # Per-program role (e.g. worker-1 is PM in one, staff in others)
+                for prog_name, role in spec["assignments"]:
+                    prog = programs_by_name.get(prog_name)
+                    if not prog:
+                        continue
+                    _, was_created = UserProgramRole.objects.get_or_create(
+                        user=user, program=prog, defaults={"role": role},
+                    )
+                    if was_created:
+                        created += 1
+            else:
+                # Same role across all listed programs
+                role = spec["role"]
+                for prog_name in spec["programs"]:
+                    prog = programs_by_name.get(prog_name)
+                    if not prog:
+                        continue
+                    _, was_created = UserProgramRole.objects.get_or_create(
+                        user=user, program=prog, defaults={"role": role},
+                    )
+                    if was_created:
+                        created += 1
+
+        if created:
+            self.stdout.write(self.style.WARNING(
+                f"  Demo roles safety net: restored {created} missing role(s)."
+            ))
+        else:
+            self.stdout.write("  Demo roles: all present.")

@@ -59,11 +59,13 @@ The panel explicitly rejected automatic permission expiry (creates admin burden 
 
 ## Tasks
 
-### EVAL-GOV1: Add reason field to permission grant
+### EVAL-GOV1: Add reason field to permission grant — ✅ DONE (2026-04-09)
 
-When an admin grants `report.evaluation_export`, require a free-text reason that's logged. This links the technical action to the governance decision (e.g., "Board-approved evaluation with University of Ottawa, MOU signed Jan 2026").
+Implemented in the `feat/eval-gov1-grant-ui` branch. The new `EvaluationExportGrant` model records who granted, when, and the reason; the `User.evaluation_export_granted` boolean is now a denormalised hot-path cache kept in sync by a `post_save` signal. The admin UI lives at **Admin → Evaluator Export Access** (`/manage/users/evaluation-export/`) and the Django admin fieldsets block direct edits to the cached flag. Every grant/revoke writes to the audit DB with the reason text. Demo seed creates grants via the new model.
 
-**Where:** The permission grant mechanism in the admin panel. Check how `report.evaluation_export` is currently granted and add the reason field there.
+**Delivered:** Model + migration + data backfill, `post_save` signal, `EvaluationExportGrantForm` (rejects blank / short / placeholder reasons, min 15 chars), three admin views (list / create / revoke), URL routes, list + form templates, nav entry in both admin and PM-with-`user.manage` dropdowns, `evaluation_export_granted` moved to `readonly_fields` in the Django admin, demo seed routed through the grant model, 24 French translations, and ~25 tests (model, signal, form, views, integration, admin-readonly guard).
+
+**Simplified scope note:** The list view on this page absorbs what was previously EVAL-GOV3 (permission audit list with last-export dates). A separate per-user detail page is not needed for the volumes of users we expect.
 
 ### EVAL-GOV2: Admin dashboard card for evaluation export
 

@@ -77,7 +77,7 @@
     </ol>
 </article>
 {% empty %}
-<p class="empty-state">{% trans "No sections yet." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections" %}</a></p>
+<p class="empty-state" role="status">{% trans "No sections yet." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections" %}</a></p>
 {% endfor %}
 
 {# Trigger rules #}
@@ -98,7 +98,7 @@
 {% endfor %}
 </ul>
 {% else %}
-<p class="empty-state">{% trans "No trigger rules configured." %}</p>
+<p class="empty-state" role="status">{% trans "No trigger rules configured." %}</p>
 {% endif %}
 <p><a href="{% url 'survey_manage:survey_rules' survey_id=survey.pk %}" role="button" class="outline">{% trans "Manage Rules" %}</a></p>
 

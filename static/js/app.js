@@ -202,7 +202,7 @@ document.body.addEventListener("htmx:configRequest", function (event) {
         closeBtn.type = "button";
         closeBtn.className = "message-close";
         closeBtn.setAttribute("aria-label", t("dismissMessage", "Dismiss message"));
-        closeBtn.innerHTML = "&times;";
+        closeBtn.textContent = "\u00D7";
         closeBtn.addEventListener("click", function () {
             dismissMessage(messageEl);
         });
@@ -305,6 +305,10 @@ document.body.addEventListener("htmx:configRequest", function (event) {
             btn.style.borderColor = "var(--kn-success-fg, #10B981)";
 
             setTimeout(function () {
+                // If it contains HTML originally, we restore it.
+                // Restoring the original content from innerHTML back to innerHTML
+                // is safe here because it's just saving and restoring the same static
+                // template content it originally had before we temporarily overwrote it.
                 btn.innerHTML = originalText;
                 btn.style.color = originalColor;
                 btn.style.borderColor = originalBorder;
@@ -357,8 +361,11 @@ document.body.addEventListener("htmx:configRequest", function (event) {
             var mode = target.getAttribute("data-dismiss-mode") || "remove";
             var dismissTarget = target.closest(selector);
             if (dismissTarget) {
-                if (mode === "clear") dismissTarget.innerHTML = "";
-                else dismissTarget.remove();
+                if (mode === "clear") {
+                    while (dismissTarget.firstChild) dismissTarget.removeChild(dismissTarget.firstChild);
+                } else {
+                    dismissTarget.remove();
+                }
             }
             return;
         }
@@ -1031,13 +1038,31 @@ document.addEventListener("click", function (event) {
         var banner = document.createElement("article");
         banner.className = "draft-recovery-banner";
         banner.setAttribute("role", "alert");
-        banner.innerHTML =
-            '<p><strong>' + t("draftFound", "Draft found") + '</strong> — ' +
-            t("unsavedWork", "You have unsaved work from {time}.").replace("{time}", savedTime) + '</p>' +
-            '<div role="group">' +
-            '<button type="button" class="draft-restore">' + t("restoreDraft", "Restore draft") + '</button>' +
-            '<button type="button" class="draft-discard outline secondary">' + t("discard", "Discard") + '</button>' +
-            '</div>';
+
+        var p = document.createElement("p");
+        var strong = document.createElement("strong");
+        strong.textContent = t("draftFound", "Draft found");
+        p.appendChild(strong);
+        p.appendChild(document.createTextNode(" \u2014 " + t("unsavedWork", "You have unsaved work from {time}.").replace("{time}", savedTime)));
+
+        var div = document.createElement("div");
+        div.setAttribute("role", "group");
+
+        var btnRestore = document.createElement("button");
+        btnRestore.type = "button";
+        btnRestore.className = "draft-restore";
+        btnRestore.textContent = t("restoreDraft", "Restore draft");
+
+        var btnDiscard = document.createElement("button");
+        btnDiscard.type = "button";
+        btnDiscard.className = "draft-discard outline secondary";
+        btnDiscard.textContent = t("discard", "Discard");
+
+        div.appendChild(btnRestore);
+        div.appendChild(btnDiscard);
+
+        banner.appendChild(p);
+        banner.appendChild(div);
 
         // Insert banner before the form
         form.parentNode.insertBefore(banner, form);

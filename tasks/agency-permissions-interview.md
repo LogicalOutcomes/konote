@@ -495,6 +495,18 @@ KoNote has features that can be turned on or off for each agency. Walk through t
 | Who receives export notifications? | Default (admins) / Specific people | |
 | Email addresses (if specific) | | |
 
+**7.4** "Does your agency work with external evaluators who need participant-level outcome data? If so, we can enable the Evaluation Export feature — it produces a de-identified data file that removes all identifying information and enforces statistical privacy thresholds before the file can be downloaded."
+
+*If yes: explain that a designated staff member (typically the ED or program manager) will need the Evaluator Export permission. The permission is granted per-person through Admin → Evaluator Export Access — there's no blanket admin access. Point them to the [Evaluation Export Guide](../docs/evaluation-export-guide.md) for the full walkthrough.*
+
+*If the agency has programs with fewer than 15 participants, mention the [LTE tier](../docs/lte-privacy-officer-guide.md) as a separate, higher-friction option.*
+
+| Evaluation Export Decision | Choice | Notes |
+|---|---|---|
+| Enable Evaluation Export? | Yes / No | |
+| Who should receive the permission? | | (name and role) |
+| Any programs with fewer than 15 participants? | Yes / No | If yes, discuss LTE |
+
 *What this means: You've chosen which KoNote features to turn on and who gets notified when data is exported. Your system will only include the tools your agency actually needs.*
 
 ---

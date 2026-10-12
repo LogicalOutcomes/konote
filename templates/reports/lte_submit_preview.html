@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "LTE Preview" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "LTE Preview" %}</h1>
+    <p>{% trans "Review the pipeline result before submitting the request. Submission starts the review-and-cancel window — the file is not generated until the window elapses." %}</p>
+</hgroup>
+
+{% if preview.blocked %}
+<article role="alert" style="background: var(--kn-error-bg, #fef2f2); border-left: 4px solid var(--kn-error-fg, #dc2626); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "Export Blocked" %}</strong>
+    <p>{{ preview.block_reason }}</p>
+    <p style="margin-bottom: 0;">
+        {% trans "Programs below the LTE floor cannot generate a Longitudinal Trajectory Export. Use aggregate reports instead, or direct research-grade requests through the separate research workflow." %}
+    </p>
+    <a href="{% url 'reports:lte_submit' %}" role="button" class="secondary">{% trans "Back to Form" %}</a>
+</article>
+{% else %}
+
+<article>
+    <header><strong>{% trans "Pipeline Summary" %}</strong></header>
+    <table role="grid">
+        <tbody>
+            <tr>
+                <td>{% trans "Program" %}</td>
+                <td><strong>{{ program.name }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "Period" %}</td>
+                <td>{{ period_start }} &mdash; {{ period_end }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Eligible participants" %}</td>
+                <td><strong>{{ preview.eligible_count }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "With consent" %}</td>
+                <td><strong>{{ preview.consented_count }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "Will be exported" %}</td>
+                <td><strong>{{ preview.exportable_count }}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans "Population floor applied" %}</td>
+                <td>{{ preview.floor_applied }}</td>
+            </tr>
+            <tr>
+                <td>{% trans "Community governance framework" %}</td>
+                <td>{{ preview.program_governance_framework|default:"—" }}</td>
+            </tr>
+        </tbody>
+    </table>
+</article>
+
+<article aria-label="{% trans 'Fuzzing and privacy' %}">
+    <header><strong>{% trans "Fuzzing applied to the output" %}</strong></header>
+    <ul>
+        <li>{% trans "No demographic fields in the file (age, gender, ethnicity, geography all dropped)." %}</li>
+        <li>{% trans "Metric values rounded to nearest scale unit." %}</li>
+        <li>{% trans "Session counts banded to nearest 5, total hours banded to nearest half-hour." %}</li>
+        <li>{% trans "study_id is a random UUID with no relationship to real record IDs." %}</li>
+    </ul>
+</article>
+
+<article aria-label="{% trans 'Review window' %}">
+    <header><strong>{% trans "What happens next" %}</strong></header>
+    <ol>
+        <li>{% trans "The request is recorded and all agency admins are emailed." %}</li>
+        <li>{% trans "Any admin can cancel or flag concerns during the 5-business-day review-and-cancel window." %}</li>
+        <li>{% trans "A post-hoc review task is assigned to the privacy officer — until it is resolved, the agency cannot submit another LTE request." %}</li>
+        <li>{% trans "When the window elapses without intervention, the download link activates for 24 hours." %}</li>
+        <li>{% trans "If a participant withdraws consent during the window, the request is invalidated and must be re-submitted." %}</li>
+    </ol>
+</article>
+
+<form method="post" action="{% url 'reports:lte_submit' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="submit">
+    {# Re-submit all form fields so Django re-validates on final submit #}
+    {% for field in form %}
+    <input type="hidden" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}">
+    {% endfor %}
+    <button type="submit">{% trans "Confirm and start review window" %}</button>
+    <a href="{% url 'reports:lte_submit' %}" role="button" class="secondary">{% trans "Back to form" %}</a>
+</form>
+{% endif %}
+{% endblock %}

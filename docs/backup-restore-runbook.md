@@ -873,8 +873,9 @@ You **cannot recover:**
 
 5. **Run migrations** (in case the backup is from a slightly older schema version):
    ```powershell
-   python manage.py migrate --database=default
-   python manage.py migrate --database=audit
+   python manage.py migrate_default
+   python manage.py migrate
+   python manage.py migrate_audit
    ```
 
 6. **Re-run audit lockdown:**

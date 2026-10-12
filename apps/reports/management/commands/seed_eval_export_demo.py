@@ -32,7 +32,6 @@ from apps.clients.models import (
 )
 from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
 from apps.plans.models import (
-    MetricDefinition,
     PlanSection,
     PlanTarget,
     PlanTargetRevision,
@@ -187,12 +186,14 @@ class Command(BaseCommand):
         # also finished". If that atomic wrapper is ever removed or
         # narrowed, this short-circuit could skip a partially-seeded
         # state — re-audit the check before relaxing atomicity.
+        from apps.auth_app.models import EvaluationExportGrant
+
         enrolment_count = ClientProgramEnrolment.objects.filter(
             program=program, client_file__is_demo=True,
         ).count()
-        granted_count = User.objects.filter(
-            username__in=[u for u, _ in EVAL_EXPORT_GRANTEES],
-            evaluation_export_granted=True,
+        granted_count = EvaluationExportGrant.objects.filter(
+            user__username__in=[u for u, _ in EVAL_EXPORT_GRANTEES],
+            active=True,
         ).count()
         if (
             enrolment_count >= TARGET_PARTICIPANTS
@@ -555,10 +556,12 @@ class Command(BaseCommand):
             client_file_id__in=clients_with_plans,
         ).select_related("client_file")
 
-        # Get metrics for this program
-        metrics = list(MetricDefinition.objects.filter(
-            programs=program, is_active=True,
-        ))
+        # Get metrics for this program via the demo engine helper.
+        # MetricDefinition isn't directly linked to programs — it's linked
+        # through note templates, so we use discover_metrics_for_program.
+        from apps.admin_settings.demo_engine import DemoDataEngine
+        engine = DemoDataEngine()
+        metrics = engine.discover_metrics_for_program(program)
 
         if not metrics:
             self.stdout.write(self.style.WARNING(
@@ -700,7 +703,7 @@ class Command(BaseCommand):
                 # Record metrics on full notes
                 if not is_quick:
                     for target, target_metrics in targets_with_metrics:
-                        ProgressNoteTarget.objects.create(
+                        pnt = ProgressNoteTarget.objects.create(
                             progress_note=note,
                             plan_target=target,
                         )
@@ -709,10 +712,9 @@ class Command(BaseCommand):
                             sequence = metric_sequences.get(key, [])
                             if note_idx < len(sequence):
                                 MetricValue.objects.create(
-                                    progress_note=note,
-                                    plan_target=target,
+                                    progress_note_target=pnt,
                                     metric_def=md,
-                                    value=sequence[note_idx],
+                                    value=str(sequence[note_idx]),
                                 )
 
         self.stdout.write(
@@ -734,7 +736,28 @@ class Command(BaseCommand):
             ))
 
     def _grant_permission(self):
-        """Grant report.evaluation_export to each user in EVAL_EXPORT_GRANTEES."""
+        """Grant report.evaluation_export to each user in EVAL_EXPORT_GRANTEES.
+
+        Creates `EvaluationExportGrant` rows (not direct flag writes)
+        so the demo mirrors the real governance flow: every grant has a
+        reason and a granting admin in the audit trail. The post_save
+        signal on the grant model updates `User.evaluation_export_granted`.
+        """
+        from apps.auth_app.models import EvaluationExportGrant
+
+        demo_reason = (
+            "Demo seed: pre-authorised for DEMO_MODE evaluation export "
+            "walkthrough. Replace with a real ED authorisation before "
+            "using this flow with live data."
+        )
+
+        # Pick a seeded admin to attribute the grants to. Fall back to
+        # the first admin if the expected demo admin is missing.
+        demo_admin = (
+            User.objects.filter(username="demo-admin").first()
+            or User.objects.filter(is_admin=True).order_by("pk").first()
+        )
+
         for username, display_name in EVAL_EXPORT_GRANTEES:
             user = User.objects.filter(username=username).first()
             if not user:
@@ -742,14 +765,22 @@ class Command(BaseCommand):
                     f"  {username} user not found."
                 ))
                 continue
-            if user.evaluation_export_granted:
+
+            existing = EvaluationExportGrant.objects.filter(
+                user=user, active=True,
+            ).first()
+            if existing:
                 self.stdout.write(
-                    f"  {display_name} ({username}) already has "
-                    f"evaluation export permission."
+                    f"  {display_name} ({username}) already has an "
+                    f"active evaluation export grant."
                 )
                 continue
-            user.evaluation_export_granted = True
-            user.save(update_fields=["evaluation_export_granted"])
+
+            EvaluationExportGrant.objects.create(
+                user=user,
+                granted_by=demo_admin,
+                reason=demo_reason,
+            )
             self.stdout.write(
                 f"  Granted evaluation export permission to "
                 f"{display_name} ({username})."

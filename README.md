@@ -229,16 +229,16 @@ For the research basis behind these design choices, see [Design Principles](docs
 
 ## Quick Start
 
-> **Not a developer?** That's fine. If you've installed WordPress or used Excel competently, you can set up KoNote. Our [Deploying KoNote](docs/deploying-KoNote.md) guide explains every step in plain language.
+> **Not a developer?** That's fine. If you've installed WordPress or used Excel competently, you can set up KoNote. Our [Deploying KoNote](docs/deploying-konote.md) guide explains every step in plain language.
 >
-> **Important:** Running your own instance means taking responsibility for client data security. KoNote has strong protections built in, but you need to configure them correctly. See the [security responsibility section](docs/deploying-KoNote.md#understanding-your-responsibility) to understand what that involves.
+> **Important:** Running your own instance means taking responsibility for client data security. KoNote has strong protections built in, but you need to configure them correctly. See the [security responsibility section](docs/deploying-konote.md#understanding-your-responsibility) to understand what that involves.
 
 ### Try It Instantly (Docker)
 
 Want to see KoNote before committing to a full setup? Run the demo with one command:
 
 ```bash
-docker-compose -f docker-compose.demo.yml up
+docker compose -f docker-compose.demo.yml up --build
 ```
 
 Then open http://localhost:8000 in your browser.
@@ -253,10 +253,14 @@ Then open http://localhost:8000 in your browser.
 
 ### Local Development
 
+The canonical, tested sequence is maintained in
+[Local Development Setup](docs/development-setup.md). The abbreviated steps
+below assume the database containers from `docker-compose.dev.yml` are running.
+
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/gilliankerr/KoNote.git
-   cd KoNote
+   git clone https://github.com/LogicalOutcomes/konote.git
+   cd konote
    ```
 
 2. **Activate the pre-commit hook**
@@ -276,7 +280,7 @@ Then open http://localhost:8000 in your browser.
 
 4. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
 
 5. **Create environment file**
@@ -294,24 +298,31 @@ Then open http://localhost:8000 in your browser.
 
    # Generate FIELD_ENCRYPTION_KEY (PII encryption - REQUIRED)
    python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+   # Generate EMAIL_HASH_KEY (participant email lookup - REQUIRED)
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
    ```
 
    Paste both keys into your `.env` file:
    ```
    SECRET_KEY=paste-your-generated-key-here
    FIELD_ENCRYPTION_KEY=paste-your-generated-key-here
+   EMAIL_HASH_KEY=paste-your-generated-key-here
    DATABASE_URL=postgresql://konote:password@localhost:5432/konote
    AUDIT_DATABASE_URL=postgresql://audit_writer:password@localhost:5432/konote_audit
    AUTH_MODE=local
    ```
 
    > **Getting `KoNote.E001` error?** Your encryption key is missing or invalid.
-   > See [Deploying KoNote](docs/deploying-KoNote.md#troubleshooting) for help.
+   > See [Local Development Setup](docs/development-setup.md#troubleshooting) for help.
 
 6. **Run migrations**
    ```bash
+   python manage.py migrate_default
    python manage.py migrate
-   python manage.py migrate --database=audit
+   python manage.py setup_public_tenant --domain localhost
+   python manage.py migrate_audit
+   python manage.py lockdown_audit_db
    ```
 
 7. **Create admin user**
@@ -339,16 +350,16 @@ Visit `http://localhost:8000` to access the application.
 
 KoNote is designed to run on your own infrastructure. The recommended deployment is an **OVHcloud VPS** (Beauharnois, QC — Canadian data residency, ~$22 CAD/month) running Docker Compose with built-in automated backups, health monitoring, and self-healing.
 
-See [Deploying KoNote](docs/deploying-KoNote.md) for the full guide, or jump straight to the [OVHcloud deployment guide](docs/deploy-ovhcloud.md).
+See [Deploying KoNote](docs/deploying-konote.md) for the full guide, or jump straight to the [OVHcloud deployment guide](docs/deploy-ovhcloud.md).
 
 - **[OVHcloud VPS](docs/deploy-ovhcloud.md)** — Recommended: Docker Compose with automated ops (backups, monitoring, self-healing)
-- **[Local Development (Docker)](docs/deploying-KoNote.md#local-development-docker)** — Try KoNote locally
+- **[Local Development](docs/development-setup.md)** — Run Django locally with Docker databases
 - **Any Docker-capable VPS** — The stack is portable to any Linux server with Docker
 
 ### Docker
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 The Docker setup includes:
@@ -380,9 +391,9 @@ Start with the [Documentation Index](docs/index.md) to find what you need.
 
 | Document | Audience | Description |
 |----------|----------|-------------|
-| [Deploying KoNote](docs/deploying-KoNote.md) | IT / Technical lead | Local setup, cloud deployments, PDF setup |
+| [Deploying KoNote](docs/deploying-konote.md) | IT / Technical lead | Local setup, cloud deployments, PDF setup |
 | [Admin Guide](docs/admin/index.md) | Program managers / Admins | Configuration, users, backups, security |
-| [Using KoNote](docs/using-KoNote.md) | Front-line staff | Day-to-day usage guide |
+| [Using KoNote](docs/using-konote.md) | Front-line staff | Day-to-day usage guide |
 | [Technical Reference](docs/technical-documentation.md) | Developers | Architecture, security, data models |
 
 ---

@@ -76,7 +76,7 @@
     </tbody>
 </table>
 {% else %}
-<p class="empty-state">{% trans "No trigger rules yet. Create one to automatically assign this survey." %}</p>
+<p class="empty-state" role="status">{% trans "No trigger rules yet. Create one to automatically assign this survey." %}</p>
 {% endif %}
 
 <p><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">&#8592; {% trans "Back to survey" %}</a></p>
