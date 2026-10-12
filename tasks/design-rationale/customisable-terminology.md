@@ -12,6 +12,7 @@ enforcement:
     file: tests/drr/test_terminology_substitution.py
     description: "Render a canonical set of templates (login, dashboard, participant list, note detail, goal detail, portal dashboard) under a non-default terminology configuration (e.g., term.client='member', term.worker='coach', term.plan='pathway'). Assert the default words ('client', 'participant', 'worker', 'plan', 'goal') do not appear in the rendered output except inside allowlisted fragments."
   - type: codeowner
+    description: "Route changes to terminology middleware, models, forms, and template fragments to reviewers"
     paths: [konote/middleware/terminology.py, apps/admin_settings/models.py, apps/admin_settings/forms.py, "**/templates/includes/_terminology*"]
 ---
 

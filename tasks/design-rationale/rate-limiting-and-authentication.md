@@ -15,6 +15,7 @@ enforcement:
     rule: timing-safe-token-comparison
     description: "In apps/auth_app/, forbid ==/!= comparisons on variables named *_token, *_assertion, or *_secret; require hmac.compare_digest"
   - type: codeowner
+    description: "Route changes to auth views, rate-limiting decorators, and auth settings to security reviewers"
     paths: [apps/auth_app/views.py, apps/auth_app/decorators.py, konote/settings/]
 ---
 

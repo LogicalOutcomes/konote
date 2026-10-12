@@ -15,6 +15,7 @@ enforcement:
     rule: demo-flag-must-filter-queries
     description: "Querysets touching ClientFile, ConsentEvent, ClientDetailValue, ClientAccessBlock, ProgressNote, ProgressNoteTarget, PlanTarget, PlanTargetRevision, SurveyAssignment, SurveyResponse, SurveyAnswer, CorrectionRequest, StaffPortalNote, ClientResourceLink, or Circle must filter by is_demo (or traverse client_file__is_demo / created_by__is_demo) outside an allowlist of admin management commands"
   - type: codeowner
+    description: "Route changes to demo engine, seed data commands, and demo isolation checks to reviewers"
     paths: [apps/admin_settings/demo_engine.py, apps/admin_settings/management/commands/seed_demo_data.py, apps/admin_settings/checks.py]
 ---
 

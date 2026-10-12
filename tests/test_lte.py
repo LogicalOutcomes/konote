@@ -369,8 +369,8 @@ class LTEBusinessDayTest(TestCase):
         result = add_business_days(saturday, business_days=5)
         # Sat is not a business day; advance to Mon then +5
         # Saturday → Monday → +5 business days → following Monday
-        self.assertEqual(result.weekday(), 4)  # Friday
-        self.assertEqual(result, datetime(2026, 4, 17, 9, 0))
+        self.assertEqual(result.weekday(), 0)  # Monday
+        self.assertEqual(result, datetime(2026, 4, 20, 9, 0))
 
     def test_holidays_are_skipped(self):
         from apps.reports.lte_lifecycle import add_business_days

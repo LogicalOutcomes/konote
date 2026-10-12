@@ -801,6 +801,65 @@ class ReportSchedule(models.Model):
     def __str__(self):
         return f"{self.name} (due {self.due_date})"
 
+    def advance_due_date(self):
+        """Move due_date to the next period after generation."""
+        import calendar
+
+        month = self.due_date.month
+        year = self.due_date.year
+        day = self.due_date.day
+
+        if self.frequency == "quarterly":
+            month += 3
+        elif self.frequency == "monthly":
+            month += 1
+        elif self.frequency == "annually":
+            year += 1
+
+        # Handle month overflow
+        while month > 12:
+            month -= 12
+            year += 1
+
+        # Clamp day to last day of target month
+        max_day = calendar.monthrange(year, month)[1]
+        day = min(day, max_day)
+
+        self.due_date = self.due_date.replace(year=year, month=month, day=day)
+        self.email_sent_at = None
+        self.banner_shown_at = None
+        self.save(update_fields=[
+            "due_date", "email_sent_at", "banner_shown_at", "updated_at",
+        ])
+
+    @property
+    def is_due_soon(self):
+        """True if within the banner reminder window."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and (self.due_date - today).days <= self.reminder_days_before
+        )
+
+    @property
+    def is_overdue(self):
+        """True if past due date and not yet generated this period."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and today > self.due_date
+            and (
+                self.last_generated_at is None
+                or self.last_generated_at.date() < self.due_date
+            )
+        )
+
 
 # ---------------------------------------------------------------------------
 # Longitudinal Trajectory Export (LTE) — DRR: evaluation-microdata-export.md
@@ -1069,62 +1128,3 @@ class LTELifecycleEvent(models.Model):
 
     def __str__(self):
         return f"LTE #{self.request_id}: {self.event_type} @ {self.timestamp}"
-
-    def advance_due_date(self):
-        """Move due_date to the next period after generation."""
-        import calendar
-
-        month = self.due_date.month
-        year = self.due_date.year
-        day = self.due_date.day
-
-        if self.frequency == "quarterly":
-            month += 3
-        elif self.frequency == "monthly":
-            month += 1
-        elif self.frequency == "annually":
-            year += 1
-
-        # Handle month overflow
-        while month > 12:
-            month -= 12
-            year += 1
-
-        # Clamp day to last day of target month
-        max_day = calendar.monthrange(year, month)[1]
-        day = min(day, max_day)
-
-        self.due_date = self.due_date.replace(year=year, month=month, day=day)
-        self.email_sent_at = None
-        self.banner_shown_at = None
-        self.save(update_fields=[
-            "due_date", "email_sent_at", "banner_shown_at", "updated_at",
-        ])
-
-    @property
-    def is_due_soon(self):
-        """True if within the banner reminder window."""
-        from django.utils import timezone as tz
-
-        today = tz.now().date()
-        return (
-            self.is_active
-            and self.due_date is not None
-            and (self.due_date - today).days <= self.reminder_days_before
-        )
-
-    @property
-    def is_overdue(self):
-        """True if past due date and not yet generated this period."""
-        from django.utils import timezone as tz
-
-        today = tz.now().date()
-        return (
-            self.is_active
-            and self.due_date is not None
-            and today > self.due_date
-            and (
-                self.last_generated_at is None
-                or self.last_generated_at.date() < self.due_date
-            )
-        )

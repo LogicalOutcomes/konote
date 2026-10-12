@@ -15,6 +15,7 @@ enforcement:
     file: tests/drr/test_audit_transaction_isolation.py
     description: "Audit writes persist even when the surrounding application transaction rolls back (separate connection)"
   - type: codeowner
+    description: "Route changes to audit app, settings, and audit middleware to security/audit reviewers"
     paths: [apps/audit/, konote/settings/, konote/middleware/audit.py]
 ---
 

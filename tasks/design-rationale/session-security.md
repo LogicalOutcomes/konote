@@ -15,6 +15,7 @@ enforcement:
     rule: no-inline-scripts-without-nonce
     description: "Block <script>...</script> without a nonce, and inline event-handler attributes (onclick, onload, onsubmit, onchange, etc.) in templates"
   - type: codeowner
+    description: "Route changes to session timeout middleware, session settings, and base templates to security reviewers"
     paths: [konote/settings/, konote/middleware/session_timeout.py, "**/templates/**/base*.html"]
 ---
 

@@ -16,6 +16,7 @@ enforcement:
   - type: llm-review
     description: "Power-asymmetric access and recoverable-PII soft-delete. Flag any diff that (a) adds a 'request-then-wait' workflow gating a participant's access to their OWN records (e.g., a new portal form that submits an access request and returns a 'staff will respond in N days' message -- self-viewing must remain immediate), or (b) introduces an `is_deleted` / `deleted_at` / `hidden` flag on any model that carries PII, without also stripping the PII fields to anonymised values. Soft-delete on a PII-carrying model is the recoverable-PII anti-pattern; use the erasure workflow in apps/clients/erasure.py instead. Both are absence-of-bad-pattern checks that static rules cannot catch."
   - type: codeowner
+    description: "Route changes to client models, portal views, and erasure workflows to privacy reviewers"
     paths: [apps/clients/models.py, apps/portal/models.py, apps/portal/views.py, apps/portal/forms.py, apps/clients/erasure.py, apps/clients/erasure_views.py]
 ---
 

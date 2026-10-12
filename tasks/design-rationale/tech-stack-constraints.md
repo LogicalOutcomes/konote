@@ -15,6 +15,7 @@ enforcement:
     file: tests/drr/test_stack_constraints.py
     description: "Assert every Dockerfile starts FROM alpine or python:*-alpine; no webpack/vite/rollup/parcel config files exist; no package.json anywhere; requirements.txt is <=60 direct deps"
   - type: codeowner
+    description: "Route changes to project dependencies, Dockerfiles, and compose configurations to architecture reviewers"
     paths: [requirements.txt, Dockerfile*, docker-compose*.yml]
 ---
 

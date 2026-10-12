@@ -292,6 +292,7 @@ PERMISSIONS = {
         "report.funder_report": ALLOW,  # Managers generate funder reports for their programs.
                                         # Enforced by @requires_permission
         "report.evaluation_export": DENY,  # Explicit per-user grant only — not tied to any role (admins must be granted too)
+        "report.evaluation_export_small_population": DENY,  # LTE — strictly separate per-user grant; never bundled with evaluation_export. DRR: evaluation-microdata-export.md
         "report.data_extract": ALLOW,  # PM handles PIPEDA data portability requests
 
         "insights.view": ALLOW,  # Program-level outcome insights. Enforced by @requires_permission

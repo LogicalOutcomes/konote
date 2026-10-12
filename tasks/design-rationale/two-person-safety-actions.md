@@ -15,6 +15,7 @@ enforcement:
     rule: two-person-action-requires-approver
     description: "Any view or management command that completes one of the protected actions must accept and validate a distinct approver_id"
   - type: codeowner
+    description: "Route changes to safety-critical views, erasure workflows, and DV modules to safety reviewers"
     paths: [apps/events/views.py, apps/clients/dv_views.py, apps/clients/erasure.py, apps/clients/erasure_views.py]
 ---
 

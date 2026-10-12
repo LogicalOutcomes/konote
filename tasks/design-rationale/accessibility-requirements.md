@@ -24,6 +24,7 @@ enforcement:
     rule: no-button-without-accessible-text
     description: "In **/templates/**/*.html, forbid <button>...</button> with no inner text AND no aria-label / aria-labelledby; same for <a> elements that act as buttons (role='button' or hx-* attributes) with no accessible name"
   - type: codeowner
+    description: "Route changes to base templates, form fields, and accessibility test suites to a11y reviewers"
     paths: ["**/templates/base*.html", "**/templates/**/_form_field.html", tests/test_a11y_ci.py, tests/test_accessibility_templates.py]
 ---
 

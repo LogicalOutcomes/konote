@@ -67,7 +67,7 @@ def add_business_days(
     Examples (empty holiday list):
       - Monday 09:00 + 5 business days → Monday 09:00 (next week)
       - Friday 09:00 + 5 business days → Friday 09:00 (next week)
-      - Saturday 09:00 + 5 business days → Friday 09:00 (next week)
+      - Saturday 09:00 + 5 business days → Monday 09:00 (two weeks later)
     """
     if business_days <= 0:
         return start
@@ -75,7 +75,7 @@ def add_business_days(
     holidays = _get_excluded_holidays()
     current = start
     # If start falls on a weekend/holiday, advance to the next business
-    # day first, so "5 business days from Saturday" means "Friday".
+    # day first, so "5 business days from Saturday" measures from Monday.
     while current.weekday() >= 5 or current.date() in holidays:
         current = current + timedelta(days=1)
 

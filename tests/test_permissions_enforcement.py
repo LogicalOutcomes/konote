@@ -117,6 +117,7 @@ PERMISSION_URL_MAP = {
     "report.funder_report": {"url": "/reports/export/"},
     "report.data_extract": {"url": "/reports/participant/{client_id}/export/"},
     "report.evaluation_export": {"url": "/reports/evaluation-export/"},
+    "report.evaluation_export_small_population": {"url": "/reports/longitudinal-trajectory-export/"},
 
     # Insights
     "insights.view": {"url": "/reports/insights/"},
