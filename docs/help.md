@@ -17,6 +17,7 @@ Welcome to KoNote! This guide helps you find what you need quickly.
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
 | See program patterns | [Outcome Insights](#outcome-insights) |
+| Generate data for an evaluator | [Evaluation Export](#evaluation-export-confidential) |
 | Invite a participant to the portal | [Portal Staff Management](#portal-staff-management) |
 | Review registration submissions | [Registration Forms](#registration-forms) |
 | Change my password | [Account Settings](#account-settings) |
@@ -480,6 +481,20 @@ Reports now automatically include episode-level statistics — such as total ser
 
 Find export options under **Reports** in the main navigation.
 
+### Evaluation Export (Confidential)
+
+If you have been granted the Evaluator Export permission, you can generate a de-identified data file for an external evaluator:
+
+1. Go to **Reports → Evaluator Export (Confidential)**
+2. Choose the program, time period, and evaluator details
+3. Select which demographic columns to include
+4. Preview — the system checks that privacy thresholds are met
+5. Confirm — a secure 24-hour download link is created
+
+The Export History page (Reports → Export History) lists all past exports and warns you when a data-sharing agreement has expired.
+
+For the full guide, see [Evaluation Export Guide](evaluation-export-guide.md).
+
 ---
 
 ## Account Settings
@@ -658,12 +673,12 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 
 ### In-App Resources
 
-- **Quick Reference Card** — See [Using KoNote](using-KoNote.md#quick-reference-card)
+- **Quick Reference Card** — See [Using KoNote](using-konote.md#quick-reference-card)
 - **Keyboard shortcuts** — Press `?` anywhere in the app
 
 ### Documentation
 
-- [Staff Training Guide](using-KoNote.md) — Daily tasks in detail
+- [Staff Training Guide](using-konote.md) — Daily tasks in detail
 - [Admin Guide](admin/index.md) — Configuration and maintenance
 - [Technical Documentation](technical-documentation.md) — For developers
 

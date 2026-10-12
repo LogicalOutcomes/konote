@@ -112,12 +112,12 @@
 {% endif %}
 
 {% elif search_query %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% blocktrans with query=search_query %}No notes match "{{ query }}".{% endblocktrans %}</p>
     <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline">{% trans "Clear search" %}</a>
 </div>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% blocktrans with notes=term.progress_note|default:"notes" %}No {{ notes }} recorded yet.{% endblocktrans %}</p>
     {% if active_service_model != "group" %}
     <p><small>{% trans "Choose the faster Log Contact flow for brief updates, or Detailed Note for a full session note." %}</small></p>

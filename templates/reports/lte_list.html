@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Evaluation Export (Small Population)" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Evaluation Export (Small Population)" %}</h1>
+    <p>{% trans "Longitudinal Trajectory Export — small-population evaluation tier. Drops demographics, fuzzes metric trajectories, and gates submission behind REB approval, community governance review, and a 5-business-day review-and-cancel window." %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'About LTE' %}" style="margin-bottom: 1.5rem;">
+    <strong>{% trans "When to use this tier" %}</strong>
+    <p>{% trans "Use LTE for programs with fewer than 15 participants where the standard Evaluator Export is blocked. LTE is for PROGRAM EVALUATION, not research — it does not include demographic detail or unrounded metric values." %}</p>
+    <p style="margin-bottom: 0;">
+        <a href="{% url 'reports:evaluation_export' %}">{% trans "For larger programs, use the standard Evaluator Export" %} →</a>
+    </p>
+</article>
+
+{% if rate_limited %}
+<article role="alert" style="background: var(--kn-warning-bg, #fffbeb); border-left: 4px solid var(--kn-warning-fg, #d97706); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "New LTE submissions paused" %}</strong>
+    <p style="margin-bottom: 0;">{{ rate_limit_message }}</p>
+</article>
+{% endif %}
+
+<div style="margin-bottom: 1rem;">
+    {% if not rate_limited %}
+    <a href="{% url 'reports:lte_submit' %}" role="button">{% trans "New request" %}</a>
+    {% else %}
+    <button type="button" disabled aria-disabled="true">{% trans "New request" %}</button>
+    {% endif %}
+</div>
+
+{% if lte_requests %}
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "ID" %}</th>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Submitted" %}</th>
+            <th scope="col">{% trans "By" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Window activates" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in lte_requests %}
+        <tr>
+            <td>#{{ req.pk }}</td>
+            <td>{{ req.program.name }}</td>
+            <td><small>{{ req.submitted_at|date:"Y-m-d H:i" }}</small></td>
+            <td><small>{{ req.submitted_by.display_name }}</small></td>
+            <td>{{ req.get_status_display }}</td>
+            <td>
+                {% if req.is_window_running %}
+                <small>{{ req.effective_window_activates_at|date:"Y-m-d H:i" }}</small>
+                {% else %}
+                <small>&mdash;</small>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'reports:lte_detail' request_id=req.pk %}">{% trans "View" %}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<p><em>{% trans "No LTE requests in this agency yet." %}</em></p>
+{% endif %}
+{% endblock %}

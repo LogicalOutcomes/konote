@@ -45,7 +45,7 @@
 </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state" role="status">
     <p>{% blocktrans with group=term.group|default:"group" %}No {{ group }} records yet.{% endblocktrans %}</p>
     <a href="{% url 'groups:group_create' %}" role="button">{% trans "Create the first one" %}</a>
 </div>

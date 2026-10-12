@@ -2,15 +2,21 @@
 
 ## Flagged
 
+- [ ] **P1:** KoNote should not default to OpenRouter. It should default to Tensorix, hosted in EU. — PB (AI-DEFAULT1)
+
+  Notes:
+  - [konote/ai.py:488](konote/ai.py#L488) has a function `_call_insights_api` that checks for an `INSIGHTS_API_BASE` env var. If that's set (pointing at Ollama or any OpenAI-compatible endpoint), insights calls go there. If it isn't set, everything falls back to OpenRouter.
+  - `INSIGHTS_API_BASE` isn't in `.env.example` — only `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` are. So unless a deployment has explicitly added the Ollama env var, that deployment is on OpenRouter.
+  - The self-hosted VPS design ([self-hosted-llm-infrastructure.md](tasks/design-rationale/self-hosted-llm-infrastructure.md)) is marked "Approved — design complete, deployment is ops work" as of 2026-03-03. So the VPS-build step is separate from the code.
+  - Even for the insights path, only some AI calls route through `_call_insights_api`. Other AI features in `ai.py` still hit OpenRouter directly. Full cutover is still the long-term goal, not current state.
+  - Can't tell from here whether the production KoNote deployment has `INSIGHTS_API_BASE` set — that's a VPS env-var question. But the shipped default is: OpenRouter for everything, Ollama only if explicitly pointed at it.
+  - Framing note: the Companion answered based on the design doc's aspirational framing and read it as current state. Worth fixing in the answerer prompt.
+
 - [ ] **HIGH PRIORITY:** Regenerate demo data on konote-dev VPS — run `python manage.py generate_demo_data --force` inside the web container. PRs #583, #584, #588 fixed demo data that was too sparse for reports (3 clients instead of 10, notes outside current FY, inconsistent filtering). Data won't be fixed until regenerated. — PB (OPS-DEMO1)
 - [ ] To go live with demo survey: run `python manage.py seed_demo_survey` on konote-dev (PR #239 and #240 are now merged). The survey will be accessible at `/s/demo-program-feedback/` and the website demo page will embed it automatically — PB (DEMO-SURVEY1)
+- [ ] Add LTE QA scenarios to sister repo — register the 7 new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` (lte_list, lte_submit, lte_detail, lte_cancel, lte_flag_concerns, lte_download, lte_resolve_review) and write 3 scenarios: happy path, small-population block, OCAP program without community signoff. Must be done in a separate session in the `konote-qa-scenarios` repo. — (LTE-QA1)
 
 ## Active Work
-
-### Phase: Infrastructure
-
-- [x] Migrate KoNote from Swiss VPS to Canadian VPS — completed 2026-03-06 (OPS-MIGRATE1)
-- [ ] Decommission old VPS (141.227.151.7) — verify new VPS stable for 1–2 weeks, then cancel old instance in OVH control panel — GK (OPS-DECOM1)
 
 ### Phase: Launch Readiness
 
@@ -24,6 +30,14 @@
 ### Phase: Deep Review Fixes (2026-03-06)
 
 _All deep review fix tasks completed — see Recently Done._
+
+### Phase: DRR Restructure Follow-up (2026-04-12)
+
+- [ ] GK reviews DRR/principle restructure (7 new prescriptive DRRs extracted from 4 foundation docs, plus accessibility-requirements and customisable-terminology) before `develop` → `staging` → `main` promotion. Touches evaluation principles per Consultation Gates in CLAUDE.md — GK (DRR-REST1)
+- [ ] Retrofit `access-tiers.md` with enforcement-block frontmatter covering the three-layer RBAC check (view decorator + middleware + template tag), `ClientAccessBlock`-checked-before-role, and no-time-based-expiry on `ClientAccessBlock`. These invariants moved from `foundation-security-by-default.md` and must be owned by access-tiers now. — (DRR-REST2)
+- [ ] Amend `no-live-api-individual-data.md` with enforcement-block frontmatter covering: 10-minute export delay + admin notification for 100+ record exports, exports served through Django (not nginx/Caddy static file), time-limited UUID download links. Currently only the 24h expiry is named explicitly. — (DRR-REST3)
+- [ ] Write `note-shape-invariants.md` DRR (or extend an existing DRR) to cover the two-lens (Their Perspective / Your Observations) form-validation rule referenced from `principles/collaborative-practice.md`. — (DRR-REST4)
+- [ ] Build the enforcement tests, Semgrep rules, Django system checks, and pre-commit hooks named by the new security, accessibility, and terminology DRRs before promoting them from Draft to Decided. Scope and per-file prompt at [tasks/drr-enforcement-tests-prompt.md](tasks/drr-enforcement-tests-prompt.md). Blocks moving the 9 new DRRs off Draft status. — (DRR-REST5)
 
 ## Do Occasionally
 
@@ -87,7 +101,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Review draft evaluation protocol for CIDS Full Tier metadata — evaluator-led process covering services, activities, risks, counterfactuals, stakeholder definitions (see tasks/cids-evaluation-protocol.md) — GK reviews draft (EVAL-PROTOCOL1)
 - [ ] Review draft LLM-assisted evaluation planning prompt — structured conversation guide for evaluators to use with a more capable LLM (see tasks/cids-evaluation-planning-prompt.md) — GK reviews draft (EVAL-PROMPT1)
-- [ ] Create literature review brief template for counterfactual baselines, risk factors, and measurement instruments (see tasks/cids-evaluation-protocol.md#literature-review-brief-template) — GK reviews template (EVAL-LITREV1)
+- [x] Create literature review brief template — standalone template at `docs/literature-review-brief-template.md` covering comparable programs, counterfactual evidence, risk factors, measurement instruments, cultural safety, and sources — cross-referenced from evaluation export guide — GK reviews template — 2026-04-10 (EVAL-LITREV1)
 - [x] Turn evaluation planning and post-export enrichment designs into an implementation-ready spec with models, API payloads, and screens (see tasks/design-rationale/cids-privacy-architecture.md) — 2026-03-07 (EVAL-ENRICH-SPEC1)
 - [x] Build Evaluation Framework editor UI in KoNote (see tasks/wireframes/evaluation-framework-editor.html) — PR #422, deployed and validated on dev VPS — 2026-03-07 (EVAL-EDITOR1)
 
@@ -104,20 +118,18 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Evaluation Export Governance & Documentation (see tasks/eval-export-governance.md)
 
-**Code & UI:**
-- [ ] Add reason field to evaluation export permission grant — free-text logged when `report.evaluation_export` is granted. Detailed implementation prompt in [tasks/phase-eval-gov1-prompt.md](tasks/phase-eval-gov1-prompt.md) — a new session can pick this up cold (EVAL-GOV1)
-- [ ] Admin dashboard card for evaluation export — shows N authorised users, last export date, click-through to permission list (EVAL-GOV2)
-- [ ] Permission audit list page — who has the permission, granted by whom, when, why, last used, revoke button (EVAL-GOV3)
-- [ ] Export history view — past evaluation exports with program, evaluator, counts, status (EVAL-GOV4)
-- [ ] Agreement expiry warning — banner on export history when evaluator agreement has passed (EVAL-GOV5)
-- [ ] Wire up `is_evaluation_exportable` custom field groups — form dynamically shows exportable groups as QI columns (EVAL-GOV6)
-- [ ] Pipeline test suite — consent filtering, k-anonymity, blocking, pseudonymous IDs, CSV output (EVAL-GOV7)
+**Simplified scope (2026-04-09):** The original plan had 11 tasks. The governance list + permission-audit list + dashboard card were merged into a single GOV1 deliverable; GOV4 + GOV5 were combined into one history+banner task; and DOC1–4 were collapsed into a single doc task that leads with the ED one-pager. Pipeline tests (GOV7) stay standalone because the de-identification code is safety-critical.
 
-**Documentation:**
-- [ ] Update admin reporting guide with evaluation export section — `docs/admin/reporting.md` (EVAL-DOC1)
-- [ ] Update deployment protocol — add evaluation export to permissions interview — `tasks/agency-permissions-interview.md` Section 7 (EVAL-DOC2)
-- [ ] Add evaluation export section to user guide — `docs/help.md` (EVAL-DOC3)
-- [ ] ED-facing one-page evaluation export reference — `docs/evaluation-export-guide.md` (EVAL-DOC4)
+**Code & UI:** ✅ All done — see Recently Done.
+
+**Documentation:** ✅ Done — see Recently Done.
+
+### Phase: Longitudinal Trajectory Export (LTE) — see tasks/phase-lte-prompt.md
+
+Implementation complete (11 of 13 tasks done, see Recently Done). Remaining work is QA scenarios in the sister repo and GK's pre-merge review. DRR: `tasks/design-rationale/evaluation-microdata-export.md`.
+
+- [ ] Register new LTE routes in `konote-qa-scenarios/pages/page-inventory.yaml` and add scenarios (happy path, floor block, OCAP without signoff) — follow-up session in the konote-qa-scenarios repo (LTE-QA1)
+- [ ] GK reviews completed LTE implementation before merge — verifies demographic suppression, fuzzing correctness, community governance gating — GK (LTE-GKREVIEW1)
 
 ### Phase: Documentation & Website Updates
 
@@ -146,6 +158,14 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Evaluation export documentation bundle — ED-facing one-pager (`docs/evaluation-export-guide.md`) + cross-references in admin reporting guide, help page, and agency permissions interview (Section 7.4) — 2026-04-10 (EVAL-DOCS)
+- [x] Pipeline test suite for `deidentify.py` — 75 safety-critical tests covering consent filtering, PII stripping, study IDs, age bands, geography, k-anonymity, population thresholds, suppression ceiling, CSV format, full integration — 2026-04-10 (EVAL-GOV7)
+- [x] Wire up `is_evaluation_exportable` custom field groups — form dynamically queries `CustomFieldGroup.is_evaluation_exportable` and adds QI column checkboxes; 2 tests — 2026-04-10 (EVAL-GOV6)
+- [x] Export history view with agreement-expiry banner — lists past evaluation exports with evaluator info, status (active/expired/revoked), expired agreement warning banner; nav entry; 8 tests — 2026-04-10 (EVAL-GOV-HISTORY)
+- [x] Decommission old VPS (141.227.151.7) — new Canadian VPS stable after 5+ weeks, old Swiss instance cancelled in OVH control panel — 2026-04-09 (OPS-DECOM1)
+- [x] Longitudinal Trajectory Export (LTE) implementation — small-population evaluation tier with new `report.evaluation_export_small_population` permission, `LTEExportGrant` model + signal, "no privacy officer = no LTE" gate, `LTEExportRequestForm` with structured preconditions (REB, DSA, evaluator credentials, community governance, acknowledgement), `LTESmallPopulationPipeline` subclassing `DeidentificationPipeline` with demographic suppression and metric/session/hours fuzzing, 5-business-day review-and-cancel window with flag-freeze/resume, distributed admin oversight via signed "Flag concerns" email tokens, post-hoc privacy officer review with agency-wide rate limit, distinct `longitudinal_trajectory_export` audit category, LTE CSV output with PROGRAM EVALUATION warning header, `tests/test_lte.py` end-to-end coverage, `docs/lte-privacy-officer-guide.md` + admin reporting guide section, 146 French translations — 2026-04-09 (LTE-PERM1, LTE-FORM1, LTE-PIPE1, LTE-WINDOW1, LTE-OVERSIGHT1, LTE-REVIEW1, LTE-AUDIT1, LTE-OUT1, LTE-TEST1, LTE-DOC1, LTE-I18N1)
+- [x] Evaluator Export grant audit UI — new `EvaluationExportGrant` model + `post_save` signal keeping the `User.evaluation_export_granted` cache in sync, `EvaluationExportGrantForm` enforcing a substantive reason (≥15 chars, blocklist), three admin views (list / create / revoke) at `/manage/users/evaluation-export/` with immutable audit logging, nav entry in both admin and PM dropdowns, Django admin `readonly_fields` block on direct flag edits, demo seed routed through the grant model, 24 French translations, and ~25 new tests — 2026-04-09 (EVAL-GOV1)
+- [x] Migrate KoNote from Swiss VPS to Canadian VPS — new OVH VPS at 148.113.191.63, Canadian data residency confirmed — 2026-03-06 (OPS-MIGRATE1)
 - [x] Close Evaluator Export admin bypass — removed `is_admin` bypass in `can_create_evaluation_export` + nav check, added missing Team Members link to admin menu, wired `seed_eval_export_demo` into container-startup orchestrator with Casey/Morgan/Eva granted, added fast-path short-circuit, hoisted `EVAL_EXPORT_GRANTEES` constant, added regression tests (`EvaluatorExportPermissionTest` in `tests/test_export_permissions.py`), wrote EVAL-GOV1 implementation prompt — PRs #617, #622, #623, #624 — 2026-04-09 (EVAL-GOV-BYPASS1)
 - [x] De-identified evaluation microdata export — 10-step de-identification pipeline with k-anonymity (k=5), pseudonymous IDs, generalised demographics, population thresholds, enhanced audit trail, preview/confirm flow, permission-gated nav — 2026-04-07 (EVAL-EXPORT1)
 - [x] Insights quality & language features — DQ1: practice signal contextual sentence + month count in summary bar; CONF1: raised theme auto-link threshold from 2→3 words; LANG1: EN/FR language detection on quotes, AI prompt language awareness, FR pills on mixed-language Insights pages — PR #595 — 2026-04-03 (INSIGHTS-DQ1, INSIGHTS-CONF1, INSIGHTS-LANG1)
