@@ -57,6 +57,7 @@ git checkout -b chore/short-description  # cleanup, config, docs
 1. Push your branch and create a PR targeting `develop` (not `main`).
 2. Use regular merge commits -- **never squash merge**.
 3. Keep PRs focused. One feature or fix per PR.
+4. Check whether the change affects setup, user, admin, security, or technical documentation. Update the relevant pages in the same PR, or explain in the PR why no documentation update is needed.
 
 ---
 

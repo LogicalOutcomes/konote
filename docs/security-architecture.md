@@ -252,9 +252,9 @@ Django enables CSRF protection by default via `CsrfViewMiddleware`. KoNote uses 
 - **Cryptographic slug:** `secrets.token_urlsafe(8)` generates a 48-bit random value in `apps/registration/models.py`. Resistant to enumeration at small scale (approximately 2.8 x 10^14 possible values).
 - **Rate limiting:** 5 submissions per hour per session. Prevents automated form submission abuse.
 - **PII encryption:** `RegistrationSubmission` encrypts `first_name`, `last_name`, `email`, and `phone` using the same Fernet implementation as `ClientFile` (see Section 1).
-- **Duplicate detection:** SHA-256 hash of lowercase email stored in `email_hash` field (indexed). Duplicate checking happens against the hash -- no decryption required. This allows the system to detect duplicate registrations without exposing email addresses in the database.
+- **Duplicate detection:** Keyed HMAC-SHA-256 of the normalised email is stored in the indexed `email_hash` field. Registration hashes can be compared without decrypting stored email addresses. `EMAIL_HASH_KEY` is required outside demo mode and must remain stable for existing lookups.
 - **Consent:** Registration form requires a consent checkbox. The consent timestamp is stored on the `RegistrationSubmission` record.
-- **Configuration:** Admin creates registration links via Admin -> Registration Links. No additional configuration required.
+- **Configuration:** Set `EMAIL_HASH_KEY` before startup, then create registration links via Admin -> Registration Links.
 
 ---
 

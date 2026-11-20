@@ -217,7 +217,7 @@ Set `DEMO_EMAIL_BASE` in your environment to route all demo user emails to tagge
 
 ## Generating Security Keys
 
-You'll need two unique keys for any deployment. Generate them on your computer:
+You'll need three unique keys for any deployment. Generate them on your computer:
 
 ```bash
 # Generate SECRET_KEY (Django sessions)
@@ -225,9 +225,12 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 # Generate FIELD_ENCRYPTION_KEY (PII encryption)
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# Generate EMAIL_HASH_KEY (participant email lookup)
+python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-**Save both keys securely.** The `FIELD_ENCRYPTION_KEY` is especially critical — if you lose it, all encrypted client data is unrecoverable.
+**Save all three keys securely.** Losing `FIELD_ENCRYPTION_KEY` makes encrypted client data unrecoverable. Changing `EMAIL_HASH_KEY` breaks lookups for existing participant accounts and registration submissions.
 
 ---
 
