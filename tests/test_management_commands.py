@@ -27,7 +27,8 @@ TEST_KEY = Fernet.generate_key().decode()
 # =========================================================================
 
 
-class ResetDemoDataGuardTest(SimpleTestCase):
+class ResetDemoDataGuardTest(TestCase):
+    databases = {"default", "audit"}
     @override_settings(DEMO_MODE=False)
     def test_refuses_non_demo_instance(self):
         with self.assertRaisesMessage(CommandError, "DEMO_MODE must be enabled"):
