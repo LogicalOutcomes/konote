@@ -48,6 +48,7 @@ class ResetDemoDataGuardTest(SimpleTestCase):
         db.cursor.return_value = cursor
         with (
             unittest.mock.patch.object(reset_demo_data, "connection", db),
+            unittest.mock.patch.dict(os.environ, {"PYTHONHASHSEED": "0"}),
             unittest.mock.patch.object(reset_demo_data.transaction, "atomic", return_value=nullcontext()),
             unittest.mock.patch.object(reset_demo_data, "call_command", side_effect=ValueError("Jane Doe")),
         ):

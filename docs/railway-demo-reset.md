@@ -21,6 +21,8 @@ command and exit instead of serving requests.
    `DJANGO_SETTINGS_MODULE`, and any other variables used by that web service.
    Prefer Railway shared or reference variables so keys remain in sync. Set
    `DEMO_MODE=true`. Do not attach a public domain.
+   Set `PYTHONHASHSEED=0` so Python's hash ordering does not change generated
+   demo data between job processes.
 4. Leave **Cron Schedule** unset until the reset command has been deployed and
    verified. Run it manually from the Railway service, inspect its exit code
    and logs, and verify that an edited demo record returned to baseline. Check
