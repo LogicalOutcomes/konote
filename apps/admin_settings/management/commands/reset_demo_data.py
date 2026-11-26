@@ -4,6 +4,7 @@ Use this as the start command of a dedicated Railway cron service. The
 schedule belongs to Railway, not this command.
 """
 
+import io
 from time import monotonic
 
 from django.conf import settings
@@ -36,7 +37,9 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                call_command("seed", strict_demo=True, stdout=self.stdout, stderr=self.stderr)
+                # Seed's narration contains demo names; cron logs need only
+                # aggregate results and a bounded failure type.
+                call_command("seed", strict_demo=True, stdout=io.StringIO(), stderr=io.StringIO())
                 clients = ClientFile.objects.filter(is_demo=True, record_id__startswith="DEMO-").count()
                 users = get_user_model().objects.filter(is_demo=True).count()
                 notes = ProgressNote.objects.filter(client_file__is_demo=True).count()

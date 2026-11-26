@@ -77,12 +77,16 @@ class Command(BaseCommand):
     def _top_up_demo_data(self):
         """Top up demo data to target clients per program using the engine."""
         import os
+        import random
 
         from apps.admin_settings.demo_engine import DEMO_TARGET_CLIENTS_PER_PROGRAM, DemoDataEngine
 
         demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
         self.stdout.write("  Topping up demo data with config-aware engine...")
         engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
+
+        if self.strict_demo:
+            random.seed(42)
 
         try:
             success = engine.run(
@@ -380,7 +384,9 @@ class Command(BaseCommand):
         # and remove these, but notes can survive (e.g. cross-program sharing).
         # Explicitly delete any remaining notes authored by demo users first.
         from apps.notes.models import ProgressNote
-        ProgressNote.objects.filter(author__in=demo_users).delete()
+        ProgressNote.objects.filter(
+            author__in=demo_users, client_file__is_demo=True
+        ).delete()
         demo_users.delete()
 
         # Remove old program names that no longer exist
