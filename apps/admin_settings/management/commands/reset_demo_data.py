@@ -16,12 +16,16 @@ from django.db import connection, transaction
 
 from apps.clients.models import ClientFile
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
-from apps.notes.models import ProgressNote
+from apps.notes.models import ProgressNote, ProgressNoteTemplate
 from apps.programs.models import Program
 from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant
-from apps.reports.models import LTEExportRequest
+from apps.reports.models import LTEExportRequest, ReportTemplate
 from apps.surveys.models import Survey
-from apps.admin_settings.models import FeatureToggle, InstanceSetting
+from apps.admin_settings.models import (
+    FeatureToggle, InstanceSetting, OrganizationProfile,
+    TaxonomyMapping, TerminologyOverride,
+)
+from apps.registration.models import RegistrationLink
 
 
 LOCK_ID = 85122026
@@ -60,6 +64,12 @@ class Command(BaseCommand):
                 CustomFieldGroup.objects.all().delete()
                 InstanceSetting.objects.all().delete()
                 FeatureToggle.objects.all().delete()
+                ProgressNoteTemplate.objects.all().delete()
+                ReportTemplate.objects.all().delete()
+                RegistrationLink.objects.all().delete()
+                TerminologyOverride.objects.all().delete()
+                TaxonomyMapping.objects.all().delete()
+                OrganizationProfile.objects.all().delete()
                 # Seed's narration contains demo names; cron logs need only
                 # aggregate results and a bounded failure type.
                 call_command("seed", strict_demo=True, stdout=io.StringIO(), stderr=io.StringIO())
