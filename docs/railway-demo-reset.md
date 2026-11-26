@@ -20,9 +20,8 @@ command and exit instead of serving requests.
    `AUDIT_DATABASE_URL`, `SECRET_KEY`, `FIELD_ENCRYPTION_KEY`, `EMAIL_HASH_KEY`,
    `DJANGO_SETTINGS_MODULE`, and any other variables used by that web service.
    Prefer Railway shared or reference variables so keys remain in sync. Set
-   `DEMO_MODE=true`. Do not attach a public domain.
-   Set `PYTHONHASHSEED=0` so Python's hash ordering does not change generated
-   demo data between job processes.
+   `DEMO_MODE=true` and `DEMO_RESET_ALLOWED=true` on the cron service only.
+   Do not attach a public domain.
 4. Leave **Cron Schedule** unset until the reset command has been deployed and
    verified. Run it manually from the Railway service, inspect its exit code
    and logs, and verify that an edited demo record returned to baseline. Check
@@ -32,10 +31,13 @@ command and exit instead of serving requests.
    frequency changes; no code edit is needed. Check Cron Runs after the first
    scheduled execution. Railway skips a tick if the previous run is active.
 
-The command refuses non-demo mode and non-PostgreSQL databases, rejects a
+The command refuses non-demo mode, missing explicit reset authorization, and
+non-PostgreSQL databases; it rejects a
 concurrent reset, and reports a nonzero exit on failure. The reset rebuilds
 demo clients and users via `seed` and reports named client, user, and note
-counts without personal information. It runs in a transaction on the app
+counts without personal information. It deletes all participant, program, and
+user records in the target app database before recreating demo data. It runs
+in a transaction on the app
 database. The audit database is separate, so audit records are not part of
 that transaction.
 

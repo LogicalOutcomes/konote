@@ -39,6 +39,16 @@ class ResetDemoDataGuardTest(SimpleTestCase):
             call_command("reset_demo_data", stdout=io.StringIO())
 
     @override_settings(DEMO_MODE=True)
+    def test_requires_explicit_reset_authorization(self):
+        from apps.admin_settings.management.commands import reset_demo_data
+
+        db = unittest.mock.MagicMock(vendor="postgresql")
+        with unittest.mock.patch.object(reset_demo_data, "connection", db):
+            with unittest.mock.patch.dict(os.environ, {"DEMO_RESET_ALLOWED": ""}):
+                with self.assertRaisesMessage(CommandError, "DEMO_RESET_ALLOWED=true"):
+                    call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
     def test_seed_failure_does_not_log_exception_values(self):
         from apps.admin_settings.management.commands import reset_demo_data
 
@@ -48,7 +58,7 @@ class ResetDemoDataGuardTest(SimpleTestCase):
         db.cursor.return_value = cursor
         with (
             unittest.mock.patch.object(reset_demo_data, "connection", db),
-            unittest.mock.patch.dict(os.environ, {"PYTHONHASHSEED": "0"}),
+            unittest.mock.patch.dict(os.environ, {"DEMO_RESET_ALLOWED": "true"}),
             unittest.mock.patch.object(reset_demo_data.transaction, "atomic", return_value=nullcontext()),
             unittest.mock.patch.object(reset_demo_data, "call_command", side_effect=ValueError("Jane Doe")),
         ):

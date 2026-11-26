@@ -31,8 +31,8 @@ class Command(BaseCommand):
             raise CommandError("DEMO_MODE must be enabled to reset demo data.")
         if connection.vendor != "postgresql":
             raise CommandError("Demo reset requires PostgreSQL for its concurrency lock.")
-        if os.environ.get("PYTHONHASHSEED") != "0":
-            raise CommandError("Set PYTHONHASHSEED=0 on the demo reset service.")
+        if os.environ.get("DEMO_RESET_ALLOWED", "").lower() != "true":
+            raise CommandError("DEMO_RESET_ALLOWED=true is required for a full demo reset.")
 
         started = monotonic()
         with connection.cursor() as cursor:
