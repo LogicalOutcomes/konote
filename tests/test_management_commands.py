@@ -44,9 +44,10 @@ class ResetDemoDataGuardTest(SimpleTestCase):
 
         cursor = unittest.mock.MagicMock()
         cursor.fetchone.return_value = (True,)
+        db = unittest.mock.MagicMock(vendor="postgresql")
+        db.cursor.return_value = cursor
         with (
-            unittest.mock.patch.object(reset_demo_data.connection, "vendor", "postgresql"),
-            unittest.mock.patch.object(reset_demo_data.connection, "cursor", return_value=cursor),
+            unittest.mock.patch.object(reset_demo_data, "connection", db),
             unittest.mock.patch.object(reset_demo_data.transaction, "atomic", return_value=nullcontext()),
             unittest.mock.patch.object(reset_demo_data, "call_command", side_effect=ValueError("Jane Doe")),
         ):
