@@ -342,7 +342,7 @@ class Command(BaseCommand):
 
         Safe: only deletes objects marked is_demo=True or linked to DEMO- clients.
         """
-        from apps.auth_app.models import User
+        from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant, User
         from apps.clients.models import ClientFile
         from apps.events.models import CalendarFeedToken
         from apps.notes.models import SuggestionTheme
@@ -369,6 +369,10 @@ class Command(BaseCommand):
         # Remove ALL demo users (and their calendar tokens / program roles).
         # This ensures stale users from previous seed versions are cleaned up.
         demo_users = User.objects.filter(is_demo=True)
+        # Demo export grants protect their issuing admin. They are recreated by
+        # seed_eval_export_demo after the demo users are rebuilt.
+        EvaluationExportGrant.objects.filter(user__in=demo_users).delete()
+        LTEExportGrant.objects.filter(user__in=demo_users).delete()
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
         # ProgressNote.author is PROTECTED so demo users cannot be deleted while
