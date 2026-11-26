@@ -15,9 +15,13 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
 from apps.clients.models import ClientFile
+from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program
 from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant
+from apps.reports.models import LTEExportRequest
+from apps.surveys.models import Survey
+from apps.admin_settings.models import FeatureToggle, InstanceSetting
 
 
 LOCK_ID = 85122026
@@ -45,11 +49,17 @@ class Command(BaseCommand):
                 # Both instances are disposable test instances. Remove all
                 # participant, program, and account records, including ones
                 # created by staff without the demo marker.
+                LTEExportRequest.objects.all().delete()
+                Survey.objects.all().delete()
                 ClientFile.objects.all().delete()
                 Program.objects.all().delete()
                 EvaluationExportGrant.objects.all().delete()
                 LTEExportGrant.objects.all().delete()
                 get_user_model().objects.all().delete()
+                CustomFieldDefinition.objects.all().delete()
+                CustomFieldGroup.objects.all().delete()
+                InstanceSetting.objects.all().delete()
+                FeatureToggle.objects.all().delete()
                 # Seed's narration contains demo names; cron logs need only
                 # aggregate results and a bounded failure type.
                 call_command("seed", strict_demo=True, stdout=io.StringIO(), stderr=io.StringIO())
