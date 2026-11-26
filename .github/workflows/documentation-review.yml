@@ -1,0 +1,50 @@
+name: Documentation review
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  documentation:
+    name: Documentation impact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check documentation decision
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = (pr.body ?? '').replace(/<!--[\s\S]*?-->/g, '');
+            const [, section = ''] = body.split(/^## Documentation impact[ \t]*$/m, 2);
+            const impact = section.split(/^#{1,2}[ \t]/m, 1)[0];
+            const updated = /^- \[[xX]\] Documentation updated[ \t]*$/m.test(impact);
+            const notNeeded = /^- \[[xX]\] No documentation update needed[ \t]*$/m.test(impact);
+
+            if (updated === notNeeded) {
+              return core.setFailed('In the PR description under "Documentation impact", check exactly one: "Documentation updated" or "No documentation update needed".');
+            }
+
+            if (notNeeded) {
+              const rationale = impact.match(/^Documentation rationale:([^\r\n]*)/m)?.[1].trim();
+              if (!rationale) {
+                core.setFailed('Add a reason on the "Documentation rationale:" line in the PR description.');
+              }
+              return;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...context.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const rootDocs = new Set(['README.md', 'CONTRIBUTING.md', 'SECURITY.md', 'CHANGELOG.md']);
+            if (files.some(({ filename }) => filename.startsWith('docs/') || rootDocs.has(filename))) {
+              return;
+            }
+            if (files.length < pr.changed_files) {
+              return core.setFailed('GitHub did not return every changed file. Split this PR so the documentation changes can be verified.');
+            }
+            core.setFailed('No documentation changes found. Update docs/ or README.md, CONTRIBUTING.md, SECURITY.md, or CHANGELOG.md, or select "No documentation update needed" and explain why.');
