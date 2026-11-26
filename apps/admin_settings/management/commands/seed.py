@@ -22,7 +22,11 @@ from apps.auth_app.constants import (
 class Command(BaseCommand):
     help = "Seed database with metric library, default terminology, and feature toggles."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--strict-demo", action="store_true", help="Fail if optional demo seeding fails.")
+
     def handle(self, *args, **options):
+        self.strict_demo = options["strict_demo"]
         self._seed_metrics()
         self._seed_feature_toggles()
         self._seed_instance_settings()
@@ -91,6 +95,8 @@ class Command(BaseCommand):
             else:
                 self.stdout.write("  Demo data already at target volume.")
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: Demo data top-up failed: {e}")
             import traceback
             self.stderr.write(traceback.format_exc())
@@ -622,6 +628,8 @@ class Command(BaseCommand):
         try:
             call_command("seed_demo_data", stdout=self.stdout)
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: seed_demo_data failed: {e}")
             self.stderr.write("  App will start but may be missing demo data.")
 
@@ -919,6 +927,8 @@ class Command(BaseCommand):
         try:
             call_command("seed_eval_export_demo", stdout=self.stdout)
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: seed_eval_export_demo failed: {e}")
             self.stderr.write(
                 "  App will start but the Evaluator Export demo may be "
