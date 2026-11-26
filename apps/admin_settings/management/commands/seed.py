@@ -7,6 +7,8 @@ import json
 import os
 from pathlib import Path
 
+from django.db.models import Q
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -333,8 +335,9 @@ class Command(BaseCommand):
             "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
         }
         created = 0
+        writer = InstanceSetting.objects.update_or_create if self.strict_demo else InstanceSetting.objects.get_or_create
         for key, value in defaults.items():
-            _, was_created = InstanceSetting.objects.get_or_create(
+            _, was_created = writer(
                 setting_key=key, defaults={"setting_value": value}
             )
             if was_created:
@@ -353,7 +356,7 @@ class Command(BaseCommand):
         from apps.programs.models import Program, UserProgramRole
 
         demo_clients = ClientFile.objects.filter(
-            record_id__startswith="DEMO-", is_demo=True
+            Q(record_id__startswith="DEMO-") | Q(is_demo=True)
         )
         if not demo_clients.exists():
             return
@@ -407,7 +410,8 @@ class Command(BaseCommand):
         self._cleanup_old_demo_data()
 
         # --- 5 Programs ---
-        employment, _ = Program.objects.get_or_create(
+        program_writer = Program.objects.update_or_create if self.strict_demo else Program.objects.get_or_create
+        employment, _ = program_writer(
             name="Supported Employment",
             defaults={
                 "description": "One-on-one job coaching, resume building, and interview preparation for adults seeking stable employment.",
@@ -416,7 +420,7 @@ class Command(BaseCommand):
                 "name_fr": "Emploi accompagn\u00e9",
             },
         )
-        housing, _ = Program.objects.get_or_create(
+        housing, _ = program_writer(
             name="Housing Stability",
             defaults={
                 "description": "Case management to help adults find and maintain stable housing, including landlord mediation and referrals.",
@@ -425,7 +429,7 @@ class Command(BaseCommand):
                 "name_fr": "Stabilit\u00e9 du logement",
             },
         )
-        youth, _ = Program.objects.get_or_create(
+        youth, _ = program_writer(
             name="Youth Drop-In",
             defaults={
                 "description": "Group activities, homework help, and mentorship for youth aged 13-18.",
@@ -434,7 +438,7 @@ class Command(BaseCommand):
                 "name_fr": "Centre jeunesse sans rendez-vous",
             },
         )
-        newcomer, _ = Program.objects.get_or_create(
+        newcomer, _ = program_writer(
             name="Newcomer Connections",
             defaults={
                 "description": "Settlement support for newcomers including service navigation, English conversation circles, and community orientation.",
@@ -443,7 +447,7 @@ class Command(BaseCommand):
                 "name_fr": "Connexions nouveaux arrivants",
             },
         )
-        kitchen, _ = Program.objects.get_or_create(
+        kitchen, _ = program_writer(
             name="Community Kitchen",
             defaults={
                 "description": "Weekly cooking sessions focused on affordable, healthy meals. Open to participants from any program.",
