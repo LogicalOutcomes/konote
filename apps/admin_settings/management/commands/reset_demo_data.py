@@ -16,8 +16,9 @@ from django.db import connection, transaction
 
 from apps.clients.models import ClientFile
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
+from apps.events.models import EventType, SRECategory
 from apps.notes.models import ProgressNote, ProgressNoteTemplate
-from apps.plans.models import MetricDefinition
+from apps.plans.models import MetricDefinition, PlanTemplate
 from apps.programs.models import Program
 from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant
 from apps.reports.models import LTEExportRequest, Partner, ReportTemplate
@@ -58,6 +59,9 @@ class Command(BaseCommand):
                 Survey.objects.all().delete()
                 ClientFile.objects.all().delete()
                 Program.objects.all().delete()
+                PlanTemplate.objects.all().delete()
+                EventType.objects.all().delete()
+                SRECategory.objects.all().delete()
                 TaxonomyMapping.objects.all().delete()
                 MetricDefinition.objects.all().delete()
                 EvaluationExportGrant.objects.all().delete()
