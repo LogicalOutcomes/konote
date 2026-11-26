@@ -932,7 +932,12 @@ class Command(BaseCommand):
         Export walkthrough won't have its extra participants or permission
         grants.
         """
+        import random
+
         from django.core.management import call_command
+
+        if self.strict_demo:
+            random.seed(42)
 
         try:
             call_command("seed_eval_export_demo", stdout=self.stdout)

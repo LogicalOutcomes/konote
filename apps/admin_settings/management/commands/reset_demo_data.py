@@ -51,6 +51,10 @@ class Command(BaseCommand):
                 f"Demo reset complete: {clients} named clients, {users} demo users, "
                 f"{notes} notes; {monotonic() - started:.1f}s."
             ))
+        except Exception as exc:
+            # Django prints uncaught exception values, which may contain a
+            # participant name from a failed seed operation.
+            raise CommandError(f"Demo reset failed ({type(exc).__name__}).") from None
         finally:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT pg_advisory_unlock(%s)", [LOCK_ID])
