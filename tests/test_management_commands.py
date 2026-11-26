@@ -15,7 +15,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import TestCase, override_settings
 
 import konote.encryption as enc_module
 
