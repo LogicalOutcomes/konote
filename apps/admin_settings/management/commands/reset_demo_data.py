@@ -16,6 +16,8 @@ from django.db import connection, transaction
 
 from apps.clients.models import ClientFile
 from apps.notes.models import ProgressNote
+from apps.programs.models import Program
+from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant
 
 
 LOCK_ID = 85122026
@@ -40,6 +42,14 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
+                # Both instances are disposable test instances. Remove all
+                # participant, program, and account records, including ones
+                # created by staff without the demo marker.
+                ClientFile.objects.all().delete()
+                Program.objects.all().delete()
+                EvaluationExportGrant.objects.all().delete()
+                LTEExportGrant.objects.all().delete()
+                get_user_model().objects.all().delete()
                 # Seed's narration contains demo names; cron logs need only
                 # aggregate results and a bounded failure type.
                 call_command("seed", strict_demo=True, stdout=io.StringIO(), stderr=io.StringIO())
