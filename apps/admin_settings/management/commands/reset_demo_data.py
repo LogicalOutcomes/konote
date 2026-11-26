@@ -42,6 +42,14 @@ class Command(BaseCommand):
             with transaction.atomic():
                 # Seed's narration contains demo names; cron logs need only
                 # aggregate results and a bounded failure type.
+                # These instances contain disposable test data. Flush the app
+                # database so edits and newly created records cannot survive.
+                call_command(
+                    "flush", interactive=False, reset_sequences=True,
+                    inhibit_post_migrate=True, verbosity=0,
+                    stdout=io.StringIO(), stderr=io.StringIO(),
+                )
+                call_command("setup_public_tenant", stdout=io.StringIO(), stderr=io.StringIO())
                 call_command("seed", strict_demo=True, stdout=io.StringIO(), stderr=io.StringIO())
                 clients = ClientFile.objects.filter(is_demo=True, record_id__startswith="DEMO-").count()
                 users = get_user_model().objects.filter(is_demo=True).count()
