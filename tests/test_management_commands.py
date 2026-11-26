@@ -254,6 +254,29 @@ class SeedDemoDataTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
+    def test_strict_seed_restores_edited_demo_baseline(self):
+        from apps.admin_settings.models import InstanceSetting
+        from apps.clients.models import ClientFile
+        from apps.programs.models import Program
+
+        call_command("seed", stdout=io.StringIO())
+        setting = InstanceSetting.objects.get(setting_key="date_format")
+        setting.setting_value = "QA-MODIFIED"
+        setting.save()
+        program = Program.objects.get(name="Supported Employment")
+        program.colour_hex = "#123456"
+        program.save()
+        client = ClientFile.objects.get(record_id="DEMO-001")
+        client.record_id = "CHANGED-001"
+        client.save()
+
+        call_command("seed", strict_demo=True, stdout=io.StringIO())
+
+        self.assertEqual(InstanceSetting.objects.get(setting_key="date_format").setting_value, "YYYY-MM-DD")
+        self.assertEqual(Program.objects.get(name="Supported Employment").colour_hex, "#3B82F6")
+        self.assertTrue(ClientFile.objects.filter(record_id="DEMO-001", is_demo=True).exists())
+        self.assertFalse(ClientFile.objects.filter(record_id="CHANGED-001").exists())
+
     def test_skips_when_demo_mode_off(self):
         """seed_demo_data skips when DEMO_MODE is False."""
         out = io.StringIO()
