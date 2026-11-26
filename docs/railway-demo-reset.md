@@ -32,14 +32,13 @@ command and exit instead of serving requests.
    scheduled execution. Railway skips a tick if the previous run is active.
 
 The command refuses non-demo mode, missing explicit reset authorization, and
-non-PostgreSQL databases; it rejects a
-concurrent reset, and reports a nonzero exit on failure. The reset rebuilds
-demo clients and users via `seed` and reports named client, user, and note
-counts without personal information. It deletes all participant, program, and
-user records in the target app database before recreating demo data. It runs
-in a transaction on the app
-database. The audit database is separate, so audit records are not part of
-that transaction.
+non-PostgreSQL databases. It rejects a concurrent reset and exits nonzero on
+failure. The reset removes participant, program, user, survey, template, and
+editable instance configuration records from the target app database, then
+recreates the seeded demo baseline. It reports aggregate client, user, and
+note counts without personal information. The app database changes run in a
+transaction; the separate audit database retains its audit history. Generated
+note totals can vary slightly between successful runs.
 
 If a run fails, inspect the Railway deployment log and leave the schedule
 disabled until the problem is corrected. A successful manual run can be
