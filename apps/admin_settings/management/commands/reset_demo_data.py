@@ -16,6 +16,7 @@ from django.db import connection, transaction
 
 from apps.clients.models import ClientFile
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
+from apps.consortia.models import ConsortiumMembership
 from apps.events.models import EventType, SRECategory
 from apps.notes.models import ProgressNote, ProgressNoteTemplate
 from apps.plans.models import MetricDefinition, PlanTemplate
@@ -57,6 +58,7 @@ class Command(BaseCommand):
                 # created by staff without the demo marker.
                 LTEExportRequest.objects.all().delete()
                 Survey.objects.all().delete()
+                ConsortiumMembership.objects.all().delete()
                 ClientFile.objects.all().delete()
                 Program.objects.all().delete()
                 PlanTemplate.objects.all().delete()
