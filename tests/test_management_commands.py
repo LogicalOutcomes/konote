@@ -8,6 +8,7 @@ import io
 import os
 import tempfile
 import unittest
+from contextlib import nullcontext
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -36,6 +37,23 @@ class ResetDemoDataGuardTest(SimpleTestCase):
     def test_requires_postgres_lock(self):
         with self.assertRaisesMessage(CommandError, "requires PostgreSQL"):
             call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
+    def test_seed_failure_does_not_log_exception_values(self):
+        from apps.admin_settings.management.commands import reset_demo_data
+
+        cursor = unittest.mock.MagicMock()
+        cursor.fetchone.return_value = (True,)
+        with (
+            unittest.mock.patch.object(reset_demo_data.connection, "vendor", "postgresql"),
+            unittest.mock.patch.object(reset_demo_data.connection, "cursor", return_value=cursor),
+            unittest.mock.patch.object(reset_demo_data.transaction, "atomic", return_value=nullcontext()),
+            unittest.mock.patch.object(reset_demo_data, "call_command", side_effect=ValueError("Jane Doe")),
+        ):
+            with self.assertRaises(CommandError) as caught:
+                call_command("reset_demo_data", stdout=io.StringIO())
+        self.assertIn("ValueError", str(caught.exception))
+        self.assertNotIn("Jane Doe", str(caught.exception))
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
