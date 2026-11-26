@@ -58,6 +58,7 @@ class Command(BaseCommand):
                 Survey.objects.all().delete()
                 ClientFile.objects.all().delete()
                 Program.objects.all().delete()
+                TaxonomyMapping.objects.all().delete()
                 MetricDefinition.objects.all().delete()
                 EvaluationExportGrant.objects.all().delete()
                 LTEExportGrant.objects.all().delete()
@@ -71,7 +72,6 @@ class Command(BaseCommand):
                 Partner.objects.all().delete()
                 RegistrationLink.objects.all().delete()
                 TerminologyOverride.objects.all().delete()
-                TaxonomyMapping.objects.all().delete()
                 OrganizationProfile.objects.all().delete()
                 # Seed's narration contains demo names; cron logs need only
                 # aggregate results and a bounded failure type.
