@@ -18,6 +18,8 @@
 
 ## Active Work
 
+- [ ] 🔨 Automatically restore Railway staging and production demo data — PB (DEMO-CRON1)
+
 ### Phase: Launch Readiness
 
 - [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
