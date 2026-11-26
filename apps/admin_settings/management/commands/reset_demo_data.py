@@ -17,9 +17,10 @@ from django.db import connection, transaction
 from apps.clients.models import ClientFile
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 from apps.notes.models import ProgressNote, ProgressNoteTemplate
+from apps.plans.models import MetricDefinition
 from apps.programs.models import Program
 from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant
-from apps.reports.models import LTEExportRequest, ReportTemplate
+from apps.reports.models import LTEExportRequest, Partner, ReportTemplate
 from apps.surveys.models import Survey
 from apps.admin_settings.models import (
     FeatureToggle, InstanceSetting, OrganizationProfile,
@@ -57,6 +58,7 @@ class Command(BaseCommand):
                 Survey.objects.all().delete()
                 ClientFile.objects.all().delete()
                 Program.objects.all().delete()
+                MetricDefinition.objects.all().delete()
                 EvaluationExportGrant.objects.all().delete()
                 LTEExportGrant.objects.all().delete()
                 get_user_model().objects.all().delete()
@@ -66,6 +68,7 @@ class Command(BaseCommand):
                 FeatureToggle.objects.all().delete()
                 ProgressNoteTemplate.objects.all().delete()
                 ReportTemplate.objects.all().delete()
+                Partner.objects.all().delete()
                 RegistrationLink.objects.all().delete()
                 TerminologyOverride.objects.all().delete()
                 TaxonomyMapping.objects.all().delete()
