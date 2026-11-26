@@ -14,7 +14,7 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 import konote.encryption as enc_module
 
@@ -24,6 +24,18 @@ TEST_KEY = Fernet.generate_key().decode()
 # =========================================================================
 # Seed Commands
 # =========================================================================
+
+
+class ResetDemoDataGuardTest(SimpleTestCase):
+    @override_settings(DEMO_MODE=False)
+    def test_refuses_non_demo_instance(self):
+        with self.assertRaisesMessage(CommandError, "DEMO_MODE must be enabled"):
+            call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
+    def test_requires_postgres_lock(self):
+        with self.assertRaisesMessage(CommandError, "requires PostgreSQL"):
+            call_command("reset_demo_data", stdout=io.StringIO())
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
