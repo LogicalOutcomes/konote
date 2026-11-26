@@ -59,7 +59,7 @@ See the [Changelog](../CHANGELOG.md) for a full history of changes, including th
 - [Logging Communications](using-konote.md#logging-communications)
 - [Staff Messaging](using-konote.md#staff-messaging) — leave and read messages about participants
 - [Surveys](using-konote.md#surveys) — assigning and entering survey responses
-- [Client Transfer](using-konote.md#transferring-a-client) — move participants between programs
+- [Client Transfer](using-konote.md#transferring-a-client-between-programs) — move participants between programs
 - [Scheduling Meetings](using-konote.md#scheduling-meetings)
 - [Using the Calendar Feed](using-konote.md#using-the-calendar-feed)
 - [Viewing Plans](using-konote.md#viewing-the-outcome-plan)

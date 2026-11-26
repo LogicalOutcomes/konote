@@ -303,13 +303,13 @@ below assume the database containers from `docker-compose.dev.yml` are running.
    python -c "import secrets; print(secrets.token_urlsafe(32))"
    ```
 
-   Paste both keys into your `.env` file:
+   Paste all three keys into your `.env` file. Keep `EMAIL_HASH_KEY` stable: changing it breaks existing participant email lookups. Never commit `.env`.
    ```
    SECRET_KEY=paste-your-generated-key-here
    FIELD_ENCRYPTION_KEY=paste-your-generated-key-here
    EMAIL_HASH_KEY=paste-your-generated-key-here
-   DATABASE_URL=postgresql://konote:password@localhost:5432/konote
-   AUDIT_DATABASE_URL=postgresql://audit_writer:password@localhost:5432/konote_audit
+   DATABASE_URL=postgresql://konote:konote@localhost:5432/konote
+   AUDIT_DATABASE_URL=postgresql://konote:konote@localhost:5433/konote_audit
    AUTH_MODE=local
    ```
 

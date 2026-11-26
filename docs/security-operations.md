@@ -464,7 +464,7 @@ To connect KoNote to your Azure AD:
    - `AZURE_AD_CLIENT_SECRET` — your client secret
    - `AZURE_AD_TENANT_ID` — your Directory (tenant) ID
 
-See the [Azure Deployment Guide](../tasks/azure-deployment-guide.md) for detailed setup instructions.
+See [Deploying KoNote](deploying-konote.md#deploy-to-azure) for detailed setup instructions.
 
 ### Local Password Authentication
 

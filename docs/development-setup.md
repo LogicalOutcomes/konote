@@ -64,7 +64,9 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
 Put the results in `.env` as `SECRET_KEY`, `FIELD_ENCRYPTION_KEY`, and
-`EMAIL_HASH_KEY`. Never commit `.env`.
+`EMAIL_HASH_KEY`. Keep the email hash key stable for existing participant accounts
+and registration lookups; changing it prevents matching previously stored hashes.
+Never commit `.env`.
 
 For the development database stack, use the `konote` user for both databases:
 

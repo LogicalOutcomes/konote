@@ -21,6 +21,7 @@ services:
       - AUDIT_DATABASE_URL=postgresql://audit:audit_password_123@audit_db:5432/konote_audit
       - SECRET_KEY=demo-only-secret-key-do-not-use-in-production-abc123
       - FIELD_ENCRYPTION_KEY=ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=
+      - EMAIL_HASH_KEY=demo-only-email-hash-key-do-not-use-in-production
       - AUTH_MODE=local
       - ALLOWED_HOSTS=localhost,127.0.0.1
       - DEBUG=False

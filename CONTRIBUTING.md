@@ -57,6 +57,9 @@ git checkout -b chore/short-description  # cleanup, config, docs
 1. Push your branch and create a PR targeting `develop` (not `main`).
 2. Use regular merge commits -- **never squash merge**.
 3. Keep PRs focused. One feature or fix per PR.
+4. Use the PR template to explain what changed and why, record the relevant tests or manual checks and their results, and choose one option under **Documentation impact**. Consider whether the change affects setup, user, admin, security, or technical documentation.
+
+The **Documentation impact** check reruns when you edit the PR description or push changes. For **Documentation updated**, it looks for a changed file in `docs/` or a change to `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, or `CHANGELOG.md`. For **No documentation update needed**, give a reason on the `Documentation rationale:` line. The check verifies the checklist, not whether the documentation is accurate or complete; reviewers still make that call.
 
 ---
 
