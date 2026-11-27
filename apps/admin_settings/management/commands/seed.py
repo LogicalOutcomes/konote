@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 from django.db.models import Q
+from django.db import transaction
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -37,16 +38,13 @@ class Command(BaseCommand):
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
-            # Step 1: Create named personas (DEMO-001 through DEMO-015)
-            self._create_demo_users_and_clients()
-            self._update_demo_client_fields()
-            # Step 2: Top up each program to 20-30 clients with engine
-            self._top_up_demo_data()
-            self._seed_eval_export_demo()
-            # Safety net: ensure demo users have active program roles.
-            # If cleanup ran but role creation failed or was interrupted,
-            # this idempotently restores the missing roles.
-            self._ensure_demo_roles()
+            # Keep the existing demo data intact if cleanup or rebuilding fails.
+            with transaction.atomic():
+                self._create_demo_users_and_clients()
+                self._update_demo_client_fields()
+                self._top_up_demo_data()
+                self._seed_eval_export_demo()
+                self._ensure_demo_roles()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _generate_config_aware_demo_data(self, profile_path):
@@ -355,9 +353,14 @@ class Command(BaseCommand):
         from apps.notes.models import SuggestionTheme
         from apps.programs.models import Program, UserProgramRole
 
-        demo_clients = ClientFile.objects.filter(
+        # Ordinary startup seeding must not delete staff-created clients that
+        # match only one marker. The full reset clears all clients beforehand.
+        demo_filter = (
             Q(record_id__startswith="DEMO-") | Q(is_demo=True)
+            if self.strict_demo else
+            Q(record_id__startswith="DEMO-") & Q(is_demo=True)
         )
+        demo_clients = ClientFile.objects.filter(demo_filter)
         if not demo_clients.exists():
             return
 

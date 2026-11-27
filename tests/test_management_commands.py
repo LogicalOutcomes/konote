@@ -289,6 +289,24 @@ class SeedDemoDataTest(TestCase):
         self.assertTrue(ClientFile.objects.filter(record_id="DEMO-001", is_demo=True).exists())
         self.assertFalse(ClientFile.objects.filter(record_id="CHANGED-001").exists())
 
+    def test_startup_seed_rolls_back_demo_cleanup_on_failure(self):
+        from apps.admin_settings.management.commands.seed import Command
+        from apps.clients.models import ClientFile
+
+        call_command("seed", stdout=io.StringIO())
+        before = set(ClientFile.objects.filter(is_demo=True).values_list("record_id", flat=True))
+
+        with unittest.mock.patch.object(
+            Command, "_update_demo_client_fields", side_effect=RuntimeError("injected failure")
+        ):
+            with self.assertRaisesMessage(RuntimeError, "injected failure"):
+                call_command("seed", stdout=io.StringIO())
+
+        self.assertEqual(
+            set(ClientFile.objects.filter(is_demo=True).values_list("record_id", flat=True)),
+            before,
+        )
+
     def test_skips_when_demo_mode_off(self):
         """seed_demo_data skips when DEMO_MODE is False."""
         out = io.StringIO()
