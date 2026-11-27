@@ -8,6 +8,7 @@ import io
 import os
 import tempfile
 import unittest
+from contextlib import nullcontext
 from pathlib import Path
 
 from cryptography.fernet import Fernet
@@ -24,6 +25,48 @@ TEST_KEY = Fernet.generate_key().decode()
 # =========================================================================
 # Seed Commands
 # =========================================================================
+
+
+class ResetDemoDataGuardTest(TestCase):
+    databases = {"default", "audit"}
+    @override_settings(DEMO_MODE=False)
+    def test_refuses_non_demo_instance(self):
+        with self.assertRaisesMessage(CommandError, "DEMO_MODE must be enabled"):
+            call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
+    def test_requires_postgres_lock(self):
+        with self.assertRaisesMessage(CommandError, "requires PostgreSQL"):
+            call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
+    def test_requires_explicit_reset_authorization(self):
+        from apps.admin_settings.management.commands import reset_demo_data
+
+        db = unittest.mock.MagicMock(vendor="postgresql")
+        with unittest.mock.patch.object(reset_demo_data, "connection", db):
+            with unittest.mock.patch.dict(os.environ, {"DEMO_RESET_ALLOWED": ""}):
+                with self.assertRaisesMessage(CommandError, "DEMO_RESET_ALLOWED=true"):
+                    call_command("reset_demo_data", stdout=io.StringIO())
+
+    @override_settings(DEMO_MODE=True)
+    def test_seed_failure_does_not_log_exception_values(self):
+        from apps.admin_settings.management.commands import reset_demo_data
+
+        cursor = unittest.mock.MagicMock()
+        cursor.fetchone.return_value = (True,)
+        db = unittest.mock.MagicMock(vendor="postgresql")
+        db.cursor.return_value = cursor
+        with (
+            unittest.mock.patch.object(reset_demo_data, "connection", db),
+            unittest.mock.patch.dict(os.environ, {"DEMO_RESET_ALLOWED": "true"}),
+            unittest.mock.patch.object(reset_demo_data.transaction, "atomic", return_value=nullcontext()),
+            unittest.mock.patch.object(reset_demo_data, "call_command", side_effect=ValueError("Jane Doe")),
+        ):
+            with self.assertRaises(CommandError) as caught:
+                call_command("reset_demo_data", stdout=io.StringIO())
+        self.assertIn("ValueError", str(caught.exception))
+        self.assertNotIn("Jane Doe", str(caught.exception))
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -222,6 +265,47 @@ class SeedDemoDataTest(TestCase):
 
     def tearDown(self):
         enc_module._fernet = None
+
+    def test_strict_seed_restores_edited_demo_baseline(self):
+        from apps.admin_settings.models import InstanceSetting
+        from apps.clients.models import ClientFile
+        from apps.programs.models import Program
+
+        call_command("seed", stdout=io.StringIO())
+        setting = InstanceSetting.objects.get(setting_key="date_format")
+        setting.setting_value = "QA-MODIFIED"
+        setting.save()
+        program = Program.objects.get(name="Supported Employment")
+        program.colour_hex = "#123456"
+        program.save()
+        client = ClientFile.objects.get(record_id="DEMO-001")
+        client.record_id = "CHANGED-001"
+        client.save()
+
+        call_command("seed", strict_demo=True, stdout=io.StringIO())
+
+        self.assertEqual(InstanceSetting.objects.get(setting_key="date_format").setting_value, "YYYY-MM-DD")
+        self.assertEqual(Program.objects.get(name="Supported Employment").colour_hex, "#3B82F6")
+        self.assertTrue(ClientFile.objects.filter(record_id="DEMO-001", is_demo=True).exists())
+        self.assertFalse(ClientFile.objects.filter(record_id="CHANGED-001").exists())
+
+    def test_startup_seed_rolls_back_demo_cleanup_on_failure(self):
+        from apps.admin_settings.management.commands.seed import Command
+        from apps.clients.models import ClientFile
+
+        call_command("seed", stdout=io.StringIO())
+        before = set(ClientFile.objects.filter(is_demo=True).values_list("record_id", flat=True))
+
+        with unittest.mock.patch.object(
+            Command, "_update_demo_client_fields", side_effect=RuntimeError("injected failure")
+        ):
+            with self.assertRaisesMessage(RuntimeError, "injected failure"):
+                call_command("seed", stdout=io.StringIO())
+
+        self.assertEqual(
+            set(ClientFile.objects.filter(is_demo=True).values_list("record_id", flat=True)),
+            before,
+        )
 
     def test_skips_when_demo_mode_off(self):
         """seed_demo_data skips when DEMO_MODE is False."""

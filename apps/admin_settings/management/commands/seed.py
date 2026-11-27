@@ -7,6 +7,9 @@ import json
 import os
 from pathlib import Path
 
+from django.db.models import Q
+from django.db import transaction
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -22,7 +25,11 @@ from apps.auth_app.constants import (
 class Command(BaseCommand):
     help = "Seed database with metric library, default terminology, and feature toggles."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--strict-demo", action="store_true", help="Fail if optional demo seeding fails.")
+
     def handle(self, *args, **options):
+        self.strict_demo = options["strict_demo"]
         self._seed_metrics()
         self._seed_feature_toggles()
         self._seed_instance_settings()
@@ -31,16 +38,13 @@ class Command(BaseCommand):
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
-            # Step 1: Create named personas (DEMO-001 through DEMO-015)
-            self._create_demo_users_and_clients()
-            self._update_demo_client_fields()
-            # Step 2: Top up each program to 20-30 clients with engine
-            self._top_up_demo_data()
-            self._seed_eval_export_demo()
-            # Safety net: ensure demo users have active program roles.
-            # If cleanup ran but role creation failed or was interrupted,
-            # this idempotently restores the missing roles.
-            self._ensure_demo_roles()
+            # Keep the existing demo data intact if cleanup or rebuilding fails.
+            with transaction.atomic():
+                self._create_demo_users_and_clients()
+                self._update_demo_client_fields()
+                self._top_up_demo_data()
+                self._seed_eval_export_demo()
+                self._ensure_demo_roles()
         self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _generate_config_aware_demo_data(self, profile_path):
@@ -73,12 +77,16 @@ class Command(BaseCommand):
     def _top_up_demo_data(self):
         """Top up demo data to target clients per program using the engine."""
         import os
+        import random
 
         from apps.admin_settings.demo_engine import DEMO_TARGET_CLIENTS_PER_PROGRAM, DemoDataEngine
 
         demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
         self.stdout.write("  Topping up demo data with config-aware engine...")
         engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
+
+        if self.strict_demo:
+            random.seed(42)
 
         try:
             success = engine.run(
@@ -91,6 +99,8 @@ class Command(BaseCommand):
             else:
                 self.stdout.write("  Demo data already at target volume.")
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: Demo data top-up failed: {e}")
             import traceback
             self.stderr.write(traceback.format_exc())
@@ -323,8 +333,9 @@ class Command(BaseCommand):
             "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
         }
         created = 0
+        writer = InstanceSetting.objects.update_or_create if self.strict_demo else InstanceSetting.objects.get_or_create
         for key, value in defaults.items():
-            _, was_created = InstanceSetting.objects.get_or_create(
+            _, was_created = writer(
                 setting_key=key, defaults={"setting_value": value}
             )
             if was_created:
@@ -336,15 +347,20 @@ class Command(BaseCommand):
 
         Safe: only deletes objects marked is_demo=True or linked to DEMO- clients.
         """
-        from apps.auth_app.models import User
+        from apps.auth_app.models import EvaluationExportGrant, LTEExportGrant, User
         from apps.clients.models import ClientFile
         from apps.events.models import CalendarFeedToken
         from apps.notes.models import SuggestionTheme
         from apps.programs.models import Program, UserProgramRole
 
-        demo_clients = ClientFile.objects.filter(
-            record_id__startswith="DEMO-", is_demo=True
+        # Ordinary startup seeding must not delete staff-created clients that
+        # match only one marker. The full reset clears all clients beforehand.
+        demo_filter = (
+            Q(record_id__startswith="DEMO-") | Q(is_demo=True)
+            if self.strict_demo else
+            Q(record_id__startswith="DEMO-") & Q(is_demo=True)
         )
+        demo_clients = ClientFile.objects.filter(demo_filter)
         if not demo_clients.exists():
             return
 
@@ -363,6 +379,10 @@ class Command(BaseCommand):
         # Remove ALL demo users (and their calendar tokens / program roles).
         # This ensures stale users from previous seed versions are cleaned up.
         demo_users = User.objects.filter(is_demo=True)
+        # Demo export grants protect their issuing admin. They are recreated by
+        # seed_eval_export_demo after the demo users are rebuilt.
+        EvaluationExportGrant.objects.filter(user__in=demo_users).delete()
+        LTEExportGrant.objects.filter(user__in=demo_users).delete()
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
         # ProgressNote.author is PROTECTED so demo users cannot be deleted while
@@ -370,7 +390,9 @@ class Command(BaseCommand):
         # and remove these, but notes can survive (e.g. cross-program sharing).
         # Explicitly delete any remaining notes authored by demo users first.
         from apps.notes.models import ProgressNote
-        ProgressNote.objects.filter(author__in=demo_users).delete()
+        ProgressNote.objects.filter(
+            author__in=demo_users, client_file__is_demo=True
+        ).delete()
         demo_users.delete()
 
         # Remove old program names that no longer exist
@@ -391,7 +413,8 @@ class Command(BaseCommand):
         self._cleanup_old_demo_data()
 
         # --- 5 Programs ---
-        employment, _ = Program.objects.get_or_create(
+        program_writer = Program.objects.update_or_create if self.strict_demo else Program.objects.get_or_create
+        employment, _ = program_writer(
             name="Supported Employment",
             defaults={
                 "description": "One-on-one job coaching, resume building, and interview preparation for adults seeking stable employment.",
@@ -400,7 +423,7 @@ class Command(BaseCommand):
                 "name_fr": "Emploi accompagn\u00e9",
             },
         )
-        housing, _ = Program.objects.get_or_create(
+        housing, _ = program_writer(
             name="Housing Stability",
             defaults={
                 "description": "Case management to help adults find and maintain stable housing, including landlord mediation and referrals.",
@@ -409,7 +432,7 @@ class Command(BaseCommand):
                 "name_fr": "Stabilit\u00e9 du logement",
             },
         )
-        youth, _ = Program.objects.get_or_create(
+        youth, _ = program_writer(
             name="Youth Drop-In",
             defaults={
                 "description": "Group activities, homework help, and mentorship for youth aged 13-18.",
@@ -418,7 +441,7 @@ class Command(BaseCommand):
                 "name_fr": "Centre jeunesse sans rendez-vous",
             },
         )
-        newcomer, _ = Program.objects.get_or_create(
+        newcomer, _ = program_writer(
             name="Newcomer Connections",
             defaults={
                 "description": "Settlement support for newcomers including service navigation, English conversation circles, and community orientation.",
@@ -427,7 +450,7 @@ class Command(BaseCommand):
                 "name_fr": "Connexions nouveaux arrivants",
             },
         )
-        kitchen, _ = Program.objects.get_or_create(
+        kitchen, _ = program_writer(
             name="Community Kitchen",
             defaults={
                 "description": "Weekly cooking sessions focused on affordable, healthy meals. Open to participants from any program.",
@@ -622,6 +645,8 @@ class Command(BaseCommand):
         try:
             call_command("seed_demo_data", stdout=self.stdout)
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: seed_demo_data failed: {e}")
             self.stderr.write("  App will start but may be missing demo data.")
 
@@ -914,11 +939,18 @@ class Command(BaseCommand):
         Export walkthrough won't have its extra participants or permission
         grants.
         """
+        import random
+
         from django.core.management import call_command
+
+        if self.strict_demo:
+            random.seed(42)
 
         try:
             call_command("seed_eval_export_demo", stdout=self.stdout)
         except Exception as e:
+            if self.strict_demo:
+                raise
             self.stderr.write(f"  WARNING: seed_eval_export_demo failed: {e}")
             self.stderr.write(
                 "  App will start but the Evaluator Export demo may be "
